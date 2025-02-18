@@ -43,11 +43,7 @@
       <description>爵士管乐五重奏怎么写？ 哔哩哔哩链接: https://www.bilibili.com/video/BV1UPtTehEz6/&#xA;从零到一的旋律写作教学！ 哔哩哔哩链接: https://www.bilibili.com/video/BV1rVH8ewEcx/&#xA;如何用 Clave 编曲？ 哔哩哔哩链接: https://www.bilibili.com/video/BV1Bqt1epE8j/&#xA;如何用五声音阶来作曲？ 哔哩哔哩链接: https://www.bilibili.com/video/BV1zfcseYEdn/&#xA;如何把你的曲子改成 Lydian？ 哔哩哔哩链接: https://www.bilibili.com/video/BV1XaKceaELb/</description>
     </item>
     <item>
-<<<<<<< HEAD
       <title>联系 IC Studio</title>
-=======
-      <title>联系</title>
->>>>>>> origin/main
       <link>https://icstudio.club/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/contact/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://icstudio.club/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/contact/</guid>
@@ -61,25 +57,11 @@
       <description>这个系列会带你认识一些吉他上的音阶指型，带你进一步的认识你的乐器。同时，我还会告诉你怎么用它们来即兴！&#xA;五声音阶是什么？ 哔哩哔哩链接: https://www.bilibili.com/video/BV1fzCxYWERq/&#xA;如何用五声音阶即兴？ 哔哩哔哩链接: https://www.bilibili.com/video/BV1we6zYsEJQ/&#xA;什么是蓝调音阶？ 哔哩哔哩链接: https://www.bilibili.com/video/BV1k4wjejEDv/&#xA;从零到一的蓝调即兴教学！ 哔哩哔哩链接: https://www.bilibili.com/video/BV1JnfvYpECD/&#xA;现代中古调式 哔哩哔哩链接: https://www.bilibili.com/video/BV1pCNpe6Eso/</description>
     </item>
     <item>
-<<<<<<< HEAD
       <title>支持 IC Studio</title>
-=======
-      <title>支持</title>
->>>>>>> origin/main
       <link>https://icstudio.club/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/donate/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://icstudio.club/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/donate/</guid>
       <description>你可以用一下任何一种方式来实际支持 IC Studio：&#xA;PayPal（贝宝）: https://paypal.me/icstudio86?country.x=IT&amp;amp;locale.x=en_US Bilibili 充电: https://space.bilibili.com/376362605 Iban：IT11Q3608105138291893191904；收款方：Igor Chen 投资账号：DE58502109007013267698；收款方：Igor Chen 免费支持 IC Studio 的方式：点赞，投币（如果你是 b站用户的话），关注，收藏，分享我在各平台分享的视频。 </description>
     </item>
-<<<<<<< HEAD
-    <item>
-      <title>test</title>
-      <link>https://icstudio.club/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/test/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://icstudio.club/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/test/</guid>
-      <description>test</description>
-    </item>
-=======
->>>>>>> origin/main
   </channel>
 </rss>
