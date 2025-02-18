@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Astronomy on IC STUDIO</title>
+    <link>http://localhost:1313/categories/astronomy/</link>
+    <description>Recent content in Astronomy on IC STUDIO</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 04 Oct 2023 22:11:36 +0700</lastBuildDate>
+    <atom:link href="http://localhost:1313/categories/astronomy/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>私人课程</title>
+      <link>http://localhost:1313/posts/2023/%E7%A7%81%E4%BA%BA%E8%AF%BE%E7%A8%8B/</link>
+      <pubDate>Wed, 04 Oct 2023 22:11:36 +0700</pubDate>
+      <guid>http://localhost:1313/posts/2023/%E7%A7%81%E4%BA%BA%E8%AF%BE%E7%A8%8B/</guid>
+      <description>一对一音乐课 每节课时长：60分钟 费用：50€ 或者 390元/每课&#xA;如何开始？ 你可以直接通过我的邮件（icstudio@fastmail.com）联系我。做个自我介绍，说明你的学习目标以及联系方式，然后我们会一起安排上课时间。&#xA;为什么选择我的私人课程？ 很多人可能会问：“为什么要参加私人课程？我直接看你的教程学习不好吗？”实际上，在我学习音乐的路上我曾经也这样想过，但我后来发现，即使我看了再多的视频或书籍，有些非常专业且刁钻的问题仍然无法单独解决。我最终意识到，只有有经验的音乐人才能帮助我解决这些难题。我的私人课程不仅是简单的教程，而是为你量身定制的学习体验。&#xA;你将学到什么？ 吉他技巧 由于我个人的主修乐器是吉他，所以上课时我主要使用吉他作为教学工具。我将帮助你提升在演奏技巧、乐句处理、节奏、风格等方面的表现。&#xA;乐理 &amp;amp; 创作技巧 音乐的魅力不仅仅在于演奏美妙的旋律，创作也是音乐人能够体验到成就感的重要途径。为了帮助你实现这一目标，我们将深入了解乐理。同时，我还将帮助你掌握如何在实际应用中运用指板逻辑和音阶指型，帮助你在即兴演奏、作曲和编曲等方面取得更大进步。&#xA;帮助你走向职业音乐之路 如果你希望将音乐作为职业发展方向，而不仅仅停留在业余水平，我可以与你分享我个人的成长经验，帮助你尽量少走弯路。&#xA;关于课程 课程的价格和时长是多少？ 每节课的价格为50€ 或者 390元，课程时长为60分钟。 如何联系我安排课程？ 你可以通过我们的网站、邮件，或者在社交媒体上私信我，提出你的课程需求和目标。我们将根据双方的时间安排，为你预定最合适的课程时间。 课程在哪里上？ 课程可以根据你的地理位置选择线上或线下形式。我目前在意大利，所以如果你是意大利以外的国家，课程将通过网课的形式进行。线上课程将通过稳定的视频平台进行，确保你在家中也能获得高效的学习体验。 多久上一次课比较合适？ 根据你的学习目标和时间安排，如果你是初学者，我通常建议每周上1-2节课；如果你是进阶者，建议每两周上一节课。具体安排可以根据你的需求和进度来调整。 课程内容有哪些？ 我的私人课程涵盖多个领域，包括吉他演奏技巧、乐理、编曲、作曲、职业发展规划。根据你的水平，我会设计个性化的课程内容，帮助你在最短时间内取得最大进步。 为什么要上私人课程，而不是直接看视频教程？ 视频教程虽然是一个很好的学习工具，但内容繁多且缺乏系统性。私人课程可以根据你的需求进行个性化调整，帮助你及时解决疑问，确保你能更快地掌握技能并获得更具针对性的指导。&#xA;{{ define &amp;#34;main&amp;#34; }} {{- partial &amp;#34;hero.html&amp;#34; . -}} &amp;lt;main class=&amp;#34;max-w-7xl mx-auto py-8&amp;#34;&amp;gt; &amp;lt;section class=&amp;#34;mb-10&amp;#34;&amp;gt; &amp;lt;div class=&amp;#34;flex items-center px-4 sm:px-8 lg:px-8&amp;#34;&amp;gt; &amp;lt;h2 class=&amp;#34; text-2xl font-bold&amp;#34;&amp;gt;Latest News&amp;lt;/h2&amp;gt; &amp;lt;button class=&amp;#34;ml-auto border rounded-full px-4 py-1 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800&amp;#34;&amp;gt; View all &amp;lt;/button&amp;gt; &amp;lt;/div&amp;gt; {{- partial &amp;#34;card-list-horizontal.</description>
+    </item>
+  </channel>
+</rss>

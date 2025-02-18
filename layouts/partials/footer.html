@@ -1,46 +1,51 @@
-<div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+<footer class="bg-zinc-100 py-10 md:py-14"><div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
 
   <div class="flex flex-wrap space-y-6 mb-4">
-
+  
     <div class="w-full md:w-3/5 flex flex-col space-y-4 md:pr-8 lg:pr-10">
-
-      <a class="flex items-center group" href="{{ .Site.BaseURL }}">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="mr-2 group-hover:animate-spin" viewBox="0 0 16 16">
-          <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-          <path d="M13.997 5.17a5 5 0 0 0-8.101-4.09A5 5 0 0 0 1.28 9.342a5 5 0 0 0 8.336 5.109 3.5 3.5 0 0 0 5.201-4.065 3.001 3.001 0 0 0-.822-5.216zm-1-.034a1 1 0 0 0 .668.977 2.001 2.001 0 0 1 .547 3.478 1 1 0 0 0-.341 1.113 2.5 2.5 0 0 1-3.715 2.905 1 1 0 0 0-1.262.152 4 4 0 0 1-6.67-4.087 1 1 0 0 0-.2-1 4 4 0 0 1 3.693-6.61 1 1 0 0 0 .8-.2 4 4 0 0 1 6.48 3.273z"/>
+  
+    <a class="flex items-center group" href="http://localhost:1313/">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="mr-2 group-hover:animate-spin" viewBox="0 0 24 24">
+        <path d="M13.75 2C13.75 1.58579 13.4142 1.25 13 1.25C12.5858 1.25 12.25 1.58579 12.25 2V14.5359C11.4003 13.7384 10.2572 13.25 9 13.25C6.37665 13.25 4.25 15.3766 4.25 18C4.25 20.6234 6.37665 22.75 9 22.75C11.6234 22.75 13.75 20.6234 13.75 18V6.243C14.9875 7.77225 16.8795 8.75 19 8.75C19.4142 8.75 19.75 8.41421 19.75 8C19.75 7.58579 19.4142 7.25 19 7.25C16.1005 7.25 13.75 4.8995 13.75 2Z"/>
         </svg>
-        
-        <span class="text-2xl font-semibold uppercase">{{ .Site.Title }}</span>
-      </a>
-
-      <p class="font-semibold">
-        Write with love. Minimalism design.<br>Clean code and built in Rembele, Gayo Highland.
-      </p>
-
-      <p>Lorem ipsum dolor sit amet consectetur adipisicing, elit. At nulla, dolorum cumque ad. Officia voluptas excepturi distinctio maiores reiciendis minima aliquid aspernatur. Ullam tenetur saepe debitis, libero, in rerum vero?</p>
-
+      <span class="text-2xl font-semibold uppercase">IC STUDIO</span>
+    </a>
+  
+    <p class="font-semibold">
+      一起在音乐的道路上前进吧！
+    </p>
+  
     </div>
-
+  
     <div class="self-center flex flex-col w-full md:w-2/5">
-
-{{ partial "content/social-media.html" . }}
-
+  
+    <ul id="social-media" class="flex items-center space-x-4">
+      <li>
+        <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2" href="https://www.youtube.com/@ICStudio86#" target="_blank" rel="noopener noreferrer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M23.498 6.186a2.91 2.91 0 0 0-2.049-2.048C19.653 3.5 12 3.5 12 3.5s-7.653 0-9.449.638A2.91 2.91 0 0 0 .502 6.186C0 8.01 0 12 0 12s0 3.99.502 5.814a2.91 2.91 0 0 0 2.049 2.048C4.347 20.5 12 20.5 12 20.5s7.653 0 9.449-.638a2.91 2.91 0 0 0 2.049-2.048C24 15.99 24 12 24 12s0-3.99-.502-5.814ZM9.75 15.568V8.432L15.568 12Z"/>
+          </svg> 
+        </a>
+      </li>
+      <li>
+        <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2" href="https://space.bilibili.com/376362605" target="_blank" rel="noopener noreferrer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 1024 1024">
+            <path d="M800 192h-72.3l59.9-128.7c4.6-10-0.2-21.7-10.2-26.3-10-4.6-21.7 0.2-26.3 10.2L683.8 192H340.2L272.9 47.2c-4.6-10-16.3-14.8-26.3-10.2s-14.8 16.3-10.2 26.3L296.3 192H224c-70.7 0-128 57.3-128 128v448c0 70.7 57.3 128 128 128h576c70.7 0 128-57.3 128-128V320c0-70.7-57.3-128-128-128zM896 768c0 53-43 96-96 96H224c-53 0-96-43-96-96V320c0-53 43-96 96-96h576c53 0 96 43 96 96v448zM384 640c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32zm256 0c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32z"/>
+            </svg>
+              
+        </a>
+      </li>
+    </ul>
+  
     </div>
     
   </div>
-
-  <div class="my-8">
-    <ul class="flex items-center space-x-4">
-      {{ range .Site.Menus.main }}
-        <li><a class="decoration-auto hover:underline font-semibold" href="{{ .URL }}">{{ .Name }}</a></li>
-      {{ end }}
-    </ul>
-  </div>
-
-  <div class="border-t pt-4">
-
-    <p class="text-sm">Copyright © {{ now.Year }}. All rights reserved. <a href="https://insertapps.com/en/" target="_blank" rel="noopener">Insertapps.com</a></p>
-
+  
+  
+  
+  <div class="border-t pt-4 flex justify-center items-center">
+    <p class="text-sm text-center">Copyright © 2025. All rights reserved. <a href="https://icstudio86.com/en/" target="_blank" rel="noopener">Igor Chen - icstudio86.com</a></p>
   </div>
   
-</div>
+  </div>
+  </footer>
