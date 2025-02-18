@@ -1,0 +1,28 @@
+baseURL = 'https://icstudio86.com/'
+languageCode = 'en-us'
+title = 'IC STUDIO'
+
+[[menus.main]]
+name = '主页'
+pageRef = '/'
+weight = 10
+
+[[menus.main]]
+name = '网站内容'
+pageRef = '网站内容'
+weight = 15
+
+[[menus.main]]
+name = '音乐内容'
+pageRef = '我可以怎么帮到你？'
+weight = 20
+
+[module]
+  [module.hugoVersion]
+    extended = false
+    min = "0.116.0"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
