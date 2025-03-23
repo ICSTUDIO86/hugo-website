@@ -8,6 +8,13 @@
     <language>en-us</language>
     <atom:link href="https://icstudio.club/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>会员专属视频目录</title>
+      <link>https://icstudio.club/%E6%88%91%E5%8F%AF%E4%BB%A5%E6%80%8E%E4%B9%88%E5%B8%AE%E5%88%B0%E4%BD%A0/%E4%BC%9A%E5%91%98%E4%B8%93%E5%B1%9E/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://icstudio.club/%E6%88%91%E5%8F%AF%E4%BB%A5%E6%80%8E%E4%B9%88%E5%B8%AE%E5%88%B0%E4%BD%A0/%E4%BC%9A%E5%91%98%E4%B8%93%E5%B1%9E/</guid>
+      <description>视频目录： 第一期：《你有在意过乐句的呼吸和发展吗？如何让你的即兴像说话一样？秘密揭发！》&#xA;第二期：《乐句长短&amp;amp;密度如何决定即兴造句的质量？即兴底层逻辑秘密揭发！》&#xA;订阅方法： 通过 Gumroad 订阅（2.88€/月） 订阅后，你将通过邮件收到所有专属会员视频！ 通过 Bilibili 包月充电（30¥/月） 你可以直接在 Bilibili 上查看并享受所有会员视频。 </description>
+    </item>
+    <item>
       <title>关于 IC STUDIO：我的音乐成长故事</title>
       <link>https://icstudio.club/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/guan-yu-ic-studio/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
@@ -69,13 +76,6 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://icstudio.club/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/donate/</guid>
       <description>你可以用一下任何一种方式来实际支持 IC Studio：&#xA;PayPal（贝宝）: https://paypal.me/icstudio86?country.x=IT&amp;amp;locale.x=en_US Bilibili 充电: https://space.bilibili.com/376362605 Iban：IT11Q3608105138291893191904；收款方：Igor Chen 免费支持 IC Studio 的方式：点赞，投币（如果你是 b站用户的话），关注，收藏，分享我在各平台分享的视频。 </description>
-    </item>
-    <item>
-      <title>会员专属视频目录</title>
-      <link>https://icstudio.club/%E6%88%91%E5%8F%AF%E4%BB%A5%E6%80%8E%E4%B9%88%E5%B8%AE%E5%88%B0%E4%BD%A0/%E4%BC%9A%E5%91%98%E4%B8%93%E5%B1%9E/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://icstudio.club/%E6%88%91%E5%8F%AF%E4%BB%A5%E6%80%8E%E4%B9%88%E5%B8%AE%E5%88%B0%E4%BD%A0/%E4%BC%9A%E5%91%98%E4%B8%93%E5%B1%9E/</guid>
-      <description>视频目录： 第一期：《你有在意过乐句的呼吸和发展吗？如何让你的即兴像说话一样？秘密揭发！》 第二期：《乐句长短&amp;amp;密度如何决定即兴造句的质量？即兴底层逻辑秘密揭发！》&#xA;订阅方法： 通过 Gumroad 订阅（2.88€/月） 订阅后，你将通过邮件收到所有专属会员视频！ 通过 Bilibili 包月充电（30¥/月） 你可以直接在 Bilibili 上查看并享受所有会员视频。 </description>
     </item>
   </channel>
 </rss>
