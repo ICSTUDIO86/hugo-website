@@ -1,0 +1,25 @@
+---
+title: "觉得传统的和声进行太无聊了吗？那就点进来吧！"
+slug: /reharmonization/
+description: 重配和声教学
+categories:
+  - 音乐内容
+image: images/reharmonization.png
+weight: 2
+tags:
+draft: false
+---
+这个系列会教你如何灵活的使用和声，怎么具体使用这些理论。在一些视频里还会提供一些实际的流行歌案例。
+
+## **和声功能替换**
+
+  {{< youtube 9Axr6uDPawY >}}
+  哔哩哔哩链接: https://www.bilibili.com/video/BV1K7z6YwEiq/
+## **借用和弦**
+
+  {{< youtube 0GVnQp5k-hQ >}}
+  哔哩哔哩链接: https://www.bilibili.com/video/BV1e5izYYErw/
+## **副属和弦**
+
+  {{< youtube 5vKJiyj1jec >}}
+  哔哩哔哩链接: https://www.bilibili.com/video/BV1FiqXYSEcf/

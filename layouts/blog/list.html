@@ -1,0 +1,58 @@
+{{ define "main" }}
+
+<div class="max-w-4xl mx-auto">
+  <!-- 页面标题 -->
+  <h1 id="title" class="text-4xl font-bold leading-normal text-center mb-8" style="color:#374151;">
+    {{ .Title }}
+  </h1>
+
+  {{ if .Content }}
+    <div class="prose lg:prose-lg max-w-none mb-8 mx-auto text-center">
+      {{ .Content }}
+    </div>
+  {{ end }}
+
+  <!-- Blog Posts List -->
+  {{ $paginator := .Paginate .RegularPages }}
+  
+  <div class="divide-y divide-zinc-200 mb-8">
+  {{ range $paginator.Pages }}
+    <article class="py-3 px-4">
+      <div class="max-w-2xl text-left">
+        <a href="{{ .Permalink }}" class="block group">
+          <!-- 标题 -->
+          <h2 class="text-1xl font-semibold group-hover:underline mb-2">{{ .Title }}</h2>
+          
+          <!-- 分类和日期 -->
+          <div class="flex items-center space-x-3 text-sm text-zinc-500">
+            <time>{{ .Date.Format "2006-01-02" }}</time>
+            {{ if .Params.categories }}
+              <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
+                {{ index .Params.categories 0 }}
+              </span>
+            {{ end }}
+          </div>
+        </a>
+      </div>
+    </article>
+  {{ end }}
+  </div>
+  <!-- 分页 -->
+  {{ if gt $paginator.TotalPages 1 }}
+    <nav class="flex justify-center items-center space-x-4 mt-8">
+      {{ if $paginator.HasPrev }}
+        <a href="{{ $paginator.Prev.URL }}" class="border rounded-full px-6 py-2 hover:bg-zinc-200">← 上一页</a>
+      {{ end }}
+      
+      <span class="text-zinc-500">
+        第 {{ $paginator.PageNumber }} 页，共 {{ $paginator.TotalPages }} 页
+      </span>
+      
+      {{ if $paginator.HasNext }}
+        <a href="{{ $paginator.Next.URL }}" class="border rounded-full px-6 py-2 hover:bg-zinc-200">下一页 →</a>
+      {{ end }}
+    </nav>
+  {{ end }}
+</div>
+
+{{ end }}

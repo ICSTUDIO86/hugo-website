@@ -1,0 +1,9 @@
+{{- $.Scratch.Add "index" slice -}}
+{{- range site.RegularPages -}}
+  {{- $date := "" -}}
+  {{- if .Date -}}
+    {{- $date = .Date.Format "2006-01-02" -}}
+  {{- end -}}
+  {{- $.Scratch.Add "index" (dict "title" .Title "href" .Permalink "content" (.Plain | htmlUnescape) "summary" .Summary "date" $date "type" .Type) -}}
+{{- end -}}
+{{- $.Scratch.Get "index" | jsonify -}}

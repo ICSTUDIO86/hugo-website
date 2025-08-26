@@ -1,6 +1,6 @@
-baseURL = 'https://icstudio86.com/'
+baseURL = 'https://icstudio.club/'
 languageCode = 'en-us'
-title = 'IC STUDIO'
+title = 'IC Studio'
 
 [[menus.main]]
 name = '主页'
@@ -8,13 +8,13 @@ pageRef = '/'
 weight = 10
 
 [[menus.main]]
-name = '网站内容'
-pageRef = '网站内容'
-weight = 15
+name = 'Blog'
+pageRef = 'blog'
+weight = 12
 
 [[menus.main]]
 name = '音乐内容'
-pageRef = '我可以怎么帮到你？'
+pageRef = '音乐内容'
 weight = 20
 
 [module]
@@ -26,3 +26,19 @@ weight = 20
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
+      
+[params]
+  logo = "images/ICLOGO.png"
+  favicon_icon = "ICLOGO.png"
+  description = "欢迎来到 IC Studio 官方网站！一个分享音乐学习过程与经验的平台。"
+  mainSections = ["blog", "音乐内容"]
+
+[pagination]
+  pagerSize = 6
+
+[taxonomies]
+  category = "categories"
+  tag = "tags"
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
