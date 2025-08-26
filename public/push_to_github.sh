@@ -1,25 +1,22 @@
 #!/bin/bash
 
-# 切换到脚本所在目录（保证路径正确）
-cd "$(dirname "$0")"
+# Navigate to the public directory (assuming public folder is here)
+cd /path/to/your/public/folder
 
-# 进入 public 文件夹
-cd public
-
-# 获取远端更新，避免冲突
+# Fetch the latest updates from GitHub to avoid conflicts
 git fetch origin
 
-# 合并远端更新
+# Merge remote changes (in case there were any) into the local branch
 git merge origin/main
 
-# 添加所有更改
+# Add all the files in the public directory
 git add .
 
-# 提交更改
+# Commit the changes with a message (you can modify this message)
 git commit -m "Update Hugo public folder"
 
-# 推送到 GitHub
-git push origin main
+# Push the changes to GitHub (force push if you want to overwrite remote changes)
+git push origin main --force
 
-# 显示状态
+# Optional: Print status after push
 echo "Successfully updated public folder on GitHub!"
