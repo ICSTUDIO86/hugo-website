@@ -9,8 +9,6 @@
       
       <h1 id="title" class="text-4xl font-bold leading-normal text-center">{{ .Title }}</h1>
 
-
-      
       <div id="writer" class="flex items-center space-x-4">
 
         {{- $name := .Site.Author.name -}}
@@ -70,8 +68,47 @@
     
 
     <footer id="content-footer" class="not-prose">
+      
+      {{ if eq .Section "blog" }}
+      <!-- 文章导航 -->
+      {{ $blogPages := where .Site.RegularPages "Section" "blog" }}
+      {{ $currentIndex := 0 }}
+      {{ range $index, $page := $blogPages }}
+        {{ if eq $page.RelPermalink $.RelPermalink }}
+          {{ $currentIndex = $index }}
+        {{ end }}
+      {{ end }}
+      
+      <nav class="flex justify-start items-start w-full text-base not-prose mt-8">
+        <!-- 上一篇 -->
+        <div class="text-left">
+          {{ if gt $currentIndex 0 }}
+            {{ $prevPost := index $blogPages (sub $currentIndex 1) }}
+            <a href="{{ $prevPost.Permalink }}" class="group block p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+              <div class="text-sm text-zinc-500 dark:text-zinc-400 mb-1">← 上一篇</div>
+              <div class="font-semibold text-zinc-800 dark:text-zinc-200 group-hover:underline max-w-xs truncate">{{ $prevPost.Title }}</div>
+            </a>
+          {{ end }}
+        </div>
+        <!-- 下一篇 -->
+        <div class="text-right ml-auto">
+          {{ if lt $currentIndex (sub (len $blogPages) 1) }}
+            {{ $nextPost := index $blogPages (add $currentIndex 1) }}
+            <a href="{{ $nextPost.Permalink }}" class="group block p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+              <div class="text-sm text-zinc-500 dark:text-zinc-400 mb-1">下一篇 →</div>
+              <div class="font-semibold text-zinc-800 dark:text-zinc-200 group-hover:underline max-w-xs truncate">{{ $nextPost.Title }}</div>
+            </a>
+          {{ end }}
+        </div>
+      </nav>
 
-
+      <!-- 返回blog列表 -->
+      <div class="text-center mt-8">
+        <a href="/blog/" class="inline-flex items-center px-6 py-3 text-blue-500 rounded-full transition-colors">
+          ← 返回Blog列表
+        </a>
+      </div>
+      {{ end }}
 
     </footer>
 

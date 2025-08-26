@@ -1,0 +1,96 @@
+{{ define "main" }}
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+
+  <!-- 主体内容（占 3/4 宽度，居中） -->
+  <div class="lg:col-span-3 lg:col-start-2">
+    <article class="prose lg:prose-lg mx-auto">
+
+      <!-- 文章头部 -->
+      <header class="not-prose">
+
+        <!-- 文章标题 -->
+        <h1 id="title" class="text-4xl font-bold leading-normal text-center mb-4">
+          {{ .Title }}
+        </h1>
+
+      <!-- 文章元信息 -->
+      <div class="flex flex-wrap items-center gap-2 text-sm text-zinc-500 mb-6">
+        <time datetime="{{ .Date }}">{{ .Date.Format "2006年1月2日" }}</time>
+        <span>；</span>
+        <span>阅读时间约 {{ math.Ceil (div (countwords .Content) 200.0) }} 分钟</span>
+      </div>
+
+
+        <!-- 目录（移动端显示在标题下面，大屏幕时浮动到左边） -->
+        {{ if .Params.toc }}
+          {{ if .TableOfContents }}
+            <div class="mb-8 lg:hidden">
+              <h3 class="text-lg font-semibold mb-2">目录</h3>
+              {{ .TableOfContents }}
+            </div>
+          {{ end }}
+        {{ end }}
+
+      </header>
+
+      <!-- 文章内容 -->
+      <div class="prose lg:prose-lg max-w-none mb-8">
+        {{ .Content }}
+      </div>
+<!-- 文章导航 -->
+    {{ $blogPages := where .Site.RegularPages "Section" "blog" }}
+    {{ $currentIndex := 0 }}
+    {{ range $index, $page := $blogPages }}
+      {{ if eq $page.RelPermalink $.RelPermalink }}
+        {{ $currentIndex = $index }}
+      {{ end }}
+    {{ end }}
+    
+    <nav class="flex justify-start items-start w-full text-base not-prose">
+      <!-- 上一篇 -->
+      <div class="text-left">
+        {{ if gt $currentIndex 0 }}
+          {{ $prevPost := index $blogPages (sub $currentIndex 1) }}
+          <a href="{{ $prevPost.Permalink }}" class="group block p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+            <div class="text-sm text-zinc-500 dark:text-zinc-400 mb-1">← 上一篇</div>
+            <div class="font-semibold text-zinc-800 dark:text-zinc-200 group-hover:underline max-w-xs truncate">{{ $prevPost.Title }}</div>
+          </a>
+        {{ end }}
+      </div>
+      <!-- 下一篇 -->
+      <div class="text-right ml-auto">
+        {{ if lt $currentIndex (sub (len $blogPages) 1) }}
+          {{ $nextPost := index $blogPages (add $currentIndex 1) }}
+          <a href="{{ $nextPost.Permalink }}" class="group block p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+            <div class="text-sm text-zinc-500 dark:text-zinc-400 mb-1">下一篇 →</div>
+            <div class="font-semibold text-zinc-800 dark:text-zinc-200 group-hover:underline max-w-xs truncate">{{ $nextPost.Title }}</div>
+          </a>
+        {{ end }}
+      </div>
+    </nav>
+
+
+      <!-- 返回blog列表 -->
+      <div class="text-center mt-8">
+        <a href="/blog/" class="inline-flex items-center px-6 py-3 text-blue-500 rounded-full transition-colors">
+          ← 返回Blog列表
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+  <!-- 左边的目录（大屏幕专属） -->
+  <div class="hidden lg:block lg:col-span-1">
+    {{ if .Params.toc }}
+      {{ if .TableOfContents }}
+        <div class="sticky top-4">
+          <h3 class="text-lg font-semibold text-center mb-4">目录</h3>
+          {{ .TableOfContents }}
+        </div>
+      {{ end }}
+    {{ end }}
+  </div>
+
+</div>
+{{ end }}

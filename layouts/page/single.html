@@ -1,40 +1,74 @@
 {{ define "main" }}
 
-<div class="py-14">
+<div class="grid grid-cols-1 md:grid-cols-1 gap-6 mb-14 justify-center">
 
-	<div class="mb-14">	
+  <article class="prose lg:prose-lg mx-auto">
 
-		<img class="rounded-3xl" src="{{ .Params.image | absURL }}" alt="{{ .Title }}">
+    <header class="not-prose">
+      
+      <h1 id="title" class="text-4xl font-bold leading-normal text-center">{{ .Title }}</h1>
 
-	</div>
+      <div id="writer" class="flex items-center space-x-4">
+
+        {{- $name := .Site.Author.name -}}
+
+        {{- with $avatar := resources.Get .Site.Author.avatar }}
+
+        <img class="w-12 h-12 bg-black rounded-full" src="{{ $avatar.Permalink }}" alt="{{ $name }} avatar" width="{{ $avatar.Width }}" height="{{ $avatar.Height }}">
+
+        {{ end -}}
+        
+        <ul class="flex items-center space-x-4 flex-nowrap whitespace-nowrap overflow-x-auto">
+          
 
 
-	<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        </ul>
 
-		<article class="md:col-span-2 prose lg:prose-lg">
+      </div>
+      
+    </header>
 
-		<header class="not-prose mb-14">
+    <figure id="featureimage" class="rounded-xl aspect-video">
 
-			<h1 class="text-4xl font-bold">{{ .Title }}</h1>
-		
-		</header>
+      {{- if .Params.image }}
 
-		<div id="content" class="prose lg:prose-lg">
+        {{- if ( strings.HasPrefix .Params.image "http" ) }}
 
-			{{- .Content -}}
-			
-		</div>
+          <img class="rounded-lg" src="{{ .Params.image }}" alt="{{ .Params.title }}">
 
-		</article>
+        {{- else }}
 
-		<aside class="md:col-span-1">
+          {{- with $image := resources.Get .Params.image }}
+            {{- $image := $image.Resize "750x" }}
+            <img class="rounded-lg" src="{{ $image.Permalink }}" alt="{{ .Params.title }}" width="{{ $image.Width }}" height="{{ $image.Height }}">
+          {{- end }}
 
-			{{- partial "content/aside.html" . -}}
-		
-		</aside>
+        {{- end }}
 
-	</div>
+      {{- end }}
+
+      {{- if ( isset .Params "caption" ) }}
+        <figcaption class="text-center italic text-xs">{{ .Params.caption }}</figcaption>
+      {{- end }}
+
+    </figure>
+
+    <div id="content" class="mb-14">
+
+      {{- .Content -}}
+
+      {{- if eq .File.BaseFileName "blog" -}}
+        {{- partial "blog-list-section.html" . -}}
+      {{- end -}}
+
+    </div>
+
+    <footer id="content-footer" class="not-prose">
+
+    </footer>
+
+  </article>
 
 </div>
-
+  
 {{ end }}

@@ -40,9 +40,25 @@
 
 <!-- / End feature post  -->
 
-<!-- Category Post -->
 
 <section class="mb-16">
+
+  <div class="flex items-center mb-6">
+    <h2 class="text-3xl md:text-4xl font-bold mr-auto">{{ "网站内容" | humanize }}</h2>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-y-10 gap-x-4">
+    {{ range where .Site.RegularPages "Params.tags" "intersect" (slice "web") | first 6 }}
+      {{- partial "content/card" . -}}
+    {{ end }}
+  </div>
+
+</section>
+
+
+<!-- Category Post -->
+
+<!--<section class="mb-16">
 
     {{ $cat := "网站内容" }}
 
@@ -52,9 +68,9 @@
 
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-y-10 gap-x-4">
 
-    {{ range where .Site.RegularPages "Params.categories" "intersect" (slice $cat ) | first 4 }}
+    {{ range where .Site.RegularPages "Params.categories" "intersect" (slice $cat ) | first 6 }}
 
       {{- partial "content/card" . -}}
 
@@ -62,11 +78,11 @@
 
     </div>
 
-  </section>
+  </section>-->
 
-  <section class="mb-16">
+  <section class="mb-16"> 
 
-    {{ $cat := "我可以怎么帮到你？" }}
+    {{ $cat := "音乐内容" }}
 
     <div class="flex items-center mb-6">
 
