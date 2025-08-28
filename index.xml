@@ -6,7 +6,7 @@
     <description>Recent content on IC Studio</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 27 Aug 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 25 Aug 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://icstudio.club/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>关于 IC Studio：我的音乐成长故事</title>
@@ -79,32 +79,11 @@
       <description>&lt;h2 id=&#34;商业合作私人课程&#34;&gt;商业合作/&lt;a href=&#34;https://icstudio.club/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/%E7%A7%81%E4%BA%BA%E8%AF%BE%E7%A8%8B/&#34;&gt;私人课程&lt;/a&gt;：&lt;/h2&gt;&#xA;&lt;div class=&#34;p-6 bg-zinc-100 rounded-3xl&#34;&gt;&#xA;  &lt;form action=&#34;https://formspree.io/f/mnnbadal&#34; method=&#34;POST&#34; class=&#34;flex flex-col space-y-4&#34;&gt;&#xA;    &lt;label class=&#34;block&#34;&gt;&#xA;      &lt;span class=&#34;text-gray-700&#34;&gt;你的名字：&lt;/span&gt;&#xA;      &lt;input type=&#34;text&#34; name=&#34;name&#34; class=&#34;p-2 border rounded w-full&#34;&gt;&#xA;    &lt;/label&gt;&#xA;    &lt;label class=&#34;block&#34;&gt;&#xA;      &lt;span class=&#34;text-gray-700&#34;&gt;你的邮箱：&lt;/span&gt;&#xA;      &lt;input type=&#34;email&#34; name=&#34;_replyto&#34; class=&#34;p-2 border rounded w-full&#34;&gt;&#xA;    &lt;/label&gt;&#xA;    &lt;label class=&#34;block&#34;&gt;&#xA;      &lt;span class=&#34;text-gray-700&#34;&gt;信息：&lt;/span&gt;&#xA;      &lt;textarea name=&#34;message&#34; class=&#34;p-2 border rounded w-full&#34; rows=&#34;5&#34;&gt;&lt;/textarea&gt;&#xA;    &lt;/label&gt;&#xA;    &lt;button type=&#34;submit&#34; class=&#34;bg-blue-500 text-white p-2 rounded&#34;&gt;发送&lt;/button&gt;&#xA;  &lt;/form&gt;&#xA;&lt;/div&gt;&#xA;&lt;p&gt;如果只是单纯聊天，欢迎你在我的视频底下留言，或者在哔哩哔哩私信我。（我尽量每条信息都读）&lt;/p&gt;</description>
     </item>
     <item>
-      <title>test 2</title>
-      <link>https://icstudio.club/blog/buhao/</link>
-      <pubDate>Wed, 27 Aug 2025 00:00:00 +0000</pubDate>
-      <guid>https://icstudio.club/blog/buhao/</guid>
-      <description>&lt;h2 id=&#34;test2&#34;&gt;test2&lt;/h2&gt;</description>
-    </item>
-    <item>
       <title>我开始学习 AI 了</title>
       <link>https://icstudio.club/blog/%E6%88%91%E5%BC%80%E5%A7%8B%E5%AD%A6%E4%B9%A0-ai-%E4%BA%86/</link>
       <pubDate>Mon, 25 Aug 2025 00:00:00 +0000</pubDate>
       <guid>https://icstudio.club/blog/%E6%88%91%E5%BC%80%E5%A7%8B%E5%AD%A6%E4%B9%A0-ai-%E4%BA%86/</guid>
       <description>&lt;h2 id=&#34;为什么开始-blog&#34;&gt;为什么开始 Blog？&lt;/h2&gt;&#xA;&lt;p&gt;这是我的第一篇博客文章。写下它，不只是想记录学习的过程，也是想把我遇到的新鲜事分享出来。我希望这个博客能像一个公开的“&lt;strong&gt;学习日志&lt;/strong&gt;”，既能让未来的我回头看看自己的成长。&lt;/p&gt;&#xA;&lt;h2 id=&#34;今天的新发现vibe-coding&#34;&gt;今天的新发现：Vibe Coding&lt;/h2&gt;&#xA;&lt;p&gt;这几天我接触到一个很新颖的概念——&lt;strong&gt;Vibe Coding&lt;/strong&gt;。简单来说，&lt;strong&gt;它就是用我们平时说话的方式（自然语言）与 AI 沟通，然后让它来帮你写代码&lt;/strong&gt;。&lt;/p&gt;&#xA;&lt;p&gt;传统编程的方式是：&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;要学习一大堆语法和命令&lt;/li&gt;&#xA;&lt;li&gt;要记各种看似“奇怪”的符号&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;而 Vibe Coding 更像是和电脑聊天。比如，我可以说：“帮我在网站加一个搜索功能”，然后 AI 就会自动生成代码，真正把功能搭建起来。这样学习编程就不再是枯燥的记忆过程，而是一个“和 AI 合作”的过程。没错，目前这个网站的全文搜索功能也是我靠 AI 搭建的。&lt;/p&gt;&#xA;&lt;h2 id=&#34;claude-code-的帮助&#34;&gt;Claude Code 的帮助&lt;/h2&gt;&#xA;&lt;p&gt;为了更好地学习，我开通了 &lt;strong&gt;Claude 的会员&lt;/strong&gt;，体验了它的一个强大功能：&lt;strong&gt;Claude Code&lt;/strong&gt;。&lt;/p&gt;&#xA;&lt;p&gt;它和普通的网页 AI 最大的不同是：&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;普通 AI 只能在网页上给我一些“答案”或建议，它更像一个被锁在房间里的 AI，没办法看到外面的信息，所以我得自已把这些上下文补充齐。但是由于我也不是编码天才，所以我也经常会漏掉重要的上下文，因此用网页版的 AI 来帮我写代码是非常有限的。&lt;/li&gt;&#xA;&lt;li&gt;Claude Code 能直接在我的电脑里写代码，帮我真正实现功能，而且因为有充足的上下文，它可以更有效率的解决 bug。&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;灵感来自哪里&#34;&gt;灵感来自哪里？&lt;/h2&gt;&#xA;&lt;p&gt;其实我开始正式学习 Vibe Coding，还受到了 &lt;strong&gt;Money xyz&lt;/strong&gt; 的影响。&lt;a href=&#34;https://www.youtube.com/watch?v=sgD0UKYQC6Y&#34;&gt;他的视频&lt;/a&gt;里不仅详细介绍了 Vibe Coding，还分享了对 AI 未来发展的远见。我看完之后很受启发，也让我更坚定地走上了这条学习之路。我强烈推荐你去看一下。（是的，他只在 YouTube 上发布视频。）&lt;/p&gt;&#xA;&lt;h2 id=&#34;我的感受&#34;&gt;我的感受&lt;/h2&gt;&#xA;&lt;p&gt;其实一开始这个官网也是在 AI 的帮助下完成的，但是由于我用的是网页版的 AI 所以网站上很多功能都没有得到完善（例如说没有全文搜索），但今天在体验了 Claude Code 之后我感到非常惊讶，因为作为一个代码小白我也能完善网站的搜索功能，我只需要告诉 Claude Code 一句 ”&lt;strong&gt;帮我完善网站的搜索功能&lt;/strong&gt;“ 就好了。我觉得自己不只是“在用 AI”，而是“和 AI 一起创造”。这种感觉很新鲜，就像我从一个单纯的用户，变成了一个真正的探索者。&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>test 1</title>
-      <link>https://icstudio.club/blog/test-3/</link>
-      <pubDate>Sun, 24 Aug 2025 00:00:00 +0000</pubDate>
-      <guid>https://icstudio.club/blog/test-3/</guid>
-      <description>&lt;h2 id=&#34;hi&#34;&gt;hi&lt;/h2&gt;</description>
-    </item>
-    <item>
-      <title>test 1</title>
-      <link>https://icstudio.club/blog/%E4%BD%A0%E5%A5%BD/</link>
-      <pubDate>Sun, 24 Aug 2025 00:00:00 +0000</pubDate>
-      <guid>https://icstudio.club/blog/%E4%BD%A0%E5%A5%BD/</guid>
-      <description>&lt;h2 id=&#34;test-1&#34;&gt;test 1&lt;/h2&gt;</description>
     </item>
   </channel>
 </rss>
