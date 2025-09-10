@@ -239,7 +239,7 @@
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="color: rgba(255,255,255,0.8); font-size: 14px;">金额</span>
-            <span style="color: white; font-size: 20px; font-weight: 600;">¥${paymentData.order_info?.money || '48.00'}</span>
+            <span style="color: white; font-size: 20px; font-weight: 600;">¥${paymentData.order_info?.money || '1.00'}</span>
           </div>
         </div>
       </div>
@@ -407,7 +407,13 @@
           setTimeout(() => {
             window.closePaymentModal();
             if (result.access_code) {
-              showAccessCode(result.access_code, result.order_info);
+              // 使用统一支付成功处理器（支持支付宝账号收集）
+              if (window.showUnifiedPaymentSuccess) {
+                window.showUnifiedPaymentSuccess(result.access_code, 'zpay-simple');
+              } else {
+                // 降级到原有显示方式
+                showAccessCode(result.access_code, result.order_info);
+              }
             } else {
               alert('支付成功！访问码正在生成中，请稍后刷新页面查看。');
             }
@@ -462,7 +468,7 @@
         },
         body: JSON.stringify({
           name: 'IC Studio 视奏工具授权',
-          money: '48.00',
+          money: '1.00',
           type: 'alipay'
         })
       });

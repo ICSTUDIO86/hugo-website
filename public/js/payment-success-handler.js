@@ -18,7 +18,7 @@
     }
     
     // 2. 统一的支付成功处理函数 - 暴露到全局
-    window.showUnifiedPaymentSuccess = function(accessCode, source = 'unified') {
+    window.showUnifiedPaymentSuccess = function(accessCode, source = 'unified', orderInfo = null) {
         // 先移除任何现有的界面
         removeAllPaymentOverlays();
         
@@ -34,251 +34,477 @@
         };
         localStorage.setItem('ic-premium-access', JSON.stringify(accessData));
         
-        // 创建统一的专业界面
-        const successHtml = `
-          <div class="payment-success-overlay" style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 99999;
-          ">
-            <div class="payment-success" style="
-              background: #f8f9fa;
-              padding: 30px;
-              border-radius: 16px;
-              border: 3px solid #27ae60;
-              text-align: center;
-              max-width: 400px;
-              width: 90%;
-              box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            ">
-              <h3 style="color: #27ae60; margin-bottom: 15px; font-size: 24px;">🎉 支付成功！</h3>
-              <div style="
-                background: #fff;
-                padding: 20px;
-                border-radius: 8px;
-                margin: 20px 0;
-                border: 2px dashed #27ae60;
-              ">
-                <p style="margin: 5px 0; font-weight: bold; font-size: 16px;">您的专属访问码：</p>
-                <p id="access-code-display" style="
-                  font-family: monospace;
-                  font-size: 20px;
-                  color: #2c3e50;
-                  font-weight: bold;
-                  letter-spacing: 2px;
-                  margin: 15px 0;
-                ">${accessCode}</p>
-                <button id="copy-access-code-btn" style="
-                  margin: 10px 5px;
-                  padding: 10px 20px;
-                  background: #667eea;
-                  color: white;
-                  border: none;
-                  border-radius: 6px;
-                  cursor: pointer;
-                  font-weight: 600;
-                  font-size: 14px;
-                  transition: all 0.3s ease;
-                ">
-                  📋 复制访问码
-                </button>
-              </div>
-              <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
-                请保存好此访问码，以便你可以在别的设备上使用产品。 
-              </p>
-              
-              <!-- 支付宝账号收集表单 -->
-              <div id="account-collection-form" style="
-                background: #fff;
-                padding: 15px;
-                border-radius: 8px;
-                margin: 15px 0;
-                border: 1px solid #e0e0e0;
-              ">
-                <p style="margin: 5px 0; font-weight: bold; font-size: 14px; color: #2c3e50;">
-                  📱 为方便将来找回访问码，请提供您的支付宝账号：
-                </p>
-                <input type="text" id="alipay-account-input" placeholder="手机号或邮箱" style="
-                  width: 100%;
-                  padding: 8px 12px;
-                  margin: 10px 0;
-                  border: 1px solid #ddd;
-                  border-radius: 4px;
-                  font-size: 14px;
-                  box-sizing: border-box;
-                ">
-                <input type="text" id="phone-input" placeholder="手机号（可选）" style="
-                  width: 100%;
-                  padding: 8px 12px;
-                  margin: 5px 0;
-                  border: 1px solid #ddd;
-                  border-radius: 4px;
-                  font-size: 14px;
-                  box-sizing: border-box;
-                ">
-                <button id="save-account-btn" style="
-                  width: 100%;
-                  margin: 10px 0 5px 0;
-                  padding: 8px 15px;
-                  background: #27ae60;
-                  color: white;
-                  border: none;
-                  border-radius: 4px;
-                  cursor: pointer;
-                  font-size: 12px;
-                  transition: all 0.3s ease;
-                ">
-                  💾 保存账号信息
-                </button>
-                <p style="font-size: 11px; color: #999; margin: 5px 0 0 0; text-align: center;">
-                  * 此信息仅用于访问码找回，我们承诺保护您的隐私
-                </p>
-              </div>
-              
-              <div style="margin-top: 20px;">
-                <button id="start-using-btn" style="
-                  display: inline-block;
-                  background: #667eea;
-                  color: white;
-                  padding: 12px 25px;
-                  border: none;
-                  border-radius: 8px;
-                  cursor: pointer;
-                  font-weight: 600;
-                  font-size: 16px;
-                  transition: all 0.3s ease;
-                ">
-                  开始使用
-                </button>
-                <button id="skip-account-btn" style="
-                  display: inline-block;
-                  background: #95a5a6;
-                  color: white;
-                  padding: 12px 25px;
-                  border: none;
-                  border-radius: 8px;
-                  cursor: pointer;
-                  font-weight: 600;
-                  font-size: 16px;
-                  margin-left: 10px;
-                  transition: all 0.3s ease;
-                ">
-                  跳过
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-
-        // 添加到页面
-        document.body.insertAdjacentHTML('beforeend', successHtml);
-        
-        // 绑定复制功能
-        document.getElementById('copy-access-code-btn').onclick = function() {
-            navigator.clipboard.writeText(accessCode).then(() => {
-                const btn = this;
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '✅ 已复制！';
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                }, 2000);
-            }).catch(() => {
-                // 降级方案
-                const codeElement = document.getElementById('access-code-display');
-                const range = document.createRange();
-                range.selectNodeContents(codeElement);
-                const selection = window.getSelection();
-                selection.removeAllRanges();
-                selection.addRange(range);
-            });
-        };
-        
-        // 绑定保存账号功能
-        document.getElementById('save-account-btn').onclick = async function() {
-            const alipayAccountInput = document.getElementById('alipay-account-input');
-            const phoneInput = document.getElementById('phone-input');
-            const saveBtn = this;
-            
-            const alipayAccount = alipayAccountInput.value.trim();
-            const phone = phoneInput.value.trim();
-            
-            if (!alipayAccount) {
-                alert('请输入支付宝账号（手机号或邮箱）');
-                alipayAccountInput.focus();
-                return;
+        // 获取订单详细信息
+        async function getOrderInfo() {
+            if (orderInfo) {
+                return orderInfo;
             }
-            
-            // 验证支付宝账号格式
-            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            const phonePattern = /^1[3-9]\d{9}$/;
-            
-            if (!emailPattern.test(alipayAccount) && !phonePattern.test(alipayAccount)) {
-                alert('请输入有效的邮箱地址或手机号');
-                alipayAccountInput.focus();
-                return;
-            }
-            
-            const originalText = saveBtn.innerHTML;
-            saveBtn.innerHTML = '💾 保存中...';
-            saveBtn.disabled = true;
             
             try {
-                // 调用云函数收集账号信息
-                const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/collectUserAccount', {
+                console.log('🔍 正在获取订单详细信息...');
+                const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/checkOrderDetails', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Request-Source': 'IC-Studio-Payment-Success'
                     },
                     body: JSON.stringify({
-                        action: 'collect',
-                        alipay_account: alipayAccount,
-                        access_code: accessCode,
-                        phone: phone || null,
-                        timestamp: new Date().toISOString()
+                        access_code: accessCode
                     })
                 });
                 
                 const result = await response.json();
-                
-                if (result.success) {
-                    saveBtn.innerHTML = '✅ 已保存！';
-                    saveBtn.style.background = '#27ae60';
-                    
-                    // 隐藏表单
-                    document.getElementById('account-collection-form').style.display = 'none';
-                    
-                    console.log('✅ 用户账号信息已保存:', result);
-                } else {
-                    throw new Error(result.error || '保存失败');
+                if (result.success && result.orders && result.orders.length > 0) {
+                    console.log('✅ 订单信息获取成功');
+                    return result.orders[0];
                 }
             } catch (error) {
-                console.error('❌ 保存账号信息失败:', error);
-                saveBtn.innerHTML = originalText;
-                saveBtn.disabled = false;
-                alert('保存失败，请稍后重试。您仍可以正常使用产品。');
+                console.log('⚠️ 获取订单信息失败:', error);
             }
-        };
+            
+            return null;
+        }
         
-        // 绑定跳过功能
-        document.getElementById('skip-account-btn').onclick = function() {
-            // 隐藏表单
-            document.getElementById('account-collection-form').style.display = 'none';
-            console.log('ℹ️ 用户选择跳过账号收集');
-        };
+        // 异步创建和显示支付成功界面
+        async function createAndShowPaymentSuccess() {
+            // 获取订单详细信息
+            const orderData = await getOrderInfo();
+            
+            // 准备显示数据
+            const orderNumber = orderData?.out_trade_no || '获取中...';
+            const alipayAccount = orderData?.alipay_account || 
+                                 orderData?.alipay_phone || 
+                                 orderData?.alipay_email || 
+                                 (orderData?.zpay_trade_no ? `交易号: ${orderData.zpay_trade_no.substring(0, 10)}...` : '通过FAQ找回');
+            
+            const successHtml = `
+              <div class="payment-success-overlay" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 99999;
+              ">
+                <div class="payment-success" style="
+                  background: #f8f9fa;
+                  padding: 30px;
+                  border-radius: 16px;
+                  border: 3px solid #27ae60;
+                  text-align: center;
+                  max-width: 450px;
+                  width: 95%;
+                  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                ">
+                  <h3 style="color: #27ae60; margin-bottom: 15px; font-size: 24px;">🎉 支付成功！</h3>
+                  
+                  <!-- 访问码信息 -->
+                  <div style="
+                    background: #fff;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                    border: 2px dashed #27ae60;
+                  ">
+                    <p style="margin: 5px 0; font-weight: bold; font-size: 16px;">您的专属访问码：</p>
+                    <p id="access-code-display" style="
+                      font-family: monospace;
+                      font-size: 20px;
+                      color: #2c3e50;
+                      font-weight: bold;
+                      letter-spacing: 2px;
+                      margin: 15px 0;
+                    ">${accessCode}</p>
+                    <button id="copy-access-code-btn" style="
+                      margin: 10px 5px;
+                      padding: 10px 20px;
+                      background: #667eea;
+                      color: white;
+                      border: none;
+                      border-radius: 6px;
+                      cursor: pointer;
+                      font-weight: 600;
+                      font-size: 14px;
+                      transition: all 0.3s ease;
+                    ">
+                      📋 复制访问码
+                    </button>
+                  </div>
+                  
+                  <!-- 订单和支付宝信息 -->
+                  <div style="
+                    background: #fff;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 15px 0;
+                    border: 1px solid #e9ecef;
+                    text-align: left;
+                  ">
+                    <div style="margin-bottom: 10px;">
+                      <span style="font-weight: bold; color: #2c3e50;">📋 订单号：</span>
+                      <span style="font-family: monospace; font-size: 12px; color: #666;">${orderNumber}</span>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                      <span style="font-weight: bold; color: #2c3e50;">💳 支付宝：</span>
+                      <span style="font-size: 12px; color: #666;">${alipayAccount}</span>
+                    </div>
+                  </div>
+                  
+                  <!-- 安装包下载 -->
+                  <div style="
+                    background: #e8f4f8;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 15px 0;
+                    border: 1px solid #17a2b8;
+                  ">
+                    <p style="margin: 5px 0; font-weight: bold; font-size: 14px; color: #17a2b8;">
+                      📦 安装包下载
+                    </p>
+                    <div id="download-section">
+                      <button id="show-download-options-btn" style="
+                        margin: 10px 5px;
+                        padding: 12px 20px;
+                        background: #17a2b8;
+                        color: white;
+                        border: none;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 14px;
+                        transition: all 0.3s ease;
+                        width: 100%;
+                      ">
+                        💻 选择安装包
+                      </button>
+                      
+                      <!-- 下载选项面板（初始隐藏） -->
+                      <div id="download-options-panel" style="display: none; margin-top: 10px;">
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; text-align: left;">
+                          <p style="font-weight: bold; font-size: 13px; margin: 0 0 10px 0; color: #495057;">
+                            请选择您的操作系统：
+                          </p>
+                          
+                          <!-- Windows -->
+                          <div style="margin-bottom: 12px;">
+                            <p style="font-weight: bold; font-size: 12px; margin: 0 0 5px 0; color: #dc3545;">
+                              🖥️ Windows
+                            </p>
+                            <button class="download-btn" data-platform="windows-exe" style="
+                              margin: 2px 5px 2px 0;
+                              padding: 8px 12px;
+                              background: #dc3545;
+                              color: white;
+                              border: none;
+                              border-radius: 4px;
+                              cursor: pointer;
+                              font-size: 11px;
+                              font-weight: 500;
+                            ">
+                              标准版 (140.9MB)
+                            </button>
+                            <button class="download-btn" data-platform="windows-x64" style="
+                              margin: 2px 5px 2px 0;
+                              padding: 8px 12px;
+                              background: #dc3545;
+                              color: white;
+                              border: none;
+                              border-radius: 4px;
+                              cursor: pointer;
+                              font-size: 11px;
+                              font-weight: 500;
+                            ">
+                              优化版 (73.2MB)
+                            </button>
+                          </div>
+                          
+                          <!-- macOS -->
+                          <div style="margin-bottom: 12px;">
+                            <p style="font-weight: bold; font-size: 12px; margin: 0 0 5px 0; color: #6f42c1;">
+                              🍎 macOS
+                            </p>
+                            <button class="download-btn" data-platform="macos-x64-dmg" style="
+                              margin: 2px 5px 2px 0;
+                              padding: 8px 12px;
+                              background: #6f42c1;
+                              color: white;
+                              border: none;
+                              border-radius: 4px;
+                              cursor: pointer;
+                              font-size: 11px;
+                              font-weight: 500;
+                            ">
+                              Intel (DMG)
+                            </button>
+                            <button class="download-btn" data-platform="macos-x64-zip" style="
+                              margin: 2px 5px 2px 0;
+                              padding: 8px 12px;
+                              background: #6f42c1;
+                              color: white;
+                              border: none;
+                              border-radius: 4px;
+                              cursor: pointer;
+                              font-size: 11px;
+                              font-weight: 500;
+                            ">
+                              Intel (ZIP)
+                            </button>
+                            <button class="download-btn" data-platform="macos-arm64-zip" style="
+                              margin: 2px 5px 2px 0;
+                              padding: 8px 12px;
+                              background: #6f42c1;
+                              color: white;
+                              border: none;
+                              border-radius: 4px;
+                              cursor: pointer;
+                              font-size: 11px;
+                              font-weight: 500;
+                            ">
+                              M1/M2/M3 (ZIP)
+                            </button>
+                          </div>
+                          
+                          <!-- Linux -->
+                          <div style="margin-bottom: 8px;">
+                            <p style="font-weight: bold; font-size: 12px; margin: 0 0 5px 0; color: #fd7e14;">
+                              🐧 Linux
+                            </p>
+                            <button class="download-btn" data-platform="linux-deb" style="
+                              margin: 2px 5px 2px 0;
+                              padding: 8px 12px;
+                              background: #fd7e14;
+                              color: white;
+                              border: none;
+                              border-radius: 4px;
+                              cursor: pointer;
+                              font-size: 11px;
+                              font-weight: 500;
+                            ">
+                              DEB包 (70.3MB)
+                            </button>
+                            <button class="download-btn" data-platform="linux-appimage" style="
+                              margin: 2px 5px 2px 0;
+                              padding: 8px 12px;
+                              background: #fd7e14;
+                              color: white;
+                              border: none;
+                              border-radius: 4px;
+                              cursor: pointer;
+                              font-size: 11px;
+                              font-weight: 500;
+                            ">
+                              AppImage (77.6MB)
+                            </button>
+                          </div>
+                          
+                          <p style="font-size: 10px; color: #6c757d; margin: 8px 0 0 0; line-height: 1.3;">
+                            💡 <strong>芯片选择说明：</strong><br>
+                            • Intel 芯片 Mac 选择 x64 版本<br>
+                            • Apple Silicon (M1/M2/M3) 选择 arm64 版本
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- 温馨提示 -->
+                  <div id="tip-section" style="
+                    background: #f8f9fa;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 15px 0;
+                    border: 1px solid #e9ecef;
+                  ">
+                    <p style="margin: 5px 0; font-weight: bold; font-size: 14px; color: #2c3e50;">
+                      💡 温馨提示
+                    </p>
+                    <p style="margin: 5px 0; font-size: 12px; color: #666; line-height: 1.4;">
+                      • 访问码已自动保存到您的设备<br>
+                      • 如需在其他设备使用，请复制保存访问码<br>
+                      • 遗失访问码可通过网站FAQ找回
+                    </p>
+                  </div>
+                  
+                  <div style="margin-top: 20px;">
+                    <button id="start-using-btn" style="
+                      display: inline-block;
+                      background: #667eea;
+                      color: white;
+                      padding: 12px 25px;
+                      border: none;
+                      border-radius: 8px;
+                      cursor: pointer;
+                      font-weight: 600;
+                      font-size: 16px;
+                      transition: all 0.3s ease;
+                      width: 200px;
+                    ">
+                      🎯 开始使用
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+
+            // 添加到页面
+            document.body.insertAdjacentHTML('beforeend', successHtml);
+            
+            return orderData;
+        }
         
-        // 绑定开始使用功能
-        document.getElementById('start-using-btn').onclick = function() {
-            document.querySelector('.payment-success-overlay').remove();
-            window.location.href = '/tools/sight-reading-generator.html';
-        };
+        // 创建和显示界面
+        createAndShowPaymentSuccess().then((orderData) => {
+            // 绑定复制功能
+            document.getElementById('copy-access-code-btn').onclick = function() {
+                navigator.clipboard.writeText(accessCode).then(() => {
+                    const btn = this;
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '✅ 已复制！';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                    }, 2000);
+                }).catch(() => {
+                    // 降级方案
+                    const codeElement = document.getElementById('access-code-display');
+                    const range = document.createRange();
+                    range.selectNodeContents(codeElement);
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                });
+            };
+            
+            // 绑定显示下载选项按钮
+            document.getElementById('show-download-options-btn').onclick = function() {
+                const panel = document.getElementById('download-options-panel');
+                const btn = this;
+                
+                if (panel.style.display === 'none') {
+                    panel.style.display = 'block';
+                    btn.innerHTML = '📦 收起选项';
+                } else {
+                    panel.style.display = 'none';
+                    btn.innerHTML = '💻 选择安装包';
+                }
+            };
+            
+            // 绑定各个下载按钮的功能
+            document.querySelectorAll('.download-btn').forEach(btn => {
+                btn.onclick = async function() {
+                    const platform = this.getAttribute('data-platform');
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '⏳ 获取链接...';
+                    
+                    try {
+                        console.log(`📥 开始下载 ${platform} 版本`);
+                        
+                        // 调用下载云函数
+                        const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/downloadInstaller', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Request-Source': 'IC-Studio-Payment-Success'
+                            },
+                            body: JSON.stringify({
+                                access_code: accessCode,
+                                platform: platform
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        console.log('📥 下载响应:', result);
+                        
+                        if (result.success && result.data && result.data.download_url) {
+                            // 创建下载链接
+                            const link = document.createElement('a');
+                            link.href = result.data.download_url;
+                            link.download = result.data.package_info.name;
+                            link.style.display = 'none';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            
+                            // 显示成功状态
+                            this.innerHTML = '✅ 下载开始';
+                            console.log(`🎉 ${result.data.package_info.name} 下载已开始`);
+                            
+                            // 显示下载信息
+                            const tipSection = document.getElementById('tip-section');
+                            if (tipSection) {
+                                tipSection.innerHTML = `
+                                    <p style="margin: 5px 0; font-weight: bold; font-size: 14px; color: #28a745;">
+                                        ✅ 下载已开始
+                                    </p>
+                                    <p style="margin: 5px 0; font-size: 12px; color: #666; line-height: 1.4;">
+                                        • 正在下载：${result.data.package_info.name}<br>
+                                        • 文件大小：${result.data.package_info.size}<br>
+                                        • 下载链接有效期：24小时<br>
+                                        • 如下载失败，请刷新页面重试
+                                    </p>
+                                `;
+                            }
+                        } else {
+                            throw new Error(result.error || '获取下载链接失败');
+                        }
+                    } catch (error) {
+                        console.error('❌ 下载失败:', error);
+                        this.innerHTML = '❌ 下载失败';
+                        alert('下载失败：' + error.message + '\n\n请检查网络连接或稍后重试。');
+                    }
+                    
+                    // 3秒后恢复按钮文本
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                    }, 3000);
+                };
+            });
+            
+            // 绑定开始使用功能
+            document.getElementById('start-using-btn').onclick = function() {
+                document.querySelector('.payment-success-overlay').remove();
+                window.location.href = '/tools/sight-reading-generator.html';
+            };
+            
+            // 自动尝试收集支付信息（后台静默执行）
+            setTimeout(async () => {
+                try {
+                    console.log('🔄 尝试自动分析支付数据...');
+                    const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/autoExtractAlipayAccount', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Request-Source': 'IC-Studio-Auto-Extract'
+                        },
+                        body: JSON.stringify({
+                            access_code: accessCode,
+                            timestamp: new Date().toISOString(),
+                            source: 'payment_success_auto'
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    console.log('🔍 自动分析结果:', result);
+                    
+                    if (result.success) {
+                        console.log('✅ 支付数据分析完成，用户可通过FAQ找回访问码');
+                    } else {
+                        console.log('⚠️ 自动分析失败，用户仍可通过FAQ找回访问码');
+                    }
+                } catch (error) {
+                    console.log('⚠️ 自动分析过程出错:', error);
+                    // 静默失败，不影响用户体验
+                }
+            }, 1000);
+            
+        }).catch((error) => {
+            console.error('❌ 创建支付成功界面失败:', error);
+            // 降级处理：显示简单的成功提示
+            alert('支付成功！访问码：' + accessCode);
+        });
         
         console.log('✅ 统一支付成功界面已显示，访问码:', accessCode);
     };

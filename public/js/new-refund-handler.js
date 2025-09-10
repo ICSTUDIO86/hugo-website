@@ -9,8 +9,8 @@
     
     console.log('🔄 新的退款处理器初始化...');
     
-    // 云函数API端点 - 使用已有的markRefund端点
-    const REFUND_API_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/markRefund';
+    // 云函数API端点 - 使用现有的refundByAccessCode端点
+    const REFUND_API_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/refundByAccessCode';
     
     /**
      * 显示退款弹窗（只支持访问码）

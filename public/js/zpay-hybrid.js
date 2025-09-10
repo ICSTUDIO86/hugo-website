@@ -20,7 +20,7 @@ class ZPayHybrid {
     this.productInfo = {
       productId: 'IC-SIGHT-READING-TOOL',
       productName: 'IC Studio 视奏工具',
-      price: 48.00,
+      price: 1.00,
       currency: 'CNY',
       description: '专业级视奏旋律生成器 - 永久使用权'
     };

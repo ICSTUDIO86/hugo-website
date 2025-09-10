@@ -9,7 +9,7 @@ class RealAlipayPayment {
       gateway: 'https://zpayz.cn/submit.php',
       merchantId: '2025090607243839',
       merchantKey: 'UoA5vDBCe51EyVzdK2Fu2udBO1SAadjN',
-      amount: 48.00,
+      amount: 1.00,
       currency: 'CNY',
       productName: 'IC Studio 视奏工具',
       productDescription: '专业级音乐视奏训练工具 - 终身访问'
