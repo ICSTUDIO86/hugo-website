@@ -1,19 +1,106 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
 <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
-  <meta charset="utf-8">
+  
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
 
 <title>Tags - IC Studio </title>
-
 <meta name="description" content="欢迎来到 IC Studio 官方网站！一个分享音乐学习过程与经验的平台。">
-    <link rel="stylesheet" href="/css/main.css">
+<meta name="author" content="IC Studio">
 
 
-<link rel="icon" type="image/png" href="https://icstudio.club/ICLOGO.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/ICLOGO.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/ICLOGO.png">
-<link rel="icon" type="image/png" sizes="64x64" href="/ICLOGO.png">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+
+
+
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#667eea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+
+
+<link rel="preload" href="/images/ICLOGO.png" as="image">
+
+
+
+
+
+
+
+
+<script>
+
+(function() {
+  'use strict';
+  
+  
+  const fontLink = document.createElement('link');
+  fontLink.rel = 'stylesheet';
+  fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
+  fontLink.media = 'print';
+  fontLink.onload = function() { this.media = 'all'; };
+  document.head.appendChild(fontLink);
+  
+  
+  document.addEventListener('mouseover', function(e) {
+    const link = e.target.closest('a[href]');
+    if (link && link.hostname === window.location.hostname) {
+      const prefetch = document.createElement('link');
+      prefetch.rel = 'prefetch';
+      prefetch.href = link.href;
+      document.head.appendChild(prefetch);
+    }
+  }, { once: true });
+  
+  
+  if ('performance' in window) {
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const perfData = performance.getEntriesByType('navigation')[0];
+        if (perfData && perfData.loadEventEnd) {
+          console.log('Page Load Time:', Math.round(perfData.loadEventEnd - perfData.navigationStart) + 'ms');
+        }
+      }, 100);
+    });
+  }
+})();
+</script>
+
+
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#667eea">
+
+
+
+
+    
+    <link rel="stylesheet" href="/css/main.css?v=1757522630">
+
+  <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
 
 <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
 
@@ -62,6 +149,9 @@
       <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/blog/">Blog</a>
     </li>
     <li class="my-2">
+      <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/tools/sight-reading-generator.html">IC 视奏工具</a>
+    </li>
+    <li class="my-2">
       <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/">音乐内容</a>
     </li>
     </ul>
@@ -106,6 +196,15 @@
   				<path d="M13.997 5.17a5 5 0 0 0-8.101-4.09A5 5 0 0 0 1.28 9.342a5 5 0 0 0 8.336 5.109 3.5 3.5 0 0 0 5.201-4.065 3.001 3.001 0 0 0-.822-5.216zm-1-.034a1 1 0 0 0 .668.977 2.001 2.001 0 0 1 .547 3.478 1 1 0 0 0-.341 1.113 2.5 2.5 0 0 1-3.715 2.905 1 1 0 0 0-1.262.152 4 4 0 0 1-6.67-4.087 1 1 0 0 0-.2-1 4 4 0 0 1 3.693-6.61 1 1 0 0 0 .8-.2 4 4 0 0 1 6.48 3.273z"/>
 			</svg>
       		<span>Feature</span></a>
+  		</li>
+
+      <li class="relative hover:bg-zinc-200 border py-6 px-8 rounded-2xl group">
+      	<a class="insert-link flex items-center space-x-4" href="/tags/music/">
+      		<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="group-hover:animate-spin" viewBox="0 0 16 16">
+  				<path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+  				<path d="M13.997 5.17a5 5 0 0 0-8.101-4.09A5 5 0 0 0 1.28 9.342a5 5 0 0 0 8.336 5.109 3.5 3.5 0 0 0 5.201-4.065 3.001 3.001 0 0 0-.822-5.216zm-1-.034a1 1 0 0 0 .668.977 2.001 2.001 0 0 1 .547 3.478 1 1 0 0 0-.341 1.113 2.5 2.5 0 0 1-3.715 2.905 1 1 0 0 0-1.262.152 4 4 0 0 1-6.67-4.087 1 1 0 0 0-.2-1 4 4 0 0 1 3.693-6.61 1 1 0 0 0 .8-.2 4 4 0 0 1 6.48 3.273z"/>
+			</svg>
+      		<span>Music</span></a>
   		</li>
 
       
@@ -173,8 +272,11 @@
 
 
 <script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.stemmer.support.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.zh.js"></script>
       <script src="/js/search.js"></script>
+
+
   
 </body>
 </html>

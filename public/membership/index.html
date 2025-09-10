@@ -1,19 +1,106 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
 <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
-  <meta charset="utf-8">
+  
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
 
 <title>IC Membership - IC Studio </title>
-
 <meta name="description" content="加入 IC Studio 的会员，解锁专属会员视频！">
-    <link rel="stylesheet" href="/css/main.css">
+<meta name="author" content="IC Studio">
 
 
-<link rel="icon" type="image/png" href="https://icstudio.club/ICLOGO.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/ICLOGO.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/ICLOGO.png">
-<link rel="icon" type="image/png" sizes="64x64" href="/ICLOGO.png">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+
+
+
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#667eea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+
+
+<link rel="preload" href="/images/ICLOGO.png" as="image">
+
+
+
+
+
+
+
+
+<script>
+
+(function() {
+  'use strict';
+  
+  
+  const fontLink = document.createElement('link');
+  fontLink.rel = 'stylesheet';
+  fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
+  fontLink.media = 'print';
+  fontLink.onload = function() { this.media = 'all'; };
+  document.head.appendChild(fontLink);
+  
+  
+  document.addEventListener('mouseover', function(e) {
+    const link = e.target.closest('a[href]');
+    if (link && link.hostname === window.location.hostname) {
+      const prefetch = document.createElement('link');
+      prefetch.rel = 'prefetch';
+      prefetch.href = link.href;
+      document.head.appendChild(prefetch);
+    }
+  }, { once: true });
+  
+  
+  if ('performance' in window) {
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const perfData = performance.getEntriesByType('navigation')[0];
+        if (perfData && perfData.loadEventEnd) {
+          console.log('Page Load Time:', Math.round(perfData.loadEventEnd - perfData.navigationStart) + 'ms');
+        }
+      }, 100);
+    });
+  }
+})();
+</script>
+
+
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#667eea">
+
+
+
+
+    
+    <link rel="stylesheet" href="/css/main.css?v=1757522630">
+
+  <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
 
 <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
 
@@ -62,6 +149,9 @@
       <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/blog/">Blog</a>
     </li>
     <li class="my-2">
+      <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/tools/sight-reading-generator.html">IC 视奏工具</a>
+    </li>
+    <li class="my-2">
       <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/">音乐内容</a>
     </li>
     </ul>
@@ -78,32 +168,33 @@
 </div>
 
 </div></header>
-  <main class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-
-<div class="grid grid-cols-1 md:grid-cols-1 gap-6 mb-14 justify-center">
+  <main class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8"><div id="breadcrumb" class="max-w-7xl mx-auto py-8">
+    <ul class="flex space-x-4 text-sm text-zinc-500">
+        <li class="after:content-['❯'] after:ml-4 after:opacity-30 last:after:content-none uppercase">
+            <a href="http://localhost:1313/">IC Studio</a>
+        </li>
+    </ul>
+</div><div class="grid grid-cols-1 md:grid-cols-1 gap-6 mb-14 justify-center">
 
   <article class="prose lg:prose-lg mx-auto">
 
     <header class="not-prose">
       
-      <h1 id="title" class="text-4xl font-bold leading-normal text-center">IC Membership</h1>
+      <h1 id="title" class="text-4xl font-bold leading-normal text-center mb-4">IC Membership</h1>
 
-      <div id="writer" class="flex items-center space-x-4"><ul class="flex items-center space-x-4 flex-nowrap whitespace-nowrap overflow-x-auto">
-          
-
-
-        </ul>
-
-      </div>
+      
+      
+      
       
     </header>
 
     <figure id="featureimage" class="rounded-xl aspect-video">
-            <img class="rounded-lg" src="http://localhost:1313/images/%E4%BC%9A%E5%91%98_hu5250007537651902337.png" alt="" width="750" height="422">
+            <img class="rounded-lg" src="http://localhost:1313/images/%E4%BC%9A%E5%91%98_hu_5cd7eeb6eeb0d267.png" alt="" width="750" height="422">
 
     </figure>
 
-    <div id="content" class="mb-14"><h2 id="加入会员-">加入会员 🎵</h2>
+    <div id="content" class="mb-14">
+      <h2 id="加入会员-">加入会员 🎵</h2>
 <p>感谢你对 IC Studio 的支持！为了提供更优质、更有深度的内容，我们对频道更新频率做出了调整。现在，IC Studio 的发布频率变为<strong>每月三个视频</strong>，其中一个会被设置为会员视频。每月的专属会员视频将带来独特的内容，只对会员开放观看。</p>
 <p>会员专属内容将包括但不限于：</p>
 <ul>
@@ -126,13 +217,64 @@
 <li>通过 <a href="https://www.youtube.com/channel/UC7XUeUpBAZhdXQbRP32AHjQ/join">YouTube</a> 订阅（4.99€/月）
 订阅后，你将通过邮件收到<strong>所有</strong>会员视频！</li>
 </ul>
-</div>
+
+
+      
+
+    </div>
+
+    
 
     <footer id="content-footer" class="not-prose">
+      
+      
+      
+      
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+
+
+      
+      <div class="text-center mt-8">
+        <a href="http://localhost:1313/" class="inline-flex items-center px-6 py-3 text-blue-500 rounded-full transition-colors">
+          ← 返回IC Studio
+        </a>
+      </div>
+      
 
     </footer>
 
   </article>
+
+
+  </aside>
 
 </div>
   
@@ -192,8 +334,11 @@
 
 
 <script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.stemmer.support.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.zh.js"></script>
       <script src="/js/search.js"></script>
+
+
   
 </body>
 </html>

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Navigate to the public directory (assuming public folder is here)
-cd /path/to/your/public/folder
+cd "/Users/igorchen/IC\ WEB\ 2/pehtheme-hugo/public"
 
 # Fetch the latest updates from GitHub to avoid conflicts
 git fetch origin

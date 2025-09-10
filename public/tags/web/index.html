@@ -1,19 +1,106 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
 <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
-  <meta charset="utf-8">
+  
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
 
 <title>Web - IC Studio </title>
-
 <meta name="description" content="欢迎来到 IC Studio 官方网站！一个分享音乐学习过程与经验的平台。">
-    <link rel="stylesheet" href="/css/main.css">
+<meta name="author" content="IC Studio">
 
 
-<link rel="icon" type="image/png" href="https://icstudio.club/ICLOGO.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/ICLOGO.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/ICLOGO.png">
-<link rel="icon" type="image/png" sizes="64x64" href="/ICLOGO.png">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+
+
+
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#667eea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+
+
+<link rel="preload" href="/images/ICLOGO.png" as="image">
+
+
+
+
+
+
+
+
+<script>
+
+(function() {
+  'use strict';
+  
+  
+  const fontLink = document.createElement('link');
+  fontLink.rel = 'stylesheet';
+  fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
+  fontLink.media = 'print';
+  fontLink.onload = function() { this.media = 'all'; };
+  document.head.appendChild(fontLink);
+  
+  
+  document.addEventListener('mouseover', function(e) {
+    const link = e.target.closest('a[href]');
+    if (link && link.hostname === window.location.hostname) {
+      const prefetch = document.createElement('link');
+      prefetch.rel = 'prefetch';
+      prefetch.href = link.href;
+      document.head.appendChild(prefetch);
+    }
+  }, { once: true });
+  
+  
+  if ('performance' in window) {
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const perfData = performance.getEntriesByType('navigation')[0];
+        if (perfData && perfData.loadEventEnd) {
+          console.log('Page Load Time:', Math.round(perfData.loadEventEnd - perfData.navigationStart) + 'ms');
+        }
+      }, 100);
+    });
+  }
+})();
+</script>
+
+
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#667eea">
+
+
+
+
+    
+    <link rel="stylesheet" href="/css/main.css?v=1757522630">
+
+  <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
 
 <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
 
@@ -62,6 +149,9 @@
       <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/blog/">Blog</a>
     </li>
     <li class="my-2">
+      <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/tools/sight-reading-generator.html">IC 视奏工具</a>
+    </li>
+    <li class="my-2">
       <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/">音乐内容</a>
     </li>
     </ul>
@@ -97,9 +187,11 @@
 
       <article class="relative group bg-zinc-100 hover:bg-blue-100 rounded-3xl">
 	
+	
 	<a class="insert-link" href="http://localhost:1313/lessons/"></a>
+	
 
-	<figure class="w-full aspect-video overflow-hidden rounded-3xl"><img class="object-cover group-hover:scale-105 transition duration-500 cursor-pointer" src="http://localhost:1313/images/%E7%A7%81%E4%BA%BA%E8%AF%BE%E7%A8%8B_hu15543707865549942365.png" alt="一对一音乐课" width="750" height="422">
+	<figure class="w-full aspect-video overflow-hidden rounded-3xl"><img class="object-cover group-hover:scale-105 transition duration-500 cursor-pointer" src="http://localhost:1313/images/%E7%A7%81%E4%BA%BA%E8%AF%BE%E7%A8%8B_hu_db8c5708ea1143e3.png" alt="一对一音乐课" width="750" height="422">
 
 	  </figure>
 
@@ -114,9 +206,11 @@
 	</div>
 </article><article class="relative group bg-zinc-100 hover:bg-blue-100 rounded-3xl">
 	
-	<a class="insert-link" href="http://localhost:1313/blog/"></a>
+	
+	<a class="insert-link" href="/blog/"></a>
+	
 
-	<figure class="w-full aspect-video overflow-hidden rounded-3xl"><img class="object-cover group-hover:scale-105 transition duration-500 cursor-pointer" src="http://localhost:1313/images/blog_hu8068985675303477961.png" alt="IC Blog" width="750" height="422">
+	<figure class="w-full aspect-video overflow-hidden rounded-3xl"><img class="object-cover group-hover:scale-105 transition duration-500 cursor-pointer" src="http://localhost:1313/images/blog_hu_2c968a089aa50f0b.png" alt="IC Blog" width="750" height="422">
 
 	  </figure>
 
@@ -131,9 +225,49 @@
 	</div>
 </article><article class="relative group bg-zinc-100 hover:bg-blue-100 rounded-3xl">
 	
-	<a class="insert-link" href="http://localhost:1313/membership/"></a>
+	
+	<a class="insert-link" href="/blog/"></a>
+	
 
-	<figure class="w-full aspect-video overflow-hidden rounded-3xl"><img class="object-cover group-hover:scale-105 transition duration-500 cursor-pointer" src="http://localhost:1313/images/%E4%BC%9A%E5%91%98_hu5250007537651902337.png" alt="IC Membership" width="750" height="422">
+	<figure class="w-full aspect-video overflow-hidden rounded-3xl"><img class="object-cover group-hover:scale-105 transition duration-500 cursor-pointer" src="http://localhost:1313/images/blog_hu_2c968a089aa50f0b.png" alt="IC Blog" width="750" height="422">
+
+	  </figure>
+
+	<div class="p-6">
+
+		
+
+		<h3 class="my-4 text-2xl font-bold">IC Blog</h3>
+
+		<p class="text-normal leading-normal text-zinc-500 line-clamp-2">Hi！欢迎来到我的个人 blog，这里是我记录学习、思考与探索的地方。</p>
+
+	</div>
+</article><article class="relative group bg-zinc-100 hover:bg-blue-100 rounded-3xl">
+	
+	
+	<a class="insert-link" href="http://localhost:1313/sight-reading-tool/"></a>
+	
+
+	<figure class="w-full aspect-video overflow-hidden rounded-3xl"><img class="object-cover group-hover:scale-105 transition duration-500 cursor-pointer" src="http://localhost:1313/images/sight-reading-tool_hu_17ef0c0022a2e0e1.png" alt="IC 视奏工具" width="750" height="422">
+
+	  </figure>
+
+	<div class="p-6">
+
+		
+
+		<h3 class="my-4 text-2xl font-bold">IC 视奏工具</h3>
+
+		<p class="text-normal leading-normal text-zinc-500 line-clamp-2">专业级视奏旋律生成器，助力音乐学习者快速提升读谱技能！</p>
+
+	</div>
+</article><article class="relative group bg-zinc-100 hover:bg-blue-100 rounded-3xl">
+	
+	
+	<a class="insert-link" href="http://localhost:1313/membership/"></a>
+	
+
+	<figure class="w-full aspect-video overflow-hidden rounded-3xl"><img class="object-cover group-hover:scale-105 transition duration-500 cursor-pointer" src="http://localhost:1313/images/%E4%BC%9A%E5%91%98_hu_5cd7eeb6eeb0d267.png" alt="IC Membership" width="750" height="422">
 
 	  </figure>
 
@@ -148,9 +282,11 @@
 	</div>
 </article><article class="relative group bg-zinc-100 hover:bg-blue-100 rounded-3xl">
 	
+	
 	<a class="insert-link" href="http://localhost:1313/donate/"></a>
+	
 
-	<figure class="w-full aspect-video overflow-hidden rounded-3xl"><img class="object-cover group-hover:scale-105 transition duration-500 cursor-pointer" src="http://localhost:1313/images/donate_hu14683373401294036060.png" alt="支持 IC Studio" width="750" height="422">
+	<figure class="w-full aspect-video overflow-hidden rounded-3xl"><img class="object-cover group-hover:scale-105 transition duration-500 cursor-pointer" src="http://localhost:1313/images/donate_hu_c5b9cdaf1ac6b396.png" alt="支持 IC Studio" width="750" height="422">
 
 	  </figure>
 
@@ -163,30 +299,13 @@
 		<p class="text-normal leading-normal text-zinc-500 line-clamp-2">如果你觉得我们的内容对你的音乐之路有帮助，那就请 IC Studio 喝杯咖啡吧！</p>
 
 	</div>
-</article><article class="relative group bg-zinc-100 hover:bg-blue-100 rounded-3xl">
-	
-	<a class="insert-link" href="http://localhost:1313/contact/"></a>
-
-	<figure class="w-full aspect-video overflow-hidden rounded-3xl"><img class="object-cover group-hover:scale-105 transition duration-500 cursor-pointer" src="http://localhost:1313/images/contact_hu10241902053061665310.png" alt="联系 IC Studio" width="750" height="422">
-
-	  </figure>
-
-	<div class="p-6">
-
-		
-
-		<h3 class="my-4 text-2xl font-bold">联系 IC Studio</h3>
-
-		<p class="text-normal leading-normal text-zinc-500 line-clamp-2">想要合作或有任何问题？那就点进来与 IC Studio 联系！</p>
-
-	</div>
 </article>
     
     </div>
 
     
 
-    <div class="flex items-center mt-10"></div>
+    <div class="flex items-center mt-10"><a class="border rounded-full px-6 py-2 hover:bg-zinc-200" href="/tags/web/page/2/">下一页 →</a></div>
   
   </section>
 
@@ -249,8 +368,11 @@
 
 
 <script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.stemmer.support.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.zh.js"></script>
       <script src="/js/search.js"></script>
+
+
   
 </body>
 </html>
