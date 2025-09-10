@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
-<head>
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
   
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -88,20 +88,6 @@
 
 
 
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/sw.js')
-      .then(function(registration) {
-        console.log('SW registered');
-      })
-      .catch(function(error) {
-        console.log('SW registration failed');
-      });
-  });
-}
-</script>
-
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#667eea">
 
@@ -109,17 +95,7 @@ if ('serviceWorker' in navigator) {
 
 
     
-        
-        
-        
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/css/main.sha256-6mF1p0hnKDL&#43;95XKfMHPTfOS5uZUtdDQgzIDZ/Pr5XM=.css" 
-              integrity="sha256-6mF1p0hnKDL&#43;95XKfMHPTfOS5uZUtdDQgzIDZ/Pr5XM=" 
-              crossorigin="anonymous"
-              onerror="console.warn('CDN CSS failed, loading from local'); this.onerror=null; this.href='\/css\/main.min.ea6175a748672832fef795ca7cc1cf4df392e6e654b5d0d083320367f3ebe573.css';">
-        
-        
-        <link rel="preload" href="/css/main.min.ea6175a748672832fef795ca7cc1cf4df392e6e654b5d0d083320367f3ebe573.css" as="style" 
-              integrity="sha256-6mF1p0hnKDL&#43;95XKfMHPTfOS5uZUtdDQgzIDZ/Pr5XM=" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/main.css?v=1757548435">
 
   <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
   <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
@@ -152,7 +128,7 @@ if ('serviceWorker' in navigator) {
 				</span>
 			</button>
 			<div class="relative rounded-full py-1.5 px-6 bg-zinc-100 hover:bg-zinc-200 text-xl font-bold uppercase mx-2">
-				<h2><a class="before:content-[''] before:z-10 before:top-0 before:right-0 before:left-0 before:bottom-0 before:absolute before:pointer-events-auto" href="https://icstudio.club/">IC Studio</a></h2>
+				<h2><a class="before:content-[''] before:z-10 before:top-0 before:right-0 before:left-0 before:bottom-0 before:absolute before:pointer-events-auto" href="http://localhost:1313/">IC Studio</a></h2>
 			</div>
 		</div>
 		<div class="flex items-center ml-auto">
@@ -195,7 +171,7 @@ if ('serviceWorker' in navigator) {
   <main class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8"><div id="breadcrumb" class="max-w-7xl mx-auto py-8">
     <ul class="flex space-x-4 text-sm text-zinc-500">
         <li class="after:content-['❯'] after:ml-4 after:opacity-30 last:after:content-none uppercase">
-            <a href="https://icstudio.club/">IC Studio</a>
+            <a href="http://localhost:1313/">IC Studio</a>
         </li>
     </ul>
 </div><div class="grid grid-cols-1 md:grid-cols-1 gap-6 mb-14 justify-center">
@@ -213,7 +189,7 @@ if ('serviceWorker' in navigator) {
     </header>
 
     <figure id="featureimage" class="rounded-xl aspect-video">
-            <img class="rounded-lg" src="https://icstudio.club/images/sight-reading-tool_hu_17ef0c0022a2e0e1.png" alt="" width="750" height="422">
+            <img class="rounded-lg" src="http://localhost:1313/images/sight-reading-tool_hu_17ef0c0022a2e0e1.png" alt="" width="750" height="422">
 
     </figure>
 
@@ -246,391 +222,605 @@ if ('serviceWorker' in navigator) {
 <li><strong>全拍号支持</strong>：完整覆盖 4/4、3/4、6/8等常用拍号，每种拍号皆有独特节奏模式。</li>
 <li><strong>内置节拍器</strong>：无需额外工具，即可在练习时保持稳定的节奏感。</li>
 </ul>
+<h2 id="-未来功能">🔮 未来功能</h2>
+<ul>
+<li><strong>音程视奏</strong>：随机生成有音乐性以及旋律线条的音程，帮助你熟悉指板音程逻辑。</li>
+<li><strong>和弦视奏</strong>：随机生成 <a href="/guitar-voicings/">Guitar voicings</a>（三和弦，drop 2，drop 3，shell voicings等），提高你视奏和弦的能力。</li>
+<li><strong>低音生成器</strong>：随机生成一串低音，可以用来练习四部和声，和弦写作。（之后我会单独出一期视频讲解）</li>
+<li><strong>和弦进行生成器</strong>：随机生成一串<strong>和弦代号</strong>，乐手可以根据和弦代号自行配和声。
+（现在购买可以在未来免费解锁以下功能，之后出了这些功能之后会涨价）</li>
+</ul>
 <h2 id="-适用人群">👩‍🎓 适用人群</h2>
 <ul>
 <li><strong>音乐学生 / 自学者</strong>：快速提升视奏水平。</li>
 <li><strong>音乐教师</strong>：高效生成教学素材，轻松定制个性化练习内容。</li>
 </ul>
 <h2 id="-立即行动">🎯 立即行动</h2>
-<p>⚡ <strong>早鸟价限时开放 48¥ —— 截止至 9 月 30 日</strong></p>
-<!-- 统一购买卡片 -->
-<div style="max-width: 750px; width: 100%; margin: 30px auto; padding: 25px; background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); border: 2px solid #e6edff; text-align: center; box-sizing: border-box;">
-  <!-- 标题 -->
-  <div style="margin-bottom: 20px;">
-    <h3 style="color: #4a5568; margin-bottom: 6px; font-size: 20px;">购买完整版 （网页访问码 + App）</h3>
-    <p style="color: #718096; font-size: 14px; margin: 0;">支持 7 天无理由退货</p>
-  </div>
-  <div style="display: flex; gap: 15px; align-items: stretch;">
-    <div style="flex: 1; display: flex; flex-direction: column;">
-      <a href="/tools/sight-reading-generator.html" target="_blank" style="display: block; background: #f8f9fa; color: #667eea; padding: 40px 15px; border: 2px solid #667eea; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 20px; transition: all 0.3s ease; margin-bottom: 8px; text-align: center; flex-grow: 1; min-height: 44px; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='#667eea'; this.style.color='white';" onmouseout="this.style.background='#f8f9fa'; this.style.color='#667eea';">免费试用</a>
-    </div>
-    <div style="flex: 1; display: flex; flex-direction: column;">
-      <button id="zpay-btn" onclick="window.realAlipayPayment.initiatePayment()" style="background: linear-gradient(135deg, #1677FF 0%, #00A0E9 100%); color: white; padding: 12px 15px; border: none; border-radius: 8px; font-weight: 600; font-size: 20px; box-shadow: 0 4px 15px rgba(22, 119, 255, 0.3); transition: all 0.3s ease; cursor: pointer; margin-bottom: 8px; width: 100%; text-align: center; flex-grow: 1; min-height: 44px;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(22, 119, 255, 0.4)';" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(22, 119, 255, 0.3)';">支付宝付款</button>
-    </div>
-    <div style="flex: 1; display: flex; flex-direction: column;">
-      <button onclick="window.initMockStripePayment();" style="background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); color: white; padding: 12px 15px; border: none; border-radius: 8px; font-weight: 600; font-size: 20px; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3); transition: all 0.3s ease; cursor: pointer; margin-bottom: 8px; width: 100%; text-align: center; flex-grow: 1; min-height: 44px;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(118, 75, 162, 0.4)';" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(118, 75, 162, 0.3)';">信用卡支付</button>
-    </div>
-  </div>
+<p>⚡ <strong>早鸟价 48.00¥</strong>（截止于10月01日）—— 现在购买可在未来<strong>免费解锁</strong>更进阶的功能！</p>
+<div style="display: flex; gap: 30px; margin: 30px auto; max-width: 1000px; align-items: flex-start; flex-wrap: wrap;">
+<div style="flex: 1; min-width: 300px; padding: 25px; background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); border: 2px solid #e6edff; text-align: center;">
+<div style="margin-bottom: 20px;">
+<h3 style="color: #4a5568; margin-bottom: 6px; font-size: 20px;">国内用户购买</h3>
+<p style="color: #718096; font-size: 14px; margin: 0;">支持 7 天无理由退款</p>
 </div>
+<div style="display: flex; gap: 15px; align-items: stretch; justify-content: center;">
+<div style="flex: 1; display: flex; flex-direction: column;">
+<a href="/tools/sight-reading-generator.html" target="_blank" style="display: block; background: #f8f9fa; color: #667eea; padding: 15px 20px; border: 2px solid #667eea; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s ease; margin-bottom: 8px; text-align: center; flex-grow: 1; min-height: 50px; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='#667eea'; this.style.color='white';" onmouseout="this.style.background='#f8f9fa'; this.style.color='#667eea';">免费试用</a>
+<p style="color: #888; font-size: 12px; margin: 0; text-align: center; line-height: 1.3;">10分钟体验<br/>已购用户直接使用</p>
+</div>
+<div style="flex: 1; display: flex; flex-direction: column;">
+<button id="zpay-btn" onclick="window.createZPayment()" style="background: linear-gradient(135deg, #1677FF 0%, #00A0E9 100%); color: white; padding: 15px 20px; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(22, 119, 255, 0.3); transition: all 0.3s ease; cursor: pointer; margin-bottom: 8px; width: 100%; text-align: center; flex-grow: 1; min-height: 50px;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(22, 119, 255, 0.4)';" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(22, 119, 255, 0.3)';">支付宝支付</button>
+<p style="color: #888; font-size: 12px; margin: 0; text-align: center; line-height: 1.3;">¥48.00<br/>早鸟价</p>
+</div>
+</div>
+<!-- 访问码验证区域 -->
+<div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e6edff;">
+    <h3 style="color: #667eea; margin-bottom: 15px; font-size: 18px;">已有访问码？立即使用</h3>
+    <p style="color: #888; font-size: 12px; margin: 6; text-align: center; line-height: 1;">可下载电脑软件&查询订单号</p>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" id="access-code-input" placeholder="输入访问码(11-12位)" 
+               style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; text-transform: uppercase; transition: border-color 0.3s ease;"
+               maxlength="12" oninput="handleInputChange()" onkeyup="handleInputChange()" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#ddd'">
+        <button id="verify-btn" onclick="handleVerifyClick()" 
+                style="padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: not-allowed; font-weight: 600; font-size: 14px; transition: all 0.3s ease; opacity: 1;"
+                onmousedown="this.style.opacity='0.3'; this.style.transform='scale(0.98)'"
+                onmouseup="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)"
+                onmouseleave="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)">
+            验证
+        </button>
+    </div>
+    <div id="verify-result" style="margin-top: 15px; font-size: 14px; text-align: center;"></div>
+</div>
+</div>
+<iframe src="https://icstudio3.gumroad.com/l/sight-reading-tools" frameborder="0" width="370" height=500" style="border:0;"></iframe>
+</div>
+<h2 id="-常见问题-faq">❓ 常见问题 FAQ</h2>
+<div style="max-width: 800px; margin: 30px auto; background: #f9f9f9; padding: 30px; border-radius: 12px;">
+<h3 id="忘记访问码了怎么办">忘记访问码了怎么办？</h3>
+ <div style="background: #fff3e0; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ff9800;">
+如果您忘记了访问码，可以通过您的订单号找回：
+<div style="margin: 15px 0; text-align: center;">
+<button id="recover-access-code-btn" style="
+  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(33, 150, 243, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(33, 150, 243, 0.3)'">
+🔍 通过订单号找回访问码
+</button>
+</div> 
+<p><strong>说明：</strong></p>
+<ul>
+<li>订单号或者商家订单号可在支付宝的<strong>账单记录</strong>里找到。</li>
+<li><strong>商家订单号</strong>格式如 <code>IC17575395673154298</code></li>
+<li><strong>订单号</strong>格式如 <code>2025097832001480241441480505</code></li>
+</ul>
+</div>
+<h3 id="如何退款">如何退款？</h3>
+<div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #4caf50;">
+我们理解您可能会遇到各种情况，因此提供 <strong>7天无理由退款政策</strong>：
+<p><strong>退款条件：</strong></p>
+<ul>
+<li>购买后7天内可申请退款</li>
+<li>超过7天不支持退款</li>
+</ul>
+<p><strong>在线退款：</strong></p>
+<div style="margin: 15px 0; text-align: center;">
+<button id="refund-btn" style="
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(245, 101, 101, 0.3);
+" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(245, 101, 101, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(245, 101, 101, 0.3)'">
+申请在线退款
+</button>
+</div>
+</div>
+<h3 id="有其他问题欢迎联系我">有其他问题？欢迎联系我！</h3>
+<div style="background: #e3f2fd; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #2196f3;">
+如果您在使用过程中遇到以下任何问题，欢迎通过下面的联系方式联系我，我会尽快为您解决：
+<ul>
+<li>使用工具时有遇到bug</li>
+<li>找回访问码不能正常工作</li>
+<li>退款按钮不能正常工作</li>
+<li>询问任何其他关于产品的咨询</li>
+</ul>
+<p><strong>联系方式：</strong></p>
+<ul>
+<li>邮箱：<strong><a href="mailto:service@icstudio.club">service@icstudio.club</a></strong></li>
+<li>联系页面：<a href="/contact/">点此访问</a></li>
+<li>所有信息将在最多 48 小时内回复</li>
+</ul>
+</div>
+</div>
+<!-- 简化脚本 -->
 <!-- CloudBase SDK -->
 <script src="https://imgcache.qq.com/qcloud/cloudbase-js-sdk/1.5.0/cloudbase.full.js"></script>
-<!-- 统一支付成功处理器 - 必须最先加载 -->
+<!-- 统一支付成功处理器 -->
 <script src="/js/payment-success-handler.js?v=20250909"></script>
-<!-- 全局错误拦截器 -->
-<script src="/js/global-error-interceptor.js?v=20250909"></script>
-<!-- 混合架构支付和试用系统 -->
+<!-- 试用系统 -->
 <script src="/js/trial-limiter.js?v=20250909"></script>
 <script src="/js/cloudbase-api.js?v=20250909"></script>
-<script src="/js/zpay-hybrid.js?v=20250909"></script>
-<!-- 真实支付宝支付系统 -->
-<script src="/js/alipay-real.js?v=20250909"></script>
+<!-- 支付状态管理器 -->
+<script src="/js/payment-state-manager.js?v=20250909"></script>
+<!-- 下载处理函数 -->
 <script>
-// 提前定义 initMockStripePayment 函数，确保按钮可以调用
-window.initMockStripePayment = async function() {
-  console.log('🔧 initMockStripePayment 函数被调用');
-  
-  try {
-    console.log('🔧 开始显示支付状态');
+function downloadFile(url, filename) {
+    console.log('🔽 开始下载文件:', filename);
+    console.log('🔗 原始URL:', url);
     
-    // 创建临时状态显示
-    const tempStatus = document.createElement('div');
-    tempStatus.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #667eea; color: white; padding: 10px 20px; border-radius: 8px; z-index: 9999;';
-    tempStatus.textContent = '正在处理信用卡支付（测试模式）...';
-    document.body.appendChild(tempStatus);
+    // 构建完整URL
+    const fullUrl = new URL(url, window.location.origin).href;
+    console.log('📍 完整URL:', fullUrl);
     
-    console.log('🔧 开始模拟支付延迟');
-    
-    // 模拟支付处理延迟
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    console.log('🔧 开始创建真实的访问码记录');
-    tempStatus.textContent = '支付成功！正在生成访问码...';
-    
-    console.log('🔧 开始创建信用卡访问码记录');
-    
-    // 调用CloudBase创建访问码记录 - 使用新的API
-    let result;
-    try {
-      if (window.cloudbaseAPI && window.cloudbaseAPI.generateAccessCode) {
-        console.log('🚀 使用 cloudbaseAPI.generateAccessCode 生成 Stripe 访问码');
-        result = await window.cloudbaseAPI.generateAccessCode({
-          orderId: 'STRIPE-ORDER-' + Date.now(),
-          paymentMethod: 'stripe',
-          amount: 4.99,
-          currency: 'USD',
-          merchantId: 'stripe-test',
-          transactionId: 'STRIPE-TX-' + Date.now(),
-          deviceId: window.trialLimiter?.deviceId || 'stripe-web-browser'
-        });
-      } else {
-        throw new Error('CloudBase API not available');
-      }
-      console.log('🔧 信用卡CloudBase调用成功:', result);
-    } catch (error) {
-      console.log('🔧 信用卡CloudBase调用失败，使用备用方案:', error.message);
-      // 生成备用访问码并保存到本地存储（12位纯随机码）
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let backupAccessCode = '';
-      for (let i = 0; i < 12; i++) {
-        backupAccessCode += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      
-      // 将备用访问码保存到本地存储，确保验证时能识别
-      const accessData = {
-        code: backupAccessCode,
-        activatedAt: Date.now(),
-        deviceId: 'stripe-backup',
-        expiresAt: null, // 永不过期
-        version: 'backup-stripe',
-        paymentMethod: 'stripe',
-        amount: 4.99,
-        currency: 'USD',
-        isBackup: true
-      };
-      localStorage.setItem('ic-premium-access-backup-' + backupAccessCode, JSON.stringify(accessData));
-      console.log('🔧 备用访问码已保存到本地存储');
-      
-      result = {
-        result: {
-          success: true,
-          licenseKey: backupAccessCode
-        }
-      };
-      console.log('🔧 生成信用卡备用访问码:', backupAccessCode);
-    }
-    
-    // 处理新的 cloudbaseAPI 返回格式
-    let realAccessCode;
-    if (result.success && result.accessCode) {
-      realAccessCode = result.accessCode;
-      console.log('🔧 创建信用卡访问码成功:', realAccessCode);
-    } else if (result.result && result.result.success) {
-      // 兼容旧格式
-      realAccessCode = result.result.licenseKey;
-      console.log('🔧 创建信用卡访问码成功（旧格式）:', realAccessCode);
-    } else {
-      throw new Error(result.message || result.result?.message || '访问码创建失败');
-    }
-    
-    // 移除临时状态显示
-    if (tempStatus && tempStatus.parentNode) {
-      tempStatus.remove();
-    }
-    
-    if (typeof showStatus === 'function') {
-      showStatus('支付成功！', 'success');
-    }
-    
-    setTimeout(() => {
-      // 强制使用带下载按钮的最新版本
-      console.log('🔧 【强制】调用带下载按钮的信用卡成功处理函数');
-      window.handleStripeSuccessWithDownloads(realAccessCode);
-    }, 1000);
-    
-  } catch (error) {
-    console.error('❌ 信用卡支付失败:', error);
-    if (typeof showStatus === 'function') {
-      showStatus('支付失败，请稍后重试', 'error');
-    } else {
-      alert('支付失败：' + error.message);
-    }
-  }
-};
-
-console.log('🔧 initMockStripePayment 函数已定义到全局作用域');
-
-// 安全下载函数 - 直接下载
-window.downloadWithLicense = async function(licenseKey, platform) {
-  console.log('🔧 开始安全下载:', platform, '许可证:', licenseKey);
-  
-  try {
-    // 显示下载状态
-    const statusDiv = document.createElement('div');
-    statusDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #48bb78; color: white; padding: 10px 20px; border-radius: 8px; z-index: 9999;';
-    statusDiv.textContent = '正在准备下载...';
-    document.body.appendChild(statusDiv);
-    
-    // 平台映射到实际文件名
-    const fileNameMap = {
-      'macos-arm64': 'IC Studio 视奏工具-1.0.0-mac-arm64.zip',
-      'macos-x64-dmg': 'IC Studio 视奏工具-1.0.0-mac-x64.dmg',
-      'macos-x64-zip': 'IC Studio 视奏工具-1.0.0-mac-x64.zip',
-      'windows-x64': 'IC Studio 视奏工具-1.0.0-win-x64.exe',
-      'windows-x86': 'IC Studio 视奏工具-1.0.0-win.exe',
-      'linux-x64-appimage': 'IC Studio 视奏工具-1.0.0-linux-x86_64.AppImage',
-      'linux-x64-deb': 'IC Studio 视奏工具-1.0.0-linux-amd64.deb'
-    };
-    
-    const fileName = fileNameMap[platform];
-    if (!fileName) {
-      throw new Error(`不支持的平台: ${platform}`);
-    }
-    
-    // 构建下载URL（Hugo static 文件可以通过根路径访问）
-    const downloadUrl = `/downloads/${encodeURIComponent(fileName)}`;
-    
-    console.log('🔧 下载URL:', downloadUrl);
-    
-    // 更新状态
-    statusDiv.textContent = '开始下载...';
-    statusDiv.style.background = '#28a745';
-    
-    // 创建下载链接并触发下载
+    // 创建临时下载链接元素
     const downloadLink = document.createElement('a');
-    downloadLink.href = downloadUrl;
-    downloadLink.download = fileName;
-    downloadLink.target = '_blank';
+    downloadLink.href = fullUrl;
+    downloadLink.download = filename;
     downloadLink.style.display = 'none';
     
+    // 添加到页面
     document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
     
-    // 更新状态显示成功
-    statusDiv.textContent = '✅ 下载已开始！';
-    statusDiv.style.background = '#28a745';
+    try {
+        // 触发下载
+        downloadLink.click();
+        console.log('✅ 下载已启动:', filename);
+        showDownloadNotification(filename);
+    } catch (error) {
+        console.error('❌ 下载失败:', error);
+        // 降级到直接打开
+        window.open(fullUrl, '_blank');
+        showDownloadNotification(filename);
+    }
     
+    // 清理临时元素
     setTimeout(() => {
-      if (statusDiv.parentNode) {
-        statusDiv.remove();
-      }
+        if (downloadLink.parentNode) {
+            document.body.removeChild(downloadLink);
+        }
+    }, 100);
+}
+
+function showDownloadNotification(message, type = 'success') {
+    // 创建临时通知
+    const notification = document.createElement('div');
+    const bgColor = type === 'success' ? '#22c55e' : '#ef4444';
+    
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${bgColor};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-size: 14px;
+        font-weight: 600;
+    `;
+    
+    if (type === 'success') {
+        notification.innerHTML = `🔽 正在下载 ${message}...`;
+    } else {
+        notification.innerHTML = `❌ ${message}`;
+    }
+    
+    document.body.appendChild(notification);
+    
+    // 3秒后移除通知
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }
     }, 3000);
-    
-    console.log('✅ 下载触发成功:', fileName);
-    
-  } catch (error) {
-    console.error('❌ 下载失败:', error);
-    
-    // 显示错误
-    const errorDiv = document.createElement('div');
-    errorDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #e53e3e; color: white; padding: 10px 20px; border-radius: 8px; z-index: 9999;';
-    errorDiv.textContent = '下载失败: ' + error.message;
-    document.body.appendChild(errorDiv);
-    
-    setTimeout(() => {
-      if (errorDiv.parentNode) {
-        errorDiv.remove();
-      }
-    }, 5000);
-  }
-};
+}
 
-console.log('🔧 downloadWithLicense 函数已定义到全局作用域');
+function copyAccessCode(accessCode) {
+    console.log('📋 复制访问码:', accessCode);
+    
+    // 使用现代的Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(accessCode).then(() => {
+            showCopyNotification('访问码已复制到剪贴板');
+        }).catch(err => {
+            console.error('复制失败:', err);
+            fallbackCopyTextToClipboard(accessCode);
+        });
+    } else {
+        // 降级方案
+        fallbackCopyTextToClipboard(accessCode);
+    }
+}
 
-// 复制访问码到剪贴板的辅助函数
-window.copyAccessCodeToClipboard = function(licenseKey) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(licenseKey).then(() => {
-      alert('访问码已复制到剪贴板！');
-    }).catch(() => {
-      fallbackCopyToClipboard(licenseKey);
-    });
-  } else {
-    fallbackCopyToClipboard(licenseKey);
-  }
-  
-  function fallbackCopyToClipboard(text) {
+function fallbackCopyTextToClipboard(text) {
     const textArea = document.createElement('textarea');
     textArea.value = text;
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.position = 'fixed';
+    
     document.body.appendChild(textArea);
+    textArea.focus();
     textArea.select();
+    
     try {
-      document.execCommand('copy');
-      alert('访问码已复制到剪贴板！');
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showCopyNotification('访问码已复制到剪贴板');
+        } else {
+            showCopyNotification('复制失败，请手动复制', 'error');
+        }
     } catch (err) {
-      alert('复制失败，请手动复制访问码：' + text);
+        console.error('Fallback复制失败:', err);
+        showCopyNotification('复制失败，请手动复制', 'error');
     }
+    
     document.body.removeChild(textArea);
-  }
-};
+}
 
-// 跳转到工具页面并填入访问码的辅助函数
-window.goToToolWithAccessCode = function(accessCode) {
-  const accessInput = document.getElementById('access-code-input');
-  if (accessInput) {
-    accessInput.value = accessCode;
-  }
-  
-  // 移除弹窗
-  const modal = document.querySelector('.unified-payment-success-modal');
-  if (modal) {
-    modal.remove();
-    document.body.style.overflow = 'auto';
-  }
-  
-  // 跳转到工具页面
-  window.location.href = '/tools/sight-reading-generator.html';
-};
+function showCopyNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    const bgColor = type === 'success' ? '#22c55e' : '#ef4444';
+    
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${bgColor};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-size: 14px;
+        font-weight: 600;
+    `;
+    notification.innerHTML = `📋 ${message}`;
+    
+    document.body.appendChild(notification);
+    
+    // 2秒后移除通知
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }
+    }, 2000);
+}
 
-// 统一支付成功处理函数（信用卡和支付宝共用）
-window.showUnifiedPaymentSuccess = function(accessCode, paymentMethod = 'unknown') {
-  console.log('🔧 调用统一支付成功处理函数:', paymentMethod, accessCode);
-  
-  // 确定支付方式的显示名称
-  const paymentDisplayName = {
-    'stripe': '信用卡支付',
-    'alipay': '支付宝支付',
-    'credit': '信用卡支付',
-    'unknown': '支付'
-  }[paymentMethod] || '支付';
-  
-  // 创建支付成功弹窗
-  const modal = document.createElement('div');
-  modal.className = 'unified-payment-success-modal';
-  modal.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 10001;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `;
-  
-  modal.innerHTML = `
-    <div style="background: white; padding: 40px; border-radius: 16px; max-width: 600px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); max-height: 80vh; overflow-y: auto;">
-      <div style="font-size: 3rem; color: #48bb78; margin-bottom: 20px;">🎉</div>
-      <h2 style="color: #4a5568; margin-bottom: 20px; font-size: 28px;">${paymentDisplayName}成功！</h2>
-      
-      <div style="background: #f0fff4; border: 2px solid #9ae6b4; border-radius: 12px; padding: 20px; margin: 25px 0;">
-        <p style="color: #2f855a; font-weight: 600; margin-bottom: 10px; font-size: 16px;">您的访问码：</p>
-        <p style="color: #2f855a; font-size: 22px; font-weight: 700; font-family: monospace; letter-spacing: 3px; margin: 0; background: white; padding: 10px; border-radius: 6px; border: 1px solid #9ae6b4;">${accessCode}</p>
-      </div>
-      
-      <div style="background: #fff5f5; border: 2px solid #fed7d7; border-radius: 12px; padding: 25px; margin: 25px 0;">
-        <h3 style="color: #c53030; font-weight: 600; margin-bottom: 20px; font-size: 18px;">📥 立即下载桌面版软件</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 15px;">
-          <button onclick="downloadWithLicense('${accessCode}', 'macos-arm64')" 
-                  style="background: #007aff; color: white; padding: 12px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: all 0.3s ease; cursor: pointer;" 
-                  onmouseover="this.style.background='#0056b3'" onmouseout="this.style.background='#007aff'">
-            🍎<br/>macOS M1/M2/M3
-          </button>
-          <button onclick="downloadWithLicense('${accessCode}', 'macos-x64-dmg')" 
-                  style="background: #007aff; color: white; padding: 12px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: all 0.3s ease; cursor: pointer;" 
-                  onmouseover="this.style.background='#0056b3'" onmouseout="this.style.background='#007aff'">
-            🍎<br/>macOS Intel
-          </button>
-          <button onclick="downloadWithLicense('${accessCode}', 'windows-x64')" 
-                  style="background: #0078d4; color: white; padding: 12px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: all 0.3s ease; cursor: pointer;" 
-                  onmouseover="this.style.background='#005a9e'" onmouseout="this.style.background='#0078d4'">
-            🪟<br/>Windows 64位
-          </button>
-          <button onclick="downloadWithLicense('${accessCode}', 'linux-x64-appimage')" 
-                  style="background: #f39c12; color: white; padding: 12px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: all 0.3s ease; cursor: pointer;" 
-                  onmouseover="this.style.background='#e67e22'" onmouseout="this.style.background='#f39c12'">
-            🐧<br/>Linux AppImage
-          </button>
-        </div>
-        <p style="color: #c53030; font-size: 12px; margin: 10px 0 0 0; line-height: 1.4;">💡 点击下载按钮获取安全下载链接，支持无限设备使用</p>
-      </div>
-      
-      <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-        <button onclick="this.closest('.unified-payment-success-modal').remove(); document.body.style.overflow='auto';" 
-                style="background: #f7fafc; color: #4a5568; padding: 14px 28px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px;">
-          关闭
-        </button>
-        <button onclick="goToToolWithAccessCode('${accessCode}')" 
-                style="background: #667eea; color: white; padding: 14px 28px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px;">
-          立即使用工具 →
-        </button>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(modal);
-  document.body.style.overflow = 'hidden';
-  
-  // 点击背景关闭
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.remove();
-      document.body.style.overflow = 'auto';
+// 访问码验证相关函数
+function handleInputChange() {
+    const input = document.getElementById('access-code-input');
+    const btn = document.getElementById('verify-btn');
+    
+    if (input.value.trim().length >= 8) {
+        btn.style.cursor = 'pointer';
+        btn.style.opacity = '1';
+        btn.style.background = '#667eea';
+    } else {
+        btn.style.cursor = 'not-allowed';
+        btn.style.opacity = '0.7';
+        btn.style.background = '#999';
     }
-  });
-  
-  console.log('✅ 统一支付成功弹窗已创建（包含下载按钮）:', paymentMethod);
-};
+}
 
-// 支付宝支付成功处理函数（兼容旧版本，重定向到统一函数）
-window.handleAlipaySuccessWithDownloads = function(accessCode) {
-  console.log('🔧 handleAlipaySuccessWithDownloads被调用，重定向到统一函数');
-  return window.showUnifiedPaymentSuccess(accessCode, 'alipay');
-};
+async function handleVerifyClick() {
+    const input = document.getElementById('access-code-input');
+    const btn = document.getElementById('verify-btn');
+    const resultDiv = document.getElementById('verify-result');
+    
+    const accessCode = input.value.trim().toUpperCase();
+    
+    if (accessCode.length < 8) {
+        resultDiv.innerHTML = '<div style="color: #e74c3c; background: #ffeaa7; padding: 10px; border-radius: 8px;">❌ 请输入有效的访问码</div>';
+        return;
+    }
+    
+    // 显示验证中状态
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '验证中...';
+    btn.disabled = true;
+    
+    try {
+        // 调用CloudBase验证函数（复用支付成功时的checkOrderDetails）
+        const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/checkOrderDetails', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Request-Source': 'IC-Studio-Access-Verify'
+            },
+            body: JSON.stringify({
+                access_code: accessCode
+            })
+        });
+        
+        const result = await response.json();
+        console.log('🔍 访问码验证结果:', result);
+        
+        if (result.success && result.order_data) {
+            const orderData = result.order_data;
+            
+            // 显示验证成功信息和下载选项
+            resultDiv.innerHTML = `
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; border: 1px solid #4caf50;">
+                    <div style="color: #2e7d32; font-weight: bold; margin-bottom: 10px;">
+                        ✅ 访问码验证成功！
+                    </div>
+                    <div style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                        订单号：${orderData.orderNumber}<br>
+                        购买时间：${new Date(orderData.paymentTime).toLocaleString()}
+                    </div>
+                    
+                    <!-- 下载选项 -->
+                    <div style="margin-top: 15px;">
+                        <div style="font-weight: bold; margin-bottom: 10px; color: #17a2b8;">
+                            📦 下载安装包
+                        </div>
+                        <button id="show-download-panel-btn" onclick="toggleDownloadPanel()" style="
+                            background: #17a2b8;
+                            color: white;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 13px;
+                            width: 100%;
+                            margin-bottom: 10px;
+                        ">
+                            💻 选择安装包
+                        </button>
+                        
+                        <!-- 下载面板（初始隐藏） -->
+                        <div id="download-panel" style="display: none; background: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 10px;">
+                            <div style="text-align: left;">
+                                <!-- Windows -->
+                                <div style="margin-bottom: 10px;">
+                                    <div style="font-weight: bold; font-size: 12px; margin-bottom: 5px; color: #dc3545;">
+                                        🖥️ Windows
+                                    </div>
+                                    <button class="download-platform-btn" data-platform="windows-exe" style="
+                                        margin: 2px 3px 2px 0;
+                                        padding: 6px 10px;
+                                        background: #dc3545;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 10px;
+                                        font-weight: 500;
+                                    ">
+                                        标准版 (140.9MB)
+                                    </button>
+                                    <button class="download-platform-btn" data-platform="windows-x64" style="
+                                        margin: 2px 3px 2px 0;
+                                        padding: 6px 10px;
+                                        background: #dc3545;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 10px;
+                                        font-weight: 500;
+                                    ">
+                                        优化版 (73.2MB)
+                                    </button>
+                                </div>
+                                
+                                <!-- macOS -->
+                                <div style="margin-bottom: 10px;">
+                                    <div style="font-weight: bold; font-size: 12px; margin-bottom: 5px; color: #6f42c1;">
+                                        🍎 macOS
+                                    </div>
+                                    <button class="download-platform-btn" data-platform="macos-x64-dmg" style="
+                                        margin: 2px 3px 2px 0;
+                                        padding: 6px 10px;
+                                        background: #6f42c1;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 10px;
+                                        font-weight: 500;
+                                    ">
+                                        Intel (DMG)
+                                    </button>
+                                    <button class="download-platform-btn" data-platform="macos-x64-zip" style="
+                                        margin: 2px 3px 2px 0;
+                                        padding: 6px 10px;
+                                        background: #6f42c1;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 10px;
+                                        font-weight: 500;
+                                    ">
+                                        Intel (ZIP)
+                                    </button>
+                                    <button class="download-platform-btn" data-platform="macos-arm64-zip" style="
+                                        margin: 2px 3px 2px 0;
+                                        padding: 6px 10px;
+                                        background: #6f42c1;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 10px;
+                                        font-weight: 500;
+                                    ">
+                                        M1/M2/M3 (ZIP)
+                                    </button>
+                                </div>
+                                
+                                <!-- Linux -->
+                                <div style="margin-bottom: 5px;">
+                                    <div style="font-weight: bold; font-size: 12px; margin-bottom: 5px; color: #fd7e14;">
+                                        🐧 Linux
+                                    </div>
+                                    <button class="download-platform-btn" data-platform="linux-deb" style="
+                                        margin: 2px 3px 2px 0;
+                                        padding: 6px 10px;
+                                        background: #fd7e14;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 10px;
+                                        font-weight: 500;
+                                    ">
+                                        DEB包 (70.3MB)
+                                    </button>
+                                    <button class="download-platform-btn" data-platform="linux-appimage" style="
+                                        margin: 2px 3px 2px 0;
+                                        padding: 6px 10px;
+                                        background: #fd7e14;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 10px;
+                                        font-weight: 500;
+                                    ">
+                                        AppImage (77.6MB)
+                                    </button>
+                                </div>
+                                
+                                <div style="font-size: 9px; color: #6c757d; margin-top: 8px; line-height: 1.3;">
+                                    💡 <strong>芯片选择说明：</strong><br>
+                                    • Intel 芯片 Mac 选择 x64 版本<br>
+                                    • Apple Silicon (M1/M2/M3) 选择 arm64 版本
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 绑定下载按钮事件
+            bindDownloadEvents(accessCode);
+            
+        } else {
+            resultDiv.innerHTML = `<div style="color: #e74c3c; background: #ffeaa7; padding: 10px; border-radius: 8px;">❌ ${result.error || '访问码无效或已失效'}</div>`;
+        }
+        
+    } catch (error) {
+        console.error('❌ 验证失败:', error);
+        resultDiv.innerHTML = '<div style="color: #e74c3c; background: #ffeaa7; padding: 10px; border-radius: 8px;">❌ 验证失败，请检查网络连接</div>';
+    }
+    
+    // 恢复按钮状态
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+}
 
-// 信用卡支付成功处理函数（与支付宝完全一致的逻辑）
-window.handleStripeSuccessWithDownloads = function(accessCode) {
-  console.log('🔧 handleStripeSuccessWithDownloads被调用，重定向到统一函数');
-  return window.showUnifiedPaymentSuccess(accessCode, 'stripe');
-};
+function toggleDownloadPanel() {
+    const panel = document.getElementById('download-panel');
+    const btn = document.getElementById('show-download-panel-btn');
+    
+    if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        btn.innerHTML = '📦 收起选项';
+    } else {
+        panel.style.display = 'none';
+        btn.innerHTML = '💻 选择安装包';
+    }
+}
 
-console.log('🔧 handleAlipaySuccessWithDownloads 函数已定义到全局作用域');
-console.log('🔧 handleStripeSuccessWithDownloads 函数已定义到全局作用域');
+function bindDownloadEvents(accessCode) {
+    // 绑定所有下载按钮
+    document.querySelectorAll('.download-platform-btn').forEach(btn => {
+        btn.onclick = async function() {
+            const platform = this.getAttribute('data-platform');
+            const originalText = this.innerHTML;
+            this.innerHTML = '⏳ 获取...';
+            
+            try {
+                console.log(`📥 开始下载 ${platform} 版本`);
+                
+                // 调用下载云函数
+                const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/downloadInstaller', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Request-Source': 'IC-Studio-Access-Verify'
+                    },
+                    body: JSON.stringify({
+                        access_code: accessCode,
+                        platform: platform
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('📥 下载响应:', result);
+                
+                if (result.success && result.data && result.data.download_url) {
+                    // 创建下载链接
+                    const link = document.createElement('a');
+                    link.href = result.data.download_url;
+                    link.download = result.data.package_info.name;
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // 显示成功状态
+                    this.innerHTML = '✅ 下载中';
+                    console.log(`🎉 ${result.data.package_info.name} 下载已开始`);
+                    
+                    showDownloadNotification(result.data.package_info.name);
+                    
+                } else {
+                    throw new Error(result.error || '获取下载链接失败');
+                }
+            } catch (error) {
+                console.error('❌ 下载失败:', error);
+                this.innerHTML = '❌ 失败';
+                showDownloadNotification('下载失败：' + error.message, 'error');
+            }
+            
+            // 3秒后恢复按钮文本
+            setTimeout(() => {
+                this.innerHTML = originalText;
+            }, 3000);
+        };
+    });
+}
 </script>
+<!-- Z-Pay 简化页面跳转支付实现 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script src="/js/new-refund-handler.js?v=2.0.0"></script>
+<script src="/js/zpay-simple.js?v=1.0.7"></script>
+<!-- 支付宝账号查找访问码功能 -->
+<script src="/js/alipay-lookup.js?v=1.0.1"></script>
 <!-- 试用状态显示区域 -->
 <div id="trial-status" style="margin: 20px 0; padding: 15px; border-radius: 8px; background: #f8f9fa; display: none;"></div>
+<!-- 调试下载测试 -->
 <!-- 样式定义 -->
 <style>
 .trial-expired {
@@ -786,468 +976,359 @@ document.addEventListener('DOMContentLoaded', function() {
   if (statusElement) {
     statusElement.style.display = 'block';
   }
+  
 });
 
-// 访问码验证函数
-async function verifyAccessCode() {
-  const accessCode = document.getElementById('access-code-input').value.trim();
-  const statusElement = document.getElementById('access-code-status');
-  
-  if (!accessCode) {
-    showStatus('请输入访问码', 'error');
-    return;
-  }
-  
-  showStatus('验证中...', 'loading');
-  
-  try {
-    // 首先检查是否为本地备用访问码
-    const backupKey = 'ic-premium-access-backup-' + accessCode;
-    const localBackupData = localStorage.getItem(backupKey);
-    
-    if (localBackupData) {
-      console.log('🔧 发现本地备用访问码，验证成功');
-      showStatus('访问码验证成功！正在跳转...', 'success');
-      // 保存访问码到本地存储
-      localStorage.setItem('ic-sight-reading-license', accessCode);
-      // 跳转到工具页面
-      setTimeout(() => {
-        window.location.href = '/tools/sight-reading-generator.html';
-      }, 1500);
-      return;
-    }
-    
-    // 尝试 CloudBase 验证访问码
-    let result;
-    try {
-      result = await cloudbase.init({
-        env: 'cloud1-4g1r5ho01a0cfd85'
-      }).callFunction({
-        name: 'license-manager',
-        data: {
-          action: 'verify_license',
-          licenseKey: accessCode
-        }
-      });
-      
-      if (result.result.success) {
-        showStatus('访问码验证成功！正在跳转...', 'success');
-        // 保存访问码到本地存储
-        localStorage.setItem('ic-sight-reading-license', accessCode);
-        // 跳转到工具页面
-        setTimeout(() => {
-          window.location.href = '/tools/sight-reading-generator.html';
-        }, 1500);
-      } else {
-        showStatus(result.result.message || '访问码无效，请检查后重试', 'error');
-      }
-    } catch (cloudError) {
-      console.log('🔧 CloudBase验证失败，检查是否为有效的备用格式访问码');
-      
-      // 如果CloudBase验证失败，检查是否为12位纯数字字母访问码（备用访问码格式）
-      if (accessCode.length === 12 && /^[A-Z0-9]+$/.test(accessCode)) {
-        console.log('🔧 识别为12位纯随机访问码格式，允许通过:', accessCode);
-        showStatus('访问码验证成功！正在跳转...', 'success');
-        // 保存访问码到本地存储
-        localStorage.setItem('ic-sight-reading-license', accessCode);
-        // 跳转到工具页面
-        setTimeout(() => {
-          window.location.href = '/tools/sight-reading-generator.html';
-        }, 1500);
-      } else {
-        showStatus('验证失败，请稍后重试', 'error');
-      }
-    }
-  } catch (error) {
-    console.error('访问码验证错误:', error);
-    showStatus('验证失败，请稍后重试', 'error');
-  }
-}
+
 
 // 显示状态信息
 function showStatus(message, type) {
-  const statusElement = document.getElementById('access-code-status');
-  statusElement.textContent = message;
-  statusElement.style.display = 'inline';
-  
-  // 设置不同类型的颜色
-  switch(type) {
-    case 'success':
-      statusElement.style.color = '#48bb78';
-      break;
-    case 'error':
-      statusElement.style.color = '#e53e3e';
-      break;
-    case 'loading':
-      statusElement.style.color = '#667eea';
-      break;
-    default:
-      statusElement.style.color = '#718096';
-  }
-  
-  // 错误和成功信息5秒后自动隐藏
-  if (type === 'success' || type === 'error') {
-    setTimeout(() => {
-      statusElement.style.display = 'none';
-    }, 5000);
-  }
+  console.log(`[状态] ${message} (类型: ${type})`);
+  // 可以在这里添加更多的状态显示逻辑
 }
 
-// 模拟 Stripe 支付函数已在上方定义
-
-// 真实 Stripe 支付函数（备用，当前未使用）
-async function initStripePayment() {
-  try {
-    showStatus('正在创建支付会话...', 'loading');
-    
-    const result = await cloudbase.init({
-      env: 'cloud1-4g1r5ho01a0cfd85'
-    }).callFunction({
-      name: 'payment-manager',
-      data: {
-        action: 'create_stripe_payment',
-        paymentMethod: 'stripe',
-        amount: 4.99,
-        currency: 'USD',
-        productName: 'IC Studio 视奏工具',
-        returnUrl: window.location.origin + '/sight-reading-tool/?payment=success',
-        cancelUrl: window.location.origin + '/sight-reading-tool/?payment=cancel'
-      }
-    });
-    
-    if (result.result.success && result.result.paymentUrl) {
-      // 跳转到 Stripe 支付页面
-      window.open(result.result.paymentUrl, '_blank');
-      showStatus('支付页面已打开，请完成支付', 'success');
-    } else {
-      throw new Error(result.result.message || 'Stripe 支付创建失败');
-    }
-  } catch (error) {
-    console.error('Stripe 支付错误:', error);
-    showStatus('支付创建失败，请稍后重试', 'error');
-  }
-}
-
-// 支付宝支付成功处理函数 - 重定向到带下载按钮的版本
-function handleAlipaySuccess(accessCode) {
-  console.log('🔧 旧版handleAlipaySuccess被调用，重定向到带下载按钮的版本');
-  if (window.handleAlipaySuccessWithDownloads) {
-    return window.handleAlipaySuccessWithDownloads(accessCode);
-  }
-  
-  // 备用版本（如果新版本没有加载）
-  // 创建支付成功弹窗
-  const modal = document.createElement('div');
-  modal.className = 'modal';
-  modal.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 10001;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  `;
-  
-  modal.innerHTML = `
-    <div style="background: white; padding: 40px; border-radius: 16px; max-width: 600px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); max-height: 80vh; overflow-y: auto;">
-      <div style="font-size: 3rem; color: #48bb78; margin-bottom: 20px;">🎉</div>
-      <h2 style="color: #4a5568; margin-bottom: 20px; font-size: 28px;">支付宝支付成功！</h2>
-      
-      <div style="background: #f0fff4; border: 2px solid #9ae6b4; border-radius: 12px; padding: 20px; margin: 25px 0;">
-        <p style="color: #2f855a; font-weight: 600; margin-bottom: 10px; font-size: 16px;">您的访问码：</p>
-        <p style="color: #2f855a; font-size: 22px; font-weight: 700; font-family: monospace; letter-spacing: 3px; margin: 0; background: white; padding: 10px; border-radius: 6px; border: 1px solid #9ae6b4;">${accessCode}</p>
-      </div>
-      
-      <div style="background: #fff5f5; border: 2px solid #fed7d7; border-radius: 12px; padding: 25px; margin: 25px 0;">
-        <h3 style="color: #c53030; font-weight: 600; margin-bottom: 20px; font-size: 18px;">📥 立即下载桌面版软件</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 15px;">
-          <button onclick="downloadWithLicense('${accessCode}', 'macos-arm64')" 
-                  style="background: #007aff; color: white; padding: 12px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: all 0.3s ease; cursor: pointer;" 
-                  onmouseover="this.style.background='#0056b3'" onmouseout="this.style.background='#007aff'">
-            🍎<br/>macOS M1/M2/M3
-          </button>
-          <button onclick="downloadWithLicense('${accessCode}', 'macos-x64-dmg')" 
-                  style="background: #007aff; color: white; padding: 12px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: all 0.3s ease; cursor: pointer;" 
-                  onmouseover="this.style.background='#0056b3'" onmouseout="this.style.background='#007aff'">
-            🍎<br/>macOS Intel
-          </button>
-          <button onclick="downloadWithLicense('${accessCode}', 'windows-x64')" 
-                  style="background: #0078d4; color: white; padding: 12px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: all 0.3s ease; cursor: pointer;" 
-                  onmouseover="this.style.background='#005a9e'" onmouseout="this.style.background='#0078d4'">
-            🪟<br/>Windows 64位
-          </button>
-          <button onclick="downloadWithLicense('${accessCode}', 'linux-x64-appimage')" 
-                  style="background: #f39c12; color: white; padding: 12px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: all 0.3s ease; cursor: pointer;" 
-                  onmouseover="this.style.background='#e67e22'" onmouseout="this.style.background='#f39c12'">
-            🐧<br/>Linux AppImage
-          </button>
-        </div>
-        <p style="color: #c53030; font-size: 12px; margin: 10px 0 0 0; line-height: 1.4;">💡 点击下载按钮获取安全下载链接，支持无限设备使用</p>
-      </div>
-      
-      <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-        <button onclick="this.closest('.modal').remove(); document.body.style.overflow='auto';" 
-                style="background: #f7fafc; color: #4a5568; padding: 14px 28px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px;">
-          关闭
-        </button>
-        <button onclick="
-          if(document.getElementById('access-code-input')) {
-            document.getElementById('access-code-input').value = '${accessCode}';
-          }
-          this.closest('.modal').remove();
-          document.body.style.overflow='auto';
-          window.location.href = '/tools/sight-reading-generator.html';
-        " style="background: #1677FF; color: white; padding: 14px 28px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px;">
-          立即使用工具 →
-        </button>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(modal);
-  document.body.style.overflow = 'hidden';
-  
-  // 点击背景关闭
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.remove();
-      document.body.style.overflow = 'auto';
-    }
-  });
-}
-
-// initZPay函数现在在DOMContentLoaded事件中动态定义，确保不被外部脚本覆盖
-
-// 保存原始的 initZPay 函数（如果存在）
-if (typeof initZPay === 'function') {
-  window.originalInitZPay = initZPay;
-}
-
-// 强制覆盖任何后加载的initZPay函数
+// 等待Z-Pay支付系统完全加载
 document.addEventListener('DOMContentLoaded', function() {
-  // 彻底阻止外部脚本覆盖的强制覆盖函数
-  function forceOverridePaymentFunctions() {
-    // 强制覆盖initZPay函数
-    window.initZPay = async function() {
-      console.log('🔧 【强制覆盖版本】使用页面内定义的支付宝支付函数');
-      
-      try {
-        if (typeof showStatus === 'function') {
-          showStatus('正在处理支付宝支付（测试模式）...', 'loading');
-        }
-        
-        // 模拟支付延迟
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        console.log('🔧 开始创建支付宝访问码记录');
-        
-        // 调用CloudBase创建访问码记录
-        let result;
-        try {
-          result = await cloudbase.init({
-            env: 'cloud1-4g1r5ho01a0cfd85'
-          }).callFunction({
-            name: 'license-manager',
-            data: {
-              action: 'create_license',
-              paymentMethod: 'alipay',
-              amount: 48.00,
-              currency: 'CNY',
-              customerEmail: 'alipay-test@example.com',
-              customerName: '支付宝测试用户',
-              orderId: 'ALIPAY-ORDER-' + Date.now(),
-              deviceId: 'web-browser',
-              deviceName: 'Web Browser'
-            }
-          });
-          console.log('🔧 支付宝CloudBase调用成功');
-        } catch (error) {
-          console.log('🔧 支付宝CloudBase调用失败，使用备用方案:', error.message);
-          // 生成备用访问码并保存到本地存储（12位纯随机码）
-          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-          let backupAccessCode = '';
-          for (let i = 0; i < 12; i++) {
-            backupAccessCode += chars.charAt(Math.floor(Math.random() * chars.length));
-          }
-          
-          // 将备用访问码保存到本地存储，确保验证时能识别
-          const accessData = {
-            code: backupAccessCode,
-            activatedAt: Date.now(),
-            deviceId: 'alipay-backup',
-            expiresAt: null, // 永不过期
-            version: 'backup-alipay',
-            paymentMethod: 'alipay',
-            amount: 48.90,
-            currency: 'CNY',
-            isBackup: true
-          };
-          localStorage.setItem('ic-premium-access-backup-' + backupAccessCode, JSON.stringify(accessData));
-          console.log('🔧 备用访问码已保存到本地存储');
-          
-          result = {
-            result: {
-              success: true,
-              licenseKey: backupAccessCode
-            }
-          };
-          console.log('🔧 生成支付宝备用访问码:', backupAccessCode);
-        }
-        
-        if (!result.result.success) {
-          throw new Error(result.result.message || '访问码创建失败');
-        }
-        
-        const realAccessCode = result.result.licenseKey;
-        console.log('🔧 创建支付宝访问码成功:', realAccessCode);
-        
-        if (typeof showStatus === 'function') {
-          showStatus('支付成功！', 'success');
-        }
-        
-        setTimeout(() => {
-          // 强制使用带下载按钮的最新版本
-          console.log('🔧 【强制】调用带下载按钮的支付宝成功处理函数');
-          window.handleAlipaySuccessWithDownloads(realAccessCode);
-        }, 1000);
-        
-      } catch (error) {
-        console.error('❌ 支付宝支付失败:', error);
-        if (typeof showStatus === 'function') {
-          showStatus('支付失败，请稍后重试', 'error');
-        } else {
-          alert('支付失败：' + error.message);
-        }
-      }
-    };
-
-    // 强制覆盖handleAlipaySuccess函数，确保重定向到新版本
-    window.handleAlipaySuccess = function(accessCode) {
-      console.log('🔧 【拦截】handleAlipaySuccess被调用，强制重定向到带下载按钮版本');
-      return window.handleAlipaySuccessWithDownloads(accessCode);
-    };
-
-    console.log('🔧 【强制覆盖】已覆盖所有支付函数，确保使用页面内定义版本');
+  console.log('✅ 页面加载完成，支付系统已就绪');
+  
+  // 检查支付回调参数
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('out_trade_no') || urlParams.get('trade_no')) {
+    console.log('🎉 检测到支付回调');
+    // 这里可以处理支付成功后的逻辑
+    if (window.showUnifiedPaymentSuccess) {
+      const accessCode = generateRandomCode();
+      window.showUnifiedPaymentSuccess(accessCode, 'zpay-success');
+    }
   }
-
-  // 立即覆盖
-  forceOverridePaymentFunctions();
   
-  // 每2秒重新覆盖一次，防止外部脚本覆盖
-  setInterval(forceOverridePaymentFunctions, 2000);
-  
-  console.log('🔧 【启动定时器】每2秒强制覆盖支付函数，阻止外部脚本覆盖');
+  // 检查Z-Pay支付系统是否加载
+  if (typeof window.createZPayment === 'function') {
+    console.log('✅ Z-Pay支付系统已加载');
+  } else {
+    console.warn('⚠️ Z-Pay支付系统未加载');
+  }
 });
 
-// 显示忘记访问码弹窗
-function showForgotAccessCode() {
-  const modal = document.getElementById('forgot-access-modal');
-  modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-}
-
-// 关闭忘记访问码弹窗
-function closeForgotAccessCode() {
-  const modal = document.getElementById('forgot-access-modal');
-  modal.style.display = 'none';
-  document.body.style.overflow = 'auto';
-  // 清空输入框
-  document.getElementById('forgot-alipay-account').value = '';
-}
-
-// 发送忘记访问码请求
-async function sendForgotAccessCode() {
-  const alipayAccount = document.getElementById('forgot-alipay-account').value.trim();
-  
-  if (!alipayAccount) {
-    alert('请输入支付宝账号');
-    return;
+// 生成随机访问码
+function generateRandomCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < 12; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  
-  try {
-    const result = await cloudbase.init({
-      env: 'cloud1-4g1r5ho01a0cfd85'
-    }).callFunction({
-      name: 'find-access-code',
-      data: {
-        action: 'find_by_alipay',
-        alipayAccount: alipayAccount
-      }
-    });
+  return code;
+}
+
+// 处理输入变化（借鉴 sight-reading-generator.html 的风格）
+function handleInputChange() {
+    const input = document.getElementById('access-code-input');
+    const button = document.getElementById('verify-btn');
     
-    if (result.result.success) {
-      alert('找到您的访问码，已发送到您的邮箱！');
-      closeForgotAccessCode();
-    } else {
-      alert(result.result.message || '未找到相关订单记录，请检查支付宝账号或联系客服');
+    if (input && button) {
+        const code = input.value.trim();
+        const isValid = code.length >= 11 && code.length <= 12 && /^[A-Z0-9]+$/.test(code);
+        
+        // 修改透明度逻辑：输入框为空或有效时都保持完全不透明
+        button.dataset.valid = isValid;
+        button.style.opacity = '1'; // 始终保持完全不透明
+        button.style.cursor = isValid ? 'pointer' : 'not-allowed';
+        button.style.background = '#667eea';
+        
+        console.log('🔄 输入变化处理:', { code, isValid });
     }
-  } catch (error) {
-    console.error('找回访问码错误:', error);
-    alert('查询失败，请稍后重试或联系客服');
-  }
 }
 
-// 支持回车键提交访问码
+// 处理验证按钮点击
+function handleVerifyClick() {
+    console.log('🎯 验证按钮被点击');
+    const button = document.getElementById('verify-btn');
+    
+    if (!button) {
+        console.error('❌ 找不到验证按钮');
+        return;
+    }
+    
+    const isValid = button.dataset.valid === 'true';
+    console.log('🔍 按钮状态检查:', { isValid });
+    
+    if (!isValid) {
+        console.log('⚠️ 按钮处于禁用状态，不执行验证');
+        const resultDiv = document.getElementById('verify-result');
+        if (resultDiv) {
+            resultDiv.innerHTML = '<span style="color: #e74c3c;">❌ 请输入有效的11-12位访问码</span>';
+        }
+        return;
+    }
+    
+    // 执行验证
+    console.log('✅ 开始执行访问码验证');
+    verifyAccessCodeWithServer();
+}
+
+// 保持旧函数兼容性
+function updateVerifyButton() {
+    handleInputChange();
+}
+
+// 测试验证功能
+function testVerifyFunction() {
+    console.log('🧪 测试验证功能...');
+    const input = document.getElementById('access-code-input');
+    const resultDiv = document.getElementById('verify-result');
+    
+    if (input && resultDiv) {
+        input.value = 'VTTBY9XCFTQY';
+        handleInputChange(); // 更新按钮状态
+        resultDiv.innerHTML = '<span style="color: #27ae60;">🧪 测试模式 - 访问码已填入，按钮现在应该可以点击了</span>';
+        console.log('✅ 已填入测试访问码，按钮状态已更新');
+        
+        // 给出明确的测试说明
+        setTimeout(() => {
+            resultDiv.innerHTML = '<span style="color: #3498db;">💡 现在点击"验证"按钮测试功能</span>';
+        }, 2000);
+    }
+}
+
+// 使用服务器端验证访问码
+async function verifyAccessCodeWithServer() {
+    const input = document.getElementById('access-code-input');
+    const resultDiv = document.getElementById('verify-result');
+    const button = document.getElementById('verify-btn');
+    
+    if (!input || !resultDiv) {
+        console.error('❌ 找不到必要的页面元素');
+        return;
+    }
+    
+    const code = input.value.trim().toUpperCase();
+    if (!code) {
+        resultDiv.innerHTML = '<span style="color: #e74c3c;">❌ 请输入访问码</span>';
+        return;
+    }
+    
+    if (code.length !== 12 && code.length !== 11) {
+        resultDiv.innerHTML = '<span style="color: #e74c3c;">❌ 访问码必须是11-12位</span>';
+        return;
+    }
+    
+    if (!/^[A-Z0-9]+$/.test(code)) {
+        resultDiv.innerHTML = '<span style="color: #e74c3c;">❌ 访问码只能包含字母和数字</span>';
+        return;
+    }
+
+    // 禁用按钮防止重复点击
+    button.disabled = true;
+    button.style.opacity = '0.5';
+    resultDiv.innerHTML = '<span style="color: #3498db;">🔄 正在验证访问码...</span>';
+
+    try {
+        // 等待 PaymentStateManager 加载
+        if (!window.paymentManager) {
+            resultDiv.innerHTML = '<span style="color: #f39c12;">⏳ 正在加载验证系统...</span>';
+            
+            // 等待最多5秒让PaymentStateManager加载
+            let attempts = 0;
+            while (!window.paymentManager && attempts < 50) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            if (!window.paymentManager) {
+                throw new Error('验证系统加载超时，请刷新页面重试');
+            }
+        }
+        
+        console.log('🔍 使用 PaymentStateManager 验证访问码:', code);
+        resultDiv.innerHTML = '<span style="color: #3498db;">🔄 正在服务器验证...</span>';
+        
+        const result = await window.paymentManager.verifyAccessCode(code, true);
+        
+        if (result.success) {
+            console.log('✅ 访问码验证成功:', result.data);
+            resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 访问码验证成功！</span>';
+            
+            // 重新启用按钮
+            button.disabled = false;
+            button.style.opacity = '1';
+            
+            // 延迟显示弹窗，让用户看到成功消息
+            setTimeout(() => {
+                showPaymentSuccessPopup(code, result.data);
+            }, 800);
+            
+        } else {
+            console.log('❌ 访问码验证失败:', result.error);
+            resultDiv.innerHTML = `<span style="color: #e74c3c;">❌ ${result.error}</span>`;
+            button.disabled = false;
+            button.style.opacity = '1';
+        }
+    } catch (error) {
+        console.error('验证访问码失败:', error);
+        resultDiv.innerHTML = `<span style="color: #e74c3c;">❌ ${error.message || '验证失败，请稍后重试'}</span>`;
+        button.disabled = false;
+        button.style.opacity = '1';
+    }
+}
+
+// 显示支付成功弹窗
+function showPaymentSuccessPopup(accessCode, orderData) {
+    // 创建弹窗HTML
+    const popup = document.createElement('div');
+    popup.id = 'success-popup';
+    popup.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+            <div style="background: white; padding: 40px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">
+                <div style="margin-bottom: 30px;">
+                    <div style="width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px;">✓</div>
+                    <h2 style="color: #333; margin-bottom: 10px;">🎉 访问验证成功！</h2>
+                    <p style="color: #666; font-size: 16px; margin-bottom: 0;">您的访问码已验证，现在可以使用完整版功能</p>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: left;">
+                    <h3 style="color: #333; margin-bottom: 15px; text-align: center;">📋 验证信息</h3>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                        <span style="color: #666;">访问码：</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-family: monospace; font-weight: bold; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">${accessCode}</span>
+                            <button onclick="copyAccessCode('${accessCode}')" 
+                                    style="background: #3b82f6; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s ease;"
+                                    onmouseover="this.style.background='#2563eb'"
+                                    onmouseout="this.style.background='#3b82f6'"
+                                    title="复制访问码">
+                                📋
+                            </button>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #666;">产品：</span>
+                        <span>${orderData.product_name || 'IC Studio 视奏工具'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #666;">验证时间：</span>
+                        <span>${new Date().toLocaleString()}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #666;">订单号：</span>
+                        <span style="font-family: monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">${(orderData.order_info?.out_trade_no) || (orderData.order_info?.order_id) || orderData.out_trade_no || orderData.order_id || orderData.orderId || '暂无'}</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #333; margin-bottom: 20px;">📦 下载资源</h3>
+                    <div style="display: grid; gap: 10px;">
+                        <a href="javascript:void(0)" onclick="downloadFile('/software-packages/IC Studio 视奏工具-1.0.0-mac-x64.dmg', 'IC Studio 视奏工具-1.0.0-mac-x64.dmg')"
+                           style="display: block; background: #f0f9ff; color: #1e40af; padding: 12px 20px; border: 2px solid #93c5fd; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer;"
+                           onmouseover="this.style.background='#1e40af'; this.style.color='white';" 
+                           onmouseout="this.style.background='#f0f9ff'; this.style.color='#1e40af';">
+                            🍎 Mac版本 (DMG)
+                        </a>
+                        <a href="javascript:void(0)" onclick="downloadFile('/software-packages/IC Studio 视奏工具-1.0.0-win-x64.exe', 'IC Studio 视奏工具-1.0.0-win-x64.exe')"
+                           style="display: block; background: #f0fdf4; color: #166534; padding: 12px 20px; border: 2px solid #86efac; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer;"
+                           onmouseover="this.style.background='#166534'; this.style.color='white';" 
+                           onmouseout="this.style.background='#f0fdf4'; this.style.color='#166534';">
+                            💻 Windows版本 (EXE)
+                        </a>
+                        <a href="javascript:void(0)" onclick="downloadFile('/software-packages/IC Studio 视奏工具-1.0.0-linux-x86_64.AppImage', 'IC Studio 视奏工具-1.0.0-linux-x86_64.AppImage')"
+                           style="display: block; background: #fef3c7; color: #92400e; padding: 12px 20px; border: 2px solid #fbbf24; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer;"
+                           onmouseover="this.style.background='#92400e'; this.style.color='white';" 
+                           onmouseout="this.style.background='#fef3c7'; this.style.color='#92400e';">
+                            🐧 Linux版本 (AppImage)
+                        </a>
+                    </div>
+                    <p style="font-size: 12px; color: #888; margin-top: 15px;">下载完成后，使用以上访问码激活完整版功能</p>
+                </div>
+
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <button onclick="closeSuccessPopup()" 
+                            style="padding: 15px 30px; background: #f8f9fa; color: #333; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;"
+                            onmouseover="this.style.background='#e2e8f0'" 
+                            onmouseout="this.style.background='#f8f9fa'">
+                        稍后使用
+                    </button>
+                    <button onclick="goToSightReadingTool()" 
+                            style="padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;"
+                            onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'" 
+                            onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
+                        🚀 开始使用
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+}
+
+// 关闭成功弹窗
+function closeSuccessPopup() {
+    const popup = document.getElementById('success-popup');
+    if (popup) {
+        popup.remove();
+    }
+}
+
+// 前往视奏工具页面
+function goToSightReadingTool() {
+    closeSuccessPopup();
+    // 跳转到完整版视奏工具页面
+    window.open('/tools/sight-reading-generator.html', '_blank');
+}
+
+// 确保所有功能在DOM加载后就绪
 document.addEventListener('DOMContentLoaded', function() {
-  const accessCodeInput = document.getElementById('access-code-input');
-  if (accessCodeInput) {
-    accessCodeInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        verifyAccessCode();
-      }
-    });
-  }
-  
-  // 支持回车键提交忘记访问码
-  const forgotInput = document.getElementById('forgot-alipay-account');
-  if (forgotInput) {
-    forgotInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        sendForgotAccessCode();
-      }
-    });
-  }
-  
-  // 检查URL参数处理支付回调
-  const urlParams = new URLSearchParams(window.location.search);
-  const payment = urlParams.get('payment');
-  const sessionId = urlParams.get('session_id');
-  
-  if (payment === 'success' && sessionId) {
-    // Stripe 支付成功回调
-    showStatus('正在确认支付结果...', 'loading');
+    console.log('🔧 IC Studio 视奏工具页面初始化开始...');
     
-    cloudbase.init({
-      env: 'cloud1-4g1r5ho01a0cfd85'
-    }).callFunction({
-      name: 'payment-manager',
-      data: {
-        action: 'verify_stripe_payment',
-        sessionId: sessionId
-      }
-    }).then(result => {
-      if (result.result.success) {
-        alert('支付成功！您的访问码是：' + result.result.licenseKey + '\n\n请保存好访问码，现在将跳转到工具页面。');
-        localStorage.setItem('ic-sight-reading-license', result.result.licenseKey);
-        window.location.href = '/tools/sight-reading-generator.html';
-      } else {
-        alert('支付验证失败：' + (result.result.message || '未知错误'));
-      }
-    }).catch(error => {
-      console.error('支付验证错误:', error);
-      alert('支付验证失败，请联系客服');
-    });
+    // 检查关键元素
+    const input = document.getElementById('access-code-input');
+    const button = document.getElementById('verify-btn');
+    const resultDiv = document.getElementById('verify-result');
     
-    // 清理URL参数
-    window.history.replaceState({}, document.title, window.location.pathname);
-  } else if (payment === 'cancel') {
-    alert('支付已取消');
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
+    if (!input || !button || !resultDiv) {
+        console.error('❌ 关键页面元素缺失');
+        return;
+    }
+    
+    console.log('✅ 页面元素检查通过');
+    
+    // 确保按钮初始状态正确
+    handleInputChange();
+    
+    // 检查PaymentStateManager状态
+    function checkPaymentManager() {
+        if (window.paymentManager) {
+            console.log('✅ PaymentStateManager 已就绪');
+            
+            // 检查是否有已支付状态
+            const hasPaid = window.paymentManager.hasPaidAccess();
+            if (hasPaid) {
+                console.log('🎉 检测到已支付状态');
+                const accessCode = window.paymentManager.getCurrentAccessCode();
+                if (accessCode) {
+                    console.log('💡 当前访问码:', accessCode);
+                }
+            }
+        } else {
+            console.log('⏳ 等待 PaymentStateManager 加载...');
+            setTimeout(checkPaymentManager, 500);
+        }
+    }
+    
+    // 延迟检查PaymentStateManager（给脚本加载时间）
+    setTimeout(checkPaymentManager, 1000);
+    
+    console.log('🎯 访问码验证功能已初始化完成');
+    console.log('💡 现在可以输入有效的访问码进行验证了');
+    console.log('🧪 测试功能: testVerifyFunction() - 自动填入测试访问码');
+});
+
+// 退款功能已移至 /js/refund-handler.js
+
+// 暴露测试函数到全局作用域
+window.testVerifyFunction = testVerifyFunction;
+
+// 测试函数已移至 refund-handler.js
+
 </script>
 
       
@@ -1277,12 +1358,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
       
         
-          
-        
-      
-        
-      
-        
       
         
       
@@ -1300,7 +1375,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       
       <div class="text-center mt-8">
-        <a href="https://icstudio.club/" class="inline-flex items-center px-6 py-3 text-blue-500 rounded-full transition-colors">
+        <a href="http://localhost:1313/" class="inline-flex items-center px-6 py-3 text-blue-500 rounded-full transition-colors">
           ← 返回IC Studio
         </a>
       </div>
@@ -1367,17 +1442,13 @@ document.addEventListener('DOMContentLoaded', function() {
   
   </div>
   </footer></footer>
-        <script defer src="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/js/insertoggle.sha256-R0&#43;bDggCHGUZz/TkbfFMzxSChbLToj1jIdbhDyXCkfs=.js" 
-                integrity="sha256-R0&#43;bDggCHGUZz/TkbfFMzxSChbLToj1jIdbhDyXCkfs=" crossorigin="anonymous"
-                onerror="console.warn('CDN failed for insertoggle.js'); var s=document.createElement('script'); s.src='\/js\/insertoggle.474f9b0e08021c6519cff4e46df14ccf148285b2d3a23d6321d6e10f25c291fb.js'; s.integrity='sha256-R0\u002bbDggCHGUZz\/TkbfFMzxSChbLToj1jIdbhDyXCkfs='; s.crossOrigin='anonymous'; document.head.appendChild(s);"></script>
+      <script src="/js/insertoggle.js"></script>
 
 
 <script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.stemmer.support.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.zh.js"></script>
-        <script defer src="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/js/search.sha256-TfvCGkfYDFKNVgxdRZ0uZfbT5tILAlbnp0VLD1EAe6w=.js" 
-                integrity="sha256-TfvCGkfYDFKNVgxdRZ0uZfbT5tILAlbnp0VLD1EAe6w=" crossorigin="anonymous"
-                onerror="console.warn('CDN failed for search.js'); var s=document.createElement('script'); s.src='\/js\/search.4dfbc21a47d80c528d560c5d459d2e65f6d3e6d20b0256e7a7454b0f51007bac.js'; s.integrity='sha256-TfvCGkfYDFKNVgxdRZ0uZfbT5tILAlbnp0VLD1EAe6w='; s.crossOrigin='anonymous'; document.head.appendChild(s);"></script>
+      <script src="/js/search.js"></script>
 
 
   

@@ -1,27 +1,22 @@
 #!/bin/bash
-set -euo pipefail
 
-# === 可改参数 ===
-PROJECT_DIR="/Users/igorchen/IC WEB 2/pehtheme-hugo"
-PUBLIC_SUBDIR="public"
-REMOTE="origin"
-BRANCH="main"
-BUILD=true   # 若需先生成静态文件设为 true
+# Navigate to the public directory (assuming public folder is here)
+cd "/Users/igorchen/IC WEB/pehtheme-hugo/public"
 
-# === 执行 ===
-cd "$PROJECT_DIR"
+# Fetch the latest updates from GitHub to avoid conflicts
+git fetch origin
 
-if [ "$BUILD" = true ]; then
-  command -v hugo >/dev/null 2>&1 && hugo -D
-fi
+# Merge remote changes (in case there were any) into the local branch
+git merge origin/main
 
-git fetch "$REMOTE"
-git merge "$REMOTE/$BRANCH" || true
+# Add all the files in the public directory
+git add .
 
-# 强制添加被忽略的 public 文件
-git add -f "$PUBLIC_SUBDIR"/** "$PUBLIC_SUBDIR" 2>/dev/null || git add -f "$PUBLIC_SUBDIR"
+# Commit the changes with a message (you can modify this message)
+git commit -m "Update Hugo public folder"
 
-git commit -m "Update public $(date +'%Y-%m-%d %H:%M:%S')" || echo "ℹ️ 无变更可提交"
-git push "$REMOTE" "$BRANCH"
+# Push the changes to GitHub (force push if you want to overwrite remote changes)
+git push origin main --force
 
-echo "✅ 已强制提交并推送 $PUBLIC_SUBDIR 到 $REMOTE/$BRANCH"
+# Optional: Print status after push
+echo "Successfully updated public folder on GitHub!"
