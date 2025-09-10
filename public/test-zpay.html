@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-Pay 易支付测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #666;
+        }
+        .params {
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px 0;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f5e9;
+            border: 1px solid #4caf50;
+            border-radius: 3px;
+            color: #2e7d32;
+        }
+        .error {
+            background: #ffebee;
+            border-color: #f44336;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Z-Pay 易支付接口测试</h1>
+        
+        <div class="test-section">
+            <h3>📋 当前配置</h3>
+            <div class="params" id="config">
+                加载中...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔐 签名测试</h3>
+            <button class="btn" onclick="testSign()">测试签名生成</button>
+            <div id="sign-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>💳 支付测试</h3>
+            <button class="btn" onclick="testPayment()">创建测试订单</button>
+            <div id="payment-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📝 官方示例对比</h3>
+            <p>根据易支付文档，签名字符串格式应为：</p>
+            <div class="params">
+                key1=value1&key2=value2&...&key=商户密钥
+            </div>
+            <p>参数需要按ASCII升序排列，空值需要过滤</p>
+        </div>
+    </div>
+
+    <script src="/js/zpay-standard.js"></script>
+    <script>
+        // 显示配置
+        function showConfig() {
+            if (window.zpayStandard) {
+                const config = window.zpayStandard.config;
+                document.getElementById('config').innerHTML = `
+                    网关: ${config.gateway}<br>
+                    商户ID: ${config.pid}<br>
+                    商户密钥: ${config.key.substring(0, 10)}...<br>
+                    金额: ${config.money}<br>
+                    签名方式: ${config.signType}
+                `;
+            }
+        }
+
+        // 测试签名
+        function testSign() {
+            const testParams = {
+                pid: '2025090607243839',
+                type: 'alipay',
+                out_trade_no: 'TEST123456',
+                notify_url: 'https://icstudio.club/api/notify',
+                return_url: 'https://icstudio.club/sight-reading-tool/',
+                name: 'IC Studio 视奏工具',
+                money: '48.00',
+                sitename: 'IC Studio'
+            };
+
+            const sign = window.zpayStandard.generateSign(testParams);
+            
+            document.getElementById('sign-result').innerHTML = `
+                <div class="result">
+                    <strong>测试参数：</strong><br>
+                    <pre>${JSON.stringify(testParams, null, 2)}</pre>
+                    <strong>生成的签名：</strong><br>
+                    ${sign}
+                </div>
+            `;
+        }
+
+        // 测试支付
+        function testPayment() {
+            try {
+                const orderId = 'TEST_' + Date.now();
+                const params = {
+                    pid: window.zpayStandard.config.pid,
+                    type: 'alipay',
+                    out_trade_no: orderId,
+                    notify_url: 'https://icstudio.club/api/notify',
+                    return_url: 'https://icstudio.club/sight-reading-tool/',
+                    name: 'IC Studio 视奏工具',
+                    money: window.zpayStandard.config.money,
+                    sitename: 'IC Studio'
+                };
+
+                params.sign = window.zpayStandard.generateSign(params);
+                params.sign_type = 'MD5';
+
+                document.getElementById('payment-result').innerHTML = `
+                    <div class="result">
+                        <strong>订单号：</strong>${orderId}<br>
+                        <strong>支付参数：</strong><br>
+                        <pre>${JSON.stringify(params, null, 2)}</pre>
+                        <br>
+                        <button class="btn" onclick="window.zpayStandard.createPayment()">执行真实支付</button>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('payment-result').innerHTML = `
+                    <div class="result error">
+                        错误：${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // 页面加载完成后显示配置
+        window.onload = function() {
+            showConfig();
+        };
+    </script>
+</body>
+</html>
