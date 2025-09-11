@@ -1,0 +1,9 @@
+{
+  "name": "autoRefundSystem",
+  "version": "1.0.0",
+  "description": "IC Studio Auto Refund System - Unified API for all refund operations",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}

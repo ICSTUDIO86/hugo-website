@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>访问码验证调试工具 - IC Studio</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .debug-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: monospace;
+            text-transform: uppercase;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #5a6fd8;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .log-area {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🔧 访问码验证调试工具</h1>
+        
+        <div class="input-group">
+            <label for="access-code">输入访问码 (自动转大写)</label>
+            <input type="text" id="access-code" placeholder="例如: VTTBY9XCFTQY" maxlength="12">
+        </div>
+        
+        <button onclick="debugValidation()">🔍 开始调试验证</button>
+        <button onclick="clearLogs()">🗑️ 清除日志</button>
+        
+        <div id="status"></div>
+        <div class="log-area" id="debug-log">等待调试...</div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleString();
+            const logArea = document.getElementById('debug-log');
+            const colorMap = {
+                info: '#00ff00',
+                success: '#00ff00',
+                error: '#ff6b6b',
+                warning: '#ffa500'
+            };
+            
+            const color = colorMap[type] || '#00ff00';
+            logArea.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span>\n`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function setStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+        }
+
+        function clearLogs() {
+            document.getElementById('debug-log').innerHTML = '日志已清除，等待新的调试...\n';
+            document.getElementById('status').innerHTML = '';
+        }
+
+        // 自动转换大写
+        document.getElementById('access-code').addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+
+        async function debugValidation() {
+            const input = document.getElementById('access-code');
+            const code = input.value.trim().toUpperCase();
+            
+            clearLogs();
+            log('🚀 开始调试访问码验证流程', 'info');
+            
+            // 步骤 1: 基本检查
+            log(`📝 访问码: ${code}`, 'info');
+            log(`📏 长度: ${code.length} 位`, 'info');
+            
+            if (!code) {
+                log('❌ 错误: 访问码为空', 'error');
+                setStatus('❌ 请输入访问码', 'error');
+                return;
+            }
+            
+            if (code.length !== 11 && code.length !== 12) {
+                log(`❌ 长度验证失败: 需要11-12位，实际${code.length}位`, 'error');
+                setStatus('❌ 访问码长度不正确', 'error');
+                return;
+            }
+            
+            const formatRegex = /^[A-Z0-9]{11,12}$/;
+            if (!formatRegex.test(code)) {
+                log('❌ 格式验证失败: 只能包含大写字母和数字', 'error');
+                setStatus('❌ 访问码格式不正确', 'error');
+                return;
+            }
+            
+            log('✅ 基本格式验证通过', 'success');
+            
+            // 步骤 2: 网络连接测试
+            log('🌐 测试网络连接...', 'info');
+            setStatus('🔄 正在验证...', 'info');
+            
+            try {
+                const startTime = Date.now();
+                
+                log('📡 发送API请求到CloudBase...', 'info');
+                log(`🎯 URL: https://cloud1-4g1r5ho01a0cfd85.service.tcloudbase.com/checkOrder`, 'info');
+                log(`📦 数据: {"code": "${code}", "deviceId": "debug-tool"}`, 'info');
+                
+                const response = await fetch('https://cloud1-4g1r5ho01a0cfd85.service.tcloudbase.com/checkOrder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Request-Source': 'IC-Studio-Debug-Tool'
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        deviceId: 'debug-tool-' + Date.now()
+                    })
+                });
+                
+                const responseTime = Date.now() - startTime;
+                log(`⏱️ 响应时间: ${responseTime}ms`, 'info');
+                log(`📊 HTTP状态: ${response.status} ${response.statusText}`, 'info');
+                
+                // 步骤 3: 解析响应
+                const result = await response.json();
+                log('📄 服务器响应:', 'info');
+                log(JSON.stringify(result, null, 2), 'info');
+                
+                if (result.success) {
+                    log('✅ API验证成功！', 'success');
+                    log(`📋 产品: ${result.data.product_name}`, 'success');
+                    log(`💰 金额: ¥${result.data.amount}`, 'success');
+                    log(`⏰ 创建时间: ${result.data.created_at}`, 'success');
+                    log(`🔗 订单号: ${result.data.order_info.out_trade_no}`, 'success');
+                    
+                    setStatus('✅ 访问码验证成功！后台数据正常', 'success');
+                    
+                    // 步骤 4: 测试本地存储
+                    log('💾 测试本地存储功能...', 'info');
+                    try {
+                        const testData = {
+                            code: code,
+                            verified: true,
+                            timestamp: new Date().toISOString()
+                        };
+                        localStorage.setItem('debug-test', JSON.stringify(testData));
+                        const retrieved = JSON.parse(localStorage.getItem('debug-test'));
+                        if (retrieved && retrieved.code === code) {
+                            log('✅ 本地存储功能正常', 'success');
+                            localStorage.removeItem('debug-test');
+                        } else {
+                            log('⚠️ 本地存储可能有问题', 'warning');
+                        }
+                    } catch (e) {
+                        log(`❌ 本地存储错误: ${e.message}`, 'error');
+                    }
+                    
+                } else {
+                    log('❌ API验证失败', 'error');
+                    log(`错误信息: ${result.message || result.error}`, 'error');
+                    setStatus(`❌ ${result.message || result.error}`, 'error');
+                }
+                
+            } catch (error) {
+                log('❌ 网络请求失败', 'error');
+                log(`错误详情: ${error.message}`, 'error');
+                log(`错误类型: ${error.name}`, 'error');
+                
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    log('🔍 可能的原因:', 'warning');
+                    log('- 网络连接问题', 'warning');
+                    log('- CORS 跨域限制', 'warning');
+                    log('- DNS 解析问题', 'warning');
+                }
+                
+                setStatus('❌ 网络连接失败，请检查网络', 'error');
+            }
+            
+            log('🏁 调试完成', 'info');
+        }
+
+        // 页面加载完成后的提示
+        window.addEventListener('load', function() {
+            log('🎯 调试工具已就绪', 'success');
+            log('💡 请输入访问码并点击"开始调试验证"', 'info');
+            log('📋 已知有效访问码:', 'info');
+            log('- VTTBY9XCFTQY (最新)', 'info');
+            log('- LSUPH8UEBR73', 'info');
+            log('- 32HQKYX8DXW8', 'info');
+            log('- FB47DHTCADW8', 'info');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "name": "recover-access-code",
+  "version": "1.0.0",
+  "description": "IC Studio 访问码找回云函数 - 根据支付宝账号查找相关的访问码和订单信息",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "tcb functions:deploy recoverAccessCode",
+    "logs": "tcb functions:log recoverAccessCode"
+  },
+  "keywords": [
+    "cloudbase",
+    "serverless",
+    "access-code",
+    "recovery",
+    "alipay",
+    "ic-studio"
+  ],
+  "author": "IC Studio",
+  "license": "MIT",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "cloudbaserc": {
+    "functionName": "recoverAccessCode",
+    "functionRoot": "./",
+    "ignore": [
+      "node_modules/**/*",
+      ".git/**/*",
+      "*.md"
+    ]
+  }
+}

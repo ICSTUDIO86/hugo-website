@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    {
+      "name": "processRefundByAccessCode",
+      "type": "http",
+      "config": {
+        "path": "/processRefundByAccessCode",
+        "method": ["POST"],
+        "cors": {
+          "origin": ["*"],
+          "credentials": true
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "name": "refund-by-access-code",
+  "version": "1.0.0",
+  "description": "IC Studio 通过访问码退款云函数 - 根据访问码查找订单并处理退款，成功后删除访问码",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "tcb functions:deploy refundByAccessCode",
+    "logs": "tcb functions:log refundByAccessCode"
+  },
+  "keywords": [
+    "cloudbase",
+    "serverless",
+    "refund",
+    "access-code",
+    "zpay",
+    "ic-studio"
+  ],
+  "author": "IC Studio",
+  "license": "MIT",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "cloudbaserc": {
+    "functionName": "refundByAccessCode",
+    "functionRoot": "./",
+    "ignore": [
+      "node_modules/**/*",
+      ".git/**/*",
+      "*.md"
+    ]
+  }
+}

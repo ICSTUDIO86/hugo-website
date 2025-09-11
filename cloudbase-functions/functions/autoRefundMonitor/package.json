@@ -1,0 +1,10 @@
+{
+  "name": "autoRefundMonitor",
+  "version": "1.0.0",
+  "description": "Automatic refund status monitoring and synchronization system",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1",
+    "node-fetch": "^2.6.12"
+  }
+}

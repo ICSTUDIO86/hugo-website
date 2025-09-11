@@ -1,0 +1,9 @@
+{
+  "name": "findAccessCodeByAlipay",
+  "version": "1.0.0",
+  "description": "Find access codes by Alipay account",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}

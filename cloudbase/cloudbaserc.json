@@ -1,0 +1,25 @@
+{
+  "version": "2.0",
+  "envId": "cloud1-4g1r5ho01a0cfd85",
+  "$schema": "https://framework-1258016615.tcloudbaseapp.com/schema/latest.json",
+  "functionRoot": "./functions",
+  "functions": [
+    {
+      "name": "verify-access-code",
+      "timeout": 5,
+      "runtime": "Nodejs10.15",
+      "memorySize": 256,
+      "handler": "index.main",
+      "installDependency": true
+    },
+    {
+      "name": "generate-access-code", 
+      "timeout": 5,
+      "runtime": "Nodejs10.15",
+      "memorySize": 256,
+      "handler": "index.main",
+      "installDependency": true
+    }
+  ],
+  "region": "ap-shanghai"
+}

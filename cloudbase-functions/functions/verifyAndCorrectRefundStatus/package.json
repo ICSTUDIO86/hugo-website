@@ -1,0 +1,10 @@
+{
+  "name": "verifyAndCorrectRefundStatus",
+  "version": "1.0.0",
+  "description": "Verify and correct refund status by checking against Z-Pay platform",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1",
+    "node-fetch": "^2.6.12"
+  }
+}

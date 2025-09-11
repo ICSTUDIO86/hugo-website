@@ -1,0 +1,9 @@
+{
+  "name": "resetRefundStatus",
+  "version": "1.0.0",
+  "description": "Reset refund status for data consistency fix",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}

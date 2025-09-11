@@ -48,7 +48,7 @@
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-y-10 gap-x-4">
-    {{ range where .Site.RegularPages "Params.tags" "intersect" (slice "web") | first 6 }}
+    {{ range where .Site.Pages "Params.tags" "intersect" (slice "web") | first 6 }}
       {{- partial "content/card" . -}}
     {{ end }}
   </div>
@@ -92,7 +92,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-4">
 
-    {{ range where .Site.RegularPages "Params.categories" "intersect" (slice $cat ) | first 4 }}
+    {{ range where .Site.Pages "Params.categories" "intersect" (slice $cat ) | first 4 }}
 
       {{- partial "content/card" . -}}
 

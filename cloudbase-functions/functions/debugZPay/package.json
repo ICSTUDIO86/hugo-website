@@ -1,0 +1,9 @@
+{
+  "name": "debugZPay",
+  "version": "1.0.0",
+  "description": "Debug Z-Pay API refund issues",
+  "main": "index.js", 
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}

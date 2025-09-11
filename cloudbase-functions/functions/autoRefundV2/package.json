@@ -1,0 +1,9 @@
+{
+  "name": "autoRefundV2",
+  "version": "1.0.0",
+  "description": "Forced auto refund function v2",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}

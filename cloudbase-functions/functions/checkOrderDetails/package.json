@@ -1,0 +1,9 @@
+{
+  "name": "checkOrderDetails",
+  "version": "1.0.0",
+  "description": "Check detailed order information including Alipay account data",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}

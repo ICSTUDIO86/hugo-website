@@ -1,0 +1,9 @@
+{
+  "name": "findAccessCodeByOrderNo",
+  "version": "1.0.0",
+  "description": "Find access codes using order number or Alipay transaction number",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}

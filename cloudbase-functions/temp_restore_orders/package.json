@@ -1,0 +1,9 @@
+{
+  "name": "temp_restore_orders",
+  "version": "1.0.0",
+  "description": "临时恢复订单状态函数",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.2.0"
+  }
+}
