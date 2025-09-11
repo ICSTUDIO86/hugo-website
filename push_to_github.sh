@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Navigate to the public directory (current directory)
+# Navigate to the public directory (assuming public folder is here)
 cd "/Users/igorchen/IC WEB/pehtheme-hugo/public"
 
 # Fetch the latest updates from GitHub to avoid conflicts
@@ -15,8 +15,8 @@ git add .
 # Commit the changes with a message (you can modify this message)
 git commit -m "Update Hugo public folder"
 
-# Push the changes to GitHub
-git push origin main
+# Push the changes to GitHub (force push if you want to overwrite remote changes)
+git push origin main --force
 
 # Optional: Print status after push
 echo "Successfully updated public folder on GitHub!"
