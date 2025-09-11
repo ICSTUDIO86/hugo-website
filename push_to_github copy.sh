@@ -15,8 +15,8 @@ git add .
 # Commit the changes with a message (you can modify this message)
 git commit -m "Update Hugo public folder"
 
-# Push the changes to GitHub (force push if you want to overwrite remote changes)
-git push origin main --force
+# Push the changes to GitHub
+git push origin main
 
 # Optional: Print status after push
 echo "Successfully updated public folder on GitHub!"
