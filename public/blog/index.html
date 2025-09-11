@@ -1,106 +1,19 @@
 <!DOCTYPE html>
 <html lang="en-us" dir="ltr">
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
-  
-<meta charset="utf-8">
+<head>
+  <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-
 
 <title>IC Blog - IC Studio </title>
+
 <meta name="description" content="Hi！欢迎来到我的个人 blog，这里是我记录学习、思考与探索的地方。">
-<meta name="author" content="IC Studio">
+      <link rel="stylesheet" href="/css/main.min.ea6175a748672832fef795ca7cc1cf4df392e6e654b5d0d083320367f3ebe573.css" integrity="sha256-6mF1p0hnKDL&#43;95XKfMHPTfOS5uZUtdDQgzIDZ/Pr5XM=" crossorigin="anonymous">
 
 
-<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
-<link rel="dns-prefetch" href="//fonts.googleapis.com">
-<link rel="dns-prefetch" href="//fonts.gstatic.com">
-<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-
-
-
-<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
-<link rel="dns-prefetch" href="//fonts.googleapis.com">
-<link rel="dns-prefetch" href="//fonts.gstatic.com">
-
-
-<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-
-
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#667eea">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-
-
-
-<link rel="preload" href="/images/ICLOGO.png" as="image">
-
-
-
-
-
-
-
-
-<script>
-
-(function() {
-  'use strict';
-  
-  
-  const fontLink = document.createElement('link');
-  fontLink.rel = 'stylesheet';
-  fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
-  fontLink.media = 'print';
-  fontLink.onload = function() { this.media = 'all'; };
-  document.head.appendChild(fontLink);
-  
-  
-  document.addEventListener('mouseover', function(e) {
-    const link = e.target.closest('a[href]');
-    if (link && link.hostname === window.location.hostname) {
-      const prefetch = document.createElement('link');
-      prefetch.rel = 'prefetch';
-      prefetch.href = link.href;
-      document.head.appendChild(prefetch);
-    }
-  }, { once: true });
-  
-  
-  if ('performance' in window) {
-    window.addEventListener('load', function() {
-      setTimeout(function() {
-        const perfData = performance.getEntriesByType('navigation')[0];
-        if (perfData && perfData.loadEventEnd) {
-          console.log('Page Load Time:', Math.round(perfData.loadEventEnd - perfData.navigationStart) + 'ms');
-        }
-      }, 100);
-    });
-  }
-})();
-</script>
-
-
-
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#667eea">
-
-
-
-
-    
-    <link rel="stylesheet" href="/css/main.css?v=1757548435">
-
-  <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
-  <link rel="icon" type="image/png" sizes="64x64" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+<link rel="icon" type="image/png" href="https://icstudio.club/ICLOGO.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/ICLOGO.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/ICLOGO.png">
+<link rel="icon" type="image/png" sizes="64x64" href="/ICLOGO.png">
 
 <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
 
@@ -128,7 +41,7 @@
 				</span>
 			</button>
 			<div class="relative rounded-full py-1.5 px-6 bg-zinc-100 hover:bg-zinc-200 text-xl font-bold uppercase mx-2">
-				<h2><a class="before:content-[''] before:z-10 before:top-0 before:right-0 before:left-0 before:bottom-0 before:absolute before:pointer-events-auto" href="http://localhost:1313/">IC Studio</a></h2>
+				<h2><a class="before:content-[''] before:z-10 before:top-0 before:right-0 before:left-0 before:bottom-0 before:absolute before:pointer-events-auto" href="https://icstudio.club/">IC Studio</a></h2>
 			</div>
 		</div>
 		<div class="flex items-center ml-auto">
@@ -149,9 +62,6 @@
       <a aria-current="page" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200 border-zinc-400" href="/blog/">Blog</a>
     </li>
     <li class="my-2">
-      <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/tools/sight-reading-generator.html">IC 视奏工具</a>
-    </li>
-    <li class="my-2">
       <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/">音乐内容</a>
     </li>
     </ul>
@@ -169,59 +79,73 @@
 
 </div></header>
   <main class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-
-<div class="max-w-4xl mx-auto">
-  
-  <h1 id="title" class="text-4xl font-bold leading-normal text-center mb-8" style="color:#374151;">
-    IC Blog
-  </h1>
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
 
   
-  
-    <div class="text-center mb-8"><img src="http://localhost:1313/images/blog_hu_2c968a089aa50f0b.png" alt="/images/blog.png" class="mx-auto rounded-lg shadow-lg max-w-full h-auto" style="max-height: 400px;">
-    </div>
-  
+  <div class="lg:col-span-3 lg:col-start-2">
+    <article class="prose lg:prose-lg mx-auto">
 
-  
-    <div class="prose lg:prose-lg max-w-none mb-8 mx-auto text-center">
-      <p>Hi！欢迎来到我的个人 blog，这里是我记录学习、思考与探索的地方。欢迎通过 <a href="/blog/index.xml">RSS</a> 来订阅我的 Blog。</p>
-
-    </div>
-  
-
-  
-  
-  
-  
-  <div class="flex justify-center mb-6">
-    <a href="http://localhost:1313/blog/index.xml" class="inline-flex items-center px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-full transition duration-300 shadow-md hover:shadow-lg">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="mr-2" viewBox="0 0 16 16">
-        <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm1.5 2.5c5.523 0 10 4.477 10 10a1 1 0 1 1-2 0 8 8 0 0 0-8-8 1 1 0 0 1 0-2zm0 4a6 6 0 0 1 6 6 1 1 0 1 1-2 0 4 4 0 0 0-4-4 1 1 0 0 1 0-2zm.5 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-      </svg>
-      订阅 RSS
-    </a>
-  </div>
-  
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-  
-    <article class="relative group bg-zinc-100 hover:bg-blue-100 rounded-3xl transition duration-300">
-      <a class="insert-link" href="http://localhost:1313/blog/%E6%88%91%E5%BC%80%E5%A7%8B%E5%AD%A6%E4%B9%A0-ai-%E4%BA%86/"></a>
       
-      <div class="p-6">
-        <h2 class="text-xl font-bold mb-3 group-hover:text-blue-600 transition duration-300">我开始学习 AI 了</h2>
-        
-        <div class="flex items-center space-x-3 text-sm text-zinc-500">
-          <time>2025-08-25</time>
-          
-        </div>
-      </div>
-    </article>
-  
-  </div>
-  
-  
-</div>
+      <header class="not-prose">
 
+        
+        <h1 id="title" class="text-4xl font-bold leading-normal text-center mb-4">
+          IC Blog
+        </h1>
+
+      
+      <div class="flex flex-wrap items-center gap-2 text-sm text-zinc-500 mb-6">
+        <time datetime="0001-01-01 00:00:00 &#43;0000 UTC">0001年1月1日</time>
+        <span>；</span>
+        <span>阅读时间约 1 分钟</span>
+      </div>
+
+
+        
+        
+
+      </header>
+
+      
+      <div class="prose lg:prose-lg max-w-none mb-8">
+        <p>Hi！欢迎来到我的个人 blog，这里是我记录学习、思考与探索的地方。</p>
+
+      </div>
+
+    
+    
+    
+      
+    
+    
+    <nav class="flex justify-start items-start w-full text-base not-prose">
+      
+      <div class="text-left">
+        
+      </div>
+      
+      <div class="text-right ml-auto">
+        
+      </div>
+    </nav>
+
+
+      
+      <div class="text-center mt-8">
+        <a href="/blog/" class="inline-flex items-center px-6 py-3 text-blue-500 rounded-full transition-colors">
+          ← 返回Blog列表
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+  
+  <div class="hidden lg:block lg:col-span-1">
+    
+  </div>
+
+</div>
 </main>
   <footer class="bg-zinc-100 py-10 md:py-14"><footer class="bg-zinc-100 py-10 md:py-14"><div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
 
@@ -274,15 +198,12 @@
   
   </div>
   </footer></footer>
-      <script src="/js/insertoggle.js"></script>
+      <script defer src="/js/insertoggle.474f9b0e08021c6519cff4e46df14ccf148285b2d3a23d6321d6e10f25c291fb.js" integrity="sha256-R0&#43;bDggCHGUZz/TkbfFMzxSChbLToj1jIdbhDyXCkfs=" crossorigin="anonymous"></script>
 
 
 <script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.stemmer.support.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.zh.js"></script>
-      <script src="/js/search.js"></script>
-
-
+      <script defer src="/js/search.4dfbc21a47d80c528d560c5d459d2e65f6d3e6d20b0256e7a7454b0f51007bac.js" integrity="sha256-TfvCGkfYDFKNVgxdRZ0uZfbT5tILAlbnp0VLD1EAe6w=" crossorigin="anonymous"></script>
   
 </body>
 </html>

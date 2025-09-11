@@ -11,7 +11,7 @@
     apiUrl: 'https://zpayz.cn/mapi.php',
     pid: '2025090607243839', 
     key: 'UoA5vDBCe51EyVzdK2Fu2udBO1SAadjN',
-    money: '1.00'
+    money: '48.00'
   };
 
   // MD5函数

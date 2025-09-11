@@ -254,7 +254,7 @@
         },
         body: JSON.stringify({
           name: 'IC Studio 视奏工具授权',
-          money: '1.00',
+          money: '48.00',
           type: 'alipay'
         })
       });
