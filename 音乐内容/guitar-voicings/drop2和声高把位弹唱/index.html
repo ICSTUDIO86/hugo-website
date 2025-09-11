@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+<head>
+  
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+
+<title>如何实现高把位弹唱？Drop 2和声 - IC Studio </title>
+<meta name="description" content="系统学习Drop 2和声的构建原理和指型分布，掌握高把位弹唱的核心技能，丰富伴奏和声表现力。">
+<meta name="author" content="IC Studio">
+
+
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+
+
+
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#667eea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+
+
+<link rel="preload" href="/images/ICLOGO.png" as="image">
+
+
+
+
+
+
+
+
+<script>
+
+(function() {
+  'use strict';
+  
+  
+  const fontLink = document.createElement('link');
+  fontLink.rel = 'stylesheet';
+  fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
+  fontLink.media = 'print';
+  fontLink.onload = function() { this.media = 'all'; };
+  document.head.appendChild(fontLink);
+  
+  
+  document.addEventListener('mouseover', function(e) {
+    const link = e.target.closest('a[href]');
+    if (link && link.hostname === window.location.hostname) {
+      const prefetch = document.createElement('link');
+      prefetch.rel = 'prefetch';
+      prefetch.href = link.href;
+      document.head.appendChild(prefetch);
+    }
+  }, { once: true });
+  
+  
+  if ('performance' in window) {
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const perfData = performance.getEntriesByType('navigation')[0];
+        if (perfData && perfData.loadEventEnd) {
+          console.log('Page Load Time:', Math.round(perfData.loadEventEnd - perfData.navigationStart) + 'ms');
+        }
+      }, 100);
+    });
+  }
+})();
+</script>
+
+
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js')
+      .then(function(registration) {
+        console.log('SW registered');
+      })
+      .catch(function(error) {
+        console.log('SW registration failed');
+      });
+  });
+}
+</script>
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#667eea">
+
+
+
+
+    
+        
+        
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/css/main.sha256-6mF1p0hnKDL&#43;95XKfMHPTfOS5uZUtdDQgzIDZ/Pr5XM=.css" 
+              integrity="sha256-6mF1p0hnKDL&#43;95XKfMHPTfOS5uZUtdDQgzIDZ/Pr5XM=" 
+              crossorigin="anonymous"
+              onerror="console.warn('CDN CSS failed, loading from local'); this.onerror=null; this.href='\/css\/main.min.ea6175a748672832fef795ca7cc1cf4df392e6e654b5d0d083320367f3ebe573.css';">
+        
+        
+        <link rel="preload" href="/css/main.min.ea6175a748672832fef795ca7cc1cf4df392e6e654b5d0d083320367f3ebe573.css" as="style" 
+              integrity="sha256-6mF1p0hnKDL&#43;95XKfMHPTfOS5uZUtdDQgzIDZ/Pr5XM=" crossorigin="anonymous">
+
+  <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+
+<script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
+
+
+
+<script 
+  src="https://www.paypal.com/sdk/js?client-id=BAAdjqh0FzrMwRH9fqeYMsT9ovDAkGo0OZUipoGljE5ZYJJcQ51wkmAaZhLoY0gR5f6nHlu9hhm6GjBgBE&components=hosted-buttons&disable-funding=venmo&currency=EUR">
+</script>
+</head>
+<body>
+  <header class="py-6 border-b"><div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col">
+	<div class="flex items-center">
+		<div class="flex items-center">
+			<button class="flex items-center space-x-2 rounded-full border py-1 pr-[5px] pl-3 group bg-zinc-100 hover:bg-zinc-200 toggle-button" data-target="menu-bar">
+				<svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+					<path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"></path>
+				</svg>
+				<span class="bg-blue-500 fill-white rounded-full p-1.5">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="group-hover:animate-spin bi bi-egg-fried fill-white" viewBox="0 0 16 16">
+						<ellipse cx="8" cy="8" rx="6.8" ry="6.8" stroke="#FFFFFF" fill="none" stroke-width="2"></ellipse>
+						<path d="M7.5 8.3c.47.03 1.48-.05 2.15-.01.3.01.47.12.54.14.71.31 1.17 1.19.93 1.96-.09.3-.34.72-.68.94-.4.26-.98.27-1.86.27-.35-.01-.52.08-1.09-.12-1.27-.44-1.79-1.28-1.91-2.31-.08-.65.11-1.28.44-1.81 1.15-1.66 2.78-1.1 4.56-1.23.63-.08.96-.4 1.11-.78.14-.35.13-.72.12-1.05-.02-.9-.43-1.39-1.23-1.49-.13-.02-.43.02-.43.02-.09.06-.22-.03-.59.33-.23.23-.35.37-.43.64-.06.2-.03 3.1-.03 3.2-.01.3-.03 3.58-.01 3.78.05.36-.04 1.01.01 1.62.1.81-.03 1.53-1 1.59-.52.03-.8-.4-.88-.76-.01-.06-.02-.12-.02-.18" 
+          transform="translate(0.8, 1) scale(0.8)" 
+          stroke="#FFFFFF" fill="none" stroke-width="0.96"></path>
+				</svg>
+				</span>
+			</button>
+			<div class="relative rounded-full py-1.5 px-6 bg-zinc-100 hover:bg-zinc-200 text-xl font-bold uppercase mx-2">
+				<h2><a class="before:content-[''] before:z-10 before:top-0 before:right-0 before:left-0 before:bottom-0 before:absolute before:pointer-events-auto" href="https://icstudio.club/">IC Studio</a></h2>
+			</div>
+		</div>
+		<div class="flex items-center ml-auto">
+			<button class="flex items-center rounded-full p-3 bg-zinc-100 hover:bg-zinc-200 toggle-button" data-target="search-bar">
+				<svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+					<path id="path1" class="transition-all ease-linear" d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
+					<path id="path2" class="transition-all ease-linear hidden" d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"></path>
+				</svg>
+			</button>
+		</div>
+	</div>
+  <nav id="menu-bar" class="block mt-3 close">
+    <ul class="flex items-center flex flex-nowrap whitespace-nowrap overflow-x-auto space-x-4">
+    <li class="my-2">
+      <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/">主页</a>
+    </li>
+    <li class="my-2">
+      <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/blog/">Blog</a>
+    </li>
+    <li class="my-2">
+      <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/tools/sight-reading-generator.html">IC 视奏工具</a>
+    </li>
+    <li class="my-2">
+      <a aria-current="true" class="ancestor" href="/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/">音乐内容</a>
+    </li>
+    </ul>
+  </nav>
+<div id="search-bar" class="block mt-3 close">
+	<form id="search" class="flex items-stretch relative">
+		<input class="w-full block px-6 py-2 rounded-l-full focus:outline-none border border-zinc-200" type="text" placeholder="搜索文章内容...">
+		<button type="submit" class="flex items-center px-7 py-2.5 rounded-r-full border border-zinc-200 hover:bg-zinc-50 transition-colors">
+			<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="group-hover:animate-pulse" viewBox="0 0 16 16">
+				<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
+			</svg>
+		</button>
+	</form>
+</div>
+
+</div></header>
+  <main class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+
+  
+  <div class="lg:col-span-3 lg:col-start-2">
+    <article class="prose lg:prose-lg mx-auto">
+
+      
+      <header class="not-prose">
+
+        
+        <h1 id="title" class="text-4xl font-bold leading-normal text-center mb-4">
+          如何实现高把位弹唱？Drop 2和声
+        </h1>
+
+      
+      <div class="flex flex-wrap items-center gap-2 text-sm text-zinc-500 mb-6">
+        <time datetime="2024-01-15 00:00:00 &#43;0000 UTC">2024年1月15日</time>
+        <span>；</span>
+        <span>阅读时间约 7 分钟</span>
+      </div>
+
+        
+        
+
+      </header>
+
+      
+      <div class="mb-14">
+        <p>对于许多吉他学习者而言，在掌握了基础的前三品和弦后，往往面临着和声表现单一、无法实现高把位弹唱的瓶颈。Drop 2和声作为现代吉他演奏中的重要技巧，不仅能够帮助演奏者突破这一限制，更是理解吉他指板逻辑的关键所在。</p>
+<h2 id="drop-2和声的理论基础">Drop 2和声的理论基础</h2>
+<h3 id="定义与构建原理">定义与构建原理</h3>
+<p>Drop 2和声是指将紧凑型四声部和声中从上往下数的第二个声部降低一个八度后形成的和声配置。这种重新排列不会改变和弦的基本功能，但会显著影响其音响效果和演奏的可行性。</p>
+<p><strong>构建示例：</strong></p>
+<ul>
+<li>原始Cmaj7紧凑和声：C-E-G-B（从低到高）</li>
+<li>Drop 2处理后：C-G-E-B（第二声部E降低八度）</li>
+</ul>
+<h3 id="音响特点">音响特点</h3>
+<p>Drop 2和声具有以下显著特征：</p>
+<ul>
+<li>音域分布更为开阔，避免过度密集的音响效果</li>
+<li>在吉他上具有良好的可演奏性</li>
+<li>能够产生典型的现代吉他和声音色</li>
+<li>适合各种音乐风格，特别是爵士和现代流行音乐</li>
+</ul>
+<h2 id="吉他上的drop-2指型系统">吉他上的Drop 2指型系统</h2>
+<h3 id="指型分类">指型分类</h3>
+<p>在吉他上，Drop 2和声可按弦组分为三个主要类别：</p>
+<ol>
+<li><strong>1-2-3-4弦组合</strong>：高音区域，音色明亮</li>
+<li><strong>2-3-4-5弦组合</strong>：中音区域，平衡的音响效果</li>
+<li><strong>3-4-5-6弦组合</strong>：低音区域，厚重的音色特质</li>
+</ol>
+<h3 id="转位系统">转位系统</h3>
+<p>每个弦组内包含四个基本转位，分别以根音、三音、五音、七音为最低音：</p>
+<p><strong>根音转位</strong>：根音在最低声部
+<strong>第一转位</strong>：三音在最低声部
+<strong>第二转位</strong>：五音在最低声部<br>
+<strong>第三转位</strong>：七音在最低声部</p>
+<h2 id="和弦类型的衍变">和弦类型的衍变</h2>
+<h3 id="基础和弦类型">基础和弦类型</h3>
+<p>以大七和弦指型为基础，通过调整特定音程可以获得其他和弦类型：</p>
+<p><strong>属七和弦</strong>：将七音降低半音
+<strong>小七和弦</strong>：将三音降低半音（在属七和弦基础上）
+<strong>半减七和弦</strong>：将五音降低半音（在小七和弦基础上）</p>
+<h3 id="记忆与推导技巧">记忆与推导技巧</h3>
+<p><strong>方法一：横向推导</strong>
+掌握每个弦组中的一个指型后，通过将各声部移动至下一个和弦内音来获得其他转位。这种方法将需要记忆的指型从12个减少到3个。</p>
+<p><strong>方法二：纵向推导</strong>
+通过将特定声部降低八度的方式，从一个弦组推导出另一个弦组的相应指型。结合横向推导，理论上只需记住一个基础指型即可推导出所有变化。</p>
+<h2 id="实际应用策略">实际应用策略</h2>
+<h3 id="音域规划">音域规划</h3>
+<p>Drop 2和声的一个重要优势是能够在不同音域间灵活转换，为伴奏创造丰富的层次感：</p>
+<ul>
+<li><strong>主歌段落</strong>：使用中低音域的指型，营造稳定感</li>
+<li><strong>副歌段落</strong>：转向高音域指型，增强明亮度和张力</li>
+<li><strong>过渡段落</strong>：通过音域变化创造自然的音乐流动</li>
+</ul>
+<h3 id="旋律伴奏">旋律伴奏</h3>
+<p>Drop 2和声特别适合为旋律线提供和声支撑，其开阔的音域分布不会与主旋律产生过度冲突，同时提供充分的和声信息。</p>
+<h3 id="动态对比">动态对比</h3>
+<p>通过在同一和弦的不同Drop 2指型间切换，可以在不改变和声功能的前提下创造音色和音域的对比，为音乐增添表现层次。</p>
+<h2 id="练习建议">练习建议</h2>
+<h3 id="基础训练">基础训练</h3>
+<ol>
+<li><strong>指型熟悉</strong>：系统练习各弦组的四个转位指型</li>
+<li><strong>根音定位</strong>：在练习中始终关注根音位置，建立快速反应能力</li>
+<li><strong>转换流畅性</strong>：练习不同指型间的平滑转换</li>
+</ol>
+<h3 id="应用练习">应用练习</h3>
+<ol>
+<li><strong>经典歌曲改编</strong>：将熟悉的歌曲从基础和弦改编为Drop 2和声</li>
+<li><strong>音域变化</strong>：在同一首歌中尝试不同音域的指型组合</li>
+<li><strong>风格探索</strong>：在不同音乐风格中应用Drop 2技巧</li>
+</ol>
+<h2 id="总结">总结</h2>
+<p>Drop 2和声作为现代吉他演奏的重要技巧，为演奏者提供了突破基础和弦限制的有效途径。通过系统学习其理论基础、指型分布和应用技巧，吉他手能够显著提升伴奏的丰富性和专业度。</p>
+<p>掌握Drop 2和声需要理论学习与实践练习相结合。在理解其构建原理的基础上，通过持续的指型练习和实际应用，这一技巧将成为高水平吉他演奏的重要基石。随着对Drop 2和声的深入掌握，演奏者将能够在任何把位自由地进行和声伴奏，真正实现对吉他指板的全面理解和运用。</p>
+
+      </div>
+
+
+    
+    
+    
+    
+      
+    
+      
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+    
+    <nav class="flex justify-start items-start w-full text-base not-prose">
+      
+      <div class="text-left">
+        
+          
+          <a href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-voicings/shell-voicing%E4%B8%89%E6%A0%B9%E5%BC%A6%E5%92%8C%E5%BC%A6/" class="group block p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+            <div class="text-sm text-zinc-500 dark:text-zinc-400 mb-1">← 上一篇</div>
+            <div class="font-semibold text-zinc-800 dark:text-zinc-200 group-hover:underline max-w-xs truncate">如何在吉他上用三根弦弹奏出任何和弦？Shell Voicing</div>
+          </a>
+        
+      </div>
+      
+      <div class="text-right ml-auto">
+        
+          
+          <a href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-voicings/shell-voicing%E4%B8%89%E9%9F%B3%E5%92%8C%E5%A3%B0/" class="group block p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+            <div class="text-sm text-zinc-500 dark:text-zinc-400 mb-1">下一篇 →</div>
+            <div class="font-semibold text-zinc-800 dark:text-zinc-200 group-hover:underline max-w-xs truncate">Shell Voicing：用三根弦弹奏所有和弦的高效技法</div>
+          </a>
+        
+      </div>
+    </nav>
+
+      
+      <div class="text-center mt-8">
+        <a href="https://icstudio.club/guitar-voicings/" class="inline-flex items-center px-6 py-3 text-blue-500 rounded-full transition-colors">
+          ← 返回为什么别人弹和弦这么好听？
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+  
+  <div class="hidden lg:block lg:col-span-1">
+    
+  </div>
+
+</div>
+</main>
+  <footer class="bg-zinc-100 py-10 md:py-14"><footer class="bg-zinc-100 py-10 md:py-14"><div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+
+  <div class="flex flex-wrap space-y-6 mb-4">
+  
+    <div class="w-full md:w-3/5 flex flex-col space-y-4 md:pr-8 lg:pr-10">
+  
+    <a class="flex items-center group" href="https://icstudio.club/">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="mr-2 group-hover:animate-spin" viewBox="0 0 24 24">
+        <path d="M13.75 2C13.75 1.58579 13.4142 1.25 13 1.25C12.5858 1.25 12.25 1.58579 12.25 2V14.5359C11.4003 13.7384 10.2572 13.25 9 13.25C6.37665 13.25 4.25 15.3766 4.25 18C4.25 20.6234 6.37665 22.75 9 22.75C11.6234 22.75 13.75 20.6234 13.75 18V6.243C14.9875 7.77225 16.8795 8.75 19 8.75C19.4142 8.75 19.75 8.41421 19.75 8C19.75 7.58579 19.4142 7.25 19 7.25C16.1005 7.25 13.75 4.8995 13.75 2Z"/>
+        </svg>
+      <span class="text-2xl font-semibold uppercase">IC STUDIO</span>
+    </a>
+  
+    <p class="font-semibold">
+      一起在音乐的道路上前进吧！
+    </p>
+  
+    </div>
+  
+    <div class="self-center flex flex-col w-full md:w-2/5">
+  
+    <ul id="social-media" class="flex items-center space-x-4">
+      <li>
+        <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2" href="https://www.youtube.com/@ICStudio86#" target="_blank" rel="noopener noreferrer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M23.498 6.186a2.91 2.91 0 0 0-2.049-2.048C19.653 3.5 12 3.5 12 3.5s-7.653 0-9.449.638A2.91 2.91 0 0 0 .502 6.186C0 8.01 0 12 0 12s0 3.99.502 5.814a2.91 2.91 0 0 0 2.049 2.048C4.347 20.5 12 20.5 12 20.5s7.653 0 9.449-.638a2.91 2.91 0 0 0 2.049-2.048C24 15.99 24 12 24 12s0-3.99-.502-5.814ZM9.75 15.568V8.432L15.568 12Z"/>
+          </svg> 
+        </a>
+      </li>
+      <li>
+        <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2" href="https://space.bilibili.com/376362605" target="_blank" rel="noopener noreferrer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 1024 1024">
+            <path d="M800 192h-72.3l59.9-128.7c4.6-10-0.2-21.7-10.2-26.3-10-4.6-21.7 0.2-26.3 10.2L683.8 192H340.2L272.9 47.2c-4.6-10-16.3-14.8-26.3-10.2s-14.8 16.3-10.2 26.3L296.3 192H224c-70.7 0-128 57.3-128 128v448c0 70.7 57.3 128 128 128h576c70.7 0 128-57.3 128-128V320c0-70.7-57.3-128-128-128zM896 768c0 53-43 96-96 96H224c-53 0-96-43-96-96V320c0-53 43-96 96-96h576c53 0 96 43 96 96v448zM384 640c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32zm256 0c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32z"/>
+            </svg>
+              
+        </a>
+      </li>
+    </ul>
+  
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="border-t pt-4 flex justify-center items-center">
+    <p class="text-sm text-center"> Copyright © 2025. All rights reserved. <a href="https://icstudio.club" target="_blank" rel="noopener">Igor Chen - icstudio.club</a></p>
+  </div>
+  
+  </div>
+  </footer></footer>
+        <script defer src="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/js/insertoggle.sha256-R0&#43;bDggCHGUZz/TkbfFMzxSChbLToj1jIdbhDyXCkfs=.js" 
+                integrity="sha256-R0&#43;bDggCHGUZz/TkbfFMzxSChbLToj1jIdbhDyXCkfs=" crossorigin="anonymous"
+                onerror="console.warn('CDN failed for insertoggle.js'); var s=document.createElement('script'); s.src='\/js\/insertoggle.474f9b0e08021c6519cff4e46df14ccf148285b2d3a23d6321d6e10f25c291fb.js'; s.integrity='sha256-R0\u002bbDggCHGUZz\/TkbfFMzxSChbLToj1jIdbhDyXCkfs='; s.crossOrigin='anonymous'; document.head.appendChild(s);"></script>
+
+
+<script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.stemmer.support.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.zh.js"></script>
+        <script defer src="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/js/search.sha256-TfvCGkfYDFKNVgxdRZ0uZfbT5tILAlbnp0VLD1EAe6w=.js" 
+                integrity="sha256-TfvCGkfYDFKNVgxdRZ0uZfbT5tILAlbnp0VLD1EAe6w=" crossorigin="anonymous"
+                onerror="console.warn('CDN failed for search.js'); var s=document.createElement('script'); s.src='\/js\/search.4dfbc21a47d80c528d560c5d459d2e65f6d3e6d20b0256e7a7454b0f51007bac.js'; s.integrity='sha256-TfvCGkfYDFKNVgxdRZ0uZfbT5tILAlbnp0VLD1EAe6w='; s.crossOrigin='anonymous'; document.head.appendChild(s);"></script>
+
+
+  
+</body>
+</html>

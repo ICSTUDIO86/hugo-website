@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+<head>
+  
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+
+<title>如何在吉他上用三根弦弹奏出任何和弦？Shell Voicing - IC Studio </title>
+<meta name="description" content="学会用三根弦就能按出所有和弦的Shell Voicing技巧，让你的弹唱脱离前三品，探索高把位和声。">
+<meta name="author" content="IC Studio">
+
+
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+
+
+
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#667eea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+
+
+<link rel="preload" href="/images/ICLOGO.png" as="image">
+
+
+
+
+
+
+
+
+<script>
+
+(function() {
+  'use strict';
+  
+  
+  const fontLink = document.createElement('link');
+  fontLink.rel = 'stylesheet';
+  fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
+  fontLink.media = 'print';
+  fontLink.onload = function() { this.media = 'all'; };
+  document.head.appendChild(fontLink);
+  
+  
+  document.addEventListener('mouseover', function(e) {
+    const link = e.target.closest('a[href]');
+    if (link && link.hostname === window.location.hostname) {
+      const prefetch = document.createElement('link');
+      prefetch.rel = 'prefetch';
+      prefetch.href = link.href;
+      document.head.appendChild(prefetch);
+    }
+  }, { once: true });
+  
+  
+  if ('performance' in window) {
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const perfData = performance.getEntriesByType('navigation')[0];
+        if (perfData && perfData.loadEventEnd) {
+          console.log('Page Load Time:', Math.round(perfData.loadEventEnd - perfData.navigationStart) + 'ms');
+        }
+      }, 100);
+    });
+  }
+})();
+</script>
+
+
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js')
+      .then(function(registration) {
+        console.log('SW registered');
+      })
+      .catch(function(error) {
+        console.log('SW registration failed');
+      });
+  });
+}
+</script>
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#667eea">
+
+
+
+
+    
+        
+        
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/css/main.sha256-6mF1p0hnKDL&#43;95XKfMHPTfOS5uZUtdDQgzIDZ/Pr5XM=.css" 
+              integrity="sha256-6mF1p0hnKDL&#43;95XKfMHPTfOS5uZUtdDQgzIDZ/Pr5XM=" 
+              crossorigin="anonymous"
+              onerror="console.warn('CDN CSS failed, loading from local'); this.onerror=null; this.href='\/css\/main.min.ea6175a748672832fef795ca7cc1cf4df392e6e654b5d0d083320367f3ebe573.css';">
+        
+        
+        <link rel="preload" href="/css/main.min.ea6175a748672832fef795ca7cc1cf4df392e6e654b5d0d083320367f3ebe573.css" as="style" 
+              integrity="sha256-6mF1p0hnKDL&#43;95XKfMHPTfOS5uZUtdDQgzIDZ/Pr5XM=" crossorigin="anonymous">
+
+  <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/ICLOGO.png">
+
+<script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
+
+
+
+<script 
+  src="https://www.paypal.com/sdk/js?client-id=BAAdjqh0FzrMwRH9fqeYMsT9ovDAkGo0OZUipoGljE5ZYJJcQ51wkmAaZhLoY0gR5f6nHlu9hhm6GjBgBE&components=hosted-buttons&disable-funding=venmo&currency=EUR">
+</script>
+</head>
+<body>
+  <header class="py-6 border-b"><div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col">
+	<div class="flex items-center">
+		<div class="flex items-center">
+			<button class="flex items-center space-x-2 rounded-full border py-1 pr-[5px] pl-3 group bg-zinc-100 hover:bg-zinc-200 toggle-button" data-target="menu-bar">
+				<svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+					<path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"></path>
+				</svg>
+				<span class="bg-blue-500 fill-white rounded-full p-1.5">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="group-hover:animate-spin bi bi-egg-fried fill-white" viewBox="0 0 16 16">
+						<ellipse cx="8" cy="8" rx="6.8" ry="6.8" stroke="#FFFFFF" fill="none" stroke-width="2"></ellipse>
+						<path d="M7.5 8.3c.47.03 1.48-.05 2.15-.01.3.01.47.12.54.14.71.31 1.17 1.19.93 1.96-.09.3-.34.72-.68.94-.4.26-.98.27-1.86.27-.35-.01-.52.08-1.09-.12-1.27-.44-1.79-1.28-1.91-2.31-.08-.65.11-1.28.44-1.81 1.15-1.66 2.78-1.1 4.56-1.23.63-.08.96-.4 1.11-.78.14-.35.13-.72.12-1.05-.02-.9-.43-1.39-1.23-1.49-.13-.02-.43.02-.43.02-.09.06-.22-.03-.59.33-.23.23-.35.37-.43.64-.06.2-.03 3.1-.03 3.2-.01.3-.03 3.58-.01 3.78.05.36-.04 1.01.01 1.62.1.81-.03 1.53-1 1.59-.52.03-.8-.4-.88-.76-.01-.06-.02-.12-.02-.18" 
+          transform="translate(0.8, 1) scale(0.8)" 
+          stroke="#FFFFFF" fill="none" stroke-width="0.96"></path>
+				</svg>
+				</span>
+			</button>
+			<div class="relative rounded-full py-1.5 px-6 bg-zinc-100 hover:bg-zinc-200 text-xl font-bold uppercase mx-2">
+				<h2><a class="before:content-[''] before:z-10 before:top-0 before:right-0 before:left-0 before:bottom-0 before:absolute before:pointer-events-auto" href="https://icstudio.club/">IC Studio</a></h2>
+			</div>
+		</div>
+		<div class="flex items-center ml-auto">
+			<button class="flex items-center rounded-full p-3 bg-zinc-100 hover:bg-zinc-200 toggle-button" data-target="search-bar">
+				<svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+					<path id="path1" class="transition-all ease-linear" d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
+					<path id="path2" class="transition-all ease-linear hidden" d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"></path>
+				</svg>
+			</button>
+		</div>
+	</div>
+  <nav id="menu-bar" class="block mt-3 close">
+    <ul class="flex items-center flex flex-nowrap whitespace-nowrap overflow-x-auto space-x-4">
+    <li class="my-2">
+      <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/">主页</a>
+    </li>
+    <li class="my-2">
+      <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/blog/">Blog</a>
+    </li>
+    <li class="my-2">
+      <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/tools/sight-reading-generator.html">IC 视奏工具</a>
+    </li>
+    <li class="my-2">
+      <a aria-current="true" class="ancestor" href="/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/">音乐内容</a>
+    </li>
+    </ul>
+  </nav>
+<div id="search-bar" class="block mt-3 close">
+	<form id="search" class="flex items-stretch relative">
+		<input class="w-full block px-6 py-2 rounded-l-full focus:outline-none border border-zinc-200" type="text" placeholder="搜索文章内容...">
+		<button type="submit" class="flex items-center px-7 py-2.5 rounded-r-full border border-zinc-200 hover:bg-zinc-50 transition-colors">
+			<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="group-hover:animate-pulse" viewBox="0 0 16 16">
+				<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
+			</svg>
+		</button>
+	</form>
+</div>
+
+</div></header>
+  <main class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+
+  
+  <div class="lg:col-span-3 lg:col-start-2">
+    <article class="prose lg:prose-lg mx-auto">
+
+      
+      <header class="not-prose">
+
+        
+        <h1 id="title" class="text-4xl font-bold leading-normal text-center mb-4">
+          如何在吉他上用三根弦弹奏出任何和弦？Shell Voicing
+        </h1>
+
+      
+      <div class="flex flex-wrap items-center gap-2 text-sm text-zinc-500 mb-6">
+        <time datetime="2024-01-10 00:00:00 &#43;0000 UTC">2024年1月10日</time>
+        <span>；</span>
+        <span>阅读时间约 13 分钟</span>
+      </div>
+
+        
+        
+
+      </header>
+
+      
+      <div class="mb-14">
+        <p>Shell Voicing是现代吉他和声演奏中的重要技巧，通过精简的三音结构实现丰富的和声表现力。本文将详细阐述Shell Voicing的理论基础、实践方法和应用技巧，帮助吉他演奏者掌握这一高效的和声演奏方式，拓展演奏技巧的同时提升音乐表现力。</p>
+<p>在开始正题之前我们先来讨论一下为什么你需要知道那些奇形怪状的和弦指型呢。你用那些前三品的和弦或者一些横按不是已经可以解决大部分弹唱了吗？其实的确是这样的，这些常见的和弦已经可以满足我们大部分的需求了。但是如果你想让你的弹唱听起来不一样，听起来更有层次感并且和声与和声之间更有灵活度，不拘束于仅有的那么几个和弦按法，或者说如果你已经按腻了那些和弦，想要寻找一些新鲜感跳出舒适圈的话，那么，你可以通过学习这些新的和弦按法来寻找突破口。</p>
+<p>你除了可以让你的弹唱听起来更高级之外，你还可以让别人觉得你对吉他指板很了解并且乐理也很不错的样子。ok，那说了那么多之后，让我们真正地进入正题吧。</p>
+<h2 id="为什么三个音就够了">为什么三个音就够了？</h2>
+<p>首先为什么我们只用三根弦就可以按出全部和弦呢？我们都知道，光是大七和弦就已经是四个音了，更何况五个音的九和弦以及六个音的十一和弦。从数学角度来看，光用三根弦我们好像只能弹三和弦，显然不能弹出三和弦以上的和弦。但在音乐里，如果你要让听的人明白你在弹什么和弦，你其实只需要和弦的根音，三音以及七音就够了。</p>
+<p>根音可以告诉我们现在是什么和弦，然后这个和弦是否是大七小七或者属七和弦就取决于它的三七音了。我们不会弹奏五音是因为在这些和弦里，五音是不变的，它们与根音形成的关系全都是完全五度。那时候你可能会问了，那增减和弦该怎么处理呢？我会说在今天学的这个和声里，你还是会需要把五音给省略掉，然后把优先权让给你的三音和七音。</p>
+<p>我们现在来对比一下两个版本，一个是完整的和声，另一个是省略五音的和声（例子）。你会觉得三个音的版本听起来比较干净简约一点吗？不管会不会，两边和弦的属性和功能都是一样的，所以要想表达出这些和弦的色彩，我们只需要按出和弦的根音，三音还有七音就好了。注意，我们这里说的是根因而不是低音。根音有时候会是我们和弦的低音，但和弦的低音不一定一直是和弦的根音。我们举个例子，就像C/G的根音是C，但它的低音却是G。在吉他上像这种省略五音的三个音的和声被称为 Shell Voicing。</p>
+<h2 id="在吉他上如何按shell-voicing">在吉他上如何按Shell Voicing</h2>
+<p>我们现在来看看这些和声在吉他上怎么按吧。我们拿G和弦来举例。G的大三和弦我们用吉他上的shell voicing来弹的话，我们就会用它的根音和三音。（例子）你也可以把这里的根音换成五音。（例子）。小和弦的话就是把原来大和弦的三音降低半音就好了。</p>
+<p>再来是我们的大七和弦，它有两个形状，分别长这样。为了更好的记住这第二种按法你可以把它看成正常的大横按和弦，然后我们只取了其中的三四弦。如果你要弹属和弦的话你只要把七音降低半音就好了。那么小七和弦的话你只要再把三音也降低就行了。</p>
+<p>如果它的根音在五弦的话，我们的Shell voicing就长这样。你可以把第二个版本当作你平常在五弦上横按的和弦，然后只取其中的二三弦。然后在这个模版上，你可以通过修改几个音来获得相对应的七和弦。比如你可以降低根音来获得大七和弦。再降低半音你可以获得属和弦。我们可以发现第一个版本的属七和弦就是我们平常在前三品按的C7和弦。然后最后是我们的小七和弦，我们也只需要把原来的三音降低半音就好了。</p>
+<p>它们也有根音在四弦的版本。三和弦的形状就像我们平常前三品按的D和弦一样。Fm也是同样的道理，我们只需要把三音降低半音就好了，然后它和我们平时按的Dm和弦也是一个形状。然后它们的大七和弦分别长这样。</p>
+<h2 id="实际应用">实际应用</h2>
+<p>我们现在就用今天学到的知识来给迪士尼的这首Remember Me伴奏一下，听听效果怎么样。（Remember Me）。我们来对比一下和声在前三品的版本。（例子）。你可能会觉得第二个可能会更好听，因为它听起来可能更丰富。但我想说的是，一个和声好不好听要取决于当时的情况或者说你怎么安排它们的。有时候，你不会希望整首歌从头到尾都是一样厚的和声，可能你会想在歌曲的A段用比较薄一点的shell voicing然后在歌曲的B段使用四个音的和声之类的。</p>
+<p>因为shell voicing可以把根音与和弦音在音域上明确地分开，所以就可以给我们一种低音与和弦的独立感，就像是一把吉他同时在演奏贝斯与钢琴的声部一样。就像这样（例子）</p>
+<p>Shell Voicing也适合应用在一些bossa nova的曲子里，例如Stevie Wonder这首 You Are The Sunshine of My Life。（例子）。</p>
+<p>那么问题来了，我们sus和弦，十一和弦或者减和弦等一些更复杂的和弦该怎么按？因为我们只有三个音，而且吉他毕竟与钢琴不同，所以我们需要做一些取舍。如果你的和声需要四度音，你可以改变你的三度音，例如C7sus你可以把原来的三音提高半音，或者再提高半音变成C7#11，不过这样的话有时候可能会导致你手指会有点够不着。如果你的和声需要六度音的话，例如Cm6，你就可以改变和弦的七度音。你也可以把小六和弦当作减七和弦处理，因为减七度和大六度本质上是一个音。最后是我们的半减七和弦，一般在遇到半减七和弦的时候，你也可以把它当作小和弦处理，你就算省略五音也没什么关系。虽然这些例子的根音都在五弦上，但是理论也可以同时应用在根音在六弦和四弦的shell voicing里面。</p>
+<h2 id="练习方法">练习方法</h2>
+<p>在视频的最后我简单的讲解一下你平常可以怎么练习这个新和声。我会说如果你不想半音阶向上或者是跟着251的伴奏带一个一个练的话，我觉得最实用且最好玩的方法就是你把你目前练习的弹唱曲子里面的和弦给改成Shell Voicing。</p>
+<h2 id="总结">总结</h2>
+<p>Shell Voicing作为一种高效的吉他和声技巧，为演奏者提供了简洁而富有表现力的和声解决方案。通过掌握根音、三音、七音的核心组合，吉他手能够在不同把位自由地演奏各种和弦，显著拓展演奏的音域范围和和声色彩。</p>
+<p>这一技巧不仅适用于独奏演奏，在乐队合作中同样发挥重要作用，特别是在有贝斯手的情况下，Shell Voicing能够与低音声部形成良好的配合。通过系统的练习和应用，Shell Voicing将成为现代吉他演奏者必备的和声技能之一。</p>
+
+      </div>
+
+
+    
+    
+    
+    
+      
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+    
+    <nav class="flex justify-start items-start w-full text-base not-prose">
+      
+      <div class="text-left">
+        
+      </div>
+      
+      <div class="text-right ml-auto">
+        
+          
+          <a href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-voicings/drop2%E5%92%8C%E5%A3%B0%E9%AB%98%E6%8A%8A%E4%BD%8D%E5%BC%B9%E5%94%B1/" class="group block p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+            <div class="text-sm text-zinc-500 dark:text-zinc-400 mb-1">下一篇 →</div>
+            <div class="font-semibold text-zinc-800 dark:text-zinc-200 group-hover:underline max-w-xs truncate">如何实现高把位弹唱？Drop 2和声</div>
+          </a>
+        
+      </div>
+    </nav>
+
+      
+      <div class="text-center mt-8">
+        <a href="https://icstudio.club/guitar-voicings/" class="inline-flex items-center px-6 py-3 text-blue-500 rounded-full transition-colors">
+          ← 返回为什么别人弹和弦这么好听？
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+  
+  <div class="hidden lg:block lg:col-span-1">
+    
+  </div>
+
+</div>
+</main>
+  <footer class="bg-zinc-100 py-10 md:py-14"><footer class="bg-zinc-100 py-10 md:py-14"><div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+
+  <div class="flex flex-wrap space-y-6 mb-4">
+  
+    <div class="w-full md:w-3/5 flex flex-col space-y-4 md:pr-8 lg:pr-10">
+  
+    <a class="flex items-center group" href="https://icstudio.club/">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="mr-2 group-hover:animate-spin" viewBox="0 0 24 24">
+        <path d="M13.75 2C13.75 1.58579 13.4142 1.25 13 1.25C12.5858 1.25 12.25 1.58579 12.25 2V14.5359C11.4003 13.7384 10.2572 13.25 9 13.25C6.37665 13.25 4.25 15.3766 4.25 18C4.25 20.6234 6.37665 22.75 9 22.75C11.6234 22.75 13.75 20.6234 13.75 18V6.243C14.9875 7.77225 16.8795 8.75 19 8.75C19.4142 8.75 19.75 8.41421 19.75 8C19.75 7.58579 19.4142 7.25 19 7.25C16.1005 7.25 13.75 4.8995 13.75 2Z"/>
+        </svg>
+      <span class="text-2xl font-semibold uppercase">IC STUDIO</span>
+    </a>
+  
+    <p class="font-semibold">
+      一起在音乐的道路上前进吧！
+    </p>
+  
+    </div>
+  
+    <div class="self-center flex flex-col w-full md:w-2/5">
+  
+    <ul id="social-media" class="flex items-center space-x-4">
+      <li>
+        <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2" href="https://www.youtube.com/@ICStudio86#" target="_blank" rel="noopener noreferrer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M23.498 6.186a2.91 2.91 0 0 0-2.049-2.048C19.653 3.5 12 3.5 12 3.5s-7.653 0-9.449.638A2.91 2.91 0 0 0 .502 6.186C0 8.01 0 12 0 12s0 3.99.502 5.814a2.91 2.91 0 0 0 2.049 2.048C4.347 20.5 12 20.5 12 20.5s7.653 0 9.449-.638a2.91 2.91 0 0 0 2.049-2.048C24 15.99 24 12 24 12s0-3.99-.502-5.814ZM9.75 15.568V8.432L15.568 12Z"/>
+          </svg> 
+        </a>
+      </li>
+      <li>
+        <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2" href="https://space.bilibili.com/376362605" target="_blank" rel="noopener noreferrer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 1024 1024">
+            <path d="M800 192h-72.3l59.9-128.7c4.6-10-0.2-21.7-10.2-26.3-10-4.6-21.7 0.2-26.3 10.2L683.8 192H340.2L272.9 47.2c-4.6-10-16.3-14.8-26.3-10.2s-14.8 16.3-10.2 26.3L296.3 192H224c-70.7 0-128 57.3-128 128v448c0 70.7 57.3 128 128 128h576c70.7 0 128-57.3 128-128V320c0-70.7-57.3-128-128-128zM896 768c0 53-43 96-96 96H224c-53 0-96-43-96-96V320c0-53 43-96 96-96h576c53 0 96 43 96 96v448zM384 640c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32zm256 0c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32z"/>
+            </svg>
+              
+        </a>
+      </li>
+    </ul>
+  
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="border-t pt-4 flex justify-center items-center">
+    <p class="text-sm text-center"> Copyright © 2025. All rights reserved. <a href="https://icstudio.club" target="_blank" rel="noopener">Igor Chen - icstudio.club</a></p>
+  </div>
+  
+  </div>
+  </footer></footer>
+        <script defer src="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/js/insertoggle.sha256-R0&#43;bDggCHGUZz/TkbfFMzxSChbLToj1jIdbhDyXCkfs=.js" 
+                integrity="sha256-R0&#43;bDggCHGUZz/TkbfFMzxSChbLToj1jIdbhDyXCkfs=" crossorigin="anonymous"
+                onerror="console.warn('CDN failed for insertoggle.js'); var s=document.createElement('script'); s.src='\/js\/insertoggle.474f9b0e08021c6519cff4e46df14ccf148285b2d3a23d6321d6e10f25c291fb.js'; s.integrity='sha256-R0\u002bbDggCHGUZz\/TkbfFMzxSChbLToj1jIdbhDyXCkfs='; s.crossOrigin='anonymous'; document.head.appendChild(s);"></script>
+
+
+<script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.stemmer.support.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.zh.js"></script>
+        <script defer src="https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main/js/search.sha256-TfvCGkfYDFKNVgxdRZ0uZfbT5tILAlbnp0VLD1EAe6w=.js" 
+                integrity="sha256-TfvCGkfYDFKNVgxdRZ0uZfbT5tILAlbnp0VLD1EAe6w=" crossorigin="anonymous"
+                onerror="console.warn('CDN failed for search.js'); var s=document.createElement('script'); s.src='\/js\/search.4dfbc21a47d80c528d560c5d459d2e65f6d3e6d20b0256e7a7454b0f51007bac.js'; s.integrity='sha256-TfvCGkfYDFKNVgxdRZ0uZfbT5tILAlbnp0VLD1EAe6w='; s.crossOrigin='anonymous'; document.head.appendChild(s);"></script>
+
+
+  
+</body>
+</html>
