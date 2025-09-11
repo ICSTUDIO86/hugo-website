@@ -1,0 +1,10 @@
+[
+{{- range $index, $page := site.RegularPages -}}
+  {{- if $index }},{{ end }}
+  {{- $date := "" -}}
+  {{- if .Date -}}
+    {{- $date = .Date.Format "2006-01-02" -}}
+  {{- end -}}
+  {{- dict "title" .Title "href" .Permalink "content" (.Plain | htmlUnescape) "summary" .Summary "date" $date "type" .Type | jsonify -}}
+{{- end -}}
+]

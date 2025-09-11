@@ -1,0 +1,72 @@
+{{ define "main" }}
+
+<div class="max-w-4xl mx-auto">
+  <!-- 页面标题 -->
+  <h1 id="title" class="text-4xl font-bold leading-normal text-center mb-8" style="color:#374151;">
+    {{ .Title }}
+  </h1>
+
+  <!-- 页面图片 -->
+  {{ if .Params.image }}
+    <div class="text-center mb-8">
+      {{- with $img := resources.Get .Params.image -}}
+        {{- $img := $img.Process "resize 750x" -}}
+        <img src="{{ $img.Permalink }}" alt="{{ .Title }}" class="mx-auto rounded-lg shadow-lg max-w-full h-auto" style="max-height: 400px;">
+      {{- end }}
+    </div>
+  {{ end }}
+
+  {{ if .Content }}
+    <div class="prose lg:prose-lg max-w-none mb-8 mx-auto text-center">
+      {{ .Content }}
+    </div>
+  {{ end }}
+
+  <!-- 文章列表 - 长条卡片样式 -->
+  {{ $paginator := .Paginate .RegularPages }}
+  
+  <div class="space-y-4 mb-8">
+  {{ range $paginator.Pages }}
+    <article class="relative group bg-zinc-100 hover:bg-blue-100 rounded-3xl transition duration-300">
+      <a class="insert-link" href="{{ .Permalink }}"></a>
+      
+      <div class="p-6">
+        <h2 class="text-xl font-bold mb-3 group-hover:text-blue-600 transition duration-300">
+          {{ .Title }}
+        </h2>
+        
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-500">
+            <time>{{ .Date.Format "2006-01-02" }}</time>
+          </div>
+          
+          <div class="text-blue-600 group-hover:translate-x-1 transition duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </article>
+  {{ end }}
+  </div>
+
+  <!-- 分页 -->
+  {{ if gt $paginator.TotalPages 1 }}
+    <nav class="flex justify-center items-center space-x-4 mt-8">
+      {{ if $paginator.HasPrev }}
+        <a href="{{ $paginator.Prev.URL }}" class="border rounded-full px-6 py-2 hover:bg-zinc-200">← 上一页</a>
+      {{ end }}
+      
+      <span class="text-zinc-500">
+        第 {{ $paginator.PageNumber }} 页，共 {{ $paginator.TotalPages }} 页
+      </span>
+      
+      {{ if $paginator.HasNext }}
+        <a href="{{ $paginator.Next.URL }}" class="border rounded-full px-6 py-2 hover:bg-zinc-200">下一页 →</a>
+      {{ end }}
+    </nav>
+  {{ end }}
+</div>
+
+{{ end }}

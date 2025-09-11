@@ -1,0 +1,9 @@
+{
+  "name": "downloadInstaller",
+  "version": "1.0.0",
+  "description": "IC Studio installer download service",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}

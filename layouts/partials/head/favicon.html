@@ -1,0 +1,21 @@
+<!-- Favicon resources with CDN support -->
+{{- $cdnEnabled := site.Params.cdn.enabled | default false -}}
+{{- $cdnPrimary := "https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main" -}}
+
+{{/* 在生产环境中自动启用 CDN */}}
+{{- if eq hugo.Environment "production" -}}
+  {{- $cdnEnabled = true -}}
+{{- end -}}
+
+{{- if $cdnEnabled }}
+  {{- $cdnLogo := printf "%s/ICLOGO.png" $cdnPrimary }}
+  <link rel="icon" type="image/png" href="{{ $cdnLogo }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ $cdnLogo }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ $cdnLogo }}">
+  <link rel="icon" type="image/png" sizes="64x64" href="{{ $cdnLogo }}">
+{{- else }}
+  <link rel="icon" type="image/png" href="https://icstudio.club/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="/ICLOGO.png">
+{{- end }}

@@ -1,0 +1,76 @@
+{{/* CDN 配置 */}}
+{{- $cdnEnabled := site.Params.cdn.enabled | default false -}}
+{{- $cdnPrimary := "https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main" -}}
+
+{{/* 在生产环境中自动启用 CDN */}}
+{{- if eq hugo.Environment "production" -}}
+  {{- $cdnEnabled = true -}}
+{{- end -}}
+
+{{- with resources.Get "js/insertoggle.js" }}
+  {{- if eq hugo.Environment "development" }}
+    {{- with . | js.Build }}
+      <script src="{{ .RelPermalink }}"></script>
+    {{- end }}
+  {{- else }}
+    {{- $opts := dict "minify" true }}
+    {{- with . | js.Build $opts | fingerprint }}
+      {{- if $cdnEnabled }}
+        {{- $staticPath := printf "js/insertoggle.%s.js" .Data.Integrity }}
+        {{- $cdnUrl := printf "%s/%s" $cdnPrimary $staticPath }}
+        <script defer src="{{ $cdnUrl }}" 
+                integrity="{{- .Data.Integrity }}" crossorigin="anonymous"
+                onerror="console.warn('CDN failed for insertoggle.js'); var s=document.createElement('script'); s.src='{{ .RelPermalink }}'; s.integrity='{{ .Data.Integrity }}'; s.crossOrigin='anonymous'; document.head.appendChild(s);"></script>
+      {{- else }}
+        <script defer src="{{ .RelPermalink }}" integrity="{{- .Data.Integrity }}" crossorigin="anonymous"></script>
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+{{- with resources.Get "js/wishpool.js" }}
+  {{- if eq hugo.Environment "development" }}
+    {{- with . | js.Build }}
+      <script src="{{ .RelPermalink }}"></script>
+    {{- end }}
+  {{- else }}
+    {{- $opts := dict "minify" true }}
+    {{- with . | js.Build $opts | fingerprint }}
+      {{- if $cdnEnabled }}
+        {{- $staticPath := printf "js/wishpool.%s.js" .Data.Integrity }}
+        {{- $cdnUrl := printf "%s/%s" $cdnPrimary $staticPath }}
+        <script defer src="{{ $cdnUrl }}" 
+                integrity="{{- .Data.Integrity }}" crossorigin="anonymous"
+                onerror="console.warn('CDN failed for wishpool.js'); var s=document.createElement('script'); s.src='{{ .RelPermalink }}'; s.integrity='{{ .Data.Integrity }}'; s.crossOrigin='anonymous'; document.head.appendChild(s);"></script>
+      {{- else }}
+        <script defer src="{{ .RelPermalink }}" integrity="{{- .Data.Integrity }}" crossorigin="anonymous"></script>
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+<!-- Lunr.js for search with Chinese support -->
+<script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.stemmer.support.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.zh.js"></script>
+
+{{- with resources.Get "js/search.js" }}
+  {{- if eq hugo.Environment "development" }}
+    {{- with . | js.Build }}
+      <script src="{{ .RelPermalink }}"></script>
+    {{- end }}
+  {{- else }}
+    {{- $opts := dict "minify" true }}
+    {{- with . | js.Build $opts | fingerprint }}
+      {{- if $cdnEnabled }}
+        {{- $staticPath := printf "js/search.%s.js" .Data.Integrity }}
+        {{- $cdnUrl := printf "%s/%s" $cdnPrimary $staticPath }}
+        <script defer src="{{ $cdnUrl }}" 
+                integrity="{{- .Data.Integrity }}" crossorigin="anonymous"
+                onerror="console.warn('CDN failed for search.js'); var s=document.createElement('script'); s.src='{{ .RelPermalink }}'; s.integrity='{{ .Data.Integrity }}'; s.crossOrigin='anonymous'; document.head.appendChild(s);"></script>
+      {{- else }}
+        <script defer src="{{ .RelPermalink }}" integrity="{{- .Data.Integrity }}" crossorigin="anonymous"></script>
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}

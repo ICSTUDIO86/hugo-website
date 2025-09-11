@@ -1,0 +1,75 @@
+name: Deploy IC Studio Website
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# 设置权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 只允许一个并发部署
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # 构建和部署任务
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🛠️ 安装 Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.148.2'
+          extended: true
+
+      - name: 🛠️ 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 📦 安装依赖
+        run: npm ci
+
+      - name: 🎨 构建 CSS
+        run: npm run build:css
+        continue-on-error: true
+
+      - name: 🔧 设置 GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v4
+
+      - name: 🏗️ 构建 Hugo 网站
+        env:
+          HUGO_ENVIRONMENT: production
+        run: |
+          hugo \
+            --gc \
+            --minify \
+            --baseURL "${{ steps.pages.outputs.base_url }}/"
+
+      - name: 📤 上传构建结果
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+      - name: 🚀 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: ✅ 部署完成
+        run: |
+          echo "🎉 网站已成功部署！"
+          echo "🌐 访问地址: ${{ steps.deployment.outputs.page_url }}"

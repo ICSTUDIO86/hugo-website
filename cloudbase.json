@@ -1,0 +1,64 @@
+{
+  "envId": "cloud1-4g1r5ho01a0cfd85",
+  "region": "ap-shanghai",
+  "functionRoot": "./functions",
+  "functions": [
+    {
+      "name": "zpay-callback",
+      "config": {
+        "timeout": 20,
+        "runtime": "Nodejs16.13",
+        "memorySize": 256,
+        "envVariables": {
+          "ZPAY_API_KEY": "UoA5vDBCe51EyVzdK2Fu2udBO1SAadjN",
+          "ZPAY_MERCHANT_ID": "2025090607243839"
+        }
+      },
+      "description": "Z-pay 支付回调处理",
+      "handler": "index.main",
+      "ignore": [
+        "node_modules/**/*",
+        ".git/**/*"
+      ]
+    },
+    {
+      "name": "generate-access-code",
+      "config": {
+        "timeout": 10,
+        "runtime": "Nodejs16.13",
+        "memorySize": 256
+      },
+      "description": "生成和验证访问码",
+      "handler": "index.main",
+      "ignore": [
+        "node_modules/**/*",
+        ".git/**/*"
+      ]
+    }
+  ],
+  "databases": [
+    {
+      "name": "access-codes",
+      "description": "访问码数据表"
+    },
+    {
+      "name": "payment-orders", 
+      "description": "支付订单数据表"
+    },
+    {
+      "name": "access-logs",
+      "description": "访问日志数据表"
+    },
+    {
+      "name": "error-logs",
+      "description": "错误日志数据表"
+    }
+  ],
+  "hosting": {
+    "root": "./public",
+    "ignore": [
+      ".git/**/*",
+      "node_modules/**/*"
+    ]
+  }
+}

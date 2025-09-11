@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地存储调试工具</title>
+    <style>
+        body { font-family: monospace; margin: 20px; }
+        .storage-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+        .key { font-weight: bold; color: #333; }
+        .value { color: #666; white-space: pre-wrap; }
+        button { margin: 5px; padding: 8px 16px; }
+        .dangerous { background: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🔍 本地存储调试工具</h1>
+    
+    <button onclick="showAllStorage()">显示所有存储</button>
+    <button onclick="showICRelatedStorage()">显示IC相关存储</button>
+    <button class="dangerous" onclick="clearAllICStorage()">清除所有IC存储</button>
+    <button class="dangerous" onclick="clearAllStorage()">清除所有存储</button>
+    
+    <div id="storage-display"></div>
+
+    <script>
+        function showAllStorage() {
+            const display = document.getElementById('storage-display');
+            display.innerHTML = '<h2>📦 所有本地存储项目</h2>';
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                
+                display.innerHTML += `
+                    <div class="storage-item">
+                        <div class="key">🔑 ${key}</div>
+                        <div class="value">${value}</div>
+                    </div>
+                `;
+            }
+            
+            if (localStorage.length === 0) {
+                display.innerHTML += '<p>没有找到任何存储项目</p>';
+            }
+        }
+        
+        function showICRelatedStorage() {
+            const display = document.getElementById('storage-display');
+            display.innerHTML = '<h2>🎯 IC Studio相关存储</h2>';
+            
+            const icKeys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.toLowerCase().includes('ic')) {
+                    icKeys.push(key);
+                }
+            }
+            
+            if (icKeys.length === 0) {
+                display.innerHTML += '<p>✅ 没有找到IC相关的存储项目</p>';
+            } else {
+                icKeys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    display.innerHTML += `
+                        <div class="storage-item">
+                            <div class="key">🔑 ${key}</div>
+                            <div class="value">${value}</div>
+                            <button onclick="removeItem('${key}')" class="dangerous">删除</button>
+                        </div>
+                    `;
+                });
+            }
+        }
+        
+        function clearAllICStorage() {
+            if (!confirm('确定要清除所有IC相关存储吗？')) return;
+            
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.toLowerCase().includes('ic')) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            
+            alert(`已清除 ${keysToRemove.length} 个IC相关存储项目`);
+            showICRelatedStorage();
+        }
+        
+        function clearAllStorage() {
+            if (!confirm('确定要清除所有本地存储吗？这不可恢复！')) return;
+            
+            localStorage.clear();
+            alert('所有本地存储已清除');
+            showAllStorage();
+        }
+        
+        function removeItem(key) {
+            if (!confirm(`确定要删除 "${key}" 吗？`)) return;
+            
+            localStorage.removeItem(key);
+            alert(`已删除 "${key}"`);
+            showICRelatedStorage();
+        }
+        
+        // 页面加载时自动显示IC相关存储
+        window.addEventListener('load', showICRelatedStorage);
+    </script>
+</body>
+</html>

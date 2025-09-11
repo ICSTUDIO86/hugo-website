@@ -1,0 +1,9 @@
+{
+  "name": "fixRefundStatus",
+  "version": "1.0.0",
+  "description": "Fix refund status synchronization between Z-Pay and database",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}

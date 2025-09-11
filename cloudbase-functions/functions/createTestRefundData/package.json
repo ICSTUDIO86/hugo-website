@@ -1,0 +1,9 @@
+{
+  "name": "createTestRefundData",
+  "version": "1.0.0",
+  "description": "Create test data for refund flow testing",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}

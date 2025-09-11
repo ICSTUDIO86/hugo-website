@@ -1,0 +1,9 @@
+{
+  "name": "queryOrder",
+  "version": "1.0.0",
+  "description": "Query order and access codes",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}

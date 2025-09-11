@@ -1,0 +1,9 @@
+{
+  "name": "checkOrderEnhanced",
+  "version": "1.0.0",
+  "description": "Enhanced access code verification with refund status checking",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}

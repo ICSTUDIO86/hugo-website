@@ -1,0 +1,52 @@
+{{/* 加载 CDN 配置 */}}
+{{- partial "cdn-config.html" . -}}
+
+{{/* 主要CSS加载 - 支持 CDN 加速 */}}
+{{- $cssVersion := now.Unix -}}
+{{- $cdnEnabled := site.Params.cdn.enabled | default false -}}
+{{- $cdnPrimary := "https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main" -}}
+
+{{/* 在生产环境中自动启用 CDN */}}
+{{- if eq hugo.Environment "production" -}}
+  {{- $cdnEnabled = true -}}
+{{- end -}}
+
+{{- with resources.Get "css/main.css" }}
+  {{- if eq hugo.Environment "development" }}
+    {{/* 开发环境：使用本地资源 */}}
+    <link rel="stylesheet" href="{{ .RelPermalink }}?v={{ $cssVersion }}">
+  {{- else }}
+    {{/* 生产环境：使用 CDN 或本地资源 */}}
+    {{- with . | minify | fingerprint }}
+      {{- if $cdnEnabled }}
+        {{/* CDN 模式：生成静态文件路径 */}}
+        {{- $staticPath := printf "css/main.%s.css" .Data.Integrity }}
+        {{- $cdnUrl := printf "%s/%s" $cdnPrimary $staticPath }}
+        {{- $fallbackUrl := .RelPermalink }}
+        
+        <!-- 主要 CSS - CDN 加速版本 -->
+        <link rel="stylesheet" href="{{ $cdnUrl }}" 
+              integrity="{{ .Data.Integrity }}" 
+              crossorigin="anonymous"
+              onerror="console.warn('CDN CSS failed, loading from local'); this.onerror=null; this.href='{{ $fallbackUrl }}';">
+        
+        <!-- 预加载回退资源 -->
+        <link rel="preload" href="{{ $fallbackUrl }}" as="style" 
+              integrity="{{ .Data.Integrity }}" crossorigin="anonymous">
+      {{- else }}
+        {{/* 本地模式 */}}
+        <link rel="stylesheet" href="{{ .RelPermalink }}" 
+              integrity="{{ .Data.Integrity }}" crossorigin="anonymous">
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- else }}
+  {{/* 回退到静态CSS文件 */}}
+  {{- if $cdnEnabled }}
+    {{- $cdnUrl := printf "%s/css/main.css" $cdnPrimary }}
+    <link rel="stylesheet" href="{{ $cdnUrl }}?v={{ $cssVersion }}"
+          onerror="this.onerror=null; this.href='{{ "css/main.css" | relURL }}?v={{ $cssVersion }}';">
+  {{- else }}
+    <link rel="stylesheet" href="{{ "css/main.css" | relURL }}?v={{ $cssVersion }}">
+  {{- end }}
+{{- end }}

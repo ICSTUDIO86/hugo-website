@@ -1,0 +1,150 @@
+{{ define "main" }}
+{{- partial "content/breadcrumb.html" . -}}
+
+<div class="grid grid-cols-1 md:grid-cols-1 gap-6 mb-14 justify-center">
+
+  <article class="prose lg:prose-lg mx-auto">
+
+    <header class="not-prose">
+      
+      <h1 id="title" class="text-4xl font-bold leading-normal text-center mb-4">{{ .Title }}</h1>
+
+      {{ if ne .Section "blog" }}
+      <!-- 音乐内容文章元信息 
+      <div class="flex flex-wrap items-center justify-center gap-2 text-sm text-zinc-500 mb-6">
+        <time datetime="{{ .Date }}">{{ .Date.Format "2006年1月2日" }}</time>
+        <span>；</span>
+        <span>阅读时间约 {{ math.Ceil (div (countwords .Content) 200.0) }} 分钟</span>
+      </div>-->
+      {{ else }}
+      <!-- Blog作者信息 -->
+      <div id="writer" class="flex items-center space-x-4">
+
+        {{- $name := .Site.Author.name -}}
+
+        {{- with $avatar := resources.Get .Site.Author.avatar }}
+
+        <img class="w-12 h-12 bg-black rounded-full" src="{{ $avatar.Permalink }}" alt="{{ $name }} avatar" width="{{ $avatar.Width }}" height="{{ $avatar.Height }}">
+
+        {{ end -}}
+        
+        <ul class="flex items-center space-x-4 flex-nowrap whitespace-nowrap overflow-x-auto">
+          
+
+
+        </ul>
+
+      </div>
+      {{ end }}
+      
+    </header>
+
+    <figure id="featureimage" class="rounded-xl aspect-video">
+
+      {{- if .Params.image }}
+
+        {{- if ( strings.HasPrefix .Params.image "http" ) }}
+
+          <img class="rounded-lg" src="{{ .Params.image }}" alt="{{ .Params.title }}">
+
+        {{- else }}
+
+          {{- with $image := resources.Get .Params.image }}
+            {{- $image := $image.Resize "750x" }}
+            <img class="rounded-lg" src="{{ $image.Permalink }}" alt="{{ .Params.title }}" width="{{ $image.Width }}" height="{{ $image.Height }}">
+          {{- end }}
+
+        {{- end }}
+
+      {{- end }}
+
+      {{- if ( isset .Params "caption" ) }}
+        <figcaption class="text-center italic text-xs">{{ .Params.caption }}</figcaption>
+      {{- end }}
+
+    </figure>
+
+    <div id="content" class="mb-14">
+      <!-- Content -->
+
+      {{- .Content -}}
+
+      <!-- Tags list -->
+
+      <!-- {{- partial "terms.html" (dict "taxonomy" "tags" "page" .) -}} -->
+
+    </div>
+
+    
+
+    <footer id="content-footer" class="not-prose">
+      
+      {{ if eq .Section "blog" }}
+      <!-- Blog文章导航 -->
+      {{ $blogPages := where .Site.RegularPages "Section" "blog" }}
+      {{ $currentIndex := 0 }}
+      {{ range $index, $page := $blogPages }}
+        {{ if eq $page.RelPermalink $.RelPermalink }}
+          {{ $currentIndex = $index }}
+        {{ end }}
+      {{ end }}
+      
+      <nav class="flex justify-start items-start w-full text-base not-prose mt-8">
+        <!-- 上一篇 -->
+        <div class="text-left">
+          {{ if gt $currentIndex 0 }}
+            {{ $prevPost := index $blogPages (sub $currentIndex 1) }}
+            <a href="{{ $prevPost.Permalink }}" class="group block p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+              <div class="text-sm text-zinc-500 dark:text-zinc-400 mb-1">← 上一篇</div>
+              <div class="font-semibold text-zinc-800 dark:text-zinc-200 group-hover:underline max-w-xs truncate">{{ $prevPost.Title }}</div>
+            </a>
+          {{ end }}
+        </div>
+        <!-- 下一篇 -->
+        <div class="text-right ml-auto">
+          {{ if lt $currentIndex (sub (len $blogPages) 1) }}
+            {{ $nextPost := index $blogPages (add $currentIndex 1) }}
+            <a href="{{ $nextPost.Permalink }}" class="group block p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg">
+              <div class="text-sm text-zinc-500 dark:text-zinc-400 mb-1">下一篇 →</div>
+              <div class="font-semibold text-zinc-800 dark:text-zinc-200 group-hover:underline max-w-xs truncate">{{ $nextPost.Title }}</div>
+            </a>
+          {{ end }}
+        </div>
+      </nav>
+
+      <!-- 返回blog列表 -->
+      <div class="text-center mt-8">
+        <a href="/blog/" class="inline-flex items-center px-6 py-3 text-blue-500 rounded-full transition-colors">
+          ← 返回Blog列表
+        </a>
+      </div>
+      {{ else if .CurrentSection }}
+      <!-- 音乐内容文章导航 -->
+      {{ $currentSection := .CurrentSection }}
+      {{ $sectionPages := $currentSection.RegularPages }}
+      {{ $currentIndex := 0 }}
+      {{ range $index, $page := $sectionPages }}
+        {{ if eq $page.RelPermalink $.RelPermalink }}
+          {{ $currentIndex = $index }}
+        {{ end }}
+      {{ end }}
+
+
+      <!-- 返回该主题列表 -->
+      <div class="text-center mt-8">
+        <a href="{{ $currentSection.Permalink }}" class="inline-flex items-center px-6 py-3 text-blue-500 rounded-full transition-colors">
+          ← 返回{{ $currentSection.Title }}
+        </a>
+      </div>
+      {{ end }}
+
+    </footer>
+
+  </article>
+
+
+  </aside>
+
+</div>
+  
+{{ end }}

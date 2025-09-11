@@ -1,0 +1,36 @@
+{{/* 优化后的头部 - 性能优先 */}}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+{{/* SEO 优化 */}}
+<title>{{- if .Page.IsHome -}}{{ .Site.Title }}{{- else -}}{{ .Title }} - {{ .Site.Title }} {{ end }}</title>
+<meta name="description" content="{{- with .Page.Description }}{{ . }}{{- else -}}{{ .Site.Params.description }}{{- end -}}">
+<meta name="author" content="IC Studio">
+
+{{/* DNS 预解析和预连接 */}}
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+{{/* 引入性能优化模块 */}}
+{{- partial "performance-head.html" . -}}
+
+{{/* PWA 支持 */}}
+<link rel="manifest" href="{{ "manifest.json" | relURL }}">
+<meta name="theme-color" content="#667eea">
+
+{{/* 传统资源加载 */}}
+{{- partial "head/css.html" . -}}
+{{- partialCached "head/favicon.html" . -}}
+
+<!-- Umami Analytics -->
+<script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
+
+<!-- PayPal Button -->
+
+<script 
+  src="https://www.paypal.com/sdk/js?client-id=BAAdjqh0FzrMwRH9fqeYMsT9ovDAkGo0OZUipoGljE5ZYJJcQ51wkmAaZhLoY0gR5f6nHlu9hhm6GjBgBE&components=hosted-buttons&disable-funding=venmo&currency=EUR">
+</script>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>访问码管理工具</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            transform: translateY(-1px);
+        }
+        .code-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px;
+            background: white;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .code-item {
+            padding: 5px;
+            border-bottom: 1px solid #f1f3f4;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .code-item:last-child {
+            border-bottom: none;
+        }
+        .code-item.used {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .code-item.available {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔑 IC Studio 访问码管理工具</h1>
+        <p>管理视奏工具的访问码</p>
+    </div>
+
+    <div class="stats" id="stats">
+        <div class="stat-item">
+            <div class="stat-value" id="totalCodes">0</div>
+            <div class="stat-label">总访问码</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="availableCodes">0</div>
+            <div class="stat-label">可用访问码</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="usedCodes">0</div>
+            <div class="stat-label">已使用访问码</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>📊 当前访问码状态</h3>
+        <button onclick="loadCodes()">🔄 刷新数据</button>
+        <button onclick="downloadCodesJson()">💾 下载 JSON</button>
+        <div class="code-list" id="codesList">
+            点击"刷新数据"加载访问码...
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>🎯 生成新访问码</h3>
+        <div class="form-group">
+            <label for="codeCount">生成数量:</label>
+            <input type="number" id="codeCount" min="1" max="100" value="10">
+        </div>
+        <button onclick="generateNewCodes()">🚀 生成访问码</button>
+        <div id="generatedCodes" style="margin-top: 15px;"></div>
+    </div>
+
+    <div class="section">
+        <h3>🔍 访问码验证</h3>
+        <div class="form-group">
+            <label for="testCode">测试访问码:</label>
+            <input type="text" id="testCode" placeholder="输入12位访问码" maxlength="12" style="text-transform: uppercase;">
+        </div>
+        <button onclick="testAccessCode()">🔍 验证访问码</button>
+        <div id="testResult" style="margin-top: 15px;"></div>
+    </div>
+
+    <script>
+        let codesData = { codes: [] };
+
+        // 生成随机访问码
+        function generateAccessCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 12; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // 生成新的访问码
+        function generateNewCodes() {
+            const count = parseInt(document.getElementById('codeCount').value) || 10;
+            const newCodes = [];
+            
+            for (let i = 0; i < count; i++) {
+                newCodes.push({
+                    code: generateAccessCode(),
+                    used: false,
+                    created: new Date().toISOString().split('T')[0],
+                    purchaseDate: null
+                });
+            }
+
+            // 添加到现有数据
+            codesData.codes.push(...newCodes);
+
+            // 显示生成的访问码
+            const container = document.getElementById('generatedCodes');
+            container.innerHTML = `
+                <h4>✅ 成功生成 ${count} 个访问码:</h4>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #dee2e6;">
+                    <pre>${JSON.stringify({ codes: newCodes }, null, 2)}</pre>
+                </div>
+                <p style="color: #666; font-size: 14px;">请复制上述数据，手动更新到 /static/access-codes.json 文件中。</p>
+            `;
+
+            // 更新统计和列表
+            updateStats();
+            displayCodes();
+        }
+
+        // 加载访问码数据
+        async function loadCodes() {
+            try {
+                const response = await fetch('/access-codes.json');
+                codesData = await response.json();
+                updateStats();
+                displayCodes();
+                console.log('访问码数据已加载:', codesData);
+            } catch (error) {
+                console.error('加载访问码失败:', error);
+                document.getElementById('codesList').innerHTML = '❌ 加载失败，请确保 access-codes.json 文件存在。';
+            }
+        }
+
+        // 更新统计数据
+        function updateStats() {
+            const total = codesData.codes.length;
+            const used = codesData.codes.filter(item => item.used).length;
+            const available = total - used;
+
+            document.getElementById('totalCodes').textContent = total;
+            document.getElementById('availableCodes').textContent = available;
+            document.getElementById('usedCodes').textContent = used;
+        }
+
+        // 显示访问码列表
+        function displayCodes() {
+            const container = document.getElementById('codesList');
+            
+            if (codesData.codes.length === 0) {
+                container.innerHTML = '📝 暂无访问码数据';
+                return;
+            }
+
+            let html = '';
+            codesData.codes.forEach((item, index) => {
+                const status = item.used ? 'used' : 'available';
+                const statusText = item.used ? '已使用' : '可用';
+                const dateText = item.used && item.purchaseDate ? ` (${item.purchaseDate})` : '';
+                
+                html += `
+                    <div class="code-item ${status}">
+                        <span><strong>${item.code}</strong> - ${statusText}${dateText}</span>
+                        <small>创建于: ${item.created}</small>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // 测试访问码
+        function testAccessCode() {
+            const testCode = document.getElementById('testCode').value.toUpperCase().trim();
+            const resultDiv = document.getElementById('testResult');
+            
+            if (!testCode) {
+                resultDiv.innerHTML = '⚠️ 请输入访问码';
+                return;
+            }
+
+            if (testCode.length !== 12) {
+                resultDiv.innerHTML = '❌ 访问码必须是12位字符';
+                return;
+            }
+
+            const codeItem = codesData.codes.find(item => item.code === testCode);
+            
+            if (!codeItem) {
+                resultDiv.innerHTML = `❌ 访问码 "${testCode}" 不存在`;
+            } else if (codeItem.used) {
+                resultDiv.innerHTML = `⚠️ 访问码 "${testCode}" 已被使用 (${codeItem.purchaseDate || '未知日期'})`;
+            } else {
+                resultDiv.innerHTML = `✅ 访问码 "${testCode}" 有效且可用`;
+            }
+        }
+
+        // 下载访问码 JSON 文件
+        function downloadCodesJson() {
+            const dataStr = JSON.stringify(codesData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'access-codes.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 页面加载时自动加载数据
+        window.addEventListener('load', function() {
+            loadCodes();
+        });
+
+        // 输入框自动格式化
+        document.getElementById('testCode').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+    </script>
+</body>
+</html>

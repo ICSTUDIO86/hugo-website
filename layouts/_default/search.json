@@ -1,0 +1,6 @@
+[
+{{- range $index, $page := where site.RegularPages "Type" "in" site.Params.mainSections -}}
+  {{- if $index }},{{ end }}
+  {{- dict "title" .Title "href" .Permalink "content" (.Plain | truncate 500) "summary" .Summary "date" .Date.Format "2006-01-02" | jsonify -}}
+{{- end -}}
+]

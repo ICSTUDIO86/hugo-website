@@ -1,0 +1,131 @@
+baseURL = 'https://icstudio.club/'
+languageCode = 'en-us'
+title = 'IC Studio'
+
+[[menus.main]]
+name = '主页'
+pageRef = '/'
+weight = 10
+
+[[menus.main]]
+name = 'Blog'
+pageRef = 'blog'
+weight = 12
+
+[[menus.main]]
+name = 'IC 视奏工具'
+url = '/tools/sight-reading-generator.html'
+weight = 15
+
+[[menus.main]]
+name = '音乐内容'
+pageRef = '音乐内容'
+weight = 20
+
+[module]
+  [module.hugoVersion]
+    extended = false
+    min = "0.116.0"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+      
+[params]
+  logo = "images/ICLOGO.png"
+  favicon_icon = "ICLOGO.png"
+  description = "欢迎来到 IC Studio 官方网站！一个分享音乐学习过程与经验的平台。"
+  mainSections = ["blog", "音乐内容"]
+  
+  # 性能优化配置
+  [params.performance]
+    # 启用关键 CSS 内联
+    inlineCriticalCSS = true
+    
+    # 启用资源预加载
+    preloadCriticalResources = true
+    
+    # 启用性能监控
+    enableMonitoring = true
+    
+    # 启用 Service Worker
+    enableServiceWorker = true
+    
+    # 图片优化配置
+    [params.performance.images]
+      # 启用懒加载
+      lazyLoading = true
+      
+      # WebP 支持
+      webpSupport = true
+      
+      # 响应式图片
+      responsiveImages = true
+    
+    # CDN 配置
+    [params.performance.cdn]
+      # 主要 CDN 提供商
+      primary = "jsdelivr"
+      
+      # 备用 CDN
+      fallback = ["unpkg", "cdnjs"]
+      
+      # 启用 CDN 健康检查
+      healthCheck = true
+
+# jsDelivr CDN 配置
+[params.cdn]
+  # 是否启用 CDN 加速（生产环境自动启用）
+  enabled = true
+  
+  # GitHub 仓库信息（用于 jsDelivr）
+  github_user = "ICSTUDIO86"
+  github_repo = "hugo-website"
+  github_branch = "main"
+  
+  # CDN 基础 URL（自动生成）
+  base_url = "https://cdn.jsdelivr.net/gh/ICSTUDIO86/hugo-website@main"
+  
+  # 启用 CDN 健康检查
+  health_check = true
+  
+  # CDN 失败时的回退策略
+  fallback_strategy = "local"
+    
+    # 缓存配置
+    [params.performance.cache]
+      # 静态资源缓存时间（秒）
+      staticMaxAge = 2592000  # 30天
+      
+      # HTML 缓存时间（秒）
+      htmlMaxAge = 86400     # 1天
+      
+      # API 缓存时间（秒）
+      apiMaxAge = 300        # 5分钟
+    
+    # 压缩配置
+    [params.performance.compression]
+      # 启用 Brotli 压缩
+      brotli = true
+      
+      # 启用 Gzip 压缩
+      gzip = true
+      
+      # 压缩级别 (1-9)
+      level = 6
+
+[pagination]
+  pagerSize = 6
+
+[taxonomies]
+  category = "categories"
+  tag = "tags"
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+
+[privacy]
+  [privacy.youtube]
+    disable = false
+    privacyEnhanced = false

@@ -1,0 +1,74 @@
+{{ define "main" }}
+
+<div class="grid grid-cols-1 md:grid-cols-1 gap-6 mb-14 justify-center">
+
+  <article class="prose lg:prose-lg mx-auto">
+
+    <header class="not-prose">
+      
+      <h1 id="title" class="text-4xl font-bold leading-normal text-center">{{ .Title }}</h1>
+
+      <div id="writer" class="flex items-center space-x-4">
+
+        {{- $name := .Site.Author.name -}}
+
+        {{- with $avatar := resources.Get .Site.Author.avatar }}
+
+        <img class="w-12 h-12 bg-black rounded-full" src="{{ $avatar.Permalink }}" alt="{{ $name }} avatar" width="{{ $avatar.Width }}" height="{{ $avatar.Height }}">
+
+        {{ end -}}
+        
+        <ul class="flex items-center space-x-4 flex-nowrap whitespace-nowrap overflow-x-auto">
+          
+
+
+        </ul>
+
+      </div>
+      
+    </header>
+
+    <figure id="featureimage" class="rounded-xl aspect-video">
+
+      {{- if .Params.image }}
+
+        {{- if ( strings.HasPrefix .Params.image "http" ) }}
+
+          <img class="rounded-lg" src="{{ .Params.image }}" alt="{{ .Params.title }}">
+
+        {{- else }}
+
+          {{- with $image := resources.Get .Params.image }}
+            {{- $image := $image.Resize "750x" }}
+            <img class="rounded-lg" src="{{ $image.Permalink }}" alt="{{ .Params.title }}" width="{{ $image.Width }}" height="{{ $image.Height }}">
+          {{- end }}
+
+        {{- end }}
+
+      {{- end }}
+
+      {{- if ( isset .Params "caption" ) }}
+        <figcaption class="text-center italic text-xs">{{ .Params.caption }}</figcaption>
+      {{- end }}
+
+    </figure>
+
+    <div id="content" class="mb-14">
+
+      {{- .Content -}}
+
+      {{- if eq .File.BaseFileName "blog" -}}
+        {{- partial "blog-list-section.html" . -}}
+      {{- end -}}
+
+    </div>
+
+    <footer id="content-footer" class="not-prose">
+
+    </footer>
+
+  </article>
+
+</div>
+  
+{{ end }}

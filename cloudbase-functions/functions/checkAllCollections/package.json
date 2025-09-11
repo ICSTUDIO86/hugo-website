@@ -1,0 +1,9 @@
+{
+  "name": "checkAllCollections",
+  "version": "1.0.0",
+  "description": "Check all database collections in detail",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}

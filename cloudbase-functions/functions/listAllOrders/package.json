@@ -1,0 +1,9 @@
+{
+  "name": "listAllOrders",
+  "version": "1.0.0",
+  "description": "List all orders from orders collection",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.4.1"
+  }
+}
