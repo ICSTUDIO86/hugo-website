@@ -1,9 +1,0 @@
-{
-  "name": "restoreConfirmedRefunds",
-  "version": "1.0.0",
-  "description": "Restore confirmed refunded access codes to correct status",
-  "main": "index.js",
-  "dependencies": {
-    "@cloudbase/node-sdk": "^2.4.1"
-  }
-}

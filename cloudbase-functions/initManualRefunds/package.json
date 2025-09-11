@@ -1,9 +1,0 @@
-{
-  "name": "init-manual-refunds",
-  "version": "1.0.0",
-  "description": "Initialize manual_refunds collection",
-  "main": "index.js",
-  "dependencies": {
-    "@cloudbase/node-sdk": "latest"
-  }
-}

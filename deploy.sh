@@ -1,132 +1,54 @@
 #!/bin/bash
 
-# IC Studio 视奏工具 - 一键部署脚本
-echo "🚀 开始部署 IC Studio 视奏工具..."
+# 快速部署当前public文件夹到GitHub Pages
+# 在public目录中运行: ./deploy.sh
 
-# 检查必要的工具
-check_requirements() {
-    echo "📋 检查部署要求..."
-    
-    # 检查 Node.js
-    if ! command -v node &> /dev/null; then
-        echo "❌ 需要安装 Node.js"
-        exit 1
-    fi
-    
-    # 检查 Hugo
-    if ! command -v hugo &> /dev/null; then
-        echo "❌ 需要安装 Hugo"
-        exit 1
-    fi
-    
-    # 检查 Cloudbase CLI
-    if ! command -v tcb &> /dev/null; then
-        echo "⚠️  Cloudbase CLI 未安装，正在安装..."
-        npm install -g @cloudbase/cli
-    fi
-    
-    echo "✅ 环境检查完成"
-}
+set -e
 
-# 构建网站
-build_website() {
-    echo "🔨 构建 Hugo 网站..."
-    
-    # 清理旧的构建文件
-    rm -rf public/
-    
-    # 构建网站
-    hugo --minify --gc
-    
-    if [ $? -eq 0 ]; then
-        echo "✅ 网站构建完成"
-    else
-        echo "❌ 网站构建失败"
-        exit 1
-    fi
-}
+# 配置
+GITHUB_REPO="git@github.com:ICSTUDIO86/hugo-website.git"
+BRANCH="main"
+TEMP_DIR="/tmp/public-quick-deploy-$(date +%s)"
 
-# 部署云函数
-deploy_functions() {
-    echo "☁️  部署 Cloudbase 云函数..."
-    
-    # 检查是否已登录
-    if ! tcb auth list &> /dev/null; then
-        echo "🔐 请先登录 Cloudbase："
-        tcb login
-    fi
-    
-    # 部署云函数
-    cd functions
-    
-    # 部署支付回调函数
-    echo "📦 部署 zpay-callback 函数..."
-    cd zpay-callback && npm install && cd ..
-    tcb functions:deploy zpay-callback
-    
-    # 部署访问码生成函数  
-    echo "📦 部署 generate-access-code 函数..."
-    cd generate-access-code && npm install && cd ..
-    tcb functions:deploy generate-access-code
-    
-    cd ..
-    
-    echo "✅ 云函数部署完成"
-}
+echo "🚀 快速部署到GitHub Pages..."
+echo "📂 当前目录文件数: $(find . -type f | wc -l)"
 
-# 部署静态网站
-deploy_website() {
-    echo "🌐 部署静态网站到 Cloudbase 托管..."
-    
-    # 部署到静态网站托管
-    tcb hosting:deploy public
-    
-    if [ $? -eq 0 ]; then
-        echo "✅ 网站部署完成"
-    else
-        echo "❌ 网站部署失败"
-        exit 1
-    fi
-}
+# 清理函数
+cleanup() { [ -d "$TEMP_DIR" ] && rm -rf "$TEMP_DIR"; }
+trap cleanup EXIT
 
-# 配置数据库
-setup_database() {
-    echo "🗄️  配置数据库集合..."
-    
-    # 创建必要的数据库集合
-    tcb db:createCollection ic_studio_orders
-    tcb db:createCollection access_logs
-    
-    echo "✅ 数据库配置完成"
-}
+# 1. 克隆仓库
+echo "📥 克隆GitHub仓库..."
+git clone "$GITHUB_REPO" "$TEMP_DIR" || { echo "❌ 克隆失败，请检查SSH密钥"; exit 1; }
 
-# 显示部署结果
-show_results() {
-    echo ""
-    echo "🎉 部署完成！"
-    echo ""
-    echo "📋 部署信息："
-    echo "   🌐 网站地址: https://your-env-id.tcloudbaseapp.com"
-    echo "   ☁️  云函数: zpay-callback, generate-access-code" 
-    echo "   🗄️  数据库: ic_studio_orders, access_logs"
-    echo ""
-    echo "📝 接下来需要："
-    echo "   1. 在 Cloudbase 控制台配置环境变量"
-    echo "   2. 在 Z-pay 后台配置回调地址"
-    echo "   3. 更新前端配置文件中的实际参数"
-    echo ""
-    echo "📖 详细配置请参考 CLOUDBASE-SETUP.md"
-}
+cd "$TEMP_DIR"
 
-# 主函数
-main() {
-    check_requirements
-    build_website
-    deploy_functions  
-    deploy_website
-    setup_database
-    show_results
-}
+# 2. 清空并复制
+echo "🔄 更新内容..."
+git checkout "$BRANCH" 2>/dev/null || git checkout -b "$BRANCH"
+find . -name ".git" -prune -o -type f -exec rm -f {} +
+find . -name ".git" -prune -o -type d -empty -delete 2>/dev/null || true
 
-# 运行部署
-main
+# 3. 复制当前目录内容
+cp -r "$OLDPWD"/* . 2>/dev/null || { echo "❌ 复制失败"; exit 1; }
+
+# 复制隐藏文件
+shopt -s dotglob
+for file in "$OLDPWD"/.*; do
+    [[ -f "$file" ]] && [[ "$(basename "$file")" != "." ]] && [[ "$(basename "$file")" != ".." ]] && cp "$file" . 2>/dev/null || true
+done
+shopt -u dotglob
+
+# 4. 提交推送
+echo "📤 提交并推送..."
+git add .
+git diff --cached --quiet && { echo "✅ 无变更，部署完成"; exit 0; }
+
+git commit -m "Deploy: $(date '+%Y-%m-%d %H:%M:%S')
+
+🤖 Generated with [Claude Code](https://claude.ai/code)"
+
+git push origin "$BRANCH" || git push --force-with-lease origin "$BRANCH"
+
+echo "✅ 部署成功！"
+echo "🌐 访问: https://icstudio.club"

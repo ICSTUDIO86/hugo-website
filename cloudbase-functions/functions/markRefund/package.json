@@ -1,9 +1,0 @@
-{
-  "name": "markRefund",
-  "version": "1.0.0",
-  "description": "Data-driven refund marking function",
-  "main": "index.js",
-  "dependencies": {
-    "@cloudbase/node-sdk": "^2.4.1"
-  }
-}

@@ -1,7 +1,0 @@
-{
-  "name": "test-refund-sign",
-  "version": "1.0.0",
-  "description": "Test refund signature algorithm",
-  "main": "index.js",
-  "dependencies": {}
-}

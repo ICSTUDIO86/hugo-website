@@ -1,9 +1,0 @@
-{
-  "name": "listActiveRecords",
-  "version": "1.0.0",
-  "description": "List all active (non-refunded) access codes and orders",
-  "main": "index.js",
-  "dependencies": {
-    "@cloudbase/node-sdk": "^2.4.1"
-  }
-}
