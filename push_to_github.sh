@@ -1,22 +1,15 @@
 #!/bin/bash
 
-# Navigate to the public directory (assuming public folder is here)
-cd "/Users/igorchen/IC WEB/pehtheme-hugo/public"
+# ⚠️  此脚本已废弃 - 请使用 deploy-public-to-github.sh
+# ⚠️  This script is deprecated - please use deploy-public-to-github.sh
 
-# Fetch the latest updates from GitHub to avoid conflicts
-git fetch origin
+echo "❌ 此脚本已废弃，请使用新的部署脚本："
+echo "   ./deploy-public-to-github.sh"
+echo ""
+echo "新脚本的优势："
+echo "- 正确处理Hugo构建输出"
+echo "- 更安全的部署流程"
+echo "- 更好的错误处理"
+echo "- 自动化构建检查"
 
-# Merge remote changes (in case there were any) into the local branch
-git merge origin/main
-
-# Add all the files in the public directory
-git add .
-
-# Commit the changes with a message (you can modify this message)
-git commit -m "Update Hugo public folder"
-
-# Push the changes to GitHub (force push if you want to overwrite remote changes)
-git push origin main --force
-
-# Optional: Print status after push
-echo "Successfully updated public folder on GitHub!"
+exit 1
