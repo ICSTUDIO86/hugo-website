@@ -239,7 +239,7 @@
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="color: rgba(255,255,255,0.8); font-size: 14px;">金额</span>
-            <span style="color: white; font-size: 20px; font-weight: 600;">¥${paymentData.order_info?.money || '48.00'}</span>
+            <span style="color: white; font-size: 20px; font-weight: 600;">¥${paymentData.order_info?.money || '1.00'}</span>
           </div>
         </div>
       </div>

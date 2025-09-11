@@ -127,9 +127,15 @@ class CloudbaseAPI {
         };
       } else {
         console.log('❌ CloudBase验证失败:', result.message);
+        
+        // 🔄 增强：检查是否为退款导致的验证失败
+        const isRefunded = result.message && result.message.includes('已退款');
+        
         return { 
           valid: false, 
-          error: result.message || '访问码无效或已过期' 
+          error: result.message || '访问码无效或已过期',
+          refunded: isRefunded,
+          refundInfo: result.refundInfo || null
         };
       }
       
@@ -140,6 +146,187 @@ class CloudbaseAPI {
         error: '验证失败，请稍后重试' 
       };
     }
+  }
+
+  // 🔄 新增：处理退款访问码的权限清除
+  handleRefundedAccess(verificationResult) {
+    // 清除所有本地权限相关的存储
+    localStorage.removeItem('ic-premium-access');
+    localStorage.removeItem('ic-verified-user');
+    localStorage.removeItem('ic-full-access');
+    sessionStorage.removeItem('ic-session-verified');
+    
+    // 清除所有试用限制相关的数据（重新启用试用）
+    localStorage.removeItem('ic-sight-reading-trial');
+    localStorage.removeItem('trial-start-time');
+    localStorage.removeItem('trial-used-time');
+    
+    // 清除cookies
+    document.cookie = 'ic_premium_access=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    
+    console.log('🗑️ 退款访问码相关权限已全部清除');
+    
+    // 显示退款通知（可选）
+    if (verificationResult.refundInfo) {
+      this.showRefundNotification(verificationResult.refundInfo);
+    }
+  }
+
+  // 🔄 新增：显示退款通知
+  showRefundNotification(refundInfo) {
+    // 创建退款通知界面
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed; top: 20px; right: 20px; 
+      background: #fff3cd; border: 1px solid #ffeaa7;
+      border-radius: 8px; padding: 15px 20px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10000; max-width: 350px;
+      color: #856404; font-size: 14px;
+    `;
+    
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 18px; margin-right: 8px;">⚠️</span>
+        <strong>访问码已退款</strong>
+      </div>
+      <p style="margin: 0 0 8px 0;">您的访问码权限已失效。</p>
+      <p style="margin: 0; font-size: 12px; color: #6c757d;">
+        退款时间: ${refundInfo.refundTime ? new Date(refundInfo.refundTime).toLocaleString() : '未知'}
+      </p>
+      <button onclick="this.parentElement.remove()" style="
+        position: absolute; top: 5px; right: 8px; 
+        background: none; border: none; font-size: 16px; 
+        cursor: pointer; color: #856404;
+      ">×</button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // 5秒后自动消失
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 5000);
+  }
+
+  // 🔄 新增：关键功能权限检查包装器
+  async checkPermissionBeforeAction(actionName = '高级功能') {
+    console.log(`🔒 检查 ${actionName} 的使用权限...`);
+    
+    const accessCheck = await this.hasFullAccess();
+    
+    if (accessCheck.hasAccess) {
+      console.log(`✅ ${actionName} 权限验证通过`);
+      return { 
+        allowed: true, 
+        accessData: accessCheck.accessData 
+      };
+    } else {
+      console.log(`❌ ${actionName} 权限验证失败:`, accessCheck.reason);
+      
+      // 根据不同的失败原因显示不同的提示
+      let message = '';
+      let showPayment = true;
+      
+      switch (accessCheck.reason) {
+        case 'refunded':
+          message = '您的访问码已退款，权限已失效。如需继续使用，请重新购买。';
+          break;
+        case 'expired':
+          message = '您的访问码已过期，请重新购买激活。';
+          break;
+        case 'invalid-code':
+          message = '访问码无效或已被禁用，请重新购买或联系客服。';
+          break;
+        case 'no-code':
+          message = '请先购买并输入访问码以使用完整功能。';
+          break;
+        case 'verification-error':
+          message = '网络连接失败，请检查网络后重试。';
+          showPayment = false;
+          break;
+        default:
+          message = '权限验证失败，请重新购买或联系客服。';
+      }
+      
+      this.showPermissionDeniedDialog(actionName, message, showPayment);
+      
+      return { 
+        allowed: false, 
+        reason: accessCheck.reason,
+        error: accessCheck.error
+      };
+    }
+  }
+
+  // 🔄 新增：显示权限拒绝对话框
+  showPermissionDeniedDialog(actionName, message, showPayment = true) {
+    // 移除现有的对话框
+    const existing = document.getElementById('permission-denied-dialog');
+    if (existing) existing.remove();
+    
+    const dialog = document.createElement('div');
+    dialog.id = 'permission-denied-dialog';
+    dialog.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center;
+      z-index: 99999; backdrop-filter: blur(5px);
+    `;
+    
+    const paymentButtons = showPayment ? `
+      <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: center;">
+        <button onclick="document.getElementById('permission-denied-dialog').remove(); window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});" style="
+          padding: 12px 24px; background: #667eea; color: white; border: none;
+          border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;
+        ">立即购买</button>
+        <button onclick="document.getElementById('permission-denied-dialog').remove();" style="
+          padding: 12px 24px; background: #f8f9fa; color: #495057; border: 2px solid #dee2e6;
+          border-radius: 8px; font-size: 16px; cursor: pointer;
+        ">稍后再说</button>
+      </div>
+    ` : `
+      <div style="margin-top: 20px;">
+        <button onclick="document.getElementById('permission-denied-dialog').remove(); window.location.reload();" style="
+          padding: 12px 24px; background: #28a745; color: white; border: none;
+          border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;
+        ">重新加载</button>
+      </div>
+    `;
+    
+    dialog.innerHTML = `
+      <div style="
+        background: white; border-radius: 16px; padding: 30px; max-width: 450px; width: 90%;
+        box-shadow: 0 25px 80px rgba(0,0,0,0.3); text-align: center;
+      ">
+        <div style="
+          width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #ffc107, #e0a800);
+          margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: center;
+        ">
+          <span style="color: white; font-size: 24px;">🔒</span>
+        </div>
+        
+        <h3 style="color: #495057; font-size: 20px; font-weight: 700; margin: 0 0 15px 0;">
+          ${actionName} 需要完整版权限
+        </h3>
+        
+        <p style="color: #6c757d; font-size: 14px; line-height: 1.5; margin: 0 0 20px 0;">
+          ${message}
+        </p>
+        
+        ${paymentButtons}
+      </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    
+    // 点击背景关闭
+    dialog.onclick = (e) => {
+      if (e.target === dialog) {
+        dialog.remove();
+      }
+    };
   }
 
   // 生成访问码（支付成功后调用）- 生产模式CloudBase API
@@ -225,7 +412,7 @@ class CloudbaseAPI {
     }
   }
 
-  // 检查用户是否有完整版权限
+  // 检查用户是否有完整版权限 - 增强版（支持退款检测）
   async hasFullAccess() {
     const localAccess = this.getLocalAccessCode();
     
@@ -239,18 +426,39 @@ class CloudbaseAPI {
       return { hasAccess: false, reason: 'expired' };
     }
 
-    // 在线验证访问码
-    const verification = await this.verifyAccessCode(localAccess.code);
-    
-    if (verification.valid) {
-      return { hasAccess: true, accessData: localAccess };
-    } else {
-      // 访问码无效，清除本地数据
-      localStorage.removeItem('ic-premium-access');
-      return { 
-        hasAccess: false, 
-        reason: 'invalid-code', 
-        error: verification.error 
+    // 🔄 增强：在线验证访问码（包含退款状态检查）
+    try {
+      const verification = await this.verifyAccessCode(localAccess.code);
+      
+      if (verification.valid) {
+        return { hasAccess: true, accessData: localAccess };
+      } else {
+        // 检查是否为退款导致的无效
+        if (verification.refunded) {
+          console.log('⚠️ 访问码已退款，清除本地权限');
+          this.handleRefundedAccess(verification);
+          return { 
+            hasAccess: false, 
+            reason: 'refunded', 
+            error: verification.error,
+            refundInfo: verification.refundInfo
+          };
+        }
+        
+        // 其他原因导致的无效，清除本地数据
+        localStorage.removeItem('ic-premium-access');
+        return { 
+          hasAccess: false, 
+          reason: 'invalid-code', 
+          error: verification.error 
+        };
+      }
+    } catch (error) {
+      console.error('❌ 权限验证失败:', error);
+      return {
+        hasAccess: false,
+        reason: 'verification-error',
+        error: '网络错误，请稍后重试'
       };
     }
   }
@@ -446,6 +654,28 @@ class CloudbaseAPI {
 
 // 全局实例 - 使用新的命名避免冲突
 window.cloudbaseAPI = new CloudbaseAPI();
+
+// 🔄 新增：全局权限检查便利函数
+window.checkPremiumAccess = async function(featureName) {
+  if (!window.cloudbaseAPI) {
+    console.error('CloudbaseAPI 未初始化');
+    return { allowed: false, reason: 'api-not-ready' };
+  }
+  
+  return await window.cloudbaseAPI.checkPermissionBeforeAction(featureName);
+};
+
+// 🔄 新增：高级功能包装器
+window.withPremiumCheck = function(func, featureName) {
+  return async function(...args) {
+    const permission = await window.checkPremiumAccess(featureName);
+    if (permission.allowed) {
+      return await func.apply(this, args);
+    }
+    // 权限检查失败，相关对话框已由checkPermissionBeforeAction显示
+    return null;
+  };
+};
 
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', async function() {

@@ -48,7 +48,7 @@
         console.log('🎉 显示退款成功弹窗...');
         
         const defaultData = {
-            refundAmount: '48.00',
+            refundAmount: '1.00',
             accessCode: 'WTHVEWWR36BM',
             transactionId: 'TXN2025011234567',
             refundMethod: '支付宝原路退回'

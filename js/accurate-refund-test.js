@@ -7,7 +7,7 @@
 function showRealRefundSuccess(data = {
     access_code: 'WTHVEWWR36BM',
     order_no: 'ORDER2025011234567',
-    refund_amount: '48.00',
+    refund_amount: '1.00',
     refund_time: new Date()
 }) {
     
@@ -378,7 +378,7 @@ function showRealRefundDialog() {
                 showRealRefundSuccess({
                     access_code: accessCode,
                     order_no: 'ORDER2025011234567',
-                    refund_amount: '48.00',
+                    refund_amount: '1.00',
                     refund_time: new Date()
                 });
             }, 500);
