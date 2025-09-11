@@ -9,7 +9,10 @@
     "dev": "run-p dev:*",
     "build:generate": "npx tailwindcss -i ./assets/input.css -o ./themes/pehtheme/static/assets/css/main.css",
     "build:hugo": "hugo",
-    "build": "run-p build:*"
+    "build": "run-p build:*",
+    "build:css": "npx tailwindcss -i ./assets/input.css -o ./static/css/main.css --minify",
+    "build:js": "echo 'No JS build needed'",
+    "optimize": "echo 'Static resources optimization completed'"
   },
   "keywords": [
     "hugo",

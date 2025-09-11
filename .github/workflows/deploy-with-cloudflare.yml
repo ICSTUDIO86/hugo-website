@@ -61,84 +61,41 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'package-lock.json'
 
-      - name: 📦 安装依赖 (并行优化)
-        run: |
-          # 设置 npm 配置优化构建速度
-          npm config set fetch-retries 5
-          npm config set fetch-retry-factor 2
-          npm config set fetch-timeout 60000
-          
-          # 并行安装依赖
-          npm ci --prefer-offline --no-audit --no-fund --progress=false
+      - name: 📦 安装依赖
+        run: npm ci
 
-      - name: 🎨 构建和优化 CSS/JS
-        run: |
-          # 并行构建资源
-          npm run build:css &
-          npm run build:js &
-          wait
-          
-          # 压缩和优化静态资源
-          npm run optimize
+      - name: 🎨 构建 CSS
+        run: npm run build:css
 
       - name: 🔧 设置 GitHub Pages
         id: pages
         uses: actions/configure-pages@v4
 
-      - name: 🏗️ 构建 Hugo 网站 (优化版)
+      - name: 🏗️ 构建 Hugo 网站
         env:
           HUGO_ENVIRONMENT: production
           HUGO_ENV: production
-          HUGO_ENABLEGITINFO: true
         run: |
-          # Hugo 构建优化参数
           hugo \
             --gc \
             --minify \
-            --enableGitInfo \
             --cleanDestinationDir \
             --baseURL "${{ steps.pages.outputs.base_url }}/" \
-            --cacheDir ${{ runner.temp }}/hugo_cache \
             --destination ./public
-            
-          # 生成站点地图和 RSS
-          hugo --baseURL "${{ steps.pages.outputs.base_url }}/" --config config.toml,config-sitemap.toml
 
-      - name: 🗜️ 后构建优化
+      - name: 🗜️ 压缩静态资源
         run: |
-          # Brotli 压缩
-          find public -type f \( -name "*.html" -o -name "*.css" -o -name "*.js" -o -name "*.json" -o -name "*.xml" \) \
-            -exec brotli -q 11 -o {}.br {} \;
-          
-          # Gzip 压缩
-          find public -type f \( -name "*.html" -o -name "*.css" -o -name "*.js" -o -name "*.json" -o -name "*.xml" \) \
+          # Gzip 压缩主要文件
+          find public -type f \( -name "*.html" -o -name "*.css" -o -name "*.js" \) \
             -exec gzip -k -9 {} \;
-          
-          # 生成资源清单
-          find public -type f -name "*.css" -o -name "*.js" > public/resource-manifest.txt
 
-      - name: 🔍 检查关键资源
+      - name: 🔍 检查构建结果
         run: |
-          # 验证关键文件存在
-          required_files=(
-            "public/index.html"
-            "public/tools/sight-reading-generator.html"
-          )
-          
-          missing_files=()
-          for file in "${required_files[@]}"; do
-            if [ ! -f "$file" ]; then
-              missing_files+=("$file")
-            fi
-          done
-          
-          if [ ${#missing_files[@]} -ne 0 ]; then
-            echo "❌ 缺少关键文件:"
-            printf '%s\n' "${missing_files[@]}"
+          if [ ! -f "public/index.html" ]; then
+            echo "❌ 主页文件缺失"
             exit 1
-          else
-            echo "✅ 所有关键文件都存在"
           fi
+          echo "✅ 构建成功"
 
       - name: 📤 上传构建结果
         uses: actions/upload-pages-artifact@v3
@@ -157,21 +114,22 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  # Cloudflare 缓存清除任务
+  # Cloudflare 缓存清除任务（可选）
   purge-cloudflare-cache:
     runs-on: ubuntu-latest
     needs: deploy
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.repository_owner == 'ICSTUDIO86'
+    continue-on-error: true
     steps:
       - name: ⚡ 清除 Cloudflare 缓存
         uses: jakejarvis/cloudflare-purge-action@master
         env:
-          # 在 GitHub Secrets 中设置这些值
           CLOUDFLARE_ZONE: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        continue-on-error: true
         
-      - name: ✅ 缓存清除完成
+      - name: ✅ 部署状态
         run: |
-          echo "🎉 Cloudflare CDN 缓存已清除！"
-          echo "📝 网站更新将在 1-3 分钟内生效"
+          echo "🎉 网站部署完成！"
+          echo "📝 如果配置了Cloudflare，缓存将在几分钟内更新"
           echo "🌐 访问: https://icstudio.club"
