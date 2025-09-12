@@ -6,7 +6,7 @@
     <description>Recent content in IC Blog on IC Studio</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 12 Sep 2025 16:56:16 +0200</lastBuildDate><atom:link href="https://icstudio.club/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 12 Sep 2025 17:36:08 +0200</lastBuildDate><atom:link href="https://icstudio.club/blog/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>我开始学习-AI-了</title>
@@ -53,7 +53,7 @@
       <pubDate>Mon, 25 Aug 2025 00:00:00 +0000</pubDate>
       
       <guid>https://icstudio.club/blog/vibe-coding/</guid>
-      <description>&lt;p&gt;继&lt;a href=&#34;https://icstudio.club/blog/%E6%88%91%E5%BC%80%E5%A7%8B%E5%AD%A6%E4%B9%A0-ai-%E4%BA%86/&#34;&gt;上篇&lt;/a&gt;，我闭关了两个星期，最后真的用 Claude Code 从零搭建了一个&lt;strong&gt;视奏网页工具&lt;/strong&gt;。今天就来分享一下这段经历，以及我在过程中得到的一些体会。我也会分享一些技巧与思路，希望读完这篇blog 的你，也能尝试用 AI 开发属于自己的软件。&lt;/p&gt;
+      <description>&lt;p&gt;继&lt;a href=&#34;https://icstudio.club/blog/%E6%88%91%E5%BC%80%E5%A7%8B%E5%AD%A6%E4%B9%A0-ai-%E4%BA%86/&#34;&gt;上篇&lt;/a&gt;，我闭关了两个星期，最后真的用 Claude Code 从零搭建了一个&lt;a href=&#34;https://icstudio.club/sight-reading-tool/&#34;&gt;视奏网页工具&lt;/a&gt;。今天就来分享一下这段经历，以及我在过程中得到的一些体会。我也会分享一些技巧与思路，希望读完这篇blog 的你，也能尝试用 AI 开发属于自己的软件。&lt;/p&gt;
 &lt;h2 id=&#34;第一步做什么软件&#34;&gt;第一步：做什么软件？&lt;/h2&gt;
 &lt;p&gt;2025 年 8 月 27 日，当我意识到 AI可以帮我做网页工具时，我脑海里冒出的第一个问题是：&lt;strong&gt;我要做什么软件？&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;答案很快就出现了：视奏工具。更具体来说，是一个&lt;strong&gt;随机旋律生成器&lt;/strong&gt;。但它不能只是随便堆砌音符，而必须生成符合乐理、保持音乐性的旋律。&lt;/p&gt;
