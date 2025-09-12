@@ -639,30 +639,11 @@ class TrialLimiter {
     }, 500);
   }
 
-  // 显示警告提示
+  // 显示警告提示 - 已禁用
   showWarning() {
-    const warning = document.createElement('div');
-    warning.className = 'trial-warning-popup';
-    warning.innerHTML = `
-      <div class="warning-content">
-        <h3>⚠️ 试用时间即将结束</h3>
-        <p>还剩不到 5 分钟的试用时间</p>
-        <p>购买完整版可永久使用所有功能</p>
-        <div class="warning-buttons">
-          <button onclick="this.parentElement.parentElement.parentElement.remove()" class="btn-secondary">继续试用</button>
-          <a href="#zpay-container" onclick="this.parentElement.parentElement.parentElement.remove()" class="btn-primary">立即购买</a>
-        </div>
-      </div>
-    `;
-    
-    document.body.appendChild(warning);
-    
-    // 3秒后自动关闭
-    setTimeout(() => {
-      if (warning.parentElement) {
-        warning.remove();
-      }
-    }, 10000);
+    // 弹窗已被彻底禁用，只记录日志
+    console.log('⚠️ 试用时间即将结束 (弹窗已禁用)');
+    return;
   }
 }
 
