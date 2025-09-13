@@ -213,53 +213,14 @@ class CloudbaseAPI {
 
   // 🔄 新增：关键功能权限检查包装器
   async checkPermissionBeforeAction(actionName = '高级功能') {
-    console.log(`🔒 检查 ${actionName} 的使用权限...`);
-    
-    const accessCheck = await this.hasFullAccess();
-    
-    if (accessCheck.hasAccess) {
-      console.log(`✅ ${actionName} 权限验证通过`);
-      return { 
-        allowed: true, 
-        accessData: accessCheck.accessData 
-      };
-    } else {
-      console.log(`❌ ${actionName} 权限验证失败:`, accessCheck.reason);
-      
-      // 根据不同的失败原因显示不同的提示
-      let message = '';
-      let showPayment = true;
-      
-      switch (accessCheck.reason) {
-        case 'refunded':
-          message = '您的访问码已退款，权限已失效。如需继续使用，请重新购买。';
-          break;
-        case 'expired':
-          message = '您的访问码已过期，请重新购买激活。';
-          break;
-        case 'invalid-code':
-          message = '访问码无效或已被禁用，请重新购买或联系客服。';
-          break;
-        case 'no-code':
-          message = '请先购买并输入访问码以使用完整功能。';
-          break;
-        case 'verification-error':
-          message = '网络连接失败，请检查网络后重试。';
-          showPayment = false;
-          break;
-        default:
-          message = '权限验证失败，请重新购买或联系客服。';
-      }
-      
-      // 弹窗已移除 - 直接在控制台输出信息
-      console.log(`❌ ${actionName} 权限验证失败: ${message}`);
-      
-      return { 
-        allowed: false, 
-        reason: accessCheck.reason,
-        error: accessCheck.error
-      };
-    }
+    console.log(`🔓 权限检查已禁用 - ${actionName} 自动允许`);
+
+    // 总是返回允许，不再进行任何权限检查
+    return {
+      allowed: true,
+      hasAccess: true,
+      reason: 'permission-check-disabled'
+    };
   }
 
   // 权限拒绝对话框已移除 - 不再显示弹窗

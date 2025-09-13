@@ -2324,31 +2324,9 @@
                         return originalGenerateMelody.apply(this, arguments);
                     }
                     
-                    // 检查试用状态
-                    if (window.trialLimiter) {
-                        const trialStatus = window.trialLimiter.checkTrialStatus();
-                        console.log('⏰ 试用状态:', trialStatus);
-                        
-                        if (trialStatus.allowed) {
-                            console.log('✅ 试用时间内，允许生成');
-                            return originalGenerateMelody.apply(this, arguments);
-                        } else {
-                            console.log('❌ 试用时间已结束，阻止生成');
-                            alert('⏰ 免费试用时间已用完！\n\n每台设备可免费试用10分钟。\n请购买完整版继续使用所有功能。');
-                            
-                            // 显示支付区域
-                            const paymentSection = document.getElementById('zpay-container');
-                            if (paymentSection) {
-                                paymentSection.style.display = 'block';
-                                paymentSection.scrollIntoView({ behavior: 'smooth' });
-                            }
-                            return;
-                        }
-                    }
-                    
-                    // 如果试用限制器未加载，默认拒绝
-                    alert('💎 需要购买完整版或等待系统加载完成。');
-                    return;
+                    // 旧的试用系统已移除，使用新的计数系统
+                    console.log('✅ 使用新的计数系统，允许生成');
+                    return originalGenerateMelody.apply(this, arguments);
                 };
             }
         }
@@ -2491,34 +2469,7 @@
             }
         }
         
-        // 调试工具
-        function debugTrialStatus() {
-            console.log('=== 试用限制调试信息 ===');
-            console.log('TrialLimiter 对象:', window.trialLimiter);
-            console.log('CloudBase API:', window.cloudbaseAPI);
-            
-            if (window.trialLimiter) {
-                const status = window.trialLimiter.checkTrialStatus();
-                console.log('试用状态:', status);
-                console.log('设备ID:', window.trialLimiter.deviceId);
-                
-                const trialData = window.trialLimiter.getTrialData();
-                console.log('试用数据:', trialData);
-                
-                if (trialData.startTime) {
-                    const elapsed = Date.now() - trialData.startTime;
-                    const remaining = Math.max(0, 10 * 60 * 1000 - elapsed);
-                    console.log(`已用时间: ${Math.floor(elapsed / 1000)}秒`);
-                    console.log(`剩余时间: ${Math.floor(remaining / 1000)}秒`);
-                }
-            }
-            
-            const localAccess = localStorage.getItem('ic-premium-access');
-            console.log('本地访问码:', localAccess);
-            
-            console.log('generateMelody 函数:', window.generateMelody);
-            console.log('========================');
-        }
+        // 旧的调试工具已移除，使用新的计数系统
         
         // 直接从原始 JS 文件加载函数（用于调试）
         async function restoreOriginalFunctions() {
