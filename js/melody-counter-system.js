@@ -16,13 +16,13 @@ class MelodyCounterSystem {
 
   // 生成设备指纹（与服务端保持一致）
   generateDeviceFingerprint() {
-    // 暂时禁用缓存，确保基本功能正常
-    // if (this.cachedFingerprint) {
-    //   console.log('⚡ 使用缓存的设备指纹');
-    //   return this.cachedFingerprint;
-    // }
+    // 重新启用缓存提升性能
+    if (this.cachedFingerprint) {
+      console.log('⚡ 使用缓存的设备指纹');
+      return this.cachedFingerprint;
+    }
 
-    console.log('🔍 生成设备指纹...');
+    console.log('🔍 首次生成设备指纹...');
     const fp = [];
 
     try {
@@ -109,8 +109,8 @@ class MelodyCounterSystem {
         throw new Error('生成的指纹过短');
       }
 
-      // 暂时禁用缓存
-      // this.cachedFingerprint = result;
+      // 缓存指纹以提升后续请求性能
+      this.cachedFingerprint = result;
       return result;
     } catch (error) {
       console.error('❌ 设备指纹生成失败:', error);
@@ -118,8 +118,8 @@ class MelodyCounterSystem {
       const fallbackFingerprint = `${navigator.userAgent || 'unknown'}|${navigator.platform || 'unknown'}|${screen.width}x${screen.height}`;
       console.log('🔄 使用备用指纹长度:', fallbackFingerprint.length);
 
-      // 暂时禁用缓存
-      // this.cachedFingerprint = fallbackFingerprint;
+      // 缓存备用指纹
+      this.cachedFingerprint = fallbackFingerprint;
       return fallbackFingerprint;
     }
   }
@@ -488,29 +488,40 @@ class MelodyCounterSystem {
       self.isGenerating = true;
 
       try {
-        // 一次性检查并增加计数（优化延迟）
-        console.log('🚀 使用优化的单次API调用...');
-        const result = await self.requestMelodyGeneration('check_and_increment');
-        console.log('📊 API响应结果:', {
-          success: result.success,
-          allowed: result.allowed,
-          used: result.used,
-          remaining: result.remaining,
-          expired: result.expired,
-          hasFullAccess: result.hasFullAccess
+        // 回到稳定的双API调用模式
+        console.log('🔍 检查生成权限...');
+        const checkResult = await self.requestMelodyGeneration('check');
+        console.log('📊 检查结果:', {
+          success: checkResult.success,
+          allowed: checkResult.allowed,
+          used: checkResult.used,
+          remaining: checkResult.remaining,
+          expired: checkResult.expired,
+          hasFullAccess: checkResult.hasFullAccess
         });
-        self.showCounterStatus(result);
 
-        if (!result.allowed && !result.hasFullAccess) {
-          console.log('🚫 无法生成：', result.message);
-          self.updateGenerateButton(result);
+        self.showCounterStatus(checkResult);
+
+        if (!checkResult.allowed && !checkResult.hasFullAccess) {
+          console.log('🚫 无法生成：', checkResult.message);
+          self.updateGenerateButton(checkResult);
 
           // 显示购买提示
-          if (result.expired) {
+          if (checkResult.expired) {
             self.showPurchasePrompt();
           }
           return;
         }
+
+        // 增加计数
+        console.log('📝 请求增加计数...');
+        const incrementResult = await self.requestMelodyGeneration('increment');
+        console.log('📊 计数结果:', {
+          success: incrementResult.success,
+          allowed: incrementResult.allowed,
+          used: incrementResult.used,
+          remaining: incrementResult.remaining
+        });
 
         // 调用原始生成函数（重要：需要await异步函数）
         console.log('✅ 权限验证通过，调用原始generateMelody...');
@@ -520,15 +531,15 @@ class MelodyCounterSystem {
             const melodyResult = await self.originalGenerateMelody.apply(this, arguments);
             console.log('✅ 原始generateMelody执行完成');
 
-            // 更新显示（使用API结果而非旋律生成结果）
-            self.showCounterStatus(result);
+            // 更新显示（使用计数结果）
+            self.showCounterStatus(incrementResult);
 
             // 如果是最后一条，显示特别提示
-            if (result.remaining === 0 && !result.hasFullAccess) {
+            if (incrementResult.remaining === 0 && !incrementResult.hasFullAccess) {
               setTimeout(() => {
                 alert('🎵 这是您的最后一条免费旋律！\n\n如需继续使用，请购买完整版。');
               }, 1000);
-            } else if (result.remaining === 5 && !result.hasFullAccess) {
+            } else if (incrementResult.remaining === 5 && !incrementResult.hasFullAccess) {
               // 剩余5条时提醒
               console.log('⚠️ 仅剩5条免费旋律');
             }
@@ -564,11 +575,13 @@ class MelodyCounterSystem {
   async preloadDeviceFingerprint() {
     console.log('⚡ 预加载设备指纹中...');
     try {
-      // 延迟预加载，避免阻塞初始化
-      setTimeout(() => {
+      // 如果还没有缓存，立即生成
+      if (!this.cachedFingerprint) {
         this.generateDeviceFingerprint();
         console.log('✅ 设备指纹预加载完成');
-      }, 100);
+      } else {
+        console.log('✅ 设备指纹已存在缓存');
+      }
     } catch (error) {
       console.warn('⚠️ 设备指纹预加载失败:', error);
     }
@@ -604,15 +617,17 @@ class MelodyCounterSystem {
     console.log('🚀 初始化30条旋律计数系统...');
 
     try {
-      // 暂时禁用预加载，确保基本功能正常
-      // this.preloadDeviceFingerprint();
-
       // 检查初始状态（不增加计数）
       console.log('🔍 开始初始化状态检查...');
       const status = await this.requestMelodyGeneration('check');
       console.log('🔍 初始状态检查完成:', status);
       this.showCounterStatus(status);
       this.updateGenerateButton(status);
+
+      // 预加载设备指纹以提升后续性能（延迟执行）
+      setTimeout(() => {
+        this.preloadDeviceFingerprint();
+      }, 500);
 
       // 包装生成函数
       this.wrapGenerateMelodyFunction();
