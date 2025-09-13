@@ -88,15 +88,10 @@ class MelodyCounterSystem {
       console.log('  - 最大触点数:', maxTouchPoints);
       console.log('  - 设备内存:', deviceMemory);
 
-      // WebGL指纹
-      const webglFingerprint = this.getWebGLFingerprint();
-      fp.push(webglFingerprint);
-      console.log('  - WebGL指纹:', webglFingerprint.substring(0, 30) + '...');
-
-      // Canvas指纹
-      const canvasFingerprint = this.getCanvasFingerprint();
-      fp.push(canvasFingerprint);
-      console.log('  - Canvas指纹:', canvasFingerprint.substring(0, 30) + '...');
+      // 超轻量级指纹（仅基础信息，极速生成）
+      const quickFingerprint = this.getQuickFingerprint();
+      fp.push(quickFingerprint);
+      console.log('  - 快速指纹:', quickFingerprint);
 
       const result = fp.join('|');
       console.log('✅ 设备指纹生成完成');
@@ -124,7 +119,59 @@ class MelodyCounterSystem {
     }
   }
 
-  // Canvas指纹
+  // 超轻量级指纹（极速生成）
+  getQuickFingerprint() {
+    try {
+      // 只使用立即可用的属性，无需任何计算
+      const parts = [
+        navigator.userAgent.length.toString(), // userAgent长度而不是内容
+        screen.width.toString(),
+        screen.height.toString(),
+        new Date().getTimezoneOffset().toString(),
+        navigator.hardwareConcurrency || '0',
+        navigator.maxTouchPoints || '0'
+      ];
+      return parts.join('-');
+    } catch (e) {
+      return 'quick-fingerprint-error';
+    }
+  }
+
+  // 简化Canvas指纹（性能优化）
+  getSimpleCanvasFingerprint() {
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      // 简单绘制，避免复杂操作
+      ctx.fillStyle = '#f60';
+      ctx.fillRect(0, 0, 50, 20);
+
+      return canvas.toDataURL().slice(-30);
+    } catch (e) {
+      return 'canvas_error';
+    }
+  }
+
+  // 简化WebGL信息（性能优化）
+  getSimpleWebGLInfo() {
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
+      if (!gl) return 'no_webgl';
+
+      // 获取基本WebGL信息，避免昂贵的扩展查询
+      const version = gl.getParameter(gl.VERSION) || 'unknown';
+      const vendor = gl.getParameter(gl.VENDOR) || 'unknown';
+
+      return `${vendor}_${version}`.substring(0, 50);
+    } catch (e) {
+      return 'webgl_error';
+    }
+  }
+
+  // 原始Canvas指纹（保留备用）
   getCanvasFingerprint() {
     try {
       const canvas = document.createElement('canvas');
@@ -143,7 +190,7 @@ class MelodyCounterSystem {
     }
   }
 
-  // WebGL指纹
+  // 原始WebGL指纹（保留备用）
   getWebGLFingerprint() {
     try {
       const canvas = document.createElement('canvas');
@@ -474,101 +521,121 @@ class MelodyCounterSystem {
     this.originalGenerateMelody = window.generateMelody;
     console.log('📌 保存原始generateMelody函数:', typeof this.originalGenerateMelody);
 
-    // 创建新的包装函数
+    // 创建新的包装函数 - 完全异步模式
     const self = this;
-    window.generateMelody = async function() {
+    window.generateMelody = function() {
       console.log('🎼 用户点击生成旋律按钮');
 
-      // 防止重复点击
-      if (self.isGenerating) {
-        console.log('⏳ 正在生成中，请稍候...');
+      // 只有在明确知道已过期时才阻止（基于上次API结果）
+      if (self.currentStatus && self.currentStatus.expired && !self.currentStatus.hasFullAccess) {
+        console.log('🚫 已知状态：试用已过期');
+        self.showPurchasePrompt();
         return;
       }
 
-      self.isGenerating = true;
-
-      try {
-        // 回到稳定的双API调用模式
-        console.log('🔍 检查生成权限...');
-        const checkResult = await self.requestMelodyGeneration('check');
-        console.log('📊 检查结果:', {
-          success: checkResult.success,
-          allowed: checkResult.allowed,
-          used: checkResult.used,
-          remaining: checkResult.remaining,
-          expired: checkResult.expired,
-          hasFullAccess: checkResult.hasFullAccess
-        });
-
-        self.showCounterStatus(checkResult);
-
-        if (!checkResult.allowed && !checkResult.hasFullAccess) {
-          console.log('🚫 无法生成：', checkResult.message);
-          self.updateGenerateButton(checkResult);
-
-          // 显示购买提示
-          if (checkResult.expired) {
-            self.showPurchasePrompt();
-          }
-          return;
+      // ⚡ 立即调用原始函数 - 零延迟响应
+      console.log('⚡ 立即响应：调用原始generateMelody');
+      let result;
+      if (self.originalGenerateMelody) {
+        try {
+          // 立即同步调用，不使用await避免任何延迟
+          result = self.originalGenerateMelody.apply(this, arguments);
+        } catch (error) {
+          console.error('❌ 同步调用失败，尝试异步:', error);
+          // 如果同步失败，回退到异步
+          result = Promise.resolve(self.originalGenerateMelody.apply(this, arguments));
         }
-
-        // 增加计数
-        console.log('📝 请求增加计数...');
-        const incrementResult = await self.requestMelodyGeneration('increment');
-        console.log('📊 计数结果:', {
-          success: incrementResult.success,
-          allowed: incrementResult.allowed,
-          used: incrementResult.used,
-          remaining: incrementResult.remaining
-        });
-
-        // 调用原始生成函数（重要：需要await异步函数）
-        console.log('✅ 权限验证通过，调用原始generateMelody...');
-        if (self.originalGenerateMelody) {
-          try {
-            // 正确处理异步调用
-            const melodyResult = await self.originalGenerateMelody.apply(this, arguments);
-            console.log('✅ 原始generateMelody执行完成');
-
-            // 更新显示（使用计数结果）
-            self.showCounterStatus(incrementResult);
-
-            // 如果是最后一条，显示特别提示
-            if (incrementResult.remaining === 0 && !incrementResult.hasFullAccess) {
-              setTimeout(() => {
-                alert('🎵 这是您的最后一条免费旋律！\n\n如需继续使用，请购买完整版。');
-              }, 1000);
-            } else if (incrementResult.remaining === 5 && !incrementResult.hasFullAccess) {
-              // 剩余5条时提醒
-              console.log('⚠️ 仅剩5条免费旋律');
-            }
-
-            return melodyResult;
-          } catch (genError) {
-            console.error('❌ 原始generateMelody执行失败:', genError);
-            throw genError;
-          }
-        } else {
-          console.error('❌ 原始generateMelody函数不存在！');
-          throw new Error('原始generateMelody函数不存在');
-        }
-      } catch (error) {
-        console.error('❌ 生成过程出错:', error);
-        self.showCounterStatus({
-          error: '生成失败，请重试'
-        });
-        throw error;
-      } finally {
-        self.isGenerating = false;
-        self.updateGenerateButton(self.currentStatus || {});
       }
+
+      // 🔄 后台异步处理所有验证和计数（完全不阻塞）
+      setTimeout(() => {
+        self.handleBackgroundValidation();
+      }, 0);
+
+      return result;
     };
 
     // 标记为已包装
     window.generateMelody._isWrapped = true;
 
     console.log('✅ 旋律计数系统已激活');
+  }
+
+  // 后台验证处理（完全异步，不阻塞用户体验）
+  async handleBackgroundValidation() {
+    try {
+      console.log('🔄 后台验证开始...');
+
+      // 异步增加计数
+      const result = await this.requestMelodyGeneration('increment');
+      console.log('📊 后台计数完成:', {
+        success: result.success,
+        used: result.used,
+        remaining: result.remaining
+      });
+
+      // 更新显示
+      this.showCounterStatus(result);
+      this.updateGenerateButton(result);
+
+      // 处理限制提醒
+      if (result.remaining === 0 && !result.hasFullAccess) {
+        setTimeout(() => {
+          alert('🎵 这是您的最后一条免费旋律！\n\n如需继续使用，请购买完整版。');
+        }, 2000);
+      } else if (result.remaining === 5 && !result.hasFullAccess) {
+        console.log('⚠️ 仅剩5条免费旋律');
+      }
+
+      // 如果已达到限制，显示购买提示
+      if (result.expired) {
+        setTimeout(() => {
+          this.showPurchasePrompt();
+        }, 1000);
+      }
+
+    } catch (error) {
+      console.error('❌ 后台验证失败:', error);
+      // 静默失败，不影响用户体验
+      this.showCounterStatus({
+        error: '计数验证失败，下次刷新时更新'
+      });
+    }
+  }
+
+  // 后台初始化（不阻塞用户体验）
+  async backgroundInitialization() {
+    try {
+      console.log('🔄 后台初始化开始...');
+
+      // 预加载设备指纹
+      this.preloadDeviceFingerprint();
+
+      // 检查初始状态
+      const status = await this.requestMelodyGeneration('check');
+      console.log('📊 后台状态检查完成:', {
+        used: status.used,
+        remaining: status.remaining,
+        expired: status.expired
+      });
+
+      // 更新显示
+      this.showCounterStatus(status);
+      this.updateGenerateButton(status);
+
+      // 如果已经过期，显示购买提示
+      if (status.expired && !status.hasFullAccess) {
+        this.showPurchasePrompt();
+      }
+
+      console.log('✅ 后台初始化完成');
+    } catch (error) {
+      console.error('❌ 后台初始化失败:', error);
+      // 静默失败，显示默认状态
+      this.showCounterStatus({
+        error: '状态加载中...'
+      });
+    }
   }
 
   // 预加载设备指纹（后台生成以提升性能）
@@ -617,28 +684,16 @@ class MelodyCounterSystem {
     console.log('🚀 初始化30条旋律计数系统...');
 
     try {
-      // 检查初始状态（不增加计数）
-      console.log('🔍 开始初始化状态检查...');
-      const status = await this.requestMelodyGeneration('check');
-      console.log('🔍 初始状态检查完成:', status);
-      this.showCounterStatus(status);
-      this.updateGenerateButton(status);
-
-      // 预加载设备指纹以提升后续性能（延迟执行）
-      setTimeout(() => {
-        this.preloadDeviceFingerprint();
-      }, 500);
-
-      // 包装生成函数
+      // 立即包装生成函数，确保用户可以立即使用
       this.wrapGenerateMelodyFunction();
 
-      // 如果已经过期，显示购买提示
-      if (status.expired && !status.hasFullAccess) {
-        this.showPurchasePrompt();
-      }
+      // 所有状态检查都在后台进行，不阻塞初始化
+      setTimeout(() => {
+        this.backgroundInitialization();
+      }, 0);
 
       this.initialized = true; // 标记已初始化
-      console.log('✅ 计数系统初始化完成');
+      console.log('✅ 计数系统立即初始化完成');
       return true;
 
     } catch (error) {
