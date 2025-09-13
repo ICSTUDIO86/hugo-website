@@ -277,7 +277,7 @@ class CloudbaseAPI {
     
     const paymentButtons = showPayment ? `
       <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: center;">
-        <button onclick="document.getElementById('permission-denied-dialog').remove(); window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});" style="
+        <button id="zpay-btn" onclick="window.createZPayment()"; window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});" style="
           padding: 12px 24px; background: #667eea; color: white; border: none;
           border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;
         ">立即购买</button>

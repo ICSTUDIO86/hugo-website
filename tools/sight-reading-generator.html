@@ -284,6 +284,48 @@
     <div class="container">
         <!-- 试用状态显示区域 -->
         <div id="trial-status" style="margin: 20px 0; padding: 15px; border-radius: 8px; background: #f8f9fa;"></div>
+        
+        <!-- 支付区域 -->
+        <div id="zpay-container" style="display: none; margin: 20px 0; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <!-- 隐藏支付按钮部分 -->
+            <div id="payment-section" style="display: none;">
+                <h3 style="color: #667eea; margin-bottom: 15px;">购买完整版</h3>
+                
+                <!-- 使用条款确认 -->
+                <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <label style="display: flex; align-items: flex-start; cursor: pointer; font-size: 14px; color: #555;">
+                        <input type="checkbox" id="terms-checkbox" onchange="togglePaymentButton()" style="margin-right: 10px; margin-top: 3px; transform: scale(1.2);">
+                        <span>我已阅读并同意 <a href="#" onclick="showTermsDialog()" style="color: #667eea; text-decoration: none;">《使用条款》</a> 和 <a href="#" onclick="showPrivacyDialog()" style="color: #667eea; text-decoration: none;">《隐私政策》</a></span>
+                    </label>
+                </div>
+                
+                <div id="payment-button-container" style="display: none;">
+                    <button id="zpay-btn" onclick="window.createZPayment()" style="display: inline-block; background: linear-gradient(135deg, #1677FF 0%, #00A0E9 100%); color: white; padding: 15px 30px; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 8px 25px rgba(22, 119, 255, 0.3); cursor: pointer;">
+                        支付宝 ￥48.00 (早鸟价)
+                    </button>
+                    <p style="font-size: 14px; color: #888; margin-top: 15px;">*使用支付宝安全支付，支付成功后立即获得专属访问码*</p>
+                </div>
+            </div>
+            
+            <!-- 访问码验证区域 -->
+            <div style="margin-top: 20px;">
+                <h3 style="color: #667eea; margin-bottom: 10px;">输入访问码</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="access-code-input" placeholder="输入访问码(11-12位)" 
+                           style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; text-transform: uppercase; transition: border-color 0.3s ease;"
+                           maxlength="12" oninput="handleInputChange()" onkeyup="handleInputChange()" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#ddd'">
+                    <button onclick="handleVerifyClick()" id="verify-btn"
+                            style="padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: not-allowed; font-weight: 600; font-size: 14px; transition: all 0.3s ease; opacity: 1;"
+                            onmousedown="this.style.opacity='0.3'; this.style.transform='scale(0.98)'"
+                            onmouseup="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)"
+                            onmouseleave="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)">
+                        验证
+                    </button>
+                </div>
+                <div id="verify-result" style="margin-top: 10px; font-size: 14px;"></div>
+                <!-- 忘记访问码功能已移除，请参考FAQ -->
+            </div>
+        </div>
         <div class="header">
             <div class="header-content">
                 <div class="header-text">
@@ -1326,9 +1368,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             const headerSpeedInput = document.getElementById('headerMetronomeBpm');
             
-            // 自动勾选使用条款复选框，与 /sight-reading-tool/ 页面保持一致
-            autoCheckTermsOnPageLoad();
-            
             if (headerSpeedInput) {
                 // 实时输入验证
                 headerSpeedInput.addEventListener('input', function() {
@@ -1951,7 +1990,16 @@
                                 <div style="font-size: 48px; margin-bottom: 20px;">⏰</div>
                                 <h3>试用已结束</h3>
                                 <p>感谢您体验 IC Studio 视奏工具！</p>
-                                <button id="zpay-btn" onclick="window.createZPayment()" style="background: linear-gradient(135deg, #1677FF 0%, #00A0E9 100%); color: white; padding: 15px 20px; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(22, 119, 255, 0.3); transition: all 0.3s ease; cursor: pointer; margin-top: 15px;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(22, 119, 255, 0.4)';" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(22, 119, 255, 0.3)';">支付宝支付</button>
+                                <button onclick="window.createZPayment()" style="
+                                    background: linear-gradient(135deg, #1677ff 0%, #1890ff 100%);
+                                    color: white;
+                                    border: none;
+                                    padding: 12px 24px;
+                                    border-radius: 8px;
+                                    font-weight: 600;
+                                    cursor: pointer;
+                                    margin-top: 15px;
+                                ">支付宝购买</button>
                             </div>
                         </div>
                     `;
@@ -1993,117 +2041,30 @@
         // Initialize trial manager - 但在完整版激活时会被禁用
         let trialManager = null;
         
-        // 检查是否已有完整版访问权限 - 强制试用模式版本
+        // 检查是否已有完整版访问权限
         function shouldInitTrialManager() {
-            console.log('🔍 [强制试用模式] shouldInitTrialManager 被调用');
-            console.log('🚫 强制返回 true，确保试用管理器总是被初始化');
+            const hasCloudbaseAccess = localStorage.getItem('ic-premium-access');
+            const hasVerifiedUser = localStorage.getItem('ic-verified-user') === 'true';
+            const hasFullAccess = localStorage.getItem('ic-full-access') === 'true';
             
-            // 记录被忽略的权限信息
-            const permissions = {
-                'ic-premium-access': localStorage.getItem('ic-premium-access'),
-                'ic-verified-user': localStorage.getItem('ic-verified-user'),
-                'ic-full-access': localStorage.getItem('ic-full-access')
-            };
-            console.log('📝 [调试] 被忽略的权限标记:', permissions);
-            
-            // 强制返回 true，确保试用管理器总是被初始化
-            return true;
+            // 如果有任何完整版标记，不初始化试用管理器
+            return !(hasCloudbaseAccess || hasVerifiedUser || hasFullAccess);
         }
         
-        // 强制试用模式：总是初始化试用管理器
-        console.log('🚫 [强制试用模式] 忽略所有权限检查，强制初始化试用管理器');
-        trialManager = new FreeTrialManager();
-        console.log('✅ 试用管理器已强制初始化');
-        
-        // 确保试用管理器启动
-        if (trialManager) {
-            console.log('🚀 启动强制试用模式...');
-            trialManager.startTrial();
-        }
-        
-        // 强制试用模式保护系统 - 对抗外部脚本
-        function forceTrialMode() {
-            console.log('🛡️ 启动强制试用模式保护系统');
-            
-            // 1. 强制清除所有权限标记
-            const keysToRemove = [
-                'ic-premium-access',
-                'ic-studio-payment-state', 
-                'ic-studio-access-codes',
-                'ic-full-access',
-                'ic-verified-user',
-                'ic-sight-reading-license',
-                'icstudio_access_code'
-            ];
-            
-            keysToRemove.forEach(key => {
-                if (localStorage.getItem(key)) {
-                    console.log(`🧹 强制删除权限标记: ${key}`);
-                    localStorage.removeItem(key);
+        // 只在需要时初始化试用管理器
+        if (shouldInitTrialManager()) {
+            trialManager = new FreeTrialManager();
+        } else {
+            console.log('💎 检测到完整版权限，跳过试用管理器初始化');
+            // 确保试用计时器被隐藏
+            setTimeout(() => {
+                const trialTimer = document.getElementById('trialTimer');
+                if (trialTimer) {
+                    trialTimer.style.display = 'none';
+                    console.log('🔒 试用计时器已隐藏（完整版用户）');
                 }
-            });
-            
-            // 2. 强制显示试用计时器
-            const timerElement = document.getElementById('trialTimer');
-            if (timerElement) {
-                timerElement.style.display = 'block';
-                timerElement.style.visibility = 'visible';
-                timerElement.style.opacity = '1';
-                timerElement.style.zIndex = '999999';
-                timerElement.style.pointerEvents = 'none';
-                console.log('✅ 强制显示试用计时器');
-            }
-            
-            // 3. 确保试用管理器运行
-            if (trialManager && typeof trialManager.startTrial === 'function') {
-                trialManager.startTrial();
-                console.log('✅ 强制启动试用管理器');
-            }
-            
-            // 4. 重写权限检查函数
-            window.checkPremiumAccess = function() {
-                console.log('🚫 [保护模式] checkPremiumAccess 强制返回 false');
-                return false;
-            };
-            
-            window.checkFullAccess = function() {
-                console.log('🚫 [保护模式] checkFullAccess 强制返回 false');
-                return false;
-            };
-            
-            window.shouldInitTrialManager = function() {
-                console.log('🚫 [保护模式] shouldInitTrialManager 强制返回 true');
-                return true;
-            };
+            }, 100);
         }
-        
-        // 立即执行强制试用模式
-        forceTrialMode();
-        
-        // 定期执行以对抗外部脚本的干扰（前10秒每秒执行一次）
-        let protectionCount = 0;
-        const protectionInterval = setInterval(() => {
-            protectionCount++;
-            console.log(`🛡️ 保护系统第 ${protectionCount} 次执行`);
-            forceTrialMode();
-            
-            if (protectionCount >= 10) {
-                clearInterval(protectionInterval);
-                console.log('🛡️ 保护系统初始阶段完成，转入定期维护模式');
-                
-                // 转入定期维护模式（每30秒检查一次）
-                setInterval(() => {
-                    console.log('🔄 定期维护：检查试用模式状态');
-                    forceTrialMode();
-                }, 30000);
-            }
-        }, 1000);
-        
-        // 在所有外部脚本可能加载完成后再次执行
-        setTimeout(() => {
-            console.log('⏰ 外部脚本加载完成后，最终强制试用模式');
-            forceTrialMode();
-        }, 5000);
         
         // CSS for timer animation
         const style = document.createElement('style');
@@ -3425,14 +3386,11 @@
     };
     </script>
     
-    <!-- 弹窗终结器 - 彻底移除权限弹窗 -->
-    <script src="/js/popup-killer.js?v=1.0.0"></script>
-    
     <!-- 集成统一支付系统 -->
-    <script src="/js/trial-limiter.js?v=20250909"></script>
+    <script src="/js/trial-limiter.js?v=20250908"></script>
     <script src="/js/cloudbase-api.js?v=20250908"></script>
     <script src="/js/payment-success-handler.js?v=20250910"></script>
-    <script src="/js/zpay-simple.js?v=1.0.9"></script>
+    <script src="/js/zpay-simple.js?v=1.0.0"></script>
     
     <!-- 测试支付注入器（仅在开发环境） -->
     <script src="/js/test-payment-injector.js?v=20250908"></script>
@@ -3665,43 +3623,33 @@
                                 <span style="color: #666;">产品：</span>
                                 <span>${orderData.product_name || 'IC Studio 视奏工具'}</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between;">
                                 <span style="color: #666;">验证时间：</span>
                                 <span>${new Date().toLocaleString()}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: #666;">订单号：</span>
-                                <span style="font-family: monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">${(orderData.order_info?.out_trade_no) || (orderData.order_info?.order_id) || orderData.out_trade_no || orderData.order_id || orderData.orderId || '暂无'}</span>
                             </div>
                         </div>
 
                         <div style="margin-bottom: 30px;">
-                            <h3 style="color: #333; margin-bottom: 20px;">📦 下载安装包</h3>
+                            <h3 style="color: #333; margin-bottom: 20px;">📦 下载资源</h3>
                             <div style="display: grid; gap: 10px;">
-                                <button class="popup-download-btn" data-platform="windows-x64"
-                                       style="display: block; background: #f0f9ff; color: #1e40af; padding: 12px 20px; border: 2px solid #93c5fd; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
-                                       onmouseover="this.style.background='#1e40af'; this.style.color='white';" 
-                                       onmouseout="this.style.background='#f0f9ff'; this.style.color='#1e40af';">
-                                    💻 Windows x64 (73.2MB)
-                                </button>
-                                <button class="popup-download-btn" data-platform="macos-x64-dmg"
-                                       style="display: block; background: #f0fdf4; color: #166534; padding: 12px 20px; border: 2px solid #86efac; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
-                                       onmouseover="this.style.background='#166534'; this.style.color='white';" 
-                                       onmouseout="this.style.background='#f0fdf4'; this.style.color='#166534';">
-                                    🍎 macOS Intel (DMG - 86.2MB)
-                                </button>
-                                <button class="popup-download-btn" data-platform="macos-arm64-zip"
-                                       style="display: block; background: #fef3c7; color: #92400e; padding: 12px 20px; border: 2px solid #fbbf24; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
-                                       onmouseover="this.style.background='#92400e'; this.style.color='white';" 
-                                       onmouseout="this.style.background='#fef3c7'; this.style.color='#92400e';">
-                                    🍎 macOS Apple Silicon (ZIP - 86.6MB)
-                                </button>
-                                <button class="popup-download-btn" data-platform="linux-appimage"
-                                       style="display: block; background: #ede9fe; color: #6b21a8; padding: 12px 20px; border: 2px solid #c084fc; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
-                                       onmouseover="this.style.background='#6b21a8'; this.style.color='white';" 
-                                       onmouseout="this.style.background='#ede9fe'; this.style.color='#6b21a8';">
-                                    🐧 Linux (AppImage - 77.6MB)
-                                </button>
+                                <a href="javascript:void(0)" onclick="downloadFile('/software-packages/IC Studio 视奏工具-1.0.0-mac-x64.dmg', 'IC Studio 视奏工具-1.0.0-mac-x64.dmg')"
+                                   style="display: block; background: #f0f9ff; color: #1e40af; padding: 12px 20px; border: 2px solid #93c5fd; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer;"
+                                   onmouseover="this.style.background='#1e40af'; this.style.color='white';" 
+                                   onmouseout="this.style.background='#f0f9ff'; this.style.color='#1e40af';">
+                                    🍎 Mac版本 (DMG)
+                                </a>
+                                <a href="javascript:void(0)" onclick="downloadFile('/software-packages/IC Studio 视奏工具-1.0.0-win-x64.exe', 'IC Studio 视奏工具-1.0.0-win-x64.exe')"
+                                   style="display: block; background: #f0fdf4; color: #166534; padding: 12px 20px; border: 2px solid #86efac; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer;"
+                                   onmouseover="this.style.background='#166534'; this.style.color='white';" 
+                                   onmouseout="this.style.background='#f0fdf4'; this.style.color='#166534';">
+                                    💻 Windows版本 (EXE)
+                                </a>
+                                <a href="javascript:void(0)" onclick="downloadFile('/software-packages/IC Studio 视奏工具-1.0.0-linux-x86_64.AppImage', 'IC Studio 视奏工具-1.0.0-linux-x86_64.AppImage')"
+                                   style="display: block; background: #fef3c7; color: #92400e; padding: 12px 20px; border: 2px solid #fbbf24; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer;"
+                                   onmouseover="this.style.background='#92400e'; this.style.color='white';" 
+                                   onmouseout="this.style.background='#fef3c7'; this.style.color='#92400e';">
+                                    🐧 Linux版本 (AppImage)
+                                </a>
                             </div>
                             <p style="font-size: 12px; color: #888; margin-top: 15px;">下载完成后，使用以上访问码激活完整版功能</p>
                         </div>
@@ -3711,13 +3659,7 @@
                                     style="padding: 15px 30px; background: #f8f9fa; color: #333; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;"
                                     onmouseover="this.style.background='#e2e8f0'" 
                                     onmouseout="this.style.background='#f8f9fa'">
-                                稍后使用
-                            </button>
-                            <button onclick="window.location.reload()" 
-                                    style="padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;"
-                                    onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'" 
-                                    onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
-                                🚀 立即使用
+                                关闭弹窗
                             </button>
                         </div>
                     </div>
@@ -3725,71 +3667,6 @@
             `;
             
             document.body.appendChild(popup);
-            
-            // 绑定弹窗下载按钮事件
-            bindPopupDownloadEvents(accessCode);
-        }
-        
-        // 绑定弹窗下载按钮事件
-        function bindPopupDownloadEvents(accessCode) {
-            document.querySelectorAll('.popup-download-btn').forEach(btn => {
-                btn.onclick = async function() {
-                    const platform = this.getAttribute('data-platform');
-                    const originalText = this.innerHTML;
-                    this.innerHTML = '⏳ 获取链接...';
-                    this.disabled = true;
-                    
-                    try {
-                        console.log(`📥 弹窗下载 ${platform} 版本`);
-                        
-                        // 调用CloudBase downloadInstaller服务
-                        const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/downloadInstaller', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Request-Source': 'IC-Studio-Success-Popup'
-                            },
-                            body: JSON.stringify({
-                                access_code: accessCode,
-                                platform: platform
-                            })
-                        });
-                        
-                        const result = await response.json();
-                        console.log('📥 弹窗下载响应:', result);
-                        
-                        if (result.success && result.data && result.data.download_url) {
-                            // 创建下载链接
-                            const link = document.createElement('a');
-                            link.href = result.data.download_url;
-                            link.download = result.data.package_info.name;
-                            link.style.display = 'none';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            
-                            // 显示成功状态
-                            this.innerHTML = '✅ 下载开始';
-                            console.log(`🎉 弹窗下载成功: ${result.data.package_info.name}`);
-                            
-                            showDownloadNotification(result.data.package_info.name);
-                            
-                        } else {
-                            throw new Error(result.error || '获取下载链接失败');
-                        }
-                    } catch (error) {
-                        console.error('❌ 弹窗下载失败:', error);
-                        this.innerHTML = '❌ 下载失败';
-                        showDownloadNotification('下载失败：' + error.message, 'error');
-                    }
-                    
-                    // 3秒后恢复按钮状态
-                    setTimeout(() => {
-                        this.innerHTML = originalText;
-                        this.disabled = false;
-                    }, 3000);
-                };
-            });
         }
 
         // 关闭成功弹窗
@@ -3971,25 +3848,6 @@
             if (checkbox && buttonContainer) {
                 buttonContainer.style.display = checkbox.checked ? 'block' : 'none';
             }
-        }
-
-        // 自动勾选复选框以保持与 /sight-reading-tool/ 页面一致
-        function autoCheckTermsOnPageLoad() {
-            setTimeout(() => {
-                const checkbox = document.getElementById('terms-checkbox');
-                const buttonContainer = document.getElementById('payment-button-container');
-                
-                if (checkbox) {
-                    // checkbox.checked = true; // 自动勾选功能已禁用
-                    console.log('✅ 自动勾选使用条款复选框');
-                }
-                
-                // 确保支付按钮始终显示，与 /sight-reading-tool/ 页面保持一致
-                if (buttonContainer) {
-                    // buttonContainer.style.display = "block"; // 强制显示已禁用
-                    console.log('✅ 支付按钮已设为永久显示');
-                }
-            }, 500);
         }
 
         function showTermsDialog() {

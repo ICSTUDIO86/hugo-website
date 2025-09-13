@@ -376,8 +376,6 @@
     modal.appendChild(content);
     document.body.appendChild(modal);
 
-    // 自动勾选功能已移除，用户需要手动勾选条款才能看到支付二维码
-
     // 开始轮询支付状态
     startPaymentPolling(paymentData.out_trade_no);
   }
