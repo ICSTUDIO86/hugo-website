@@ -28,7 +28,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    
+
+    <!-- Umami Analytics -->
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
+
     <!-- Critical CSS - Inlined for faster loading and fallback -->
     <style>
         /* 完整的关键样式 - 确保页面在任何情况下都能正常显示 */
@@ -220,6 +223,10 @@
     
     <!-- OpenSheetMusicDisplay from CDN -->
     <script async src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.8.5/build/opensheetmusicdisplay.min.js"></script>
+
+    <!-- OSMD Loader Fix - 确保库正确加载 -->
+    <script src="js/osmd-loader-fix.js"></script>
+    <script src="js/osmd-quick-fix.js"></script>
 
     <!-- Umami Analytics -->
     <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
@@ -3087,7 +3094,10 @@
         setTimeout(checkAutoFillAccessCode, 1000);
     </script>
     
-    <!-- 付费用户界面管理器 - 必须最先加载以修复访问控制 -->
+    <!-- 30条旋律严格计数系统 - 必须最先加载以拦截generateMelody -->
+    <script src="/js/melody-counter-system.js?v=20250113-fix"></script>
+
+    <!-- 付费用户界面管理器 -->
     <script src="/js/premium-ui-manager.js?v=20250908"></script>
     
     <!-- 支付状态管理器 - 解决验证不一致和状态持久化问题 -->
@@ -3390,7 +3400,6 @@
     </script>
     
     <!-- 集成统一支付系统 -->
-    <script src="/js/trial-limiter.js?v=20250908"></script>
     <script src="/js/cloudbase-api.js?v=20250908"></script>
     <script src="/js/payment-success-handler.js?v=20250910"></script>
     <script src="/js/zpay-simple.js?v=1.0.0"></script>
@@ -3983,6 +3992,29 @@
         console.log('  - showPurchaseMode() - 跳过试用，显示购买页面');
         console.log('  - updateVerifyButton() - 更新验证按钮状态');
         console.log('  - verifyAccessCodeWithServer() - 验证访问码');
+    </script>
+
+    <!-- 确保30条旋律计数系统正确初始化 -->
+    <script>
+    // 等待所有脚本加载完成后初始化计数系统
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            console.log('🎯 强制初始化30条旋律计数系统...');
+
+            // 如果计数系统存在但未初始化，手动初始化
+            if (window.melodyCounterSystem && !window.melodyCounterSystem.initialized) {
+                window.melodyCounterSystem.init();
+            }
+
+            // 如果generateMelody还未被包装，手动包装
+            if (window.generateMelody && window.melodyCounterSystem && !window.melodyCounterSystem.originalGenerateMelody) {
+                console.log('📦 手动包装generateMelody函数...');
+                window.melodyCounterSystem.wrapGenerateMelodyFunction();
+            }
+
+            console.log('✅ 计数系统检查完成');
+        }, 2000); // 延迟2秒确保所有脚本都加载完成
+    });
     </script>
 
 </body></html>

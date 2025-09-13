@@ -6,7 +6,7 @@
 - **cloudbase-api.js** - CloudBase API客户端，处理后端通信
 - **zpay-hybrid.js** - 主要支付处理器（Z-pay集成）
 - **payment-success-handler.js** - 统一支付成功处理器
-- **trial-limiter.js** - 试用限制管理器
+- **melody-counter-system.js - 旋律数量限制系统（替代时间限制）
 - **premium-ui-manager.js** - 高级版UI管理器
 - **access-code-enhancer.js** - 访问码功能增强
 - **global-error-interceptor.js** - 全局错误拦截器

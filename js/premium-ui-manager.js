@@ -357,33 +357,8 @@ class PremiumUIManager {
       console.log('✅ 访问控制已修复');
     }
 
-    // 恢复正确的生成函数保护
-    if (window.originalGenerateMelody && window.generateMelody) {
-      const originalFunction = window.originalGenerateMelody;
-      window.generateMelody = function() {
-        // 检查权限
-        if (!window.premiumUIManager.hasValidAccessCode()) {
-          // 检查试用状态
-          if (window.trialLimiter) {
-            const trialStatus = window.trialLimiter.checkAccess();
-            if (!trialStatus.allowed) {
-              alert('⏰ 免费试用时间已用完！\n\n每台设备可免费试用10分钟。\n请购买完整版继续使用所有功能。');
-              
-              // 显示支付区域
-              const paymentSection = document.getElementById('zpay-container');
-              if (paymentSection) {
-                paymentSection.style.display = 'block';
-              }
-              return;
-            }
-          }
-        }
-        
-        // 执行原始函数
-        return originalFunction.apply(this, arguments);
-      };
-      console.log('✅ 生成函数保护已修复');
-    }
+    // 不再包装generateMelody函数，让melody-counter-system处理
+    console.log('ℹ️ generateMelody函数由melody-counter-system管理');
   }
 }
 

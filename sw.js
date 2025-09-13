@@ -11,7 +11,7 @@ const DYNAMIC_CACHE = 'ic-studio-dynamic-v1.2.0';
 const STATIC_ASSETS = [
   '/',
   '/css/main.css',
-  '/js/trial-limiter.js',
+  '/js/melody-counter-system.js',
   '/js/cloudbase-manager.js',
   '/js/zpay-integration.js',
   '/js/performance-optimizer.js',
