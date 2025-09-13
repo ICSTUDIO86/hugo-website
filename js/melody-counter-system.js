@@ -329,6 +329,7 @@ class MelodyCounterSystem {
       }
 
       console.log(`📊 服务端响应:`, result);
+      console.log(`📊 响应详细内容:`, JSON.stringify(result, null, 2));
 
       this.currentStatus = result;
       return result;
