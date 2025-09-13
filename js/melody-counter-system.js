@@ -15,41 +15,101 @@ class MelodyCounterSystem {
 
   // 生成设备指纹（与服务端保持一致）
   generateDeviceFingerprint() {
+    console.log('🔍 开始生成设备指纹...');
     const fp = [];
 
-    // 基础浏览器信息
-    fp.push(navigator.userAgent);
-    fp.push(navigator.language || 'unknown');
-    fp.push((navigator.languages || []).join(',') || 'unknown');
-    fp.push(navigator.platform || 'unknown');
-    fp.push(navigator.cookieEnabled);
-
-    // 屏幕信息
-    fp.push(`${screen.width}x${screen.height}`);
-    fp.push(screen.colorDepth || 'unknown');
-    fp.push(screen.pixelDepth || 'unknown');
-    fp.push(window.devicePixelRatio || 'unknown');
-
-    // 时区信息
     try {
-      fp.push(Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown');
-    } catch (e) {
-      fp.push('unknown');
+      // 基础浏览器信息
+      const userAgent = navigator.userAgent || 'unknown';
+      const language = navigator.language || 'unknown';
+      const languages = (navigator.languages || []).join(',') || 'unknown';
+      const platform = navigator.platform || 'unknown';
+      const cookieEnabled = navigator.cookieEnabled;
+
+      fp.push(userAgent);
+      fp.push(language);
+      fp.push(languages);
+      fp.push(platform);
+      fp.push(cookieEnabled);
+
+      console.log('  - userAgent 长度:', userAgent.length);
+      console.log('  - language:', language);
+      console.log('  - platform:', platform);
+      console.log('  - cookieEnabled:', cookieEnabled);
+
+      // 屏幕信息
+      const screenInfo = `${screen.width}x${screen.height}`;
+      const colorDepth = screen.colorDepth || 'unknown';
+      const pixelDepth = screen.pixelDepth || 'unknown';
+      const devicePixelRatio = window.devicePixelRatio || 'unknown';
+
+      fp.push(screenInfo);
+      fp.push(colorDepth);
+      fp.push(pixelDepth);
+      fp.push(devicePixelRatio);
+
+      console.log('  - 屏幕信息:', screenInfo);
+      console.log('  - 颜色深度:', colorDepth);
+      console.log('  - 设备像素比:', devicePixelRatio);
+
+      // 时区信息
+      let timeZone = 'unknown';
+      try {
+        timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown';
+      } catch (e) {
+        console.warn('  - 时区获取失败:', e.message);
+        timeZone = 'unknown';
+      }
+      const timezoneOffset = new Date().getTimezoneOffset();
+
+      fp.push(timeZone);
+      fp.push(timezoneOffset);
+
+      console.log('  - 时区:', timeZone);
+      console.log('  - 时区偏移:', timezoneOffset);
+
+      // 硬件信息
+      const hardwareConcurrency = navigator.hardwareConcurrency || 'unknown';
+      const maxTouchPoints = navigator.maxTouchPoints || 0;
+      const deviceMemory = navigator.deviceMemory || 'unknown';
+
+      fp.push(hardwareConcurrency);
+      fp.push(maxTouchPoints);
+      fp.push(deviceMemory);
+
+      console.log('  - CPU核心数:', hardwareConcurrency);
+      console.log('  - 最大触点数:', maxTouchPoints);
+      console.log('  - 设备内存:', deviceMemory);
+
+      // WebGL指纹
+      const webglFingerprint = this.getWebGLFingerprint();
+      fp.push(webglFingerprint);
+      console.log('  - WebGL指纹:', webglFingerprint.substring(0, 30) + '...');
+
+      // Canvas指纹
+      const canvasFingerprint = this.getCanvasFingerprint();
+      fp.push(canvasFingerprint);
+      console.log('  - Canvas指纹:', canvasFingerprint.substring(0, 30) + '...');
+
+      const result = fp.join('|');
+      console.log('✅ 设备指纹生成完成');
+      console.log('  - 总长度:', result.length);
+      console.log('  - 组件数量:', fp.length);
+      console.log('  - 前100字符:', result.substring(0, 100) + '...');
+
+      // 验证指纹不为空
+      if (!result || result.length < 10) {
+        throw new Error('生成的指纹过短');
+      }
+
+      return result;
+    } catch (error) {
+      console.error('❌ 设备指纹生成失败:', error);
+      // 返回基础指纹作为备用
+      const fallbackFingerprint = `${navigator.userAgent || 'unknown'}|${Date.now()}|${Math.random()}`;
+      console.log('🔄 使用备用指纹长度:', fallbackFingerprint.length);
+      return fallbackFingerprint;
     }
-    fp.push(new Date().getTimezoneOffset());
-
-    // 硬件信息
-    fp.push(navigator.hardwareConcurrency || 'unknown');
-    fp.push(navigator.maxTouchPoints || 0);
-    fp.push(navigator.deviceMemory || 'unknown');
-
-    // WebGL指纹
-    fp.push(this.getWebGLFingerprint());
-
-    // Canvas指纹
-    fp.push(this.getCanvasFingerprint());
-
-    return fp.join('|');
   }
 
   // Canvas指纹
@@ -210,19 +270,42 @@ class MelodyCounterSystem {
       const deviceFingerprint = this.generateDeviceFingerprint();
       const accessCode = this.getAccessCode();
 
+      // 详细调试信息
       console.log(`🎵 [${action}] 向服务端请求...`);
+      console.log('🔍 请求参数调试:');
+      console.log('  - action:', action);
+      console.log('  - deviceFingerprint长度:', deviceFingerprint ? deviceFingerprint.length : 'null');
+      console.log('  - deviceFingerprint前50字符:', deviceFingerprint ? deviceFingerprint.substring(0, 50) + '...' : 'null');
+      console.log('  - userAgent存在:', !!navigator.userAgent);
+      console.log('  - userAgent长度:', navigator.userAgent ? navigator.userAgent.length : 'null');
+      console.log('  - accessCode:', accessCode ? '存在' : '无');
+
+      // 验证必要参数
+      if (!deviceFingerprint) {
+        console.error('❌ deviceFingerprint 为空');
+        throw new Error('设备指纹生成失败');
+      }
+
+      if (!navigator.userAgent) {
+        console.error('❌ userAgent 为空');
+        throw new Error('用户代理信息缺失');
+      }
+
+      const requestBody = {
+        action: action,
+        deviceFingerprint: deviceFingerprint,
+        userAgent: navigator.userAgent,
+        accessCode: accessCode // 如果有访问码，会跳过限制
+      };
+
+      console.log('📤 发送请求体:', JSON.stringify(requestBody, null, 2));
 
       const response = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          action: action,
-          deviceFingerprint: deviceFingerprint,
-          userAgent: navigator.userAgent,
-          accessCode: accessCode // 如果有访问码，会跳过限制
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
