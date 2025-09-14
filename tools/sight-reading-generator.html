@@ -2249,7 +2249,10 @@
         // Initialize access control with enhanced error handling
         function initializeApp() {
             console.log('🚀 Initializing IC Studio sight-reading tool...');
-            
+
+            // 首先检查并隐藏试用UI（如果是付费用户）
+            checkAndHideTrialUI();
+
             try {
                 const hasAccess = checkPremiumAccess();
                 
@@ -2356,22 +2359,62 @@
             setTimeout(hideLoadingOverlay, 500);
         });
         
+        // 页面加载时检查用户状态并隐藏试用UI（如果是付费用户）
+        function checkAndHideTrialUI() {
+            const hasFullAccess = checkFullAccess();
+            if (hasFullAccess) {
+                console.log('🎯 页面加载检查：付费用户，隐藏所有试用UI');
+
+                // 隐藏试用状态
+                const trialStatus = document.getElementById('trial-status');
+                if (trialStatus) {
+                    trialStatus.style.display = 'none';
+                }
+
+                // 隐藏试用计时器
+                const trialTimer = document.getElementById('trialTimer');
+                if (trialTimer) {
+                    trialTimer.style.display = 'none';
+                }
+
+                // 阻止melody-counter-system初始化
+                if (window.melodyCounterSystem) {
+                    console.log('🚫 阻止试用计数系统初始化');
+                    window.melodyCounterSystem.initialized = true; // 标记为已初始化以阻止重复初始化
+                }
+            }
+        }
+
         // 集成试用限制到旋律生成功能
         function setupTrialProtection() {
             const originalGenerateMelody = window.generateMelody;
             if (originalGenerateMelody) {
                 window.generateMelody = function() {
                     console.log('🎵 用户尝试生成旋律，检查权限...');
-                    
+
                     // 检查完整版权限
                     const hasFullAccess = checkFullAccess();
                     if (hasFullAccess) {
-                        console.log('✅ 用户有完整版权限，允许生成');
+                        console.log('✅ 用户有完整版权限，直接生成旋律');
+
+                        // 确保隐藏所有试用相关UI
+                        const trialStatus = document.getElementById('trial-status');
+                        if (trialStatus) {
+                            trialStatus.style.display = 'none';
+                        }
+
+                        // 隐藏试用计时器
+                        const trialTimer = document.getElementById('trialTimer');
+                        if (trialTimer) {
+                            trialTimer.style.display = 'none';
+                        }
+
+                        // 付费用户：绕过试用计数系统，直接生成
                         return originalGenerateMelody.apply(this, arguments);
                     }
-                    
-                    // 旧的试用系统已移除，使用新的计数系统
-                    console.log('✅ 使用新的计数系统，允许生成');
+
+                    console.log('ℹ️ 用户为试用用户，通过试用计数系统生成');
+                    // 试用用户：通过试用计数系统验证后生成
                     return originalGenerateMelody.apply(this, arguments);
                 };
             }

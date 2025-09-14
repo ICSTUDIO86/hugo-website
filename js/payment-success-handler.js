@@ -71,11 +71,9 @@
             const orderData = await getOrderInfo();
             
             // 准备显示数据
-            const orderNumber = orderData?.out_trade_no || '获取中...';
-            const alipayAccount = orderData?.alipay_account || 
-                                 orderData?.alipay_phone || 
-                                 orderData?.alipay_email || 
-                                 (orderData?.zpay_trade_no ? `交易号: ${orderData.zpay_trade_no.substring(0, 10)}...` : '通过FAQ找回');
+            const orderNumber = orderData?.out_trade_no || orderData?.order_id || '获取中...';
+            // 不显示支付宝信息，改为显示支付方式
+            const paymentMethod = orderData?.source === 'zpay' ? 'Z-Pay支付' : '在线支付';
             
             const successHtml = `
               <div class="payment-success-overlay" style="
@@ -149,8 +147,8 @@
                       <span style="font-family: monospace; font-size: 12px; color: #666;">${orderNumber}</span>
                     </div>
                     <div style="margin-bottom: 10px;">
-                      <span style="font-weight: bold; color: #2c3e50;">💳 支付宝：</span>
-                      <span style="font-size: 12px; color: #666;">${alipayAccount}</span>
+                      <span style="font-weight: bold; color: #2c3e50;">💳 支付方式：</span>
+                      <span style="font-size: 12px; color: #666;">${paymentMethod}</span>
                     </div>
                   </div>
                   
