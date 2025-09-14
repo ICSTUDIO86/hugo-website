@@ -1,0 +1,9 @@
+{
+  "name": "listCloudbaseStorage",
+  "version": "1.0.0",
+  "description": "检查CloudBase存储中的安装包文件",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.0.0"
+  }
+}

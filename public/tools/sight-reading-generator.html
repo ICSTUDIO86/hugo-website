@@ -28,7 +28,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    
+
+    <!-- Umami Analytics -->
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
+
     <!-- Critical CSS - Inlined for faster loading and fallback -->
     <style>
         /* 完整的关键样式 - 确保页面在任何情况下都能正常显示 */
@@ -220,6 +223,13 @@
     
     <!-- OpenSheetMusicDisplay from CDN -->
     <script async src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.8.5/build/opensheetmusicdisplay.min.js"></script>
+
+    <!-- OSMD Loader Fix - 确保库正确加载 -->
+    <script src="js/osmd-loader-fix.js"></script>
+    <script src="js/osmd-quick-fix.js"></script>
+
+    <!-- Umami Analytics -->
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
 </head>
 <body>
     <!-- Loading Overlay -->
@@ -2056,13 +2066,59 @@
             trialManager = new FreeTrialManager();
         } else {
             console.log('💎 检测到完整版权限，跳过试用管理器初始化');
-            // 确保试用计时器被隐藏
+
+            // 完整版用户UI激活
             setTimeout(() => {
+                // 1. 隐藏试用计时器
                 const trialTimer = document.getElementById('trialTimer');
                 if (trialTimer) {
                     trialTimer.style.display = 'none';
                     console.log('🔒 试用计时器已隐藏（完整版用户）');
                 }
+
+                // 2. 隐藏所有试用相关的UI元素
+                const trialElements = document.querySelectorAll('.trial-only, .trial-warning, .trial-limit');
+                trialElements.forEach(element => {
+                    element.style.display = 'none';
+                });
+
+                // 3. 显示完整版UI元素
+                const fullElements = document.querySelectorAll('.full-version-only, .premium-feature');
+                fullElements.forEach(element => {
+                    element.style.display = 'block';
+                });
+
+                // 4. 更新页面标题
+                const titleElement = document.querySelector('h1');
+                if (titleElement && titleElement.textContent.includes('试用版')) {
+                    titleElement.textContent = titleElement.textContent.replace('试用版', '完整版');
+                }
+
+                // 5. 移除访问码输入区域
+                const accessCodeContainer = document.getElementById('access-code-container');
+                if (accessCodeContainer) {
+                    accessCodeContainer.style.display = 'none';
+                }
+
+                // 6. 显示完整版状态
+                console.log('✅ 完整版UI已激活');
+
+                // 7. 通知旋律计数系统
+                if (window.melodyCounterSystem) {
+                    // 强制设置为完整版状态
+                    window.melodyCounterSystem.currentStatus = {
+                        allowed: true,
+                        hasFullAccess: true,
+                        expired: false,
+                        used: 0,
+                        total: Infinity,
+                        remaining: Infinity,
+                        message: '',
+                        isFirstTime: false
+                    };
+                    console.log('🎵 旋律计数系统已更新为完整版状态');
+                }
+
             }, 100);
         }
         
@@ -2077,8 +2133,8 @@
         `;
         document.head.appendChild(style);
         
-        // Check if user has premium access - 兼容多种存储格式
-        function checkPremiumAccess() {
+        // Check if user has premium access - 兼容多种存储格式 (本地版本)
+        function checkLocalPremiumAccess() {
             console.log('🔍 检查完整版访问权限...');
             
             // 方法1: 检查产品页面存储的访问码
@@ -2191,11 +2247,21 @@
         }
 
         // Initialize access control with enhanced error handling
-        function initializeApp() {
+        async function initializeApp() {
             console.log('🚀 Initializing IC Studio sight-reading tool...');
-            
+
             try {
-                const hasAccess = checkPremiumAccess();
+                // 首先使用CloudBase API统一权限检查
+                let hasAccess = false;
+                if (window.cloudbaseAPI) {
+                    const accessResult = await window.cloudbaseAPI.hasFullAccess();
+                    hasAccess = accessResult.hasAccess;
+                    console.log('🔐 CloudBase API权限检查结果:', accessResult);
+                } else {
+                    // 降级到本地检查
+                    hasAccess = checkLocalPremiumAccess();
+                    console.log('🔍 降级到本地权限检查结果:', hasAccess);
+                }
                 
                 if (hasAccess) {
                     addPremiumBadge();
@@ -2263,7 +2329,7 @@
                             }
                         }
                     } else {
-                        // trialManager未初始化，可能是因为已有权限但checkPremiumAccess失败
+                        // trialManager未初始化，可能是因为已有权限但checkLocalPremiumAccess失败
                         console.log('⚠️ 试用管理器未初始化，重新初始化...');
                         trialManager = new FreeTrialManager();
                         const canUseTrial = trialManager.startTrial();
@@ -2314,31 +2380,9 @@
                         return originalGenerateMelody.apply(this, arguments);
                     }
                     
-                    // 检查试用状态
-                    if (window.trialLimiter) {
-                        const trialStatus = window.trialLimiter.checkTrialStatus();
-                        console.log('⏰ 试用状态:', trialStatus);
-                        
-                        if (trialStatus.allowed) {
-                            console.log('✅ 试用时间内，允许生成');
-                            return originalGenerateMelody.apply(this, arguments);
-                        } else {
-                            console.log('❌ 试用时间已结束，阻止生成');
-                            alert('⏰ 免费试用时间已用完！\n\n每台设备可免费试用10分钟。\n请购买完整版继续使用所有功能。');
-                            
-                            // 显示支付区域
-                            const paymentSection = document.getElementById('zpay-container');
-                            if (paymentSection) {
-                                paymentSection.style.display = 'block';
-                                paymentSection.scrollIntoView({ behavior: 'smooth' });
-                            }
-                            return;
-                        }
-                    }
-                    
-                    // 如果试用限制器未加载，默认拒绝
-                    alert('💎 需要购买完整版或等待系统加载完成。');
-                    return;
+                    // 旧的试用系统已移除，使用新的计数系统
+                    console.log('✅ 使用新的计数系统，允许生成');
+                    return originalGenerateMelody.apply(this, arguments);
                 };
             }
         }
@@ -2481,34 +2525,7 @@
             }
         }
         
-        // 调试工具
-        function debugTrialStatus() {
-            console.log('=== 试用限制调试信息 ===');
-            console.log('TrialLimiter 对象:', window.trialLimiter);
-            console.log('CloudBase API:', window.cloudbaseAPI);
-            
-            if (window.trialLimiter) {
-                const status = window.trialLimiter.checkTrialStatus();
-                console.log('试用状态:', status);
-                console.log('设备ID:', window.trialLimiter.deviceId);
-                
-                const trialData = window.trialLimiter.getTrialData();
-                console.log('试用数据:', trialData);
-                
-                if (trialData.startTime) {
-                    const elapsed = Date.now() - trialData.startTime;
-                    const remaining = Math.max(0, 10 * 60 * 1000 - elapsed);
-                    console.log(`已用时间: ${Math.floor(elapsed / 1000)}秒`);
-                    console.log(`剩余时间: ${Math.floor(remaining / 1000)}秒`);
-                }
-            }
-            
-            const localAccess = localStorage.getItem('ic-premium-access');
-            console.log('本地访问码:', localAccess);
-            
-            console.log('generateMelody 函数:', window.generateMelody);
-            console.log('========================');
-        }
+        // 旧的调试工具已移除，使用新的计数系统
         
         // 直接从原始 JS 文件加载函数（用于调试）
         async function restoreOriginalFunctions() {
@@ -2986,6 +3003,23 @@
             setTimeout(() => window.location.reload(), 1000);
         }
         
+        // 定义调试函数（避免未定义错误）
+        function debugTrialStatus() {
+            console.log('🔍 调试：完整版用户，无试用限制');
+        }
+
+        function resetTrialTime() {
+            console.log('🔄 重置：完整版用户无需重置');
+        }
+
+        function fullReset() {
+            console.log('🔄 完全重置：完整版用户无需重置');
+        }
+
+        function setTrialExpired() {
+            console.log('⏰ 设置过期：完整版用户无试用期');
+        }
+
         // 暴露工具到全局
         window.debugTrialStatus = debugTrialStatus;
         window.resetTrialTime = resetTrialTime;
@@ -3084,7 +3118,10 @@
         setTimeout(checkAutoFillAccessCode, 1000);
     </script>
     
-    <!-- 付费用户界面管理器 - 必须最先加载以修复访问控制 -->
+    <!-- 20条旋律严格计数系统 - 必须最先加载以拦截generateMelody -->
+    <script src="/js/melody-counter-system.js?v=20250113-fix"></script>
+
+    <!-- 付费用户界面管理器 -->
     <script src="/js/premium-ui-manager.js?v=20250908"></script>
     
     <!-- 支付状态管理器 - 解决验证不一致和状态持久化问题 -->
@@ -3387,7 +3424,6 @@
     </script>
     
     <!-- 集成统一支付系统 -->
-    <script src="/js/trial-limiter.js?v=20250908"></script>
     <script src="/js/cloudbase-api.js?v=20250908"></script>
     <script src="/js/payment-success-handler.js?v=20250910"></script>
     <script src="/js/zpay-simple.js?v=1.0.0"></script>
@@ -3675,6 +3711,16 @@
             if (popup) {
                 popup.remove();
             }
+
+            // Command+R 风格的页面刷新
+            // 添加轻微的视觉反馈，然后执行刷新
+            document.body.style.opacity = '0.95';
+            document.body.style.transition = 'opacity 0.1s ease';
+
+            setTimeout(() => {
+                // 强制刷新页面，类似 Command+R 的效果
+                window.location.reload(true);
+            }, 100);
         }
 
         // 复制访问码功能
@@ -3980,6 +4026,32 @@
         console.log('  - showPurchaseMode() - 跳过试用，显示购买页面');
         console.log('  - updateVerifyButton() - 更新验证按钮状态');
         console.log('  - verifyAccessCodeWithServer() - 验证访问码');
+    </script>
+
+    <!-- 确保20条旋律计数系统正确初始化 -->
+    <script>
+    // 等待所有脚本加载完成后初始化计数系统
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            console.log('🎯 强制初始化20条旋律计数系统...');
+
+            // 如果计数系统存在但未初始化，手动初始化
+            if (window.melodyCounterSystem && !window.melodyCounterSystem.initialized) {
+                window.melodyCounterSystem.init();
+            }
+
+            // 如果generateMelody还未被包装，手动包装
+            if (window.generateMelody && window.melodyCounterSystem && !window.melodyCounterSystem.originalGenerateMelody) {
+                console.log('📦 手动包装generateMelody函数...');
+                window.melodyCounterSystem.wrapGenerateMelodyFunction();
+            }
+
+            // 跳过自动激活检查，让用户正常使用试用版
+            console.log('🔍 跳过自动激活检查，保持试用版状态');
+
+            console.log('✅ 计数系统检查完成');
+        }, 2000); // 延迟2秒确保所有脚本都加载完成
+    });
     </script>
 
 </body></html>

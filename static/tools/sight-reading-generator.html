@@ -2133,8 +2133,8 @@
         `;
         document.head.appendChild(style);
         
-        // Check if user has premium access - 兼容多种存储格式
-        function checkPremiumAccess() {
+        // Check if user has premium access - 兼容多种存储格式 (本地版本)
+        function checkLocalPremiumAccess() {
             console.log('🔍 检查完整版访问权限...');
             
             // 方法1: 检查产品页面存储的访问码
@@ -2247,11 +2247,21 @@
         }
 
         // Initialize access control with enhanced error handling
-        function initializeApp() {
+        async function initializeApp() {
             console.log('🚀 Initializing IC Studio sight-reading tool...');
-            
+
             try {
-                const hasAccess = checkPremiumAccess();
+                // 首先使用CloudBase API统一权限检查
+                let hasAccess = false;
+                if (window.cloudbaseAPI) {
+                    const accessResult = await window.cloudbaseAPI.hasFullAccess();
+                    hasAccess = accessResult.hasAccess;
+                    console.log('🔐 CloudBase API权限检查结果:', accessResult);
+                } else {
+                    // 降级到本地检查
+                    hasAccess = checkLocalPremiumAccess();
+                    console.log('🔍 降级到本地权限检查结果:', hasAccess);
+                }
                 
                 if (hasAccess) {
                     addPremiumBadge();
@@ -2319,7 +2329,7 @@
                             }
                         }
                     } else {
-                        // trialManager未初始化，可能是因为已有权限但checkPremiumAccess失败
+                        // trialManager未初始化，可能是因为已有权限但checkLocalPremiumAccess失败
                         console.log('⚠️ 试用管理器未初始化，重新初始化...');
                         trialManager = new FreeTrialManager();
                         const canUseTrial = trialManager.startTrial();

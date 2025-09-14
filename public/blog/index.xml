@@ -1,51 +1,61 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>IC Blog on IC Studio</title>
-    <link>https://icstudio.club/blog/</link>
-    <description>Recent content in IC Blog on IC Studio</description>
-    <generator>Hugo</generator>
-    <language>en-us</language>
-    <lastBuildDate>Thu, 11 Sep 2025 18:15:02 +0200</lastBuildDate><atom:link href="https://icstudio.club/blog/index.xml" rel="self" type="application/rss+xml" />
-    
-    <item>
-      <title>我开始学习 AI 了</title>
-      <link>https://icstudio.club/blog/%E6%88%91%E5%BC%80%E5%A7%8B%E5%AD%A6%E4%B9%A0-ai-%E4%BA%86/</link>
-      <pubDate>Mon, 25 Aug 2025 00:00:00 +0000</pubDate>
-      
-      <guid>https://icstudio.club/blog/%E6%88%91%E5%BC%80%E5%A7%8B%E5%AD%A6%E4%B9%A0-ai-%E4%BA%86/</guid>
-      <description>&lt;h2 id=&#34;为什么开始-blog&#34;&gt;为什么开始 Blog？&lt;/h2&gt;
-&lt;p&gt;这是我的第一篇博客文章。写下它，不只是想记录学习的过程，也是想把我遇到的新鲜事分享出来。我希望这个博客能像一个公开的“&lt;strong&gt;学习日志&lt;/strong&gt;”，既能让未来的我回头看看自己的成长。&lt;/p&gt;
-&lt;h2 id=&#34;今天的新发现vibe-coding&#34;&gt;今天的新发现：Vibe Coding&lt;/h2&gt;
-&lt;p&gt;这几天我接触到一个很新颖的概念——&lt;strong&gt;Vibe Coding&lt;/strong&gt;。简单来说，&lt;strong&gt;它就是用我们平时说话的方式（自然语言）与 AI 沟通，然后让它来帮你写代码&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;传统编程的方式是：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;要学习一大堆语法和命令&lt;/li&gt;
-&lt;li&gt;要记各种看似“奇怪”的符号&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;而 Vibe Coding 更像是和电脑聊天。比如，我可以说：“帮我在网站加一个搜索功能”，然后 AI 就会自动生成代码，真正把功能搭建起来。这样学习编程就不再是枯燥的记忆过程，而是一个“和 AI 合作”的过程。没错，目前这个网站的全文搜索功能也是我靠 AI 搭建的。&lt;/p&gt;
-&lt;h2 id=&#34;claude-code-的帮助&#34;&gt;Claude Code 的帮助&lt;/h2&gt;
-&lt;p&gt;为了更好地学习，我开通了 &lt;strong&gt;Claude 的会员&lt;/strong&gt;，体验了它的一个强大功能：&lt;strong&gt;Claude Code&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;它和普通的网页 AI 最大的不同是：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;普通 AI 只能在网页上给我一些“答案”或建议&lt;/li&gt;
-&lt;li&gt;Claude Code 能直接在我的电脑里写代码，帮我真正实现功能&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;灵感来自哪里&#34;&gt;灵感来自哪里？&lt;/h2&gt;
-&lt;p&gt;其实我开始正式学习 Vibe Coding，还受到了 &lt;strong&gt;Money xyz&lt;/strong&gt; 的影响。&lt;a href=&#34;https://www.youtube.com/watch?v=sgD0UKYQC6Y&#34;&gt;他的视频&lt;/a&gt;里不仅详细介绍了 Vibe Coding，还分享了对 AI 未来发展的远见。我看完之后很受启发，也让我更坚定地走上了这条学习之路。我强烈推荐你去看一下。（是的，他只在 YouTube 上发布视频。）&lt;/p&gt;
-&lt;h2 id=&#34;我的感受&#34;&gt;我的感受&lt;/h2&gt;
-&lt;p&gt;其实一开始搭建这个官网我的时候也是收到了很多 AI 的帮助，但是由于我用的是网页版的 AI 所以网站上很多功能都非常受限制（例如说没有全文搜索），但今天使用 Claude Code 的经验让我非常惊讶，因为作为一个代码小白我也能完善网站的搜索功能，我只需要告诉 Claude Code 一句 ”&lt;strong&gt;帮我完善网站的搜索功能&lt;/strong&gt;“ 就好了。我觉得自己不只是“在用 AI”，而是“和 AI 一起创造”。这种感觉很新鲜，就像我从一个单纯的用户，变成了一个真正的探索者。&lt;/p&gt;
-&lt;h2 id=&#34;下一步&#34;&gt;下一步&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;我现在当然还会继续更新视频，我已经度假完啦。&lt;/li&gt;
-&lt;li&gt;但我现在会把日常中的一部分中心放在研究 AI 上面，所以我会坚持每一天试着用 Claude Code 做一些不一样且对我来说有趣的研究。&lt;/li&gt;
-&lt;li&gt;不定期的更新我的个人博客，分享我遇到的新鲜事以及学习经历。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;hr&gt;
-&lt;p&gt;✨ 这就是我的第一个博客，算是一个新的起点。
-希望未来的我能继续坚持写下去，也希望正在读这篇文章的你，能从中获得一点点启发。&lt;/p&gt;
-</description>
-    </item>
-    
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>IC Blog on IC Studio</title><link>https://icstudio.club/blog/</link><description>Recent content in IC Blog on IC Studio</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sun, 14 Sep 2025 15:39:04 +0200</lastBuildDate><atom:link href="https://icstudio.club/blog/index.xml" rel="self" type="application/rss+xml"/><item><title>我开始学习 AI 了</title><link>https://icstudio.club/blog/ai-learning/</link><pubDate>Mon, 25 Aug 2025 00:00:00 +0000</pubDate><guid>https://icstudio.club/blog/ai-learning/</guid><description>&lt;h2 id="为什么开始-blog">为什么开始 Blog？&lt;/h2>
+&lt;p>这是我的第一篇博客文章。写下它，不只是想记录学习的过程，也是想把我遇到的新鲜事分享出来。我希望这个博客能像一个公开的“&lt;strong>学习日志&lt;/strong>”，既能让未来的我回头看看自己的成长。&lt;/p>
+&lt;h2 id="今天的新发现vibe-coding">今天的新发现：Vibe Coding&lt;/h2>
+&lt;p>这几天我接触到一个很新颖的概念——&lt;strong>Vibe Coding&lt;/strong>。简单来说，&lt;strong>它就是用我们平时说话的方式（自然语言）与 AI 沟通，然后让它来帮你写代码&lt;/strong>。&lt;/p>
+&lt;p>传统编程的方式是：&lt;/p>
+&lt;ul>
+&lt;li>要学习一大堆语法和命令&lt;/li>
+&lt;li>要记各种看似“奇怪”的符号&lt;/li>
+&lt;/ul>
+&lt;p>而 Vibe Coding 更像是和电脑聊天。比如，我可以说：“帮我在网站加一个搜索功能”，然后 AI 就会自动生成代码，真正把功能搭建起来。这样学习编程就不再是枯燥的记忆过程，而是一个“和 AI 合作”的过程。没错，目前这个网站的全文搜索功能也是我靠 AI 搭建的。&lt;/p>
+&lt;h2 id="claude-code-的帮助">Claude Code 的帮助&lt;/h2>
+&lt;p>为了更好地学习，我开通了 &lt;strong>Claude 的会员&lt;/strong>，体验了它的一个强大功能：&lt;strong>Claude Code&lt;/strong>。&lt;/p>
+&lt;p>它和普通的网页 AI 最大的不同是：&lt;/p>
+&lt;ul>
+&lt;li>普通 AI 只能在网页上给我一些“答案”或建议&lt;/li>
+&lt;li>Claude Code 能直接在我的电脑里写代码，帮我真正实现功能&lt;/li>
+&lt;/ul>
+&lt;h2 id="灵感来自哪里">灵感来自哪里？&lt;/h2>
+&lt;p>其实我开始正式学习 Vibe Coding，还受到了 &lt;strong>Money xyz&lt;/strong> 的影响。&lt;a href="https://www.youtube.com/watch?v=sgD0UKYQC6Y">他的视频&lt;/a>里不仅详细介绍了 Vibe Coding，还分享了对 AI 未来发展的远见。我看完之后很受启发，也让我更坚定地走上了这条学习之路。我强烈推荐你去看一下。（是的，他只在 YouTube 上发布视频。）&lt;/p>
+&lt;h2 id="我的感受">我的感受&lt;/h2>
+&lt;p>其实一开始搭建这个官网我的时候也是收到了很多 AI 的帮助，但是由于我用的是网页版的 AI 所以网站上很多功能都非常受限制（例如说没有全文搜索），但今天使用 Claude Code 的经验让我非常惊讶，因为作为一个代码小白我也能完善网站的搜索功能，我只需要告诉 Claude Code 一句 ”&lt;strong>帮我完善网站的搜索功能&lt;/strong>“ 就好了。我觉得自己不只是“在用 AI”，而是“和 AI 一起创造”。这种感觉很新鲜，就像我从一个单纯的用户，变成了一个真正的探索者。&lt;/p>
+&lt;h2 id="下一步">下一步&lt;/h2>
+&lt;ul>
+&lt;li>我现在当然还会继续更新视频，我已经度假完啦。&lt;/li>
+&lt;li>但我现在会把日常中的一部分中心放在研究 AI 上面，所以我会坚持每一天试着用 Claude Code 做一些不一样且对我来说有趣的研究。&lt;/li>
+&lt;li>不定期的更新我的个人博客，分享我遇到的新鲜事以及学习经历。&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>✨ 这就是我的第一个博客，算是一个新的起点。
+希望未来的我能继续坚持写下去，也希望正在读这篇文章的你，能从中获得一点点启发。&lt;/p></description></item><item><title>我是如何用 AI 开发一个软件的？</title><link>https://icstudio.club/blog/vibe-coding/</link><pubDate>Mon, 25 Aug 2025 00:00:00 +0000</pubDate><guid>https://icstudio.club/blog/vibe-coding/</guid><description>&lt;p>继&lt;a href="https://icstudio.club/blog/%E6%88%91%E5%BC%80%E5%A7%8B%E5%AD%A6%E4%B9%A0-ai-%E4%BA%86/">上篇&lt;/a>，我闭关了两个星期，最后真的用 Claude Code 从零搭建了一个&lt;a href="https://icstudio.club/sight-reading-tool/">视奏网页工具&lt;/a>。今天就来分享一下这段经历，以及我在过程中得到的一些体会。我也会分享一些技巧与思路，希望读完这篇blog 的你，也能尝试用 AI 开发属于自己的软件。&lt;/p>
+&lt;h2 id="第一步做什么软件">第一步：做什么软件？&lt;/h2>
+&lt;p>2025 年 8 月 27 日，当我意识到 AI可以帮我做网页工具时，我脑海里冒出的第一个问题是：&lt;strong>我要做什么软件？&lt;/strong>&lt;/p>
+&lt;p>答案很快就出现了：视奏工具。更具体来说，是一个&lt;strong>随机旋律生成器&lt;/strong>。但它不能只是随便堆砌音符，而必须生成符合乐理、保持音乐性的旋律。&lt;/p>
+&lt;p>我一直想提高自己的视奏能力，却缺少合适的练习素材。网上的工具要么旋律错误百出，要么音乐性太差，要么价格太贵（比如 &lt;a href="https://www.sightreadingfactory.com/pricing">Sight Reading Factory&lt;/a>，一年要 45 美金）。&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/sight-reading-factory-pricing.png" alt="Sight Reading Factory 价格截图">&lt;/p>
+&lt;p>所以当我发现 AI 能帮我做软件时，我立刻决定实现这个想法。&lt;/p>
+&lt;p>这就很好的回答了&amp;quot;做什么软件？&amp;ldquo;这个问题，其实问题的关键不在于&amp;quot;做什么软件&amp;rdquo;，而是&amp;quot;&lt;strong>解决哪些需求&lt;/strong>&amp;quot;。你要成为你自己的乙方，找到你自己困扰以及需求，&amp;ldquo;做什么软件&amp;quot;的答案自然就会出现。但同时你也是自己的甲方，因为你需要为自己的需求开发出解决方案。&lt;/p>
+&lt;h2 id="ai-时代的开发初体验">AI 时代的开发初体验&lt;/h2>
+&lt;p>作为零基础的代码小白，我选择了 Claude Code 当助手。最初的体验可以用&amp;quot;兴奋和挫败并存&amp;quot;来形容：看到网页慢慢成型令人激动，但过程中各种 Bug 也让人头大。&lt;/p>
+&lt;p>AI 并不能一键生成完整软件。第一次尝试做出来的视奏工具完全不能用，排版混乱，音符时值对不上拍号，功能缺失。&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/sight-reading-v2-error.png" alt="视奏工具第二版错误示例">
+&lt;img src="https://icstudio.club/images/blog/sight-reading-v2-layout.png" alt="视奏工具第二版布局问题">&lt;/p>
+&lt;p>每一个问题都需要我描述清楚，AI 再尝试解决。有些问题甚至要反复沟通好几次才能修好。整个过程就像和一个&amp;quot;永远不会抱怨的乙方&amp;quot;合作。&lt;/p>
+&lt;p>举个例子：&lt;/p>
+&lt;blockquote>
+&lt;p>我：生成 C 大调的旋律时出现了不属于 C 大调的音。&lt;br>
+AI：好的，我来修改。（结果错误依旧）&lt;br>
+我：问题还在，请换个思路再试。&lt;br>
+AI：好的，我再改。（还是不行）&lt;/p>&lt;/blockquote>
+&lt;p>就这样不断迭代，来来回回，最终视奏工具在九天内面临了以下的进化：&lt;/p>
+&lt;h3 id="第一版根本生成不了任何旋律">第一版：根本生成不了任何旋律&lt;/h3>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/sight-reading-v1.png" alt="视奏工具第一版截图">&lt;/p>
+&lt;h3 id="第二版错误旋律">第二版：错误旋律&lt;/h3>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/sight-reading-v2-layout.png" alt="视奏工具第二版截图">&lt;/p>
+&lt;h3 id="第三版可以用但是会有乐理上的错误且功能不完全">第三版：可以用，但是会有乐理上的错误且功能不完全&lt;/h3>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/sight-reading-v3.png" alt="视奏工具第三版截图">&lt;/p>
+&lt;h3 id="最终版所有功能都可以正常工作专业记谱优质旋律">最终版：所有功能都可以正常工作，专业记谱，优质旋律&lt;/h3>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/sight-reading-final.png" alt="视奏工具最终版截图">&lt;/p>
+&lt;h2 id="我对-ai-的一些思考">我对 AI 的一些思考&lt;/h2>
+&lt;p>AI 确实很强大，而且未来只会更强。但它的影响是双面的：一方面，AI &lt;strong>降低了入门门槛&lt;/strong>，让零基础的人也能做出以前不敢想的东西；另一方面，它也&lt;strong>提高了专业门槛&lt;/strong>。真正能发挥 AI 价值的，依然是那些有明确目标、懂行业知识的人。如果我完全不懂乐理和记谱法，这个视奏工具也不可能做出来。&lt;/p>
+&lt;p>换句话说，在 AI 盛行的年代，&amp;rdquo;&lt;strong>会&lt;/strong>做什么&amp;quot;的价值在下降，而&amp;quot;&lt;strong>知道&lt;/strong>要做什么&amp;quot;的价值在不断上升。这次体验让我更坚定一个想法：AI 不是万能的，但它是最好的&amp;quot;合作者&amp;quot;。你给它目标，它帮你实现。最终你还是需要通过不断的学习来提高自己的上限。&lt;/p></description></item></channel></rss>

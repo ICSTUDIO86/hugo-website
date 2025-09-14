@@ -1,0 +1,9 @@
+{
+  "name": "debugDownloadCodes",
+  "version": "1.0.0",
+  "description": "调试下载功能的访问码数据库",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.0.0"
+  }
+}

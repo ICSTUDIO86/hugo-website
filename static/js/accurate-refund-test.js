@@ -5,8 +5,8 @@
 
 // 真实的退款成功弹窗（与生产环境100%一致）
 function showRealRefundSuccess(data = {
-    access_code: 'WTHVEWWR36BM',
-    order_no: 'ORDER2025011234567',
+    access_code: 'DEMO' + Math.random().toString(36).substr(2, 8).toUpperCase(),
+    order_no: 'ORDER' + Date.now(),
     refund_amount: '1.00',
     refund_time: new Date()
 }) {

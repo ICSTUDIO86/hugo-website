@@ -241,8 +241,8 @@ class PremiumUIManager {
     if (trialStatus) {
       trialStatus.innerHTML = `
         <div style="background: #fff5f5; padding: 15px; border-radius: 8px; border: 2px solid #e74c3c; text-align: center;">
-          <h3 style="color: #e74c3c; margin: 0 0 10px 0;">⏰ 免费试用时间已结束</h3>
-          <p style="margin: 0; color: #666;">每台设备可免费试用 10 分钟</p>
+          <h3 style="color: #e74c3c; margin: 0 0 10px 0;">🎵 需要完整版权限</h3>
+          <p style="margin: 0; color: #666;">购买完整版获得无限使用权</p>
         </div>
       `;
       trialStatus.style.display = 'block';
@@ -367,7 +367,7 @@ class PremiumUIManager {
           if (window.trialLimiter) {
             const trialStatus = window.trialLimiter.checkAccess();
             if (!trialStatus.allowed) {
-              alert('⏰ 免费试用时间已用完！\n\n每台设备可免费试用10分钟。\n请购买完整版继续使用所有功能。');
+              alert('🎵 需要完整版权限！\n\n购买完整版可无限使用所有高级功能。');
               
               // 显示支付区域
               const paymentSection = document.getElementById('zpay-container');

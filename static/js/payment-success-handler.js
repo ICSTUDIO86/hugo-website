@@ -67,7 +67,8 @@
             expiresAt: null,
             version: '4.0-mobile-style',
             source: source,
-            autoFill: true
+            autoFill: true,
+            serverVerified: true // 支付成功后的访问码已验证
         };
         localStorage.setItem('ic-premium-access', JSON.stringify(accessData));
 
@@ -141,13 +142,13 @@
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
               ">
                 <div class="payment-success" style="
-                  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+                  background: linear-gradient(180deg, #FF9800 0%, #F57C00 100%);
                   padding: 40px 30px 30px;
                   border-radius: 20px;
                   text-align: center;
                   max-width: 320px;
                   width: 90%;
-                  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                  box-shadow: 0 20px 40px rgba(255, 152, 0, 0.3);
                   color: white;
                   position: relative;
                   overflow: hidden;
@@ -191,16 +192,15 @@
 
                   <!-- 访问码显示框 -->
                   <div id="access-code-container" style="
-                    background: rgba(255, 255, 255, 0.25);
+                    background: #F5A623;
                     border-radius: 12px;
                     padding: 20px 15px;
                     margin: 0 0 15px 0;
                     position: relative;
                     z-index: 2;
-                    backdrop-filter: blur(10px);
                     cursor: pointer;
                     transition: all 0.3s ease;
-                  " onclick="copyAccessCode('${accessCode}')" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'">
+                  " onclick="copyAccessCode('${accessCode}')" onmouseover="this.style.background='#E6951F'" onmouseout="this.style.background='#F5A623'">
                     <p id="access-code-display" style="
                       font-family: 'Courier New', monospace;
                       font-size: 20px;
@@ -262,7 +262,7 @@
 
                   <!-- 开始使用按钮 -->
                   <button id="start-using-btn" style="
-                    background: #FF9800;
+                    background: #FFB74D;
                     color: white;
                     border: none;
                     padding: 15px 20px;
@@ -275,8 +275,8 @@
                     position: relative;
                     z-index: 2;
                     transition: all 0.3s ease;
-                    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
-                  " onmouseover="this.style.background='#f57c00'" onmouseout="this.style.background='#FF9800'">
+                    box-shadow: 0 4px 12px rgba(255, 183, 77, 0.3);
+                  " onmouseover="this.style.background='#FFA726'" onmouseout="this.style.background='#FFB74D'">
                     🚀 开始使用
                   </button>
 
@@ -285,8 +285,8 @@
                     background: rgba(255, 255, 255, 0.2);
                     color: white;
                     border: 1px solid rgba(255, 255, 255, 0.3);
-                    padding: 12px 20px;
-                    border-radius: 12px;
+                    padding: 10px 20px;
+                    border-radius: 8px;
                     cursor: pointer;
                     font-weight: 500;
                     font-size: 14px;
@@ -294,6 +294,7 @@
                     z-index: 2;
                     transition: all 0.3s ease;
                     backdrop-filter: blur(10px);
+                    margin-top: 10px;
                   " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
                     关闭
                   </button>
