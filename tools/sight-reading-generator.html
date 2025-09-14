@@ -32,6 +32,74 @@
     <!-- Umami Analytics -->
     <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
 
+    <!-- Early Access Check - 早期权限检查，防止试用界面闪烁 -->
+    <script>
+        (function() {
+            // 早期权限检查函数
+            function hasValidAccessCode() {
+                try {
+                    const accessData = localStorage.getItem('ic-premium-access');
+                    if (!accessData) return false;
+
+                    const data = JSON.parse(accessData);
+                    if (!data || !data.code || data.code.length !== 12) return false;
+
+                    // 检查是否过期
+                    if (data.expiresAt && data.expiresAt !== null && Date.now() > data.expiresAt) {
+                        return false;
+                    }
+
+                    // 检查测试前缀
+                    if (!data.serverVerified) {
+                        const hasObviousTestPrefix = ['TEST', 'DEMO', 'FORCE', 'BACKUP', 'EMERGENCY'].some(prefix => data.code.startsWith(prefix));
+                        if (hasObviousTestPrefix) {
+                            localStorage.removeItem('ic-premium-access');
+                            return false;
+                        }
+                    }
+
+                    return true;
+                } catch (error) {
+                    return false;
+                }
+            }
+
+            // 检查其他权限标记
+            function hasOtherAccessMarkers() {
+                return localStorage.getItem('ic-verified-user') === 'true' ||
+                       localStorage.getItem('ic-full-access') === 'true' ||
+                       localStorage.getItem('ic-sight-reading-license');
+            }
+
+            // 设置全局权限状态
+            window.IC_PREMIUM_USER = hasValidAccessCode() || hasOtherAccessMarkers();
+
+            if (window.IC_PREMIUM_USER) {
+                console.log('🚀 早期检测：完整版用户，将隐藏试用界面');
+
+                // 添加CSS来立即隐藏试用相关元素
+                const style = document.createElement('style');
+                style.textContent = `
+                    #trial-status,
+                    #zpay-container,
+                    #access-code-container,
+                    .trial-only,
+                    .trial-warning,
+                    .trial-limit {
+                        display: none !important;
+                    }
+                `;
+                document.head.appendChild(style);
+
+                // 设置标记供后续脚本使用
+                window.IC_EARLY_PREMIUM_DETECTED = true;
+            } else {
+                console.log('💡 早期检测：普通用户，显示试用界面');
+                window.IC_EARLY_PREMIUM_DETECTED = false;
+            }
+        })();
+    </script>
+
     <!-- Critical CSS - Inlined for faster loading and fallback -->
     <style>
         /* 完整的关键样式 - 确保页面在任何情况下都能正常显示 */
@@ -300,12 +368,12 @@
                     <p style="font-size: 14px; color: #888; margin-top: 15px;">*使用支付宝安全支付，支付成功后立即获得专属访问码*</p>
                 </div>
             </div>
-            
-            <!-- 访问码验证区域 -->
+
+            <!-- 访问码验证区域 (简化版) -->
             <div style="margin-top: 20px;">
                 <h3 style="color: #667eea; margin-bottom: 10px;">输入访问码</h3>
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="text" id="access-code-input" placeholder="输入访问码(11-12位)" 
+                    <input type="text" id="access-code-input" placeholder="输入访问码(11-12位)"
                            style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; text-transform: uppercase; transition: border-color 0.3s ease;"
                            maxlength="12" oninput="handleInputChange()" onkeyup="handleInputChange()" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#ddd'">
                     <button onclick="handleVerifyClick()" id="verify-btn"
@@ -317,7 +385,6 @@
                     </button>
                 </div>
                 <div id="verify-result" style="margin-top: 10px; font-size: 14px;"></div>
-                <!-- 忘记访问码功能已移除，请参考FAQ -->
             </div>
         </div>
         <div class="header">

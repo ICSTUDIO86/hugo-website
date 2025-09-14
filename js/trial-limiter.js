@@ -240,6 +240,14 @@ class TrialLimiter {
 
   // 初始化权限管理器（简化版）
   async init() {
+    // 检查早期权限检测结果
+    if (window.IC_EARLY_PREMIUM_DETECTED === true) {
+      console.log('🚀 Trial-Limiter: 早期检测到完整版用户，跳过试用设置');
+      this.ensureToolAccess();
+      // 不显示任何试用状态，完整版用户不需要看到
+      return true;
+    }
+
     const status = this.checkTrialStatus();
 
     if (status.hasAccess) {
