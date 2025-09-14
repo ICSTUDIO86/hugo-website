@@ -14,7 +14,7 @@ draft: false
 
 ![IC Studio 视奏完整界面](/images/sight-reading-tool-interface.png)
 
-## ✨ 核心特色
+## 核心特色
 - **智能生成逻辑**：旋律虽由算法随机生成，但并非完全无序；它们保持**平衡的旋律线条**与**音乐性**，确保练习曲目既有挑战也具备可听性。 
 - **专业乐谱渲染**：基于 OpenSheetMusicDisplay引擎，提供出版级别的清晰乐谱显示。
 
@@ -24,7 +24,7 @@ draft: false
 
 ![IC Studio 视奏工具完整界面](/images/sight-reading-tool-full-interface.png)
 
-## 🎹 专业功能
+## 专业功能
 - **24 个大小调支持**：涵盖所有常见调性，以及小调中的**自然小调**、**和声小调**与**旋律小调**的变化处理。  
 - **丰富节奏选择**：从全音符到十六分音符，囊括附点、三连音等复杂节奏。
 
@@ -38,7 +38,7 @@ draft: false
 - **全拍号支持**：完整覆盖 4/4、3/4、6/8等常用拍号，每种拍号皆有独特节奏模式。
 - **内置节拍器**：无需额外工具，即可在练习时保持稳定的节奏感。 
 
-## 🔮 未来功能
+## 未来功能
 
 - **音程视奏**：随机生成有音乐性以及旋律线条的音程，帮助你熟悉指板音程逻辑。
 - **和弦视奏**：随机生成 [Guitar voicings](/guitar-voicings/)（三和弦，drop 2，drop 3，shell voicings等），提高你视奏和弦的能力。
@@ -46,7 +46,7 @@ draft: false
 - **和弦进行生成器**：随机生成一串**和弦代号**，乐手可以根据和弦代号自行配和声。
 （现在购买可以在未来免费解锁以下功能，之后出了这些功能之后会涨价）
  
-## 👩‍🎓 适用人群
+## 适用人群
 - **音乐学生 / 自学者**：快速提升视奏水平。
 - **音乐教师**：高效生成教学素材，轻松定制个性化练习内容。
 
@@ -63,7 +63,7 @@ draft: false
 <div style="display: flex; gap: 15px; align-items: stretch; justify-content: center;">
 <div style="flex: 1; display: flex; flex-direction: column;">
 <a href="/tools/sight-reading-generator.html" target="_blank" style="display: block; background: #f8f9fa; color: #667eea; padding: 15px 20px; border: 2px solid #667eea; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s ease; margin-bottom: 8px; text-align: center; flex-grow: 1; min-height: 50px; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='#667eea'; this.style.color='white';" onmouseout="this.style.background='#f8f9fa'; this.style.color='#667eea';">免费试用</a>
-<p style="color: #888; font-size: 12px; margin: 0; text-align: center; line-height: 1.3;">10分钟体验<br/>已购用户直接使用</p>
+<p style="color: #888; font-size: 12px; margin: 0; text-align: center; line-height: 1.3;">免费生成20次旋律<br/>已购用户直接使用</p>
 </div>
 <div style="flex: 1; display: flex; flex-direction: column;">
 <button id="zpay-btn" onclick="window.createZPayment()" style="background: linear-gradient(135deg, #1677FF 0%, #00A0E9 100%); color: white; padding: 15px 20px; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(22, 119, 255, 0.3); transition: all 0.3s ease; cursor: pointer; margin-bottom: 8px; width: 100%; text-align: center; flex-grow: 1; min-height: 50px;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(22, 119, 255, 0.4)';" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(22, 119, 255, 0.3)';">支付宝支付</button>
