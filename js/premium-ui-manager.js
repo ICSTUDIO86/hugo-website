@@ -193,8 +193,25 @@ class PremiumUIManager {
 
   // 显示付费用户欢迎信息（可选）
   showPremiumWelcome() {
-    // 不显示高级版激活提示
-    return;
+    const header = document.querySelector('.header');
+    if (header && !header.querySelector('.premium-status')) {
+      const welcomeElement = document.createElement('div');
+      welcomeElement.className = 'premium-status';
+      welcomeElement.style.cssText = `
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-block;
+        margin-bottom: 10px;
+      `;
+      welcomeElement.innerHTML = '✨ 高级版已激活';
+      
+      header.insertBefore(welcomeElement, header.firstChild);
+      console.log('✅ 显示付费用户状态');
+    }
   }
 
   // 强制执行试用限制
@@ -340,8 +357,33 @@ class PremiumUIManager {
       console.log('✅ 访问控制已修复');
     }
 
-    // 不再包装generateMelody函数，让melody-counter-system处理
-    console.log('ℹ️ generateMelody函数由melody-counter-system管理');
+    // 恢复正确的生成函数保护
+    if (window.originalGenerateMelody && window.generateMelody) {
+      const originalFunction = window.originalGenerateMelody;
+      window.generateMelody = function() {
+        // 检查权限
+        if (!window.premiumUIManager.hasValidAccessCode()) {
+          // 检查试用状态
+          if (window.trialLimiter) {
+            const trialStatus = window.trialLimiter.checkAccess();
+            if (!trialStatus.allowed) {
+              alert('⏰ 免费试用时间已用完！\n\n每台设备可免费试用10分钟。\n请购买完整版继续使用所有功能。');
+              
+              // 显示支付区域
+              const paymentSection = document.getElementById('zpay-container');
+              if (paymentSection) {
+                paymentSection.style.display = 'block';
+              }
+              return;
+            }
+          }
+        }
+        
+        // 执行原始函数
+        return originalFunction.apply(this, arguments);
+      };
+      console.log('✅ 生成函数保护已修复');
+    }
   }
 }
 

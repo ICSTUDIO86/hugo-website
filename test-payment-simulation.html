@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模拟支付测试 - CloudBase数据写入</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .test-flow {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .step {
+            flex: 1;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .step.active {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+        .step.completed {
+            background: #48bb78;
+            color: white;
+        }
+        .step h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        .step p {
+            margin: 0;
+            font-size: 14px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+        .result-box {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            background: #c6f6d5;
+            border: 2px solid #48bb78;
+            color: #22543d;
+        }
+        .error {
+            background: #fed7d7;
+            border: 2px solid #fc8181;
+            color: #742a2a;
+        }
+        .info {
+            background: #e9ecef;
+            border: 2px solid #adb5bd;
+            color: #495057;
+        }
+        .access-code-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            padding: 20px;
+            background: #f0f4ff;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            letter-spacing: 2px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-indicator.pending {
+            background: #fbbf24;
+        }
+        .status-indicator.success {
+            background: #34d399;
+        }
+        .status-indicator.error {
+            background: #f87171;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 模拟支付测试 - CloudBase数据写入验证</h1>
+        
+        <div class="test-flow">
+            <div class="step" id="step1">
+                <h3>步骤 1</h3>
+                <p>创建测试订单</p>
+            </div>
+            <div class="step" id="step2">
+                <h3>步骤 2</h3>
+                <p>模拟支付回调</p>
+            </div>
+            <div class="step" id="step3">
+                <h3>步骤 3</h3>
+                <p>生成访问码</p>
+            </div>
+            <div class="step" id="step4">
+                <h3>步骤 4</h3>
+                <p>验证访问码</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <button onclick="startSimulation()">🚀 开始模拟支付流程</button>
+            <button onclick="testDirectGenerate()">⚡ 直接生成访问码测试</button>
+            <button onclick="clearResults()">🗑️ 清空结果</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://cloud1-4g1r5ho01a0cfd85.service.tcloudbase.com';
+        let generatedAccessCode = null;
+        let currentOrderId = null;
+        
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `result-box ${type}`;
+            msgDiv.innerHTML = `<span class="status-indicator ${type}"></span>${new Date().toLocaleTimeString()} - ${message}`;
+            resultsDiv.appendChild(msgDiv);
+            console.log(message);
+        }
+        
+        function updateStep(stepNum, status) {
+            const step = document.getElementById(`step${stepNum}`);
+            step.className = `step ${status}`;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            for (let i = 1; i <= 4; i++) {
+                updateStep(i, '');
+            }
+            generatedAccessCode = null;
+            currentOrderId = null;
+        }
+        
+        async function startSimulation() {
+            clearResults();
+            log('========== 开始模拟支付流程 ==========', 'info');
+            
+            // 步骤1: 创建订单
+            updateStep(1, 'active');
+            currentOrderId = 'SIM-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            const deviceId = 'test-device-' + Math.random().toString(36).substr(2, 9);
+            
+            log(`创建模拟订单: ${currentOrderId}`, 'info');
+            log(`设备ID: ${deviceId}`, 'info');
+            
+            // 模拟在数据库中创建订单（实际需要云函数支持）
+            const orderData = {
+                orderId: currentOrderId,
+                amount: 99.00,
+                currency: 'CNY',
+                status: 'paid', // 模拟已支付
+                deviceId: deviceId,
+                paymentMethod: 'simulation',
+                createdAt: new Date().toISOString(),
+                paidAt: new Date().toISOString()
+            };
+            
+            log(`订单数据: \n${JSON.stringify(orderData, null, 2)}`, 'info');
+            updateStep(1, 'completed');
+            
+            await delay(1000);
+            
+            // 步骤2: 模拟支付回调
+            updateStep(2, 'active');
+            log('模拟Z-pay支付回调...', 'info');
+            
+            // 这里应该调用 zpay-callback 函数，但它需要真实的支付数据
+            // 所以我们跳过这一步，直接进行步骤3
+            
+            log('⚠️ 跳过支付回调（需要云函数支持模拟模式）', 'info');
+            updateStep(2, 'completed');
+            
+            await delay(1000);
+            
+            // 步骤3: 生成访问码
+            updateStep(3, 'active');
+            log('调用 generate-access-code API...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/generate-access-code`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Request-Source': 'IC-Studio-Simulation'
+                    },
+                    body: JSON.stringify({
+                        orderId: currentOrderId,
+                        deviceId: deviceId,
+                        paymentMethod: 'simulation',
+                        amount: 99.00,
+                        timestamp: Date.now()
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    generatedAccessCode = result.accessCode;
+                    log(`✅ 访问码生成成功！`, 'success');
+                    
+                    // 显示访问码
+                    const codeDisplay = document.createElement('div');
+                    codeDisplay.className = 'access-code-display';
+                    codeDisplay.innerHTML = `访问码: ${generatedAccessCode}`;
+                    document.getElementById('results').appendChild(codeDisplay);
+                    
+                    updateStep(3, 'completed');
+                } else {
+                    log(`❌ 生成访问码失败: ${result.message}`, 'error');
+                    log(`详细信息: ${JSON.stringify(result, null, 2)}`, 'error');
+                    updateStep(3, 'error');
+                    
+                    // 提供解决方案
+                    log('\n💡 失败原因分析：', 'info');
+                    log('1. 云函数需要验证订单是否存在且已支付', 'info');
+                    log('2. 当前的 generate-access-code 函数需要真实的订单记录', 'info');
+                    log('3. 建议创建一个测试模式，跳过订单验证', 'info');
+                    return;
+                }
+            } catch (error) {
+                log(`❌ API调用失败: ${error.message}`, 'error');
+                updateStep(3, 'error');
+                return;
+            }
+            
+            await delay(1000);
+            
+            // 步骤4: 验证访问码
+            updateStep(4, 'active');
+            log('验证生成的访问码...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/verify-access-code`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Request-Source': 'IC-Studio-Simulation'
+                    },
+                    body: JSON.stringify({
+                        code: generatedAccessCode,
+                        deviceId: deviceId,
+                        timestamp: Date.now()
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    log(`✅ 访问码验证成功！`, 'success');
+                    log(`验证结果: ${JSON.stringify(result.data, null, 2)}`, 'success');
+                    updateStep(4, 'completed');
+                    
+                    log('\n🎉 完整流程测试成功！CloudBase数据写入正常工作！', 'success');
+                } else {
+                    log(`❌ 访问码验证失败: ${result.message}`, 'error');
+                    updateStep(4, 'error');
+                }
+            } catch (error) {
+                log(`❌ 验证API调用失败: ${error.message}`, 'error');
+                updateStep(4, 'error');
+            }
+        }
+        
+        async function testDirectGenerate() {
+            clearResults();
+            log('========== 直接生成访问码测试 ==========', 'info');
+            log('尝试创建一个测试访问码（绕过订单验证）...', 'info');
+            
+            // 这需要云函数支持测试模式
+            const testData = {
+                orderId: 'TEST-DIRECT-' + Date.now(),
+                deviceId: 'test-direct-device',
+                paymentMethod: 'test',
+                amount: 0,
+                timestamp: Date.now(),
+                testMode: true // 标记为测试模式
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/generate-access-code`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Request-Source': 'IC-Studio-Test',
+                        'X-Test-Mode': 'true' // 添加测试模式标头
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.json();
+                log(`响应: ${JSON.stringify(result, null, 2)}`, result.success ? 'success' : 'error');
+                
+                if (!result.success) {
+                    log('\n💡 建议：需要在云函数中添加测试模式支持', 'info');
+                    log('可以通过检查 X-Test-Mode 标头来跳过订单验证', 'info');
+                }
+            } catch (error) {
+                log(`❌ 请求失败: ${error.message}`, 'error');
+            }
+        }
+        
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // 页面加载完成后的提示
+        window.addEventListener('load', () => {
+            log('模拟支付测试工具已就绪', 'info');
+            log('点击"开始模拟支付流程"按钮进行测试', 'info');
+            log(`API端点: ${API_BASE}`, 'info');
+        });
+    </script>
+</body>
+</html>

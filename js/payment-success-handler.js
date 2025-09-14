@@ -79,21 +79,28 @@
 
             try {
                 console.log('🔍 正在获取订单详细信息...');
-                const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/checkOrderDetails', {
+                const response = await fetch('https://cloud1-4g1r5ho01a0cfd85.service.tcloudbase.com/checkOrder', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Request-Source': 'IC-Studio-Payment-Success'
                     },
                     body: JSON.stringify({
-                        access_code: accessCode
+                        code: accessCode,
+                        deviceId: 'payment-success-' + Date.now()
                     })
                 });
 
                 const result = await response.json();
-                if (result.success && result.orders && result.orders.length > 0) {
+                if (result.success && result.data) {
                     console.log('✅ 订单信息获取成功');
-                    return result.orders[0];
+                    // 从checkOrder API返回的数据结构中提取订单信息
+                    const orderInfo = result.data.order_info || {};
+                    return {
+                        ...orderInfo,
+                        amount: result.data.amount || orderInfo.amount,
+                        product_name: result.data.product_name || orderInfo.product_name
+                    };
                 }
             } catch (error) {
                 console.log('⚠️ 获取订单信息失败:', error);
@@ -111,6 +118,12 @@
             console.log('📋 订单数据详情:', orderData);
             const orderNumber = orderData?.out_trade_no || orderData?.order_id || 'IC' + Date.now().toString().substr(-8);
             const paymentAmount = orderData?.amount || orderData?.money || '48.00';
+
+            console.log('📋 提取到的订单信息:', {
+                orderNumber,
+                paymentAmount,
+                rawOrderData: orderData
+            });
 
             const successHtml = `
               <div class="payment-success-overlay" style="
