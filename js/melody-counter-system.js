@@ -621,20 +621,30 @@ class MelodyCounterSystem {
     const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
     const isPrivateIP = hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.');
 
-    // icstudio.club及其子域名应该使用服务端模式
-    const isICStudio = hostname.includes('icstudio.club');
+    // 生产环境域名检测 - 包括所有可能的部署域名
+    const isProduction =
+      hostname.includes('icstudio.club') ||  // 主域名
+      hostname.includes('icstudio86.github.io') ||  // GitHub Pages
+      hostname.includes('github.io') ||  // 任何GitHub Pages
+      hostname.includes('.com') ||  // 任何.com域名
+      hostname.includes('.net') ||  // 任何.net域名
+      hostname.includes('.org') ||  // 任何.org域名
+      hostname.includes('.cn') ||   // 任何.cn域名
+      hostname.includes('.app') ||  // 任何.app域名
+      hostname.includes('.dev') ||  // 任何.dev域名
+      hostname.includes('.io');     // 任何.io域名
 
     // file://协议检测（本地文件）
     const isFileProtocol = protocol === 'file:';
 
     console.log('  - isLocalhost:', isLocalhost);
     console.log('  - isPrivateIP:', isPrivateIP);
-    console.log('  - isICStudio:', isICStudio);
+    console.log('  - isProduction:', isProduction);
     console.log('  - isFileProtocol:', isFileProtocol);
 
-    // 如果是IC Studio域名，强制使用服务端模式
-    if (isICStudio) {
-      console.log('🌐 检测到IC Studio域名，使用服务端模式');
+    // 如果是生产环境，强制使用服务端模式
+    if (isProduction) {
+      console.log('🌐 检测到生产环境，强制使用服务端模式');
       return false;
     }
 
