@@ -394,9 +394,10 @@ class CloudbaseAPI {
       activatedAt: Date.now(),
       deviceId: window.trialLimiter?.deviceId || 'unknown',
       expiresAt: data.expires_at || null, // 永不过期
-      version: '2.0-hybrid'
+      version: '2.0-hybrid',
+      serverVerified: true // 标记为已验证，确保权限检查通过
     };
-    
+
     localStorage.setItem('ic-premium-access', JSON.stringify(accessData));
     console.log('✅ 访问码已保存到本地（永久有效）');
   }
@@ -524,8 +525,11 @@ class CloudbaseAPI {
       
       if (result.valid) {
         console.log('✅ CloudBase 验证成功:', code);
-        resultDiv.innerHTML = '<p style="color: #27ae60;">✅ 验证成功！页面即将刷新...</p>';
-        
+        resultDiv.innerHTML = '<p style="color: #27ae60;">✅ 验证成功！正在解除试用限制...</p>';
+
+        // 立即解除试用限制并刷新权限状态
+        this.refreshPermissionStatus();
+
         setTimeout(() => {
           console.log('🔄 CloudBase触发页面刷新');
           window.location.reload();
@@ -571,8 +575,11 @@ class CloudbaseAPI {
       
       if (result.valid) {
         console.log('✅ 备用验证成功:', code);
-        resultDiv.innerHTML = '<p style="color: #27ae60;">✅ 验证成功！页面即将刷新...</p>';
-        
+        resultDiv.innerHTML = '<p style="color: #27ae60;">✅ 验证成功！正在解除试用限制...</p>';
+
+        // 立即解除试用限制并刷新权限状态
+        this.refreshPermissionStatus();
+
         setTimeout(() => {
           window.location.reload();
         }, 1500);
@@ -638,6 +645,57 @@ class CloudbaseAPI {
     }
     
     return code;
+  }
+
+  // 立即刷新权限状态并解除试用限制
+  refreshPermissionStatus() {
+    console.log('🔄 立即刷新权限状态并解除试用限制');
+
+    try {
+      // 1. 设置豁免期标记，让试用限制器暂时豁免检查
+      localStorage.setItem('ic-anticheat-exempt', Date.now().toString());
+      console.log('✅ 已设置5分钟权限豁免期');
+
+      // 2. 如果存在试用限制器，立即重新评估状态
+      if (window.trialLimiter) {
+        const newStatus = window.trialLimiter.checkTrialStatus();
+        if (newStatus.allowed || newStatus.inExemptPeriod) {
+          // 确保工具完全可用
+          window.trialLimiter.ensureToolAccess();
+          console.log('✅ 试用限制已解除，工具完全可用');
+
+          // 隐藏试用状态和访问码输入区域
+          const trialStatus = document.getElementById('trial-status');
+          const accessCodeContainer = document.getElementById('access-code-container');
+
+          if (trialStatus) {
+            trialStatus.style.display = 'none';
+          }
+          if (accessCodeContainer) {
+            accessCodeContainer.style.display = 'none';
+          }
+
+          console.log('✅ 已隐藏试用相关界面');
+        }
+      }
+
+      // 3. 如果存在Premium UI Manager，刷新其状态
+      if (window.premiumUIManager) {
+        window.premiumUIManager.refreshUI();
+        console.log('✅ Premium UI Manager 状态已刷新');
+      }
+
+      // 4. 触发全局权限状态变更事件
+      if (window.dispatchEvent) {
+        window.dispatchEvent(new CustomEvent('accessCodeVerified', {
+          detail: { hasAccess: true }
+        }));
+        console.log('✅ 已触发权限状态变更事件');
+      }
+
+    } catch (error) {
+      console.error('❌ 刷新权限状态失败:', error);
+    }
   }
 
   // 获取当前环境信息

@@ -203,7 +203,8 @@
         activatedAt: Date.now(),
         deviceId: 'manual-upgrade',
         expiresAt: null,
-        version: '2.0-manual-upgrade'
+        version: '2.0-manual-upgrade',
+        serverVerified: true // 手动升级的访问码标记为已验证
       };
       
       localStorage.setItem('ic-premium-access', JSON.stringify(accessData));

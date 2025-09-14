@@ -67,7 +67,8 @@
             expiresAt: null,
             version: '4.0-mobile-style',
             source: source,
-            autoFill: true
+            autoFill: true,
+            serverVerified: true // 支付成功后的访问码已验证
         };
         localStorage.setItem('ic-premium-access', JSON.stringify(accessData));
 
