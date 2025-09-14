@@ -193,25 +193,8 @@ class PremiumUIManager {
 
   // 显示付费用户欢迎信息（可选）
   showPremiumWelcome() {
-    const header = document.querySelector('.header');
-    if (header && !header.querySelector('.premium-status')) {
-      const welcomeElement = document.createElement('div');
-      welcomeElement.className = 'premium-status';
-      welcomeElement.style.cssText = `
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-        display: inline-block;
-        margin-bottom: 10px;
-      `;
-      welcomeElement.innerHTML = '✨ 高级版已激活';
-      
-      header.insertBefore(welcomeElement, header.firstChild);
-      console.log('✅ 显示付费用户状态');
-    }
+    // 不显示高级版激活提示
+    return;
   }
 
   // 强制执行试用限制

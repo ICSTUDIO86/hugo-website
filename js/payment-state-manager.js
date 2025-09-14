@@ -419,7 +419,7 @@ window.verifyAccessCodeWithServer = async function() {
         const result = await window.paymentManager.verifyAccessCode(code, true);
         
         if (result.success) {
-            resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 验证成功！正在激活功能...</span>';
+            resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 验证成功！</span>';
             
             // 清空输入框
             input.value = '';

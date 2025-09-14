@@ -16320,6 +16320,27 @@ async function test4MeasuresLayout() {
 
 window.test4MeasuresLayout = test4MeasuresLayout;
 
+// 定义设置更新函数（完整版专用）
+function updateMinNote() {
+    console.log('🎵 更新最低音符：完整版功能');
+    // 完整版用户可以使用此功能
+}
+
+function updateMaxNote() {
+    console.log('🎵 更新最高音符：完整版功能');
+    // 完整版用户可以使用此功能
+}
+
+function updateMaxInterval() {
+    console.log('🎵 更新最大音程：完整版功能');
+    // 完整版用户可以使用此功能
+}
+
+function updateAccidentalRate() {
+    console.log('🎵 更新临时记号率：完整版功能');
+    // 完整版用户可以使用此功能
+}
+
 // 导出主要功能函数到全局，修复按钮无响应问题
 window.generateMelody = generateMelody;
 window.previousMelody = previousMelody;

@@ -1,7 +1,7 @@
 /**
- * IC 视奏工具 - 30条旋律严格计数系统
+ * IC 视奏工具 - 20条旋律严格计数系统
  * 基于服务端验证，刷新无法绕过
- * 每台设备限制生成30条旋律
+ * 每台设备限制生成20条旋律
  */
 
 class MelodyCounterSystem {
@@ -88,10 +88,15 @@ class MelodyCounterSystem {
       console.log('  - 最大触点数:', maxTouchPoints);
       console.log('  - 设备内存:', deviceMemory);
 
-      // 超轻量级指纹（仅基础信息，极速生成）
-      const quickFingerprint = this.getQuickFingerprint();
-      fp.push(quickFingerprint);
-      console.log('  - 快速指纹:', quickFingerprint);
+      // 增强指纹（包含无痕浏览检测）
+      const enhancedFingerprint = this.getQuickFingerprint();
+      fp.push(enhancedFingerprint);
+      console.log('  - 增强指纹:', enhancedFingerprint.substring(0, 50) + '...');
+
+      // 添加Canvas指纹增强唯一性（针对无痕模式）
+      const canvasFingerprint = this.getCanvasFingerprint();
+      fp.push(canvasFingerprint);
+      console.log('  - Canvas指纹:', canvasFingerprint.substring(0, 20) + '...');
 
       const result = fp.join('|');
       console.log('✅ 设备指纹生成完成');
@@ -119,21 +124,123 @@ class MelodyCounterSystem {
     }
   }
 
-  // 超轻量级指纹（极速生成）
+  // 超强设备指纹（防清理数据绕过）
   getQuickFingerprint() {
     try {
-      // 只使用立即可用的属性，无需任何计算
-      const parts = [
-        navigator.userAgent.length.toString(), // userAgent长度而不是内容
-        screen.width.toString(),
-        screen.height.toString(),
-        new Date().getTimezoneOffset().toString(),
-        navigator.hardwareConcurrency || '0',
-        navigator.maxTouchPoints || '0'
-      ];
-      return parts.join('-');
+      const parts = [];
+
+      // 1. 完整UserAgent（最重要的标识）
+      parts.push(navigator.userAgent || 'unknown');
+
+      // 2. 硬件特征（清理数据后不变）
+      parts.push(screen.width.toString());
+      parts.push(screen.height.toString());
+      parts.push(screen.colorDepth.toString());
+      parts.push(window.devicePixelRatio.toString());
+      parts.push(navigator.hardwareConcurrency || '0');
+      parts.push(navigator.maxTouchPoints || '0');
+      parts.push(navigator.platform || 'unknown');
+
+      // 3. 系统级特征（清理数据后不变）
+      parts.push(new Date().getTimezoneOffset().toString());
+      parts.push(navigator.language || 'unknown');
+      parts.push((navigator.languages || []).join(','));
+
+      // 4. 浏览器安装特征
+      try {
+        const plugins = Array.from(navigator.plugins || []).map(p => p.name).sort();
+        if (plugins.length > 0) {
+          parts.push('PLUGINS:' + plugins.slice(0, 5).join(','));
+        }
+      } catch (e) {
+        parts.push('no-plugins');
+      }
+
+      // 5. WebGL渲染器信息（硬件绑定）
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+          const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+          if (debugInfo) {
+            const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+            if (renderer) {
+              parts.push('GPU:' + renderer.substring(0, 50));
+            }
+          }
+        }
+      } catch (e) {
+        parts.push('no-webgl');
+      }
+
+      // 6. Canvas指纹（唯一标识）
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.textBaseline = 'top';
+        ctx.font = '14px Arial';
+        ctx.fillText('Device Binding Test', 2, 2);
+        const canvasData = canvas.toDataURL();
+        parts.push('CANVAS:' + canvasData.slice(-20));
+      } catch (e) {
+        parts.push('no-canvas');
+      }
+
+      // 7. 无痕模式检测
+      parts.push('PRIVATE:' + this.detectPrivateBrowsing().toString());
+
+      // 8. 网络信息
+      if (navigator.connection) {
+        parts.push('NET:' + (navigator.connection.effectiveType || 'unknown'));
+      }
+
+      // 9. 内存信息
+      if (navigator.deviceMemory) {
+        parts.push('MEM:' + navigator.deviceMemory);
+      }
+
+      return parts.join('|');
     } catch (e) {
-      return 'quick-fingerprint-error';
+      return 'super-fingerprint-error:' + e.message;
+    }
+  }
+
+  // 检测无痕浏览模式
+  detectPrivateBrowsing() {
+    try {
+      // 检测多种无痕模式特征
+      const features = [];
+
+      // localStorage在某些无痕模式下可能受限
+      try {
+        const testKey = '_test_private_browsing_' + Date.now();
+        localStorage.setItem(testKey, '1');
+        localStorage.removeItem(testKey);
+        features.push('local-storage-ok');
+      } catch (e) {
+        features.push('local-storage-restricted');
+      }
+
+      // sessionStorage检测
+      try {
+        const testKey = '_test_session_' + Date.now();
+        sessionStorage.setItem(testKey, '1');
+        sessionStorage.removeItem(testKey);
+        features.push('session-storage-ok');
+      } catch (e) {
+        features.push('session-storage-restricted');
+      }
+
+      // IndexedDB在无痕模式下可能不可用
+      features.push(window.indexedDB ? 'indexeddb-ok' : 'no-indexeddb');
+
+      // 检查是否为无痕模式的其他特征
+      if (navigator.webdriver) features.push('webdriver');
+      if (window.outerHeight === 0) features.push('headless');
+
+      return features.join('-');
+    } catch (e) {
+      return 'detection-error';
     }
   }
 
@@ -208,6 +315,265 @@ class MelodyCounterSystem {
       return gl.getParameter(gl.VERSION);
     } catch (e) {
       return 'webgl_error';
+    }
+  }
+
+  // 美观的自定义弹窗
+  showCustomAlert(title, message, buttonText = '了解', buttonAction = null) {
+    // 移除已存在的弹窗
+    const existingModal = document.getElementById('ic-custom-modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    // 创建弹窗HTML
+    const modalHTML = `
+      <div id="ic-custom-modal" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      ">
+        <div style="
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 20px;
+          padding: 0;
+          max-width: 400px;
+          width: 90%;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+          animation: modalSlideIn 0.3s ease-out;
+          position: relative;
+          overflow: hidden;
+        ">
+          <style>
+            @keyframes modalSlideIn {
+              from { transform: scale(0.8) translateY(-50px); opacity: 0; }
+              to { transform: scale(1) translateY(0); opacity: 1; }
+            }
+          </style>
+
+          <!-- 顶部装饰 -->
+          <div style="
+            background: rgba(255, 255, 255, 0.15);
+            height: 4px;
+            margin-bottom: 30px;
+          "></div>
+
+          <!-- 内容区域 -->
+          <div style="padding: 30px;">
+            <!-- 图标 -->
+            <div style="
+              text-align: center;
+              margin-bottom: 20px;
+            ">
+              <div style="
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                width: 80px;
+                height: 80px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto;
+                border: 3px solid rgba(255, 255, 255, 0.3);
+              ">
+                <span style="font-size: 40px;">🎵</span>
+              </div>
+            </div>
+
+            <!-- 标题 -->
+            <h3 style="
+              color: white;
+              text-align: center;
+              margin: 0 0 15px 0;
+              font-size: 22px;
+              font-weight: 600;
+              text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            ">${title}</h3>
+
+            <!-- 消息 -->
+            <p style="
+              color: rgba(255, 255, 255, 0.9);
+              text-align: center;
+              margin: 0 0 30px 0;
+              font-size: 16px;
+              line-height: 1.5;
+              text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            ">${message}</p>
+
+            <!-- 按钮 -->
+            <div style="text-align: center;">
+              <button id="ic-modal-btn" style="
+                background: rgba(255, 255, 255, 0.2);
+                border: 2px solid rgba(255, 255, 255, 0.4);
+                color: white;
+                padding: 12px 30px;
+                border-radius: 30px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                backdrop-filter: blur(10px);
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+                min-width: 120px;
+              " onmouseover="
+                this.style.background='rgba(255, 255, 255, 0.3)';
+                this.style.transform='translateY(-2px)';
+                this.style.boxShadow='0 8px 20px rgba(0, 0, 0, 0.2)';
+              " onmouseout="
+                this.style.background='rgba(255, 255, 255, 0.2)';
+                this.style.transform='translateY(0)';
+                this.style.boxShadow='none';
+              ">${buttonText}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 添加到页面
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // 绑定事件
+    const modal = document.getElementById('ic-custom-modal');
+    const button = document.getElementById('ic-modal-btn');
+
+    const closeModal = () => {
+      if (modal) {
+        modal.style.animation = 'modalSlideOut 0.2s ease-in';
+        setTimeout(() => modal.remove(), 200);
+      }
+    };
+
+    // 点击按钮
+    button.onclick = () => {
+      if (buttonAction && typeof buttonAction === 'function') {
+        buttonAction();
+      }
+      closeModal();
+    };
+
+    // 点击背景关闭
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    };
+
+    // ESC键关闭
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+        document.removeEventListener('keydown', handleEsc);
+      }
+    };
+    document.addEventListener('keydown', handleEsc);
+
+    // 添加退出动画样式
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes modalSlideOut {
+        from { transform: scale(1) translateY(0); opacity: 1; }
+        to { transform: scale(0.8) translateY(-30px); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // 检测是否为无痕浏览模式（增强版）
+  isLikelyPrivateBrowsing() {
+    try {
+      const indicators = [];
+
+      // 检查localStorage限制
+      try {
+        const testKey = '_private_test_' + Date.now();
+        localStorage.setItem(testKey, '1');
+        localStorage.removeItem(testKey);
+      } catch (e) {
+        indicators.push('localStorage-blocked');
+      }
+
+      // 检查sessionStorage限制
+      try {
+        const testKey = '_session_test_' + Date.now();
+        sessionStorage.setItem(testKey, '1');
+        sessionStorage.removeItem(testKey);
+      } catch (e) {
+        indicators.push('sessionStorage-blocked');
+      }
+
+      // IndexedDB检测
+      if (!window.indexedDB) {
+        indicators.push('no-indexedDB');
+      }
+
+      // WebRTC检测
+      if (!window.RTCPeerConnection && !window.webkitRTCPeerConnection) {
+        indicators.push('no-webrtc');
+      }
+
+      // 通知权限检测
+      if (navigator.permissions && Notification.permission === 'default') {
+        try {
+          navigator.permissions.query({name: 'notifications'}).then(result => {
+            if (result.state === 'denied') {
+              indicators.push('notifications-denied');
+            }
+          });
+        } catch (e) {
+          indicators.push('permissions-blocked');
+        }
+      }
+
+      // 如果有多个指示器，很可能是无痕模式
+      const isPrivate = indicators.length >= 1;
+
+      console.log('🕵️ 无痕浏览检测:', {
+        indicators: indicators,
+        isLikelyPrivate: isPrivate
+      });
+
+      return isPrivate;
+    } catch (error) {
+      console.error('❌ 无痕浏览检测失败:', error);
+      return false;
+    }
+  }
+
+  // 获取和管理无痕浏览使用次数
+  getPrivateBrowsingUsage() {
+    try {
+      // 尝试使用sessionStorage记录无痕模式使用
+      const key = 'private_melody_count';
+      let count = parseInt(sessionStorage.getItem(key) || '0');
+      return count;
+    } catch (e) {
+      // 如果sessionStorage不可用，使用内存计数（页面刷新会重置）
+      if (!window._privateCount) window._privateCount = 0;
+      return window._privateCount;
+    }
+  }
+
+  // 增加无痕浏览使用次数
+  incrementPrivateBrowsingUsage() {
+    try {
+      const key = 'private_melody_count';
+      let count = parseInt(sessionStorage.getItem(key) || '0') + 1;
+      sessionStorage.setItem(key, count.toString());
+      return count;
+    } catch (e) {
+      // 回退到内存计数
+      if (!window._privateCount) window._privateCount = 0;
+      window._privateCount++;
+      return window._privateCount;
     }
   }
 
@@ -295,30 +661,71 @@ class MelodyCounterSystem {
 
       return {
         success: true,
-        allowed: newCount <= 30,
-        expired: newCount > 30,
+        allowed: newCount <= 20,
+        expired: newCount > 20,
         used: newCount,
-        total: 30,
-        remaining: Math.max(0, 30 - newCount),
-        message: newCount > 30 ? '本地试用次数已用完' : `本地剩余 ${Math.max(0, 30 - newCount)} 条旋律`,
+        total: 20,
+        remaining: Math.max(0, 20 - newCount),
+        message: newCount > 20 ? '本地试用次数已用完' : `本地剩余 ${Math.max(0, 20 - newCount)} 条旋律`,
         isLocalMode: true
       };
     }
 
     return {
       success: true,
-      allowed: localUsage < 30,
-      expired: localUsage >= 30,
+      allowed: localUsage < 20,
+      expired: localUsage >= 20,
       used: localUsage,
-      total: 30,
-      remaining: Math.max(0, 30 - localUsage),
-      message: localUsage >= 30 ? '本地试用次数已用完' : `本地剩余 ${Math.max(0, 30 - localUsage)} 条旋律`,
+      total: 20,
+      remaining: Math.max(0, 20 - localUsage),
+      message: localUsage >= 20 ? '本地试用次数已用完' : `本地剩余 ${Math.max(0, 20 - localUsage)} 条旋律`,
       isLocalMode: true
     };
   }
 
   // 向服务端请求验证和计数
+  // 检查用户是否有有效的访问码（优先级最高）
+  hasValidLocalAccessCode() {
+    try {
+      const accessData = localStorage.getItem('ic-premium-access');
+      if (!accessData) return false;
+
+      const data = JSON.parse(accessData);
+      if (data && data.code && data.code.length >= 10) {
+        console.log('✅ 检测到本地有效访问码，完整版用户');
+        return true;
+      }
+    } catch (error) {
+      console.error('检查本地访问码失败:', error);
+    }
+    return false;
+  }
+
   async requestMelodyGeneration(action = 'check') {
+    // 🔥 优先检查：如果用户有有效访问码，直接返回无限制状态
+    if (this.hasValidLocalAccessCode()) {
+      console.log('🎫 完整版用户，跳过所有限制和服务器验证');
+      const fullAccessResult = {
+        success: true,
+        allowed: true,
+        hasFullAccess: true,
+        expired: false,
+        used: 0,
+        total: Infinity,
+        remaining: Infinity,
+        message: '',
+        isFirstTime: false
+      };
+
+      // 更新本地状态缓存
+      this.currentStatus = fullAccessResult;
+
+      // 隐藏所有试用相关UI
+      this.hideAllTrialUI();
+
+      return fullAccessResult;
+    }
+
     // 本地开发模式
     if (this.isLocalDevelopment()) {
       console.log(`🏠 本地开发模式: [${action}]`);
@@ -436,15 +843,16 @@ class MelodyCounterSystem {
     const modePrefix = status.isLocalMode ? '🏠 [本地模式] ' : '';
 
     if (status.hasFullAccess) {
-      statusDiv.style.background = '#e8f5e9';
-      statusDiv.style.color = '#2e7d32';
-      statusDiv.innerHTML = `✅ ${modePrefix}完整版用户，无限制使用`;
+      statusDiv.style.display = 'none';
+
+      // 隐藏所有试用相关的UI元素
+      this.hideAllTrialUI();
     } else if (status.expired) {
       statusDiv.style.background = '#ffebee';
       statusDiv.style.color = '#c62828';
       statusDiv.innerHTML = `
         <div style="font-weight: 600; margin-bottom: 8px;">😔 ${modePrefix}试用次数已用完</div>
-        <div style="font-size: 12px;">您已生成了 ${status.used || 30} 条旋律</div>
+        <div style="font-size: 12px;">您已生成了 ${status.used || 20} 条旋律</div>
         <div style="font-size: 12px; margin-top: 8px;">${status.isLocalMode ? '本地模式限制' : '请购买完整版继续使用'}</div>
       `;
     } else if (status.error) {
@@ -456,17 +864,17 @@ class MelodyCounterSystem {
       statusDiv.style.color = '#1565c0';
       statusDiv.innerHTML = `
         <div style="font-weight: 600; margin-bottom: 8px;">🎉 ${modePrefix}欢迎试用！</div>
-        <div>您有 <strong>${status.total || 30}</strong> 条免费旋律</div>
+        <div>您有 <strong>${status.total || 20}</strong> 条免费旋律</div>
       `;
     } else {
-      const percentage = ((status.used || 0) / (status.total || 30)) * 100;
+      const percentage = ((status.used || 0) / (status.total || 20)) * 100;
       const progressColor = percentage > 80 ? '#ff9800' : '#4caf50';
 
       statusDiv.style.background = '#f5f5f5';
       statusDiv.style.color = '#424242';
       statusDiv.innerHTML = `
         <div style="margin-bottom: 8px;">
-          ${modePrefix}已使用: <strong>${status.used || 0}</strong> / ${status.total || 30} 条旋律
+          ${modePrefix}已使用: <strong>${status.used || 0}</strong> / ${status.total || 20} 条旋律
         </div>
         <div style="background: #e0e0e0; height: 6px; border-radius: 3px; overflow: hidden;">
           <div style="background: ${progressColor}; width: ${percentage}%; height: 100%; transition: width 0.3s ease;"></div>
@@ -526,6 +934,47 @@ class MelodyCounterSystem {
     window.generateMelody = function() {
       console.log('🎼 用户点击生成旋律按钮');
 
+      // 🔥 优先检查：如果用户有有效访问码，直接允许生成，跳过所有限制
+      if (self.hasValidLocalAccessCode()) {
+        console.log('🎫 完整版用户检测，立即允许生成旋律');
+
+        // 隐藏所有试用相关UI
+        self.hideAllTrialUI();
+
+        // 更新UI状态显示完整版权限
+        self.showCounterStatus({
+          hasFullAccess: true,
+          allowed: true,
+          message: ''
+        });
+        // 直接调用原始函数，无需任何验证
+        return self.originalGenerateMelody.call(this);
+      }
+
+      // 检测无痕浏览并应用严格限制
+      const isPrivateBrowsing = self.isLikelyPrivateBrowsing();
+      if (isPrivateBrowsing) {
+        console.log('🕵️ 检测到疑似无痕浏览模式');
+
+        // 对无痕浏览应用更严格的限制
+        const privateUsage = self.getPrivateBrowsingUsage();
+        if (privateUsage >= 3) { // 无痕模式只允许3次试用
+          console.log('🚫 无痕浏览试用次数已用完');
+          self.showCounterStatus({
+            success: true,
+            allowed: false,
+            expired: true,
+            used: privateUsage,
+            total: 3,
+            remaining: 0,
+            message: '无痕浏览模式限制3次试用',
+            isPrivateMode: true
+          });
+          self.showPurchasePrompt();
+          return;
+        }
+      }
+
       // 只有在明确知道已过期时才阻止（基于上次API结果）
       if (self.currentStatus && self.currentStatus.expired && !self.currentStatus.hasFullAccess) {
         console.log('🚫 已知状态：试用已过期');
@@ -549,7 +998,7 @@ class MelodyCounterSystem {
 
       // 🔄 后台异步处理所有验证和计数（完全不阻塞）
       setTimeout(() => {
-        self.handleBackgroundValidation();
+        self.handleBackgroundValidation(isPrivateBrowsing);
       }, 0);
 
       return result;
@@ -562,36 +1011,61 @@ class MelodyCounterSystem {
   }
 
   // 后台验证处理（完全异步，不阻塞用户体验）
-  async handleBackgroundValidation() {
+  async handleBackgroundValidation(isPrivateBrowsing = false) {
     try {
-      console.log('🔄 后台验证开始...');
+      console.log('🔄 后台验证开始...', isPrivateBrowsing ? '[无痕模式]' : '[正常模式]');
 
-      // 异步增加计数
-      const result = await this.requestMelodyGeneration('increment');
-      console.log('📊 后台计数完成:', {
-        success: result.success,
-        used: result.used,
-        remaining: result.remaining
-      });
+      if (isPrivateBrowsing) {
+        // 无痕浏览模式：本地计数
+        const newCount = this.incrementPrivateBrowsingUsage();
+        console.log('📊 无痕模式计数:', newCount);
 
-      // 更新显示
-      this.showCounterStatus(result);
-      this.updateGenerateButton(result);
+        this.showCounterStatus({
+          success: true,
+          allowed: newCount <= 3,
+          expired: newCount > 3,
+          used: newCount,
+          total: 3,
+          remaining: Math.max(0, 3 - newCount),
+          message: newCount > 3 ? '无痕浏览试用已用完' : `无痕模式剩余 ${Math.max(0, 3 - newCount)} 条旋律`,
+          isPrivateMode: true
+        });
+      } else {
+        // 正常模式：服务端验证
+        const result = await this.requestMelodyGeneration('increment');
+        console.log('📊 服务端计数完成:', {
+          success: result.success,
+          used: result.used,
+          remaining: result.remaining
+        });
 
-      // 处理限制提醒
-      if (result.remaining === 0 && !result.hasFullAccess) {
-        setTimeout(() => {
-          alert('🎵 这是您的最后一条免费旋律！\n\n如需继续使用，请购买完整版。');
-        }, 2000);
-      } else if (result.remaining === 5 && !result.hasFullAccess) {
-        console.log('⚠️ 仅剩5条免费旋律');
-      }
+        // 更新显示
+        this.showCounterStatus(result);
+        this.updateGenerateButton(result);
 
-      // 如果已达到限制，显示购买提示
-      if (result.expired) {
-        setTimeout(() => {
-          this.showPurchasePrompt();
-        }, 1000);
+        // 处理限制提醒
+        if (result.remaining === 0 && !result.hasFullAccess) {
+          setTimeout(() => {
+            this.showCustomAlert(
+              '🎵 最后一条免费旋律',
+              '这是您的最后一条免费旋律！\n\n如需继续使用更多功能，请考虑购买完整版。',
+              '了解完整版',
+              () => {
+                // 跳转到视奏工具页面的付费区域
+                window.location.href = '/sight-reading-tool/#-立即行动';
+              }
+            );
+          }, 2000);
+        } else if (result.remaining === 5 && !result.hasFullAccess) {
+          console.log('⚠️ 仅剩5条免费旋律');
+        }
+
+        // 如果已达到限制，显示购买提示
+        if (result.expired) {
+          setTimeout(() => {
+            this.showPurchasePrompt();
+          }, 1000);
+        }
       }
 
     } catch (error) {
@@ -673,6 +1147,132 @@ class MelodyCounterSystem {
     }
   }
 
+  // 隐藏所有试用相关的UI元素
+  hideAllTrialUI() {
+    try {
+      console.log('🔒 隐藏试用相关UI元素（完整版用户）');
+
+      // 隐藏试用限制相关的元素
+      const selectors = [
+        '.trial-warning',
+        '.trial-expired',
+        '.trial-limit',
+        '.trial-message',
+        '.trial-status',
+        '[class*="trial"]',
+        '[id*="trial"]',
+        'button[onclick*="upgrade"]',
+        'button[onclick*="purchase"]',
+        '.purchase-prompt',
+        '.upgrade-prompt'
+      ];
+
+      selectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+          element.style.display = 'none';
+        });
+      });
+
+      // 特别处理可能的试用结束按钮
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach(button => {
+        const text = button.textContent || button.innerText;
+        if (text.includes('试用已结束') || text.includes('试用结束') || text.includes('升级') || text.includes('购买')) {
+          button.style.display = 'none';
+        }
+      });
+
+      // 隐藏包含试用限制信息的文本元素
+      const textElements = document.querySelectorAll('div, span, p');
+      textElements.forEach(element => {
+        const text = element.textContent || element.innerText;
+        if (text.includes('试用次数已用完') ||
+            text.includes('请购买完整版') ||
+            text.includes('试用已结束') ||
+            text.includes('条旋律')) {
+          element.style.display = 'none';
+        }
+      });
+
+      console.log('✅ 试用相关UI已隐藏');
+    } catch (error) {
+      console.error('❌ 隐藏试用UI失败:', error);
+    }
+  }
+
+  // 检查并激活完整版功能
+  checkAutoActivation() {
+    try {
+      // 检查是否有有效的本地访问码
+      if (this.hasValidLocalAccessCode()) {
+        console.log('🎯 检测到有效访问码，但不执行自动激活');
+        // 不执行任何自动激活，让用户保持在当前页面
+      } else {
+        console.log('🔍 未检测到本地访问码，保持当前状态');
+      }
+    } catch (error) {
+      console.error('❌ 自动激活检查失败:', error);
+    }
+  }
+
+
+  // 验证访问码并激活完整版
+  async verifyAndActivate() {
+    try {
+      const accessData = localStorage.getItem('ic-premium-access');
+      if (!accessData) return;
+
+      const data = JSON.parse(accessData);
+      const accessCode = data.code;
+
+      console.log('🔐 验证访问码有效性...');
+
+      // 向服务器验证访问码是否仍然有效
+      const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/trialCounter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'check',
+          accessCode: accessCode,
+          deviceFingerprint: 'activation-check',
+          userAgent: navigator.userAgent
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.hasFullAccess) {
+          console.log('✅ 访问码验证通过，激活完整版功能');
+
+          // 直接刷新页面激活完整版功能
+          window.location.reload();
+        } else {
+          console.log('⚠️ 访问码已失效，清除本地存储');
+          localStorage.removeItem('ic-premium-access');
+        }
+      } else {
+        console.log('⚠️ 验证服务不可用，保持当前状态');
+      }
+    } catch (error) {
+      console.error('❌ 访问码验证失败:', error);
+    }
+  }
+
+  // 刷新状态方法，用于访问码验证成功后更新UI
+  async refreshStatus() {
+    console.log('🔄 刷新计数器状态...');
+
+    // 重新检查状态
+    const newStatus = await this.requestMelodyGeneration('check');
+
+    // 更新UI
+    this.showCounterStatus(newStatus);
+    this.updateGenerateButton(newStatus);
+
+    console.log('✅ 计数器状态已刷新:', newStatus);
+  }
+
   // 初始化系统
   async init() {
     // 防止重复初始化
@@ -681,9 +1281,12 @@ class MelodyCounterSystem {
       return true;
     }
 
-    console.log('🚀 初始化30条旋律计数系统...');
+    console.log('🚀 初始化20条旋律计数系统...');
 
     try {
+      // 🔄 跳过自动激活检查，保持当前状态
+      console.log('🔍 跳过自动激活检查');
+
       // 立即包装生成函数，确保用户可以立即使用
       this.wrapGenerateMelodyFunction();
 

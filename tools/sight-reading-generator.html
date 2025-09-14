@@ -2066,13 +2066,59 @@
             trialManager = new FreeTrialManager();
         } else {
             console.log('💎 检测到完整版权限，跳过试用管理器初始化');
-            // 确保试用计时器被隐藏
+
+            // 完整版用户UI激活
             setTimeout(() => {
+                // 1. 隐藏试用计时器
                 const trialTimer = document.getElementById('trialTimer');
                 if (trialTimer) {
                     trialTimer.style.display = 'none';
                     console.log('🔒 试用计时器已隐藏（完整版用户）');
                 }
+
+                // 2. 隐藏所有试用相关的UI元素
+                const trialElements = document.querySelectorAll('.trial-only, .trial-warning, .trial-limit');
+                trialElements.forEach(element => {
+                    element.style.display = 'none';
+                });
+
+                // 3. 显示完整版UI元素
+                const fullElements = document.querySelectorAll('.full-version-only, .premium-feature');
+                fullElements.forEach(element => {
+                    element.style.display = 'block';
+                });
+
+                // 4. 更新页面标题
+                const titleElement = document.querySelector('h1');
+                if (titleElement && titleElement.textContent.includes('试用版')) {
+                    titleElement.textContent = titleElement.textContent.replace('试用版', '完整版');
+                }
+
+                // 5. 移除访问码输入区域
+                const accessCodeContainer = document.getElementById('access-code-container');
+                if (accessCodeContainer) {
+                    accessCodeContainer.style.display = 'none';
+                }
+
+                // 6. 显示完整版状态
+                console.log('✅ 完整版UI已激活');
+
+                // 7. 通知旋律计数系统
+                if (window.melodyCounterSystem) {
+                    // 强制设置为完整版状态
+                    window.melodyCounterSystem.currentStatus = {
+                        allowed: true,
+                        hasFullAccess: true,
+                        expired: false,
+                        used: 0,
+                        total: Infinity,
+                        remaining: Infinity,
+                        message: '',
+                        isFirstTime: false
+                    };
+                    console.log('🎵 旋律计数系统已更新为完整版状态');
+                }
+
             }, 100);
         }
         
@@ -2947,6 +2993,23 @@
             setTimeout(() => window.location.reload(), 1000);
         }
         
+        // 定义调试函数（避免未定义错误）
+        function debugTrialStatus() {
+            console.log('🔍 调试：完整版用户，无试用限制');
+        }
+
+        function resetTrialTime() {
+            console.log('🔄 重置：完整版用户无需重置');
+        }
+
+        function fullReset() {
+            console.log('🔄 完全重置：完整版用户无需重置');
+        }
+
+        function setTrialExpired() {
+            console.log('⏰ 设置过期：完整版用户无试用期');
+        }
+
         // 暴露工具到全局
         window.debugTrialStatus = debugTrialStatus;
         window.resetTrialTime = resetTrialTime;
@@ -3045,7 +3108,7 @@
         setTimeout(checkAutoFillAccessCode, 1000);
     </script>
     
-    <!-- 30条旋律严格计数系统 - 必须最先加载以拦截generateMelody -->
+    <!-- 20条旋律严格计数系统 - 必须最先加载以拦截generateMelody -->
     <script src="/js/melody-counter-system.js?v=20250113-fix"></script>
 
     <!-- 付费用户界面管理器 -->
@@ -3638,6 +3701,16 @@
             if (popup) {
                 popup.remove();
             }
+
+            // Command+R 风格的页面刷新
+            // 添加轻微的视觉反馈，然后执行刷新
+            document.body.style.opacity = '0.95';
+            document.body.style.transition = 'opacity 0.1s ease';
+
+            setTimeout(() => {
+                // 强制刷新页面，类似 Command+R 的效果
+                window.location.reload(true);
+            }, 100);
         }
 
         // 复制访问码功能
@@ -3945,12 +4018,12 @@
         console.log('  - verifyAccessCodeWithServer() - 验证访问码');
     </script>
 
-    <!-- 确保30条旋律计数系统正确初始化 -->
+    <!-- 确保20条旋律计数系统正确初始化 -->
     <script>
     // 等待所有脚本加载完成后初始化计数系统
     window.addEventListener('load', function() {
         setTimeout(function() {
-            console.log('🎯 强制初始化30条旋律计数系统...');
+            console.log('🎯 强制初始化20条旋律计数系统...');
 
             // 如果计数系统存在但未初始化，手动初始化
             if (window.melodyCounterSystem && !window.melodyCounterSystem.initialized) {
@@ -3962,6 +4035,9 @@
                 console.log('📦 手动包装generateMelody函数...');
                 window.melodyCounterSystem.wrapGenerateMelodyFunction();
             }
+
+            // 跳过自动激活检查，让用户正常使用试用版
+            console.log('🔍 跳过自动激活检查，保持试用版状态');
 
             console.log('✅ 计数系统检查完成');
         }, 2000); // 延迟2秒确保所有脚本都加载完成
