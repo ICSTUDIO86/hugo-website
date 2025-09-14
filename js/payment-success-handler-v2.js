@@ -67,7 +67,8 @@
             expiresAt: null,
             version: '4.0-mobile-style',
             source: source,
-            autoFill: true
+            autoFill: true,
+            serverVerified: true // 支付成功后的访问码已验证
         };
         localStorage.setItem('ic-premium-access', JSON.stringify(accessData));
 
@@ -113,308 +114,91 @@
             const paymentAmount = orderData?.money || orderData?.amount || '1.00';
 
             const successHtml = `
-              <div class="payment-success-overlay" style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.7);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 99999;
-                backdrop-filter: blur(8px);
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-              ">
-                <div class="payment-success" style="
-                  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-                  padding: 40px 30px 30px;
-                  border-radius: 20px;
-                  text-align: center;
-                  max-width: 320px;
-                  width: 90%;
-                  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-                  color: white;
-                  position: relative;
-                  overflow: hidden;
-                ">
-                  <!-- 庆祝图标 -->
-                  <div style="
-                    font-size: 60px;
-                    margin-bottom: 20px;
-                    position: relative;
-                    z-index: 2;
-                  ">🎉</div>
-
-                  <!-- 标题和副标题 -->
-                  <h2 style="
-                    color: white;
-                    margin: 0 0 8px 0;
-                    font-size: 24px;
-                    font-weight: 600;
-                    position: relative;
-                    z-index: 2;
-                  ">支付成功！</h2>
-                  <p style="
-                    color: rgba(255, 255, 255, 0.9);
-                    margin: 0 0 30px 0;
-                    font-size: 16px;
-                    position: relative;
-                    z-index: 2;
-                  ">
-                    感谢您的购买
-                  </p>
-
-                  <!-- 访问码标题 -->
-                  <p style="
-                    color: white;
-                    margin: 0 0 15px 0;
-                    font-size: 16px;
-                    font-weight: 500;
-                    position: relative;
-                    z-index: 2;
-                  ">您的访问码</p>
-
-                  <!-- 访问码显示框 -->
-                  <div id="access-code-container" style="
-                    background: rgba(255, 255, 255, 0.25);
-                    border-radius: 12px;
-                    padding: 20px 15px;
-                    margin: 0 0 15px 0;
-                    position: relative;
-                    z-index: 2;
-                    backdrop-filter: blur(10px);
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                  " onclick="copyAccessCode('${accessCode}')" onmouseover="this.style.background='rgba(255,255,255,0.35)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'">
-                    <p id="access-code-display" style="
-                      font-family: 'Courier New', monospace;
-                      font-size: 20px;
-                      font-weight: bold;
-                      letter-spacing: 2px;
-                      margin: 0;
-                      color: white;
-                      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-                    ">${accessCode}</p>
-                  </div>
-
-                  <!-- 复制提示 -->
-                  <p style="
-                    color: rgba(255, 255, 255, 0.8);
-                    margin: 0 0 20px 0;
-                    font-size: 14px;
-                    position: relative;
-                    z-index: 2;
-                  ">请保存好您的访问码</p>
-
-                  <!-- 订单信息 -->
-                  <div style="
-                    text-align: left;
-                    margin: 0 0 25px 0;
-                    position: relative;
-                    z-index: 2;
-                  ">
-                    <p style="
-                      color: rgba(255, 255, 255, 0.9);
-                      margin: 0 0 5px 0;
-                      font-size: 14px;
-                    ">订单号: <span style="font-family: monospace; font-size: 13px;">${orderNumber}</span></p>
-                    <p style="
-                      color: rgba(255, 255, 255, 0.9);
-                      margin: 0;
-                      font-size: 14px;
-                    ">金额: <span style="font-weight: 600;">¥${paymentAmount}</span></p>
-                  </div>
-
-                  <!-- 下载应用按钮 -->
-                  <button id="show-download-options-btn" style="
-                    background: #4CAF50;
-                    color: white;
-                    border: none;
-                    padding: 15px 20px;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    font-size: 16px;
-                    width: 100%;
-                    margin: 0 0 12px 0;
-                    position: relative;
-                    z-index: 2;
-                    transition: all 0.3s ease;
-                    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-                  " onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4CAF50'">
-                    📱 下载应用
-                  </button>
-
-                  <!-- 开始使用按钮 -->
-                  <button id="start-using-btn" style="
-                    background: #FF9800;
-                    color: white;
-                    border: none;
-                    padding: 15px 20px;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    font-size: 16px;
-                    width: 100%;
-                    margin: 0 0 12px 0;
-                    position: relative;
-                    z-index: 2;
-                    transition: all 0.3s ease;
-                    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
-                  " onmouseover="this.style.background='#f57c00'" onmouseout="this.style.background='#FF9800'">
-                    🚀 开始使用
-                  </button>
-
-                  <!-- 关闭按钮 -->
-                  <button onclick="document.querySelector('.payment-success-overlay').remove()" style="
-                    background: rgba(255, 255, 255, 0.2);
-                    color: white;
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                    padding: 12px 20px;
-                    border-radius: 12px;
-                    cursor: pointer;
-                    font-weight: 500;
-                    font-size: 14px;
-                    position: relative;
-                    z-index: 2;
-                    transition: all 0.3s ease;
-                    backdrop-filter: blur(10px);
-                  " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                    关闭
-                  </button>
-
-                  <!-- 隐藏的下载选项面板 -->
-                  <div id="download-options-panel" style="display: none; margin-top: 15px; position: relative; z-index: 2;">
-                    <div style="background: rgba(255, 255, 255, 0.15); padding: 20px; border-radius: 12px; text-align: left; backdrop-filter: blur(10px);">
-                      <p style="font-weight: bold; font-size: 14px; margin: 0 0 15px 0; color: white; text-align: center;">
-                        选择您的操作系统：
-                      </p>
-
-                      <!-- Windows -->
-                      <div style="margin-bottom: 12px;">
-                        <p style="font-weight: bold; font-size: 12px; margin: 0 0 5px 0; color: #FFD700;">
-                          🖥️ Windows
-                        </p>
-                        <button class="download-btn" data-platform="windows-exe" style="
-                          margin: 2px 5px 2px 0;
-                          padding: 8px 12px;
-                          background: #dc3545;
-                          color: white;
-                          border: none;
-                          border-radius: 6px;
-                          cursor: pointer;
-                          font-size: 11px;
-                          font-weight: 500;
-                          transition: all 0.3s ease;
-                        ">
-                          标准版 (140.9MB)
-                        </button>
-                        <button class="download-btn" data-platform="windows-x64" style="
-                          margin: 2px 5px 2px 0;
-                          padding: 8px 12px;
-                          background: #dc3545;
-                          color: white;
-                          border: none;
-                          border-radius: 6px;
-                          cursor: pointer;
-                          font-size: 11px;
-                          font-weight: 500;
-                          transition: all 0.3s ease;
-                        ">
-                          优化版 (73.2MB)
-                        </button>
-                      </div>
-
-                      <!-- macOS -->
-                      <div style="margin-bottom: 12px;">
-                        <p style="font-weight: bold; font-size: 12px; margin: 0 0 5px 0; color: #FFD700;">
-                          🍎 macOS
-                        </p>
-                        <button class="download-btn" data-platform="macos-x64-dmg" style="
-                          margin: 2px 5px 2px 0;
-                          padding: 8px 12px;
-                          background: #6f42c1;
-                          color: white;
-                          border: none;
-                          border-radius: 6px;
-                          cursor: pointer;
-                          font-size: 11px;
-                          font-weight: 500;
-                          transition: all 0.3s ease;
-                        ">
-                          Intel (DMG)
-                        </button>
-                        <button class="download-btn" data-platform="macos-x64-zip" style="
-                          margin: 2px 5px 2px 0;
-                          padding: 8px 12px;
-                          background: #6f42c1;
-                          color: white;
-                          border: none;
-                          border-radius: 6px;
-                          cursor: pointer;
-                          font-size: 11px;
-                          font-weight: 500;
-                          transition: all 0.3s ease;
-                        ">
-                          Intel (ZIP)
-                        </button>
-                        <button class="download-btn" data-platform="macos-arm64-zip" style="
-                          margin: 2px 5px 2px 0;
-                          padding: 8px 12px;
-                          background: #6f42c1;
-                          color: white;
-                          border: none;
-                          border-radius: 6px;
-                          cursor: pointer;
-                          font-size: 11px;
-                          font-weight: 500;
-                          transition: all 0.3s ease;
-                        ">
-                          M1/M2/M3 (ZIP)
-                        </button>
-                      </div>
-
-                      <!-- Linux -->
-                      <div style="margin-bottom: 8px;">
-                        <p style="font-weight: bold; font-size: 12px; margin: 0 0 5px 0; color: #FFD700;">
-                          🐧 Linux
-                        </p>
-                        <button class="download-btn" data-platform="linux-deb" style="
-                          margin: 2px 5px 2px 0;
-                          padding: 8px 12px;
-                          background: #fd7e14;
-                          color: white;
-                          border: none;
-                          border-radius: 6px;
-                          cursor: pointer;
-                          font-size: 11px;
-                          font-weight: 500;
-                          transition: all 0.3s ease;
-                        ">
-                          DEB包 (70.3MB)
-                        </button>
-                        <button class="download-btn" data-platform="linux-appimage" style="
-                          margin: 2px 5px 2px 0;
-                          padding: 8px 12px;
-                          background: #fd7e14;
-                          color: white;
-                          border: none;
-                          border-radius: 6px;
-                          cursor: pointer;
-                          font-size: 11px;
-                          font-weight: 500;
-                          transition: all 0.3s ease;
-                        ">
-                          AppImage (77.6MB)
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+              <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+            <div style="background: white; padding: 40px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">
+                <div style="margin-bottom: 30px;">
+                    <div style="width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px;">✓</div>
+                    <h2 style="color: #333; margin-bottom: 10px;">🎉 访问验证成功！</h2>
+                    <p style="color: #666; font-size: 16px; margin-bottom: 0;">您的访问码已验证，现在可以使用完整版功能</p>
                 </div>
-              </div>
-            `;
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: left;">
+                    <h3 style="color: #333; margin-bottom: 15px; text-align: center;">📋 验证信息</h3>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                        <span style="color: #666;">访问码：</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-family: monospace; font-weight: bold; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">${accessCode}</span>
+                            <button onclick="copyAccessCode('${accessCode}')" 
+                                    style="background: #3b82f6; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s ease;"
+                                    onmouseover="this.style.background='#2563eb'"
+                                    onmouseout="this.style.background='#3b82f6'"
+                                    title="复制访问码">
+                                📋
+                            </button>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #666;">产品：</span>
+                        <span>${orderData.product_name || 'IC Studio 视奏工具'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #666;">验证时间：</span>
+                        <span>${new Date().toLocaleString()}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #666;">订单号：</span>
+                        <span style="font-family: monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">${(orderData.order_info?.out_trade_no) || (orderData.order_info?.order_id) || orderData.out_trade_no || orderData.order_id || orderData.orderId || '暂无'}</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #333; margin-bottom: 20px;">📦 下载安装包</h3>
+                    <div style="display: grid; gap: 10px;">
+                        <button class="popup-download-btn" data-platform="windows-x64"
+                               style="display: block; background: #f0f9ff; color: #1e40af; padding: 12px 20px; border: 2px solid #93c5fd; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
+                               onmouseover="this.style.background='#1e40af'; this.style.color='white';" 
+                               onmouseout="this.style.background='#f0f9ff'; this.style.color='#1e40af';">
+                            💻 Windows x64 (73.2MB)
+                        </button>
+                        <button class="popup-download-btn" data-platform="macos-x64-dmg"
+                               style="display: block; background: #f0fdf4; color: #166534; padding: 12px 20px; border: 2px solid #86efac; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
+                               onmouseover="this.style.background='#166534'; this.style.color='white';" 
+                               onmouseout="this.style.background='#f0fdf4'; this.style.color='#166534';">
+                            🍎 macOS Intel (DMG - 86.2MB)
+                        </button>
+                        <button class="popup-download-btn" data-platform="macos-arm64-zip"
+                               style="display: block; background: #fef3c7; color: #92400e; padding: 12px 20px; border: 2px solid #fbbf24; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
+                               onmouseover="this.style.background='#92400e'; this.style.color='white';" 
+                               onmouseout="this.style.background='#fef3c7'; this.style.color='#92400e';">
+                            🍎 macOS Apple Silicon (ZIP - 86.6MB)
+                        </button>
+                        <button class="popup-download-btn" data-platform="linux-appimage"
+                               style="display: block; background: #ede9fe; color: #6b21a8; padding: 12px 20px; border: 2px solid #c084fc; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
+                               onmouseover="this.style.background='#6b21a8'; this.style.color='white';" 
+                               onmouseout="this.style.background='#ede9fe'; this.style.color='#6b21a8';">
+                            🐧 Linux (AppImage - 77.6MB)
+                        </button>
+                    </div>
+                    <p style="font-size: 12px; color: #888; margin-top: 15px;">下载完成后，使用以上访问码激活完整版功能</p>
+                </div>
+
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <button onclick="closeSuccessPopup()" 
+                            style="padding: 15px 30px; background: #f8f9fa; color: #333; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;"
+                            onmouseover="this.style.background='#e2e8f0'" 
+                            onmouseout="this.style.background='#f8f9fa'">
+                        稍后使用
+                    </button>
+                    <button onclick="goToSightReadingTool()" 
+                            style="padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;"
+                            onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'" 
+                            onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
+                        🚀 开始使用
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
 
             // 添加到页面
             document.body.insertAdjacentHTML('beforeend', successHtml);
@@ -422,24 +206,24 @@
             return orderData;
         }
 
+        // 添加缺失的全局函数
+        window.closeSuccessPopup = function() {
+            const overlay = document.querySelector('.payment-success-overlay, [style*="position: fixed"][style*="rgba(0, 0, 0, 0.7)"]');
+            if (overlay) {
+                overlay.remove();
+                console.log('✅ 支付成功弹窗已关闭');
+            }
+        };
+
+        window.goToSightReadingTool = function() {
+            window.closeSuccessPopup();
+            window.location.href = '/tools/sight-reading-generator.html';
+        };
+
         // 创建和显示界面
         createAndShowPaymentSuccess().then((orderData) => {
-            // 绑定显示下载选项按钮
-            document.getElementById('show-download-options-btn').onclick = function() {
-                const panel = document.getElementById('download-options-panel');
-                const btn = this;
-
-                if (panel.style.display === 'none') {
-                    panel.style.display = 'block';
-                    btn.innerHTML = '📦 收起选项';
-                } else {
-                    panel.style.display = 'none';
-                    btn.innerHTML = '📱 下载应用';
-                }
-            };
-
             // 绑定各个下载按钮的功能
-            document.querySelectorAll('.download-btn').forEach(btn => {
+            document.querySelectorAll('.popup-download-btn').forEach(btn => {
                 btn.onclick = async function() {
                     const platform = this.getAttribute('data-platform');
                     const originalText = this.innerHTML;
@@ -501,11 +285,7 @@
                 });
             });
 
-            // 绑定开始使用功能
-            document.getElementById('start-using-btn').onclick = function() {
-                document.querySelector('.payment-success-overlay').remove();
-                window.location.href = '/tools/sight-reading-generator.html';
-            };
+            console.log('✅ 所有下载按钮功能已绑定完成');
 
         }).catch((error) => {
             console.error('❌ 创建支付成功界面失败:', error);
