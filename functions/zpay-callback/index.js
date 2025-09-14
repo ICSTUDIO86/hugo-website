@@ -64,16 +64,38 @@ exports.main = async (event, context) => {
     
     // 生成访问码
     const accessCode = generateAccessCode();
-    
-    // 保存到数据库
-    await db.collection('ic_studio_orders').add({
+    const now = new Date();
+    const orderData = {
       order_id,
+      out_trade_no: order_id,  // 确保有out_trade_no字段
       transaction_id,
       amount: parseFloat(amount),
       access_code: accessCode,
+      code: accessCode,  // 添加code字段以兼容
       status: 'paid',
-      created_at: new Date(),
-      expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1年有效期
+      created_at: now,
+      payment_time: now,
+      expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1年有效期
+      product_name: 'IC Studio 视奏工具',
+      source: 'zpay'
+    };
+
+    // 保存到ic_studio_orders集合
+    await db.collection('ic_studio_orders').add(orderData);
+
+    // 同时保存到codes集合（确保downloadInstaller能查询到）
+    await db.collection('codes').add({
+      code: accessCode.toUpperCase(),
+      access_code: accessCode.toUpperCase(),
+      out_trade_no: order_id,
+      order_no: order_id,
+      status: 'active',
+      created_at: now,
+      payment_time: now,
+      amount: parseFloat(amount),
+      product_name: 'IC Studio 视奏工具',
+      source: 'zpay',
+      zpay_trade_no: transaction_id
     });
     
     console.log('支付成功，访问码生成:', accessCode);
