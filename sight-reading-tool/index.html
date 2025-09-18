@@ -151,40 +151,23 @@
 <li><strong>音乐教师</strong>：高效生成教学素材，轻松定制个性化练习内容。</li>
 </ul>
 <h2 id="-立即行动">🎯 立即行动</h2>
-<p>⚡ <strong>早鸟价 48.00¥</strong>（截止于10月01日）—— 现在购买可在未来<strong>免费解锁</strong>更进阶的功能！</p>
+<p>⚡ <strong>早鸟价 48.00¥</strong>（截止于10月01日）—— 支持网页版以及电脑软件，现在购买可在未来<strong>免费解锁</strong>更进阶的功能！</p>
 <div style="display: flex; gap: 30px; margin: 30px auto; max-width: 1000px; align-items: flex-start; flex-wrap: wrap;">
 <div style="flex: 1; min-width: 300px; padding: 25px; background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); border: 2px solid #e6edff; text-align: center;">
-<div style="margin-bottom: 20px;">
-<h3 style="color: #4a5568; margin-bottom: 6px; font-size: 20px;">国内用户购买</h3>
-<p style="color: #718096; font-size: 14px; margin: 0;">支持 7 天无理由退款</p>
+<h3 style="color: #4a5568; margin-bottom: 6px; font-size: 20px;">解锁视奏工具</h3>
+<p style="color: #718096; font-size: 14px; margin: 0 0 20px 0;">支持 7 天无理由退款</p>
+<p><a href="/tools/sight-reading-generator.html" target="_blank" style="display: block; background: #f8f9fa; color: #667eea; padding: 12px 20px; border: 2px solid #667eea; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s ease; margin-bottom: 15px;" onmouseover="this.style.background='#667eea'; this.style.color='white';" onmouseout="this.style.background='#f8f9fa'; this.style.color='#667eea';">免费试用</a></p>
+<div style="display: flex; gap: 10px; margin-bottom: 20px;">
+<button id="zpay-btn" onclick="window.createZPayment()" style="flex: 1; background: linear-gradient(135deg, #1677FF 0%, #00A0E9 100%); color: white; padding: 12px 16px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(22, 119, 255, 0.3); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(22, 119, 255, 0.4)';" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(22, 119, 255, 0.3)';">支付宝支付</button>
+<button id="wxpay-btn" onclick="window.createWxPayment()" style="flex: 1; background: linear-gradient(135deg, #09BB07 0%, #00D100 100%); color: white; padding: 12px 16px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(9, 187, 7, 0.3); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(9, 187, 7, 0.4)';" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(9, 187, 7, 0.3)';">微信支付</button>
 </div>
-<div style="display: flex; gap: 15px; align-items: stretch; justify-content: center;">
-<div style="flex: 1; display: flex; flex-direction: column;">
-<a href="/tools/sight-reading-generator.html" target="_blank" style="display: block; background: #f8f9fa; color: #667eea; padding: 15px 20px; border: 2px solid #667eea; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s ease; margin-bottom: 8px; text-align: center; flex-grow: 1; min-height: 50px; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='#667eea'; this.style.color='white';" onmouseout="this.style.background='#f8f9fa'; this.style.color='#667eea';">免费试用</a>
-<p style="color: #888; font-size: 12px; margin: 0; text-align: center; line-height: 1.3;">免费生成20次旋律<br/>已购用户直接使用</p>
+<div style="border-top: 1px solid #e6edff; padding-top: 6px;">
+<h3 style="color: #667eea; margin-bottom: 15px; font-size: 18px;">已有访问码？立即使用</h3>
+<div style="display: flex; gap: 10px; align-items: center;">
+<input type="text" id="access-code-input" placeholder="输入访问码(11-12位)" style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; text-transform: uppercase; transition: border-color 0.3s ease;" maxlength="12" oninput="handleInputChange()" onkeyup="handleInputChange()" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#ddd'">
+<button id="verify-btn" onclick="handleVerifyClick()" style="padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: not-allowed; font-weight: 600; font-size: 14px; transition: all 0.3s ease; opacity: 1;" onmousedown="this.style.opacity='0.3'; this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)" onmouseleave="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)">验证</button>
 </div>
-<div style="flex: 1; display: flex; flex-direction: column;">
-<button id="zpay-btn" onclick="window.createZPayment()" style="background: linear-gradient(135deg, #1677FF 0%, #00A0E9 100%); color: white; padding: 15px 20px; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(22, 119, 255, 0.3); transition: all 0.3s ease; cursor: pointer; margin-bottom: 8px; width: 100%; text-align: center; flex-grow: 1; min-height: 50px;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(22, 119, 255, 0.4)';" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(22, 119, 255, 0.3)';">支付宝支付</button>
-<p style="color: #888; font-size: 12px; margin: 0; text-align: center; line-height: 1.3;">¥48.00<br/>早鸟价</p>
-</div>
-</div>
-<!-- 访问码验证区域 -->
-<div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e6edff;">
-    <h3 style="color: #667eea; margin-bottom: 15px; font-size: 18px;">已有访问码？立即使用</h3>
-    <p style="color: #888; font-size: 12px; margin: 6; text-align: center; line-height: 1;">可下载电脑软件&查询订单号</p>
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <input type="text" id="access-code-input" placeholder="输入访问码(11-12位)" 
-               style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; text-transform: uppercase; transition: border-color 0.3s ease;"
-               maxlength="12" oninput="handleInputChange()" onkeyup="handleInputChange()" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#ddd'">
-        <button id="verify-btn" onclick="handleVerifyClick()" 
-                style="padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: not-allowed; font-weight: 600; font-size: 14px; transition: all 0.3s ease; opacity: 1;"
-                onmousedown="this.style.opacity='0.3'; this.style.transform='scale(0.98)'"
-                onmouseup="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)"
-                onmouseleave="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)">
-            验证
-        </button>
-    </div>
-    <div id="verify-result" style="margin-top: 15px; font-size: 14px; text-align: center;"></div>
+<div id="verify-result" style="margin-top: 15px; font-size: 14px; text-align: center;"></div>
 </div>
 </div>
 <div style="flex: 1; min-width: 50%;">

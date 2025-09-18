@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单信息显示修复测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        .btn.success {
+            background: #28a745;
+        }
+        .btn.success:hover {
+            background: #218838;
+        }
+        .result {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 订单信息显示修复测试</h1>
+
+        <div class="highlight">
+            <strong>修复内容：</strong>
+            <ul>
+                <li>✅ 修复数据库集合查询问题 (orders → ic_studio_orders)</li>
+                <li>✅ 添加根据访问码查询订单的逻辑</li>
+                <li>✅ 修正默认价格 (1.00 → 48.00)</li>
+                <li>✅ 优化字段映射逻辑</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>1. 模拟真实支付成功（带正确数据）</h3>
+            <p>使用模拟的真实订单数据测试弹窗显示</p>
+            <button class="btn success" onclick="testWithRealData()">
+                🧪 测试真实数据显示
+            </button>
+            <div id="real-data-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. 测试CloudBase订单查询</h3>
+            <p>直接调用checkOrderDetails云函数测试数据获取</p>
+            <button class="btn" onclick="testOrderQuery()">
+                🔍 测试订单查询
+            </button>
+            <div id="query-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. 测试默认值显示</h3>
+            <p>测试无法获取数据时的默认值显示</p>
+            <button class="btn" onclick="testDefaultValues()">
+                📋 测试默认值
+            </button>
+            <div id="default-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- 引入支付处理器 -->
+    <script src="static/js/payment-success-handler.js"></script>
+
+    <script>
+        // 测试真实数据显示
+        function testWithRealData() {
+            const resultDiv = document.getElementById('real-data-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '正在测试...\n';
+
+            // 模拟真实的订单数据（与zpay-callback保存的格式一致）
+            const mockRealOrderData = {
+                order_id: 'IC' + Date.now(),
+                out_trade_no: 'IC' + Date.now(),
+                transaction_id: '2024091422001' + Math.random().toString().substr(2, 10),
+                amount: 48.00,  // 正确的金额
+                access_code: 'ABC123DEF456',
+                zpay_trade_no: '2024091422001' + Math.random().toString().substr(2, 10),
+                status: 'paid',
+                created_at: new Date(),
+                source: 'zpay'
+            };
+
+            resultDiv.textContent += `模拟订单数据:\n${JSON.stringify(mockRealOrderData, null, 2)}\n\n`;
+            resultDiv.textContent += '显示支付成功弹窗...\n';
+
+            // 显示支付成功弹窗
+            window.showUnifiedPaymentSuccess(mockRealOrderData.access_code, 'test-real-data', mockRealOrderData);
+
+            resultDiv.textContent += '✅ 测试完成！请查看弹窗中的价格和订单号是否正确显示。\n';
+            resultDiv.textContent += `预期价格: ¥48.00\n`;
+            resultDiv.textContent += `预期订单号: ${mockRealOrderData.out_trade_no}\n`;
+        }
+
+        // 测试CloudBase订单查询
+        function testOrderQuery() {
+            const resultDiv = document.getElementById('query-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '正在测试CloudBase查询...\n';
+
+            // 生成测试访问码
+            const testAccessCode = 'TEST' + Math.random().toString(36).substr(2, 8).toUpperCase();
+
+            resultDiv.textContent += `使用访问码: ${testAccessCode}\n\n`;
+
+            // 直接调用checkOrderDetails
+            fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/checkOrderDetails', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Request-Source': 'IC-Studio-Order-Test'
+                },
+                body: JSON.stringify({
+                    access_code: testAccessCode
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                resultDiv.textContent += 'CloudBase响应:\n';
+                resultDiv.textContent += JSON.stringify(result, null, 2);
+
+                if (result.success) {
+                    resultDiv.textContent += '\n\n✅ 查询成功！';
+                    if (result.orders && result.orders.length > 0) {
+                        resultDiv.textContent += `\n找到 ${result.orders.length} 个订单`;
+                    } else {
+                        resultDiv.textContent += '\n没有找到对应的订单（这是正常的，因为使用的是随机访问码）';
+                    }
+                } else {
+                    resultDiv.textContent += '\n\n❌ 查询失败: ' + result.error;
+                }
+            })
+            .catch(error => {
+                resultDiv.textContent += '\n\n❌ 网络错误: ' + error.message;
+                console.error('查询错误:', error);
+            });
+        }
+
+        // 测试默认值
+        function testDefaultValues() {
+            const resultDiv = document.getElementById('default-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '正在测试默认值显示...\n';
+
+            // 使用空的订单数据（模拟查询失败的情况）
+            const testAccessCode = 'DEFAULT' + Math.random().toString(36).substr(2, 6).toUpperCase();
+
+            resultDiv.textContent += `使用访问码: ${testAccessCode}\n`;
+            resultDiv.textContent += '传递空的订单数据以测试默认值...\n\n';
+
+            // 显示支付成功弹窗（不传递orderInfo，让它查询失败后使用默认值）
+            window.showUnifiedPaymentSuccess(testAccessCode, 'test-default-values', null);
+
+            resultDiv.textContent += '✅ 测试完成！请查看弹窗中的默认值:\n';
+            resultDiv.textContent += '预期默认价格: ¥48.00（之前是1.00）\n';
+            resultDiv.textContent += '预期默认订单号: IC + 8位数字\n';
+        }
+
+        // 清除所有弹窗
+        function clearAllPopups() {
+            const overlays = document.querySelectorAll('.payment-success-overlay');
+            overlays.forEach(overlay => overlay.remove());
+        }
+
+        // 页面加载完成后的说明
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 订单信息显示修复测试页面已加载');
+            console.log('📝 可用的测试函数:');
+            console.log('  - testWithRealData(): 测试真实数据显示');
+            console.log('  - testOrderQuery(): 测试CloudBase查询');
+            console.log('  - testDefaultValues(): 测试默认值');
+            console.log('  - clearAllPopups(): 清除所有弹窗');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手机风格支付成功弹窗预览 - IC Studio</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .preview-container {
+            text-align: center;
+            color: white;
+            max-width: 400px;
+            width: 100%;
+        }
+        .preview-container h1 {
+            margin-bottom: 30px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            font-size: 24px;
+        }
+        .preview-buttons {
+            margin-top: 20px;
+        }
+        .btn {
+            background: rgba(255,255,255,0.25);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 15px 20px;
+            margin: 5px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            width: calc(100% - 10px);
+            display: block;
+        }
+        .btn:hover {
+            background: rgba(255,255,255,0.35);
+            transform: translateY(-2px);
+        }
+        .btn.primary {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+        .btn.primary:hover {
+            background: #45a049;
+        }
+        .comparison {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .comparison img {
+            max-width: 200px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <h1>📱 手机风格支付成功弹窗</h1>
+        <p>完全按照您提供的设计图重新制作</p>
+
+        <div class="comparison">
+            <h3>✨ 设计特色</h3>
+            <ul style="text-align: left; line-height: 1.6;">
+                <li>🎨 紫色渐变背景，完全匹配原设计</li>
+                <li>🎉 大号庆祝表情符号</li>
+                <li>💎 半透明毛玻璃访问码框</li>
+                <li>📱 手机风格的圆角按钮</li>
+                <li>🔗 一键复制访问码功能</li>
+                <li>📦 完整的下载选项面板</li>
+            </ul>
+        </div>
+
+        <div class="preview-buttons">
+            <button class="btn primary" onclick="showMobileStylePayment()">预览新设计弹窗</button>
+            <button class="btn" onclick="showWithFullOrderData()">预览完整订单信息</button>
+            <button class="btn" onclick="clearPreview()">清除弹窗</button>
+        </div>
+    </div>
+
+    <!-- 引入新的支付处理器 -->
+    <script src="static/js/payment-success-handler-v2.js"></script>
+
+    <script>
+        // 预览函数
+        function showMobileStylePayment() {
+            const testAccessCode = 'LSUPH8UEBR73'; // 使用图片中的示例访问码
+            window.showUnifiedPaymentSuccess(testAccessCode, 'mobile-preview');
+        }
+
+        function showWithFullOrderData() {
+            const testAccessCode = 'IC' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            const mockOrderData = {
+                out_trade_no: 'IC175742568915500443', // 使用图片中的示例订单号
+                zpay_trade_no: '2024091422001' + Math.random().toString().substr(2, 10),
+                transaction_id: '4200001234567890123456789',
+                money: '1.00', // 使用图片中的金额
+                amount: '1.00',
+                source: 'zpay'
+            };
+            window.showUnifiedPaymentSuccess(testAccessCode, 'mobile-preview-with-data', mockOrderData);
+        }
+
+        function clearPreview() {
+            const overlays = document.querySelectorAll('.payment-success-overlay');
+            overlays.forEach(overlay => overlay.remove());
+        }
+
+        // 模拟点击访问码复制功能的全局函数
+        window.copyAccessCode = function(accessCode) {
+            navigator.clipboard.writeText(accessCode).then(() => {
+                const container = document.getElementById('access-code-container');
+                if (container) {
+                    const originalBg = container.style.background;
+                    container.style.background = 'rgba(76, 175, 80, 0.4)';
+
+                    // 显示复制成功提示
+                    const copyTip = document.createElement('div');
+                    copyTip.style.cssText = `
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: rgba(76, 175, 80, 0.9);
+                        color: white;
+                        padding: 8px 16px;
+                        border-radius: 20px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        z-index: 1000;
+                        pointer-events: none;
+                    `;
+                    copyTip.textContent = '✅ 已复制';
+                    container.appendChild(copyTip);
+
+                    setTimeout(() => {
+                        container.style.background = originalBg;
+                        if (copyTip.parentNode) {
+                            copyTip.parentNode.removeChild(copyTip);
+                        }
+                    }, 1500);
+                }
+            }).catch(() => {
+                alert('访问码已复制：' + accessCode);
+            });
+        };
+    </script>
+</body>
+</html>
