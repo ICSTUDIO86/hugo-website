@@ -192,28 +192,8 @@ class IntegratedTrialManager {
       `;
       this.hidePurchaseInterface();
     } else if (status.allowed) {
-      const remaining = status.remainingMelodies || 0;
-      const total = status.totalMelodies || 20;
-      const usedPercent = ((total - remaining) / total * 100).toFixed(0);
-
-      statusHTML = `
-        <div class="trial-active">
-          <h3 style="color: #3498db;">🆓 免费试用模式</h3>
-          <div style="margin: 15px 0;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-              <span>剩余旋律:</span>
-              <span><strong>${remaining}</strong> / ${total}</span>
-            </div>
-            <div style="background: #f0f0f0; border-radius: 10px; height: 8px; overflow: hidden;">
-              <div style="background: linear-gradient(90deg, #3498db, #2980b9); height: 100%; width: ${usedPercent}%; transition: width 0.3s ease;"></div>
-            </div>
-          </div>
-          ${status.isIncognito ? '<div class="warning" style="color: #e67e22; margin-top: 10px; font-size: 12px;">⚠️ 无痕浏览模式下使用</div>' : ''}
-          <div class="upgrade-options" style="margin-top: 15px;">
-            <p style="font-size: 12px; color: #666;">试用结束后需要购买完整版</p>
-          </div>
-        </div>
-      `;
+      // 隐藏试用状态显示，不显示任何试用信息
+      statusHTML = ``;
     } else {
       statusHTML = `
         <div class="trial-expired">
@@ -229,8 +209,13 @@ class IntegratedTrialManager {
       `;
     }
 
-    statusElement.innerHTML = statusHTML;
-    statusElement.style.display = 'block';
+    // 只有在需要显示内容时才显示元素
+    if (statusHTML.trim()) {
+      statusElement.innerHTML = statusHTML;
+      statusElement.style.display = 'block';
+    } else {
+      statusElement.style.display = 'none';
+    }
   }
 
   // 隐藏购买界面（完整版用户）

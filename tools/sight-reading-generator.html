@@ -281,6 +281,22 @@
             color: #6e6e73;
             letter-spacing: -0.01em;
         }
+
+        /* 隐藏试用状态显示 - 保留后端计数功能但不显示UI */
+        #melody-counter-status:not(.trial-expired),
+        #trial-status:not(.trial-expired),
+        .trial-active:not(.premium-active),
+        .trial-progress,
+        .trial-info,
+        .trial-remaining,
+        .melody-counter-display {
+            display: none !important;
+        }
+
+        /* 只有在试用真正结束时才显示提示 */
+        .trial-expired {
+            display: block !important;
+        }
     </style>
     
     <!-- 主样式文件 - 使用绝对路径确保强制刷新时能正确加载 -->

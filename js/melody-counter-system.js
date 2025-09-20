@@ -849,50 +849,22 @@ class MelodyCounterSystem {
 
     if (!statusDiv) return;
 
-    // 根据状态显示不同的信息
-    const modePrefix = status.isLocalMode ? '🏠 [本地模式] ' : '';
-
+    // 完全隐藏试用状态显示，但保留后端计数功能
     if (status.hasFullAccess) {
       statusDiv.style.display = 'none';
-
       // 隐藏所有试用相关的UI元素
       this.hideAllTrialUI();
     } else if (status.expired) {
+      // 只有在试用真正结束时才显示提示
       statusDiv.style.background = '#ffebee';
       statusDiv.style.color = '#c62828';
       statusDiv.innerHTML = `
-        <div style="font-weight: 600; margin-bottom: 8px;">😔 ${modePrefix}试用次数已用完</div>
-        <div style="font-size: 12px;">您已生成了 ${status.used || 20} 条旋律</div>
-        <div style="font-size: 12px; margin-top: 8px;">${status.isLocalMode ? '本地模式限制' : '请购买完整版继续使用'}</div>
-      `;
-    } else if (status.error) {
-      statusDiv.style.background = '#fff3e0';
-      statusDiv.style.color = '#e65100';
-      statusDiv.innerHTML = `⚠️ ${status.error}`;
-    } else if (status.isFirstTime) {
-      statusDiv.style.background = '#e3f2fd';
-      statusDiv.style.color = '#1565c0';
-      statusDiv.innerHTML = `
-        <div style="font-weight: 600; margin-bottom: 8px;">🎉 ${modePrefix}欢迎试用！</div>
-        <div>您有 <strong>${status.total || 20}</strong> 条免费旋律</div>
+        <div style="font-weight: 600; margin-bottom: 8px;">😔 试用次数已用完</div>
+        <div style="font-size: 12px; margin-top: 8px;">请购买完整版继续使用</div>
       `;
     } else {
-      const percentage = ((status.used || 0) / (status.total || 20)) * 100;
-      const progressColor = percentage > 80 ? '#ff9800' : '#4caf50';
-
-      statusDiv.style.background = '#f5f5f5';
-      statusDiv.style.color = '#424242';
-      statusDiv.innerHTML = `
-        <div style="margin-bottom: 8px;">
-          ${modePrefix}已使用: <strong>${status.used || 0}</strong> / ${status.total || 20} 条旋律
-        </div>
-        <div style="background: #e0e0e0; height: 6px; border-radius: 3px; overflow: hidden;">
-          <div style="background: ${progressColor}; width: ${percentage}%; height: 100%; transition: width 0.3s ease;"></div>
-        </div>
-        <div style="font-size: 12px; margin-top: 8px; color: #757575;">
-          剩余: <strong>${status.remaining || 0}</strong> 条
-        </div>
-      `;
+      // 隐藏所有其他试用状态信息（包括进度、剩余次数等）
+      statusDiv.style.display = 'none';
     }
   }
 

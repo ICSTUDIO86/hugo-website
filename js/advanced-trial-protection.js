@@ -342,52 +342,6 @@ class AdvancedTrialProtection {
     }
   }
 
-  // 显示试用状态
-  displayTrialStatus(status) {
-    const statusElement = document.getElementById('trial-status');
-    if (!statusElement) return;
-
-    let statusHTML = '';
-
-    if (status.hasFullAccess) {
-      statusHTML = `
-        <div class="trial-active">
-          <h3 style="color: #27ae60;">✅ 完整版已激活</h3>
-          <p style="color: #27ae60;">享受无限制使用</p>
-        </div>
-      `;
-      // 隐藏付费相关界面
-      this.hidePurchaseInterface();
-    } else if (status.allowed) {
-      const remaining = status.remainingTrial || 0;
-      const incognitoWarning = status.isIncognito ?
-        '<div class="warning" style="color: #e67e22; margin-top: 10px;">⚠️ 检测到无痕浏览模式，试用次数共享</div>' : '';
-
-      statusHTML = `
-        <div class="trial-active">
-          <h3 style="color: #3498db;">🆓 试用模式</h3>
-          <p style="color: #3498db;">剩余试用次数: <strong>${remaining}</strong> 次</p>
-          ${incognitoWarning}
-          <div class="upgrade-options">
-            <p style="font-size: 14px; color: #666; margin: 10px 0;">试用结束后需要购买完整版</p>
-          </div>
-        </div>
-      `;
-    } else {
-      statusHTML = `
-        <div class="trial-expired">
-          <h3 style="color: #e74c3c;">⏰ 试用已结束</h3>
-          <p style="color: #e74c3c;">${status.message || '您的试用次数已用完，请购买完整版继续使用。'}</p>
-          <div class="upgrade-options">
-            <a href="#zpay-btn" class="upgrade-btn primary">立即购买完整版</a>
-          </div>
-        </div>
-      `;
-    }
-
-    statusElement.innerHTML = statusHTML;
-    statusElement.style.display = 'block';
-  }
 
   // 隐藏购买界面（完整版用户）
   hidePurchaseInterface() {
