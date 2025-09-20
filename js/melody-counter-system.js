@@ -487,21 +487,29 @@ class MelodyCounterSystem {
     document.head.appendChild(style);
   }
 
-  // 检测是否为无痕浏览模式（增强版）
+  // 检测是否为无痕浏览模式（全浏览器支持）
   isLikelyPrivateBrowsing() {
     try {
       const indicators = [];
 
-      // 检查localStorage限制
+      // 识别浏览器类型
+      const userAgent = navigator.userAgent;
+      const isChrome = /Chrome/.test(userAgent) && !/Edge/.test(userAgent);
+      const isFirefox = /Firefox/.test(userAgent);
+      const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
+      const isEdge = /Edge/.test(userAgent) || /Edg\//.test(userAgent);
+
+      console.log('🌐 浏览器检测:', { isChrome, isFirefox, isSafari, isEdge });
+
+      // 1. 通用存储检测
       try {
-        const testKey = '_private_test_' + Date.now();
+        const testKey = '_incognito_test_' + Date.now();
         localStorage.setItem(testKey, '1');
         localStorage.removeItem(testKey);
       } catch (e) {
         indicators.push('localStorage-blocked');
       }
 
-      // 检查sessionStorage限制
       try {
         const testKey = '_session_test_' + Date.now();
         sessionStorage.setItem(testKey, '1');
@@ -510,41 +518,130 @@ class MelodyCounterSystem {
         indicators.push('sessionStorage-blocked');
       }
 
-      // IndexedDB检测
+      // 2. IndexedDB检测（Firefox Private模式通常禁用）
       if (!window.indexedDB) {
         indicators.push('no-indexedDB');
+      } else {
+        // 深度测试IndexedDB功能
+        try {
+          const request = indexedDB.open('_incognito_test_db', 1);
+          request.onerror = () => indicators.push('indexedDB-blocked');
+        } catch (e) {
+          indicators.push('indexedDB-error');
+        }
       }
 
+      // 3. 历史记录检测（通用指标）
+      if (history.length <= 1) {
+        indicators.push('short-history');
+      }
+
+      // 4. Chrome特定检测
+      if (isChrome) {
+        // Chrome无痕模式特征
+        if (!window.webkitRequestFileSystem) {
+          indicators.push('chrome-no-filesystem');
+        }
+
+        // 检查Chrome的webkitTemporaryStorage
+        if (navigator.webkitTemporaryStorage) {
+          navigator.webkitTemporaryStorage.queryUsageAndQuota(
+            (usage, quota) => {
+              if (quota < 120000000) { // 小于120MB通常是无痕模式
+                indicators.push('chrome-limited-quota');
+              }
+            }
+          );
+        }
+      }
+
+      // 5. Firefox特定检测
+      if (isFirefox) {
+        // Firefox Private模式特征
+        if (!window.indexedDB) {
+          indicators.push('firefox-no-indexedDB');
+        }
+
+        // 检查Mozilla特定API
+        if (typeof InstallTrigger === 'undefined') {
+          indicators.push('firefox-no-installtrigger');
+        }
+      }
+
+      // 6. Safari特定检测
+      if (isSafari) {
+        // Safari无痕模式特征
+        try {
+          const testData = 'x'.repeat(1024 * 50); // 50KB
+          const testKey = '_safari_quota_' + Date.now();
+          localStorage.setItem(testKey, testData);
+          localStorage.removeItem(testKey);
+        } catch (e) {
+          indicators.push('safari-quota-limited');
+        }
+
+        if (!window.webkitRequestFileSystem) {
+          indicators.push('safari-no-filesystem');
+        }
+
+        if (typeof window.openDatabase !== 'function') {
+          indicators.push('safari-no-websql');
+        }
+      }
+
+      // 7. Edge特定检测
+      if (isEdge) {
+        // Edge InPrivate模式特征
+        if (!window.webkitRequestFileSystem) {
+          indicators.push('edge-no-filesystem');
+        }
+      }
+
+      // 8. 通用API检测
       // WebRTC检测
-      if (!window.RTCPeerConnection && !window.webkitRTCPeerConnection) {
+      if (!window.RTCPeerConnection && !window.webkitRTCPeerConnection && !window.mozRTCPeerConnection) {
         indicators.push('no-webrtc');
       }
 
       // 通知权限检测
-      if (navigator.permissions && Notification.permission === 'default') {
-        try {
-          navigator.permissions.query({name: 'notifications'}).then(result => {
-            if (result.state === 'denied') {
-              indicators.push('notifications-denied');
-            }
-          });
-        } catch (e) {
-          indicators.push('permissions-blocked');
+      if (Notification && Notification.permission === 'denied') {
+        indicators.push('notifications-denied');
+      }
+
+      // Service Worker检测
+      if (!navigator.serviceWorker) {
+        indicators.push('no-serviceworker');
+      }
+
+      // 9. 窗口特征检测
+      if (!window.name || window.name === '') {
+        indicators.push('empty-window-name');
+      }
+
+      // 检查是否是全新窗口（无痕模式常见特征）
+      if (window.performance && window.performance.navigation) {
+        if (window.performance.navigation.type === 0 && history.length === 1) {
+          indicators.push('fresh-window');
         }
       }
 
-      // 如果有多个指示器，很可能是无痕模式
-      const isPrivate = indicators.length >= 1;
+      // 10. 决策逻辑 - 采用较低阈值确保捕获所有无痕模式
+      const threshold = 1; // 任何一个指标都触发无痕模式检测
+      const isPrivate = indicators.length >= threshold;
 
-      console.log('🕵️ 无痕浏览检测:', {
+      console.log('🕵️ 全浏览器无痕检测:', {
+        browser: { isChrome, isFirefox, isSafari, isEdge },
         indicators: indicators,
-        isLikelyPrivate: isPrivate
+        indicatorCount: indicators.length,
+        threshold: threshold,
+        isPrivateBrowsing: isPrivate
       });
 
       return isPrivate;
     } catch (error) {
       console.error('❌ 无痕浏览检测失败:', error);
-      return false;
+      // 检测失败时，为了安全起见，假设是无痕模式
+      return true;
     }
   }
 
