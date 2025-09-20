@@ -282,20 +282,25 @@
             letter-spacing: -0.01em;
         }
 
-        /* 隐藏试用状态显示 - 保留后端计数功能但不显示UI */
-        #melody-counter-status:not(.trial-expired),
-        #trial-status:not(.trial-expired),
+        /* 隐藏特定的试用文字，但保留计数器显示 */
         .trial-active:not(.premium-active),
         .trial-progress,
         .trial-info,
-        .trial-remaining,
         .melody-counter-display {
             display: none !important;
         }
 
-        /* 只有在试用真正结束时才显示提示 */
+        /* 确保计数器和试用结束状态可以正常显示 */
+        #melody-counter-status,
+        #trial-status,
         .trial-expired {
             display: block !important;
+        }
+
+        /* 隐藏包含特定文字的内容 */
+        *:contains("🆓"),
+        *:contains("免费试用模式") {
+            display: none !important;
         }
     </style>
     

@@ -849,22 +849,37 @@ class MelodyCounterSystem {
 
     if (!statusDiv) return;
 
-    // 完全隐藏试用状态显示，但保留后端计数功能
+    // 根据状态显示简洁的试用信息
     if (status.hasFullAccess) {
       statusDiv.style.display = 'none';
       // 隐藏所有试用相关的UI元素
       this.hideAllTrialUI();
     } else if (status.expired) {
-      // 只有在试用真正结束时才显示提示
+      // 试用结束时显示提示
       statusDiv.style.background = '#ffebee';
       statusDiv.style.color = '#c62828';
       statusDiv.innerHTML = `
         <div style="font-weight: 600; margin-bottom: 8px;">😔 试用次数已用完</div>
         <div style="font-size: 12px; margin-top: 8px;">请购买完整版继续使用</div>
       `;
+    } else if (status.error) {
+      // 错误状态
+      statusDiv.style.background = '#fff3e0';
+      statusDiv.style.color = '#e65100';
+      statusDiv.innerHTML = `⚠️ ${status.error}`;
     } else {
-      // 隐藏所有其他试用状态信息（包括进度、剩余次数等）
-      statusDiv.style.display = 'none';
+      // 显示简洁的剩余次数信息（无"免费试用模式"等文字）
+      const used = status.used || 0;
+      const total = status.total || 20;
+      const remaining = status.remaining || (total - used);
+
+      statusDiv.style.background = '#f5f5f5';
+      statusDiv.style.color = '#424242';
+      statusDiv.innerHTML = `
+        <div style="text-align: center; font-size: 14px;">
+          剩余试用: <strong>${remaining}</strong> / ${total} 次
+        </div>
+      `;
     }
   }
 
