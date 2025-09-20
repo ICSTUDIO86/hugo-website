@@ -2340,8 +2340,8 @@
     <script src="/js/test-payment-injector.js?v=20250908"></script>
     
     <!-- 使用条款弹窗 -->
-    <div id="terms-dialog" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center;">
-        <div style="background: white; padding: 30px; border-radius: 16px; max-width: 600px; max-height: 80vh; overflow-y: auto; margin: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+    <div id="terms-dialog" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: auto; padding: 20px;">
+        <div style="background: white; padding: 30px; border-radius: 16px; max-width: 600px; width: calc(100% - 40px); margin: 0 auto; box-shadow: 0 20px 50px rgba(0,0,0,0.3); min-height: min-content; max-height: none;">
             <h3 style="color: #2d3748; margin-bottom: 20px; text-align: center;">📜 使用条款</h3>
             <div style="line-height: 1.6; color: #4a5568; font-size: 14px;">
                 <h4>1. 服务说明</h4>
@@ -2368,8 +2368,8 @@
     </div>
     
     <!-- 隐私政策弹窗 -->
-    <div id="privacy-dialog" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center;">
-        <div style="background: white; padding: 30px; border-radius: 16px; max-width: 600px; max-height: 80vh; overflow-y: auto; margin: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+    <div id="privacy-dialog" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: auto; padding: 20px;">
+        <div style="background: white; padding: 30px; border-radius: 16px; max-width: 600px; width: calc(100% - 40px); margin: 0 auto; box-shadow: 0 20px 50px rgba(0,0,0,0.3); min-height: min-content; max-height: none;">
             <h3 style="color: #2d3748; margin-bottom: 20px; text-align: center;">🔒 隐私政策</h3>
             <div style="line-height: 1.6; color: #4a5568; font-size: 14px;">
                 <h4>1. 信息收集</h4>
@@ -2536,88 +2536,394 @@
 
         // ===== 支付成功弹窗相关函数 =====
         function showPaymentSuccessPopup(accessCode, orderData) {
-            // 创建弹窗HTML
-            const popup = document.createElement('div');
-            popup.id = 'success-popup';
-            popup.innerHTML = `
-                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;">
-                    <div style="background: white; padding: 40px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">
-                        <div style="margin-bottom: 30px;">
-                            <div style="width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px;">✓</div>
-                            <h2 style="color: #333; margin-bottom: 10px;">🎉 访问验证成功！</h2>
-                            <p style="color: #666; font-size: 16px; margin-bottom: 0;">您的访问码已验证，现在可以使用完整版功能</p>
-                        </div>
-                        
-                        <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: left;">
-                            <h3 style="color: #333; margin-bottom: 15px; text-align: center;">📋 验证信息</h3>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
-                                <span style="color: #666;">访问码：</span>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-family: monospace; font-weight: bold; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">${accessCode}</span>
-                                    <button onclick="copyAccessCode('${accessCode}')" 
-                                            style="background: #3b82f6; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s ease;"
-                                            onmouseover="this.style.background='#2563eb'"
-                                            onmouseout="this.style.background='#3b82f6'"
-                                            title="复制访问码">
-                                        📋
-                                    </button>
-                                </div>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                <span style="color: #666;">产品：</span>
-                                <span>${orderData.product_name || 'IC Studio 视奏工具'}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: #666;">验证时间：</span>
-                                <span>${new Date().toLocaleString()}</span>
-                            </div>
-                        </div>
+            // 移除已存在的弹窗
+            const existingPopup = document.getElementById('success-popup');
+            if (existingPopup) existingPopup.remove();
 
-                        <div style="margin-bottom: 30px;">
-                            <h3 style="color: #333; margin-bottom: 20px;">📦 下载资源</h3>
-                            <div style="display: grid; gap: 10px;">
-                                <a href="javascript:void(0)" onclick="downloadFile('/software-packages/IC Studio 视奏工具-1.0.0-mac-x64.dmg', 'IC Studio 视奏工具-1.0.0-mac-x64.dmg')"
-                                   style="display: block; background: #f0f9ff; color: #1e40af; padding: 12px 20px; border: 2px solid #93c5fd; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer;"
-                                   onmouseover="this.style.background='#1e40af'; this.style.color='white';" 
-                                   onmouseout="this.style.background='#f0f9ff'; this.style.color='#1e40af';">
-                                    🍎 Mac版本 (DMG)
-                                </a>
-                                <a href="javascript:void(0)" onclick="downloadFile('/software-packages/IC Studio 视奏工具-1.0.0-win-x64.exe', 'IC Studio 视奏工具-1.0.0-win-x64.exe')"
-                                   style="display: block; background: #f0fdf4; color: #166534; padding: 12px 20px; border: 2px solid #86efac; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer;"
-                                   onmouseover="this.style.background='#166534'; this.style.color='white';" 
-                                   onmouseout="this.style.background='#f0fdf4'; this.style.color='#166534';">
-                                    💻 Windows版本 (EXE)
-                                </a>
-                                <a href="javascript:void(0)" onclick="downloadFile('/software-packages/IC Studio 视奏工具-1.0.0-linux-x86_64.AppImage', 'IC Studio 视奏工具-1.0.0-linux-x86_64.AppImage')"
-                                   style="display: block; background: #fef3c7; color: #92400e; padding: 12px 20px; border: 2px solid #fbbf24; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer;"
-                                   onmouseover="this.style.background='#92400e'; this.style.color='white';" 
-                                   onmouseout="this.style.background='#fef3c7'; this.style.color='#92400e';">
-                                    🐧 Linux版本 (AppImage)
-                                </a>
-                            </div>
-                            <p style="font-size: 12px; color: #888; margin-top: 15px;">下载完成后，使用以上访问码激活完整版功能</p>
-                        </div>
+            // 创建模态框
+            const overlay = document.createElement('div');
+            overlay.id = 'success-popup';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                padding: 20px;
+                box-sizing: border-box;
+            `;
 
-                        <div style="display: flex; gap: 15px; justify-content: center;">
-                            <button onclick="closeSuccessPopup()" 
-                                    style="padding: 15px 30px; background: #f8f9fa; color: #333; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;"
-                                    onmouseover="this.style.background='#e2e8f0'" 
-                                    onmouseout="this.style.background='#f8f9fa'">
-                                关闭弹窗
+            // 创建滚动容器
+            const scrollContainer = document.createElement('div');
+            scrollContainer.id = 'modal-scroll-container';
+            scrollContainer.style.cssText = `
+                width: 100%;
+                max-width: 500px;
+                max-height: 80vh;
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+                touch-action: pan-y;
+                box-sizing: border-box;
+            `;
+
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                background: white;
+                padding: 40px;
+                border-radius: 16px;
+                text-align: center;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+                width: 100%;
+                box-sizing: border-box;
+            `;
+
+            modal.innerHTML = `
+                <div class="success-icon" style="margin-bottom: 30px;">
+                    <div style="width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px;">✓</div>
+                    <h2 style="color: #333; margin-bottom: 10px;">🎉 访问验证成功！</h2>
+                    <p style="color: #666; font-size: 16px; margin-bottom: 0;">您的访问码已验证，现在可以使用完整版功能</p>
+                </div>
+                
+                <div class="verification-info" style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: left;">
+                    <h3 style="color: #333; margin-bottom: 15px; text-align: center;">📋 验证信息</h3>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
+                        <span style="color: #666;">访问码：</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="access-code-display" style="font-family: monospace; font-weight: bold; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">${accessCode}</span>
+                            <button class="copy-button" onclick="copyAccessCode('${accessCode}')"
+                                    style="background: #3b82f6; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s ease;"
+                                    onmouseover="this.style.background='#2563eb'"
+                                    onmouseout="this.style.background='#3b82f6'"
+                                    title="复制访问码">
+                                📋
                             </button>
                         </div>
                     </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #666;">产品：</span>
+                        <span>${orderData.product_name || 'IC Studio 视奏工具'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="color: #666;">验证时间：</span>
+                        <span>${new Date().toLocaleString()}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #666;">订单号：</span>
+                        <span style="font-family: monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">${(orderData.order_info?.out_trade_no) || (orderData.order_info?.order_id) || orderData.out_trade_no || orderData.order_id || orderData.orderId || '暂无'}</span>
+                    </div>
+                </div>
+
+                <div class="download-section" style="margin-bottom: 30px;">
+                    <h3 style="color: #333; margin-bottom: 15px;">📦 下载安装包</h3>
+                    <button id="toggle-downloads-btn" onclick="toggleDownloads()"
+                            style="background: #4f46e5; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; margin-bottom: 15px; font-size: 14px;">
+                        📥 显示下载链接
+                    </button>
+                    <div id="download-links-container" style="display: grid; gap: 10px;">
+                        <button class="popup-download-btn" data-platform="windows-x64"
+                               style="display: block; background: #f0f9ff; color: #1e40af; padding: 12px 20px; border: 2px solid #93c5fd; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
+                               onmouseover="this.style.background='#1e40af'; this.style.color='white';" 
+                               onmouseout="this.style.background='#f0f9ff'; this.style.color='#1e40af';">
+                            💻 Windows x64 (73.2MB)
+                        </button>
+                        <button class="popup-download-btn" data-platform="macos-x64-dmg"
+                               style="display: block; background: #f0fdf4; color: #166534; padding: 12px 20px; border: 2px solid #86efac; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
+                               onmouseover="this.style.background='#166534'; this.style.color='white';" 
+                               onmouseout="this.style.background='#f0fdf4'; this.style.color='#166534';">
+                            🍎 macOS Intel (DMG - 86.2MB)
+                        </button>
+                        <button class="popup-download-btn" data-platform="macos-arm64-zip"
+                               style="display: block; background: #fef3c7; color: #92400e; padding: 12px 20px; border: 2px solid #fbbf24; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
+                               onmouseover="this.style.background='#92400e'; this.style.color='white';" 
+                               onmouseout="this.style.background='#fef3c7'; this.style.color='#92400e';">
+                            🍎 macOS Apple Silicon (ZIP - 86.6MB)
+                        </button>
+                        <button class="popup-download-btn" data-platform="linux-appimage"
+                               style="display: block; background: #ede9fe; color: #6b21a8; padding: 12px 20px; border: 2px solid #c084fc; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
+                               onmouseover="this.style.background='#6b21a8'; this.style.color='white';" 
+                               onmouseout="this.style.background='#ede9fe'; this.style.color='#6b21a8';">
+                            🐧 Linux (AppImage - 77.6MB)
+                        </button>
+                    </div>
+                    <p style="font-size: 12px; color: #888; margin-top: 15px;">下载完成后，使用以上访问码激活完整版功能</p>
+                </div>
+
+                <div class="action-buttons" style="display: flex; gap: 15px; justify-content: center;">
+                    <button onclick="closeSuccessPopup()" 
+                            style="padding: 15px 30px; background: #f8f9fa; color: #333; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;"
+                            onmouseover="this.style.background='#e2e8f0'" 
+                            onmouseout="this.style.background='#f8f9fa'">
+                        稍后使用
+                    </button>
+                    <button onclick="goToSightReadingTool()" 
+                            style="padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;"
+                            onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'" 
+                            onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
+                        开始使用
+                    </button>
                 </div>
             `;
-            
-            document.body.appendChild(popup);
+
+            // 组装弹窗结构：overlay > scrollContainer > modal
+            scrollContainer.appendChild(modal);
+            overlay.appendChild(scrollContainer);
+
+            // 防止滚动事件传播到背景
+            scrollContainer.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+            }, { passive: true });
+
+            scrollContainer.addEventListener('touchmove', function(e) {
+                e.stopPropagation();
+            }, { passive: true });
+
+            scrollContainer.addEventListener('wheel', function(e) {
+                e.stopPropagation();
+            }, { passive: false });
+
+            scrollContainer.addEventListener('scroll', function(e) {
+                e.stopPropagation();
+            }, { passive: true });
+
+            scrollContainer.addEventListener('touchend', function(e) {
+                e.stopPropagation();
+            }, { passive: true });
+
+            document.body.appendChild(overlay);
+
+            // 添加移动端专用样式和下载区域折叠样式
+            const mobileStyleSheet = document.createElement('style');
+            mobileStyleSheet.id = 'mobile-download-collapse-styles';
+            mobileStyleSheet.textContent = `
+                /* 手机端专用样式优化 */
+                @media screen and (max-width: 768px) {
+                    #success-popup #modal-scroll-container {
+                        padding: 20px !important;
+                        margin: 10px !important;
+                        width: calc(100% - 20px) !important;
+                        max-width: none !important;
+                    }
+
+                    #success-popup h2 {
+                        font-size: 20px !important;
+                        margin-bottom: 8px !important;
+                        line-height: 1.3 !important;
+                    }
+
+                    #success-popup h3 {
+                        font-size: 16px !important;
+                        margin-bottom: 12px !important;
+                        line-height: 1.4 !important;
+                    }
+
+                    #success-popup p {
+                        font-size: 14px !important;
+                        line-height: 1.5 !important;
+                        margin-bottom: 8px !important;
+                    }
+
+                    #success-popup .verification-info {
+                        padding: 16px !important;
+                        margin-bottom: 20px !important;
+                    }
+
+                    #success-popup .verification-info > div {
+                        margin-bottom: 8px !important;
+                        font-size: 13px !important;
+                    }
+
+                    #success-popup .verification-info span {
+                        font-size: 13px !important;
+                    }
+
+                    #success-popup .access-code-display {
+                        font-size: 12px !important;
+                        padding: 6px 8px !important;
+                    }
+
+                    #success-popup .copy-button {
+                        padding: 6px 8px !important;
+                        font-size: 11px !important;
+                        min-width: 40px !important;
+                    }
+
+                    #success-popup .download-section {
+                        margin-bottom: 20px !important;
+                    }
+
+                    #success-popup #toggle-downloads-btn {
+                        display: inline-block !important;
+                        padding: 10px 16px !important;
+                        font-size: 13px !important;
+                        border-radius: 8px !important;
+                    }
+
+                    #success-popup #download-links-container {
+                        display: none !important;
+                        transition: all 0.3s ease;
+                        opacity: 0;
+                        max-height: 0;
+                        overflow: hidden;
+                        gap: 8px !important;
+                    }
+
+                    #success-popup #download-links-container.expanded {
+                        display: grid !important;
+                        opacity: 1;
+                        max-height: 1000px;
+                    }
+
+                    #success-popup #download-links-container a {
+                        padding: 12px 16px !important;
+                        font-size: 14px !important;
+                        line-height: 1.3 !important;
+                        border-radius: 8px !important;
+                    }
+
+                    #success-popup .action-buttons {
+                        gap: 12px !important;
+                        flex-direction: column !important;
+                    }
+
+                    #success-popup .action-buttons button {
+                        padding: 14px 20px !important;
+                        font-size: 15px !important;
+                        border-radius: 10px !important;
+                        width: 100% !important;
+                        min-height: 48px !important;
+                    }
+
+                    #success-popup .success-icon div {
+                        width: 60px !important;
+                        height: 60px !important;
+                        font-size: 36px !important;
+                        margin: 0 auto 15px !important;
+                    }
+
+                    #success-popup .success-icon {
+                        margin-bottom: 20px !important;
+                    }
+                }
+
+                /* 桌面端保持原样 */
+                @media screen and (min-width: 769px) {
+                    #success-popup #toggle-downloads-btn {
+                        display: none !important;
+                    }
+
+                    #success-popup #download-links-container {
+                        display: grid !important;
+                        opacity: 1;
+                        max-height: none;
+                    }
+                }
+            `;
+            document.head.appendChild(mobileStyleSheet);
+
+            // 立即检查并应用移动端样式
+            setTimeout(() => {
+                const isMobile = window.innerWidth <= 768;
+                const toggleBtn = document.getElementById('toggle-downloads-btn');
+                const container = document.getElementById('download-links-container');
+
+                console.log('📱 移动端检查:', {
+                    windowWidth: window.innerWidth,
+                    isMobile,
+                    toggleBtn: !!toggleBtn,
+                    container: !!container
+                });
+
+                if (isMobile && toggleBtn && container) {
+                    console.log('✅ 应用移动端样式');
+                    toggleBtn.style.display = 'inline-block';
+                    container.style.display = 'none';
+                    container.classList.remove('expanded');
+                } else if (!isMobile && toggleBtn && container) {
+                    console.log('✅ 应用桌面端样式');
+                    toggleBtn.style.display = 'none';
+                    container.style.display = 'grid';
+                }
+            }, 100);
+
+            // 弹窗滚动控制
+            const modalOverlay = popup.querySelector('#modal-overlay');
+            const modalScrollContainer = popup.querySelector('#modal-scroll-container');
+
+            if (modalOverlay) {
+                // 点击背景关闭弹窗
+                modalOverlay.addEventListener('click', function(e) {
+                    if (e.target === modalOverlay) {
+                        closeSuccessPopup();
+                    }
+                });
+            }
+
+            if (modalScrollContainer) {
+                // 重新启用弹窗内的滚动，同时阻止事件传播
+                const enableModalScroll = function(e) {
+                    e.stopPropagation(); // 阻止传播到document
+                };
+
+                modalScrollContainer.addEventListener('touchstart', enableModalScroll, { passive: true });
+                modalScrollContainer.addEventListener('touchmove', enableModalScroll, { passive: true });
+                modalScrollContainer.addEventListener('wheel', enableModalScroll, { passive: true });
+                modalScrollContainer.addEventListener('scroll', enableModalScroll, { passive: true });
+            }
         }
 
         // 关闭成功弹窗
+        function toggleDownloads() {
+            const container = document.getElementById('download-links-container');
+            const toggleBtn = document.getElementById('toggle-downloads-btn');
+
+            if (container && toggleBtn) {
+                const isExpanded = container.classList.contains('expanded');
+
+                if (isExpanded) {
+                    // 收起
+                    container.classList.remove('expanded');
+                    toggleBtn.innerHTML = '📥 显示下载链接';
+                } else {
+                    // 展开
+                    container.classList.add('expanded');
+                    toggleBtn.innerHTML = '📤 收起下载链接';
+                }
+            }
+        }
+
         function closeSuccessPopup() {
             const popup = document.getElementById('success-popup');
             if (popup) {
                 popup.remove();
+
+                // 移除全局滚动阻止事件监听器
+                if (window.modalPreventAllScroll) {
+                    document.removeEventListener('touchmove', window.modalPreventAllScroll, { capture: true });
+                    document.removeEventListener('wheel', window.modalPreventAllScroll, { capture: true });
+                    document.removeEventListener('scroll', window.modalPreventAllScroll, { capture: true });
+                    window.modalPreventAllScroll = null;
+                }
+
+                // 恢复body滚动
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.left = '';
+                document.body.style.right = '';
+                document.body.style.width = '';
+                document.body.style.overflow = '';
+
+                // 恢复到之前的滚动位置
+                if (window.modalScrollTop) {
+                    window.scrollTo(0, window.modalScrollTop);
+                    window.modalScrollTop = null;
+                }
             }
 
             // Command+R 风格的页面刷新
@@ -2629,6 +2935,41 @@
                 // 强制刷新页面，类似 Command+R 的效果
                 window.location.reload(true);
             }, 100);
+        }
+
+        // 移动端下载区域折叠/展开控制
+        function toggleDownloads() {
+            console.log('🎯 toggleDownloads 被调用');
+            const container = document.getElementById('download-links-container');
+            const button = document.getElementById('toggle-downloads-btn');
+
+            console.log('🔍 元素检查:', {
+                container: !!container,
+                button: !!button,
+                containerClasses: container?.className,
+                buttonStyle: button?.style.display
+            });
+
+            if (!container || !button) {
+                console.error('❌ 找不到必要元素');
+                return;
+            }
+
+            if (container.classList.contains('expanded')) {
+                // 收起
+                console.log('📁 收起下载区域');
+                container.classList.remove('expanded');
+                button.innerHTML = '展开下载 ▼';
+                button.style.background = '#667eea';
+                button.style.borderColor = '#667eea';
+            } else {
+                // 展开
+                console.log('📂 展开下载区域');
+                container.classList.add('expanded');
+                button.innerHTML = '收起下载 ▲';
+                button.style.background = '#48bb78';
+                button.style.borderColor = '#48bb78';
+            }
         }
 
         // 复制访问码功能

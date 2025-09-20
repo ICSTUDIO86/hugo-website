@@ -161,7 +161,7 @@
           box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
         " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255, 193, 7, 0.4)'" 
            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 193, 7, 0.3)'">
-          🚀 开始使用
+          开始使用
         </button>
       </div>
 
@@ -179,14 +179,38 @@
       </button>
     `;
 
-    modal.appendChild(content);
+    // 组装弹窗结构：modal > scrollContainer > content
+    scrollContainer.appendChild(content);
+    modal.appendChild(scrollContainer);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
     document.body.appendChild(modal);
   }
 
   // 显示支付界面
   function showPaymentInterface(paymentData) {
     hideLoading();
-    
+
     const modal = document.createElement('div');
     modal.id = 'zpay-payment-modal';
     modal.style.cssText = `
@@ -200,7 +224,59 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
+      padding: 20px;
+      box-sizing: border-box;
     `;
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 420px;
+      max-height: 80vh;
+      overflow-y: auto !important;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: #1677FF rgba(0, 0, 0, 0.05);
+    `;
+
+    // 为当前滚动容器添加类名以便样式定位
+    scrollContainer.className = 'alipay-payment-scroll';
+
+    if (!document.getElementById('alipay-payment-scrollbar-styles')) {
+      const style = document.createElement('style');
+      style.id = 'alipay-payment-scrollbar-styles';
+      style.textContent = `
+        .alipay-payment-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .alipay-payment-scroll::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.05);
+          border-radius: 3px;
+        }
+
+        .alipay-payment-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(135deg, #1677FF 0%, #0E5CE6 100%);
+          border-radius: 3px;
+          transition: all 0.3s ease;
+        }
+
+        .alipay-payment-scroll::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(135deg, #0E5CE6 0%, #0A47C7 100%);
+          box-shadow: 0 2px 4px rgba(22, 119, 255, 0.3);
+        }
+
+        .alipay-payment-scroll::-webkit-scrollbar-thumb:active {
+          background: linear-gradient(135deg, #0A47C7 0%, #0638A8 100%);
+        }
+      `;
+      document.head.appendChild(style);
+    }
 
     const content = document.createElement('div');
     content.style.cssText = `
@@ -208,11 +284,10 @@
       padding: 0;
       border-radius: 12px;
       text-align: center;
-      max-width: 420px;
-      width: 90%;
+      width: 100%;
       position: relative;
-      overflow: hidden;
       box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+      min-height: 400px;
     `;
 
     let paymentContent = `
@@ -373,7 +448,31 @@
     `;
 
     content.innerHTML = paymentContent;
-    modal.appendChild(content);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    // 组装弹窗结构：modal(overlay) > scrollContainer > content
+    scrollContainer.appendChild(content);
+    modal.appendChild(scrollContainer);
     document.body.appendChild(modal);
 
     // 开始轮询支付状态
@@ -397,7 +496,59 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
+      padding: 20px;
+      box-sizing: border-box;
     `;
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 420px;
+      max-height: 80vh;
+      overflow-y: auto !important;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: #09BB07 rgba(0, 0, 0, 0.05);
+    `;
+
+    // 为当前滚动容器添加类名以便样式定位
+    scrollContainer.className = 'wx-payment-scroll';
+
+    if (!document.getElementById('wx-payment-scrollbar-styles')) {
+      const style = document.createElement('style');
+      style.id = 'wx-payment-scrollbar-styles';
+      style.textContent = `
+        .wx-payment-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .wx-payment-scroll::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.05);
+          border-radius: 3px;
+        }
+
+        .wx-payment-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(135deg, #09BB07 0%, #00D100 100%);
+          border-radius: 3px;
+          transition: all 0.3s ease;
+        }
+
+        .wx-payment-scroll::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(135deg, #00A300 0%, #00BB00 100%);
+          box-shadow: 0 2px 4px rgba(9, 187, 7, 0.3);
+        }
+
+        .wx-payment-scroll::-webkit-scrollbar-thumb:active {
+          background: linear-gradient(135deg, #008800 0%, #009900 100%);
+        }
+      `;
+      document.head.appendChild(style);
+    }
 
     const content = document.createElement('div');
     content.style.cssText = `
@@ -405,11 +556,10 @@
       padding: 0;
       border-radius: 12px;
       text-align: center;
-      max-width: 420px;
-      width: 90%;
+      width: 100%;
       position: relative;
-      overflow: hidden;
       box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+      min-height: 400px;
     `;
 
     let paymentContent = `
@@ -570,7 +720,31 @@
     `;
 
     content.innerHTML = paymentContent;
-    modal.appendChild(content);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    // 组装弹窗结构：modal(overlay) > scrollContainer > content
+    scrollContainer.appendChild(content);
+    modal.appendChild(scrollContainer);
     document.body.appendChild(modal);
 
     // 开始轮询支付状态
@@ -757,6 +931,22 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
     `;
 
     const content = document.createElement('div');
@@ -765,9 +955,9 @@
       padding: 30px;
       border-radius: 16px;
       text-align: center;
-      max-width: 500px;
-      width: 90%;
+      width: 100%;
       position: relative;
+      box-sizing: border-box;
     `;
 
     content.innerHTML = `
@@ -889,7 +1079,31 @@
       " onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='none'">×</button>
     `;
 
-    modal.appendChild(content);
+    // 组装弹窗结构：modal > scrollContainer > content
+    scrollContainer.appendChild(content);
+    modal.appendChild(scrollContainer);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
     document.body.appendChild(modal);
   }
   
@@ -1020,6 +1234,22 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
     `;
 
     const content = document.createElement('div');
@@ -1028,9 +1258,9 @@
       padding: 40px;
       border-radius: 16px;
       text-align: center;
-      max-width: 400px;
-      width: 90%;
+      width: 100%;
       position: relative;
+      box-sizing: border-box;
     `;
 
     content.innerHTML = `
@@ -1040,7 +1270,31 @@
       <p style="margin: 0; color: #f39c12; font-size: 12px;">💡 刚支付完成的访问码可能需要等待10-15秒<br><small style="color: #999;">中国用户可能因网络环境需要更长时间</small></p>
     `;
 
-    progressModal.appendChild(content);
+    // 组装弹窗结构：progressModal > scrollContainer > content
+    scrollContainer.appendChild(content);
+    progressModal.appendChild(scrollContainer);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
     document.body.appendChild(progressModal);
   }
   
@@ -1058,6 +1312,22 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
     `;
 
     const content = document.createElement('div');
@@ -1067,9 +1337,9 @@
       padding: 40px;
       border-radius: 16px;
       text-align: center;
-      max-width: 400px;
-      width: 90%;
+      width: 100%;
       position: relative;
+      box-sizing: border-box;
     `;
 
     content.innerHTML = `
@@ -1082,7 +1352,31 @@
       <p style="margin: 0; opacity: 0.8; font-size: 14px;" id="countdown-text">3秒后自动跳转...</p>
     `;
 
-    redirectModal.appendChild(content);
+    // 组装弹窗结构：redirectModal > scrollContainer > content
+    scrollContainer.appendChild(content);
+    redirectModal.appendChild(scrollContainer);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
     document.body.appendChild(redirectModal);
     
     // 进度条动画和倒计时
@@ -1120,6 +1414,22 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
     `;
 
     const content = document.createElement('div');
@@ -1129,9 +1439,9 @@
       padding: 40px;
       border-radius: 16px;
       text-align: center;
-      max-width: 400px;
-      width: 90%;
+      width: 100%;
       position: relative;
+      box-sizing: border-box;
     `;
 
     content.innerHTML = `
@@ -1155,7 +1465,31 @@
       </button>
     `;
 
-    successModal.appendChild(content);
+    // 组装弹窗结构：successModal > scrollContainer > content
+    scrollContainer.appendChild(content);
+    successModal.appendChild(scrollContainer);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
     document.body.appendChild(successModal);
   }
 
@@ -1193,7 +1527,7 @@
 
   function showTempTermsDialog() {
     const dialog = document.createElement('div');
-    dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100000; display: flex; align-items: center; justify-content: center;';
+    dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100000; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: auto; padding: 20px;';
     dialog.innerHTML = `
       <div style="background: white; padding: 30px; border-radius: 16px; max-width: 700px; max-height: 80vh; overflow-y: auto; margin: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
         <h3 style="color: #2d3748; margin-bottom: 20px; text-align: center;">📜 用户协议</h3>
@@ -1239,7 +1573,7 @@
 
   function showTempPrivacyDialog() {
     const dialog = document.createElement('div');
-    dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100000; display: flex; align-items: center; justify-content: center;';
+    dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100000; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: auto; padding: 20px;';
     dialog.innerHTML = `
       <div style="background: white; padding: 30px; border-radius: 16px; max-width: 700px; max-height: 80vh; overflow-y: auto; margin: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
         <h3 style="color: #2d3748; margin-bottom: 20px; text-align: center;">🔒 隐私政策</h3>

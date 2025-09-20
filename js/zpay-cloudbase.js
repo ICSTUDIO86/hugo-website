@@ -37,6 +37,22 @@
       justify-content: center;
       z-index: 99999;
       animation: fadeIn 0.3s ease-out;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 450px;
+      max-height: 80vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
     `;
 
     const modal = document.createElement('div');
@@ -46,9 +62,9 @@
       border-radius: 16px;
       text-align: center;
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-      max-width: 450px;
-      width: 90%;
+      width: 100%;
       position: relative;
+      box-sizing: border-box;
     `;
 
     // 模态框内容
@@ -118,7 +134,31 @@
     `;
 
     modal.innerHTML = modalContent;
-    overlay.appendChild(modal);
+
+    // 组装弹窗结构：overlay > scrollContainer > modal
+    scrollContainer.appendChild(modal);
+    overlay.appendChild(scrollContainer);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
 
     // 添加CSS动画
     if (!document.getElementById('zpay-modal-styles')) {

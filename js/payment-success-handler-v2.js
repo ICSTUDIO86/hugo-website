@@ -114,8 +114,8 @@
             const paymentAmount = orderData?.money || orderData?.amount || '1.00';
 
             const successHtml = `
-              <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;">
-            <div style="background: white; padding: 40px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">
+              <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px; box-sizing: border-box;" id="modal-overlay">
+            <div style="background: white; padding: 40px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); max-height: 80vh; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;" id="modal-scroll-container">
                 <div style="margin-bottom: 30px;">
                     <div style="width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px;">✓</div>
                     <h2 style="color: #333; margin-bottom: 10px;">🎉 访问验证成功！</h2>
@@ -193,7 +193,7 @@
                             style="padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;"
                             onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'" 
                             onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
-                        🚀 开始使用
+                        开始使用
                     </button>
                 </div>
             </div>
@@ -202,6 +202,63 @@
 
             // 添加到页面
             document.body.insertAdjacentHTML('beforeend', successHtml);
+
+            // 添加移动端触摸事件处理
+            const scrollContainer = document.getElementById('modal-scroll-container');
+            if (scrollContainer) {
+                // 防止滚动事件传播到背景
+                scrollContainer.addEventListener('touchstart', function(e) {
+                    e.stopPropagation();
+                }, { passive: true });
+
+                scrollContainer.addEventListener('touchmove', function(e) {
+                    e.stopPropagation();
+                }, { passive: true });
+
+                scrollContainer.addEventListener('wheel', function(e) {
+                    e.stopPropagation();
+                }, { passive: false });
+
+                scrollContainer.addEventListener('scroll', function(e) {
+                    e.stopPropagation();
+                }, { passive: true });
+
+                scrollContainer.addEventListener('touchend', function(e) {
+                    e.stopPropagation();
+                }, { passive: true });
+
+                // 添加美化滚动条样式
+                if (!document.getElementById('payment-success-scrollbar-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'payment-success-scrollbar-styles';
+                    style.textContent = `
+                        #modal-scroll-container::-webkit-scrollbar {
+                            width: 6px;
+                        }
+
+                        #modal-scroll-container::-webkit-scrollbar-track {
+                            background: rgba(0, 0, 0, 0.05);
+                            border-radius: 3px;
+                        }
+
+                        #modal-scroll-container::-webkit-scrollbar-thumb {
+                            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+                            border-radius: 3px;
+                            transition: all 0.3s ease;
+                        }
+
+                        #modal-scroll-container::-webkit-scrollbar-thumb:hover {
+                            background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+                            box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+                        }
+
+                        #modal-scroll-container::-webkit-scrollbar-thumb:active {
+                            background: linear-gradient(135deg, #3d8b40 0%, #2e7d32 100%);
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
 
             return orderData;
         }

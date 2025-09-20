@@ -6,7 +6,7 @@
 class AdvancedTrialProtection {
   constructor() {
     this.serverEndpoint = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/trialVerification';
-    this.maxTrialUsage = 3; // 最大试用次数
+    this.maxTrialUsage = 20; // 正常模式最大试用次数（无痕模式为3次）
     this.deviceFingerprint = null;
     this.sessionId = this.generateSessionId();
     this.protectionLevel = 'high'; // high, medium, low
@@ -142,6 +142,9 @@ class AdvancedTrialProtection {
   // 服务器端验证试用状态
   async verifyTrialWithServer(fingerprint, action = 'check') {
     try {
+      // 检测无痕模式
+      const isIncognito = await this.detectIncognitoMode();
+
       const requestData = {
         fingerprint: fingerprint,
         sessionId: this.sessionId,
@@ -149,10 +152,11 @@ class AdvancedTrialProtection {
         timestamp: Date.now(),
         userAgent: navigator.userAgent,
         url: window.location.href,
-        referrer: document.referrer || 'direct'
+        referrer: document.referrer || 'direct',
+        isIncognito: isIncognito
       };
 
-      console.log(`🔍 服务器端试用验证 - 动作: ${action}`);
+      console.log(`🔍 服务器端试用验证 - 动作: ${action}, 无痕模式: ${isIncognito}`);
 
       const response = await fetch(this.serverEndpoint, {
         method: 'POST',
@@ -176,6 +180,35 @@ class AdvancedTrialProtection {
 
       // 回退到本地验证（降级处理）
       return this.fallbackLocalVerification(fingerprint, action);
+    }
+  }
+
+  // 获取无痕模式试用使用次数
+  getIncognitoTrialUsage() {
+    try {
+      // 使用sessionStorage存储无痕模式计数（页面关闭后重置）
+      const key = 'ic_incognito_trial_count';
+      let count = parseInt(sessionStorage.getItem(key) || '0');
+      return count;
+    } catch (e) {
+      // 如果sessionStorage不可用，使用内存计数
+      if (!window._incognitoTrialCount) window._incognitoTrialCount = 0;
+      return window._incognitoTrialCount;
+    }
+  }
+
+  // 增加无痕模式试用使用次数
+  incrementIncognitoTrialUsage() {
+    try {
+      const key = 'ic_incognito_trial_count';
+      let count = parseInt(sessionStorage.getItem(key) || '0') + 1;
+      sessionStorage.setItem(key, count.toString());
+      return count;
+    } catch (e) {
+      // 回退到内存计数
+      if (!window._incognitoTrialCount) window._incognitoTrialCount = 0;
+      window._incognitoTrialCount++;
+      return window._incognitoTrialCount;
     }
   }
 
@@ -249,22 +282,23 @@ class AdvancedTrialProtection {
       // 4. 检测无痕模式
       const isIncognito = await this.detectIncognitoMode();
       if (isIncognito) {
-        console.log('🕵️ 检测到无痕浏览模式');
+        console.log('🕵️ 检测到无痕浏览模式 - 限制3次试用');
 
-        // 无痕模式下仍然允许试用，但使用更严格的验证
-        const serverResult = await this.verifyTrialWithServer(this.deviceFingerprint, 'check');
-
-        if (!serverResult.allowed) {
+        // 无痕模式下使用3次限制
+        const incognitoTrialUsage = this.getIncognitoTrialUsage();
+        if (incognitoTrialUsage >= 3) {
           return {
             allowed: false,
             reason: 'trial-exceeded-incognito',
-            message: '您在无痕浏览模式下的试用次数已用完。请购买完整版或切换到普通浏览模式。',
-            isIncognito: true
+            message: '您在无痕浏览模式下的试用次数已用完（限制3次）。请购买完整版或切换到普通浏览模式。',
+            isIncognito: true,
+            usageCount: incognitoTrialUsage,
+            maxUsage: 3
           };
         }
       }
 
-      // 5. 服务器端验证
+      // 5. 服务器端验证（正常模式）
       const verificationResult = await this.verifyTrialWithServer(this.deviceFingerprint, 'check');
 
       return {
@@ -272,7 +306,7 @@ class AdvancedTrialProtection {
         remainingTrial: verificationResult.remainingTrial,
         usageCount: verificationResult.usageCount,
         maxUsage: verificationResult.maxUsage,
-        isIncognito: isIncognito,
+        isIncognito: false,
         fingerprint: this.deviceFingerprint,
         source: verificationResult.source || 'server'
       };
@@ -296,6 +330,22 @@ class AdvancedTrialProtection {
     }
 
     try {
+      // 检测无痕模式
+      const isIncognito = await this.detectIncognitoMode();
+      if (isIncognito) {
+        console.log('🕵️ 无痕模式：记录本地使用次数');
+        const newCount = this.incrementIncognitoTrialUsage();
+        return {
+          success: true,
+          usageCount: newCount,
+          maxUsage: 3,
+          remainingTrial: Math.max(0, 3 - newCount),
+          isIncognito: true,
+          source: 'incognito-local'
+        };
+      }
+
+      // 正常模式：使用服务器端验证
       if (!this.deviceFingerprint) {
         await this.generateAdvancedFingerprint();
       }

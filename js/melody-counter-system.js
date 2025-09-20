@@ -487,7 +487,7 @@ class MelodyCounterSystem {
     document.head.appendChild(style);
   }
 
-  // 检测是否为无痕浏览模式（全浏览器支持）
+  // 检测是否为无痕浏览模式（只检测最可靠的指标）
   isLikelyPrivateBrowsing() {
     try {
       const indicators = [];
@@ -501,147 +501,66 @@ class MelodyCounterSystem {
 
       console.log('🌐 浏览器检测:', { isChrome, isFirefox, isSafari, isEdge });
 
-      // 1. 通用存储检测
+      // 只检测最核心和可靠的无痕模式指标
+
+      // 1. 存储检测（最重要）
       try {
         const testKey = '_incognito_test_' + Date.now();
         localStorage.setItem(testKey, '1');
         localStorage.removeItem(testKey);
       } catch (e) {
+        // localStorage 被阻止是无痕模式的强指标
         indicators.push('localStorage-blocked');
+        console.log('  ⚠️ localStorage 被阻止');
       }
 
-      try {
-        const testKey = '_session_test_' + Date.now();
-        sessionStorage.setItem(testKey, '1');
-        sessionStorage.removeItem(testKey);
-      } catch (e) {
-        indicators.push('sessionStorage-blocked');
+      // 2. Chrome特定：文件系统API检测
+      if (isChrome && !window.webkitRequestFileSystem) {
+        indicators.push('chrome-no-filesystem');
+        console.log('  ⚠️ Chrome 无文件系统API');
       }
 
-      // 2. IndexedDB检测（Firefox Private模式通常禁用）
-      if (!window.indexedDB) {
-        indicators.push('no-indexedDB');
-      } else {
-        // 深度测试IndexedDB功能
-        try {
-          const request = indexedDB.open('_incognito_test_db', 1);
-          request.onerror = () => indicators.push('indexedDB-blocked');
-        } catch (e) {
-          indicators.push('indexedDB-error');
-        }
+      // 3. Firefox特定：IndexedDB检测（在 Private 模式下被禁用）
+      if (isFirefox && !window.indexedDB) {
+        indicators.push('firefox-no-indexedDB');
+        console.log('  ⚠️ Firefox 无 IndexedDB');
       }
 
-      // 3. 历史记录检测（通用指标）
-      if (history.length <= 1) {
-        indicators.push('short-history');
-      }
-
-      // 4. Chrome特定检测
-      if (isChrome) {
-        // Chrome无痕模式特征
-        if (!window.webkitRequestFileSystem) {
-          indicators.push('chrome-no-filesystem');
-        }
-
-        // 检查Chrome的webkitTemporaryStorage
-        if (navigator.webkitTemporaryStorage) {
-          navigator.webkitTemporaryStorage.queryUsageAndQuota(
-            (usage, quota) => {
-              if (quota < 120000000) { // 小于120MB通常是无痕模式
-                indicators.push('chrome-limited-quota');
-              }
-            }
-          );
-        }
-      }
-
-      // 5. Firefox特定检测
-      if (isFirefox) {
-        // Firefox Private模式特征
-        if (!window.indexedDB) {
-          indicators.push('firefox-no-indexedDB');
-        }
-
-        // 检查Mozilla特定API
-        if (typeof InstallTrigger === 'undefined') {
-          indicators.push('firefox-no-installtrigger');
-        }
-      }
-
-      // 6. Safari特定检测
+      // 4. Safari特定：存储配额检测
       if (isSafari) {
-        // Safari无痕模式特征
         try {
-          const testData = 'x'.repeat(1024 * 50); // 50KB
+          const testData = 'x'.repeat(1024 * 100); // 100KB测试
           const testKey = '_safari_quota_' + Date.now();
           localStorage.setItem(testKey, testData);
           localStorage.removeItem(testKey);
         } catch (e) {
           indicators.push('safari-quota-limited');
-        }
-
-        if (!window.webkitRequestFileSystem) {
-          indicators.push('safari-no-filesystem');
-        }
-
-        if (typeof window.openDatabase !== 'function') {
-          indicators.push('safari-no-websql');
+          console.log('  ⚠️ Safari 存储配额受限');
         }
       }
 
-      // 7. Edge特定检测
-      if (isEdge) {
-        // Edge InPrivate模式特征
-        if (!window.webkitRequestFileSystem) {
-          indicators.push('edge-no-filesystem');
-        }
-      }
+      // 严格判断：必须有明确的存储限制才认为是无痕模式
+      const hasStorageRestriction = indicators.some(indicator =>
+        indicator.includes('localStorage-blocked') ||
+        indicator.includes('quota-limited') ||
+        indicator.includes('indexedDB')
+      );
 
-      // 8. 通用API检测
-      // WebRTC检测
-      if (!window.RTCPeerConnection && !window.webkitRTCPeerConnection && !window.mozRTCPeerConnection) {
-        indicators.push('no-webrtc');
-      }
+      // 只有真正检测到存储限制才判定为无痕模式
+      const isPrivate = hasStorageRestriction && indicators.length >= 1;
 
-      // 通知权限检测
-      if (Notification && Notification.permission === 'denied') {
-        indicators.push('notifications-denied');
-      }
-
-      // Service Worker检测
-      if (!navigator.serviceWorker) {
-        indicators.push('no-serviceworker');
-      }
-
-      // 9. 窗口特征检测
-      if (!window.name || window.name === '') {
-        indicators.push('empty-window-name');
-      }
-
-      // 检查是否是全新窗口（无痕模式常见特征）
-      if (window.performance && window.performance.navigation) {
-        if (window.performance.navigation.type === 0 && history.length === 1) {
-          indicators.push('fresh-window');
-        }
-      }
-
-      // 10. 决策逻辑 - 采用较低阈值确保捕获所有无痕模式
-      const threshold = 1; // 任何一个指标都触发无痕模式检测
-      const isPrivate = indicators.length >= threshold;
-
-      console.log('🕵️ 全浏览器无痕检测:', {
+      console.log('🕵️ 简化无痕检测:', {
         browser: { isChrome, isFirefox, isSafari, isEdge },
         indicators: indicators,
-        indicatorCount: indicators.length,
-        threshold: threshold,
+        hasStorageRestriction: hasStorageRestriction,
         isPrivateBrowsing: isPrivate
       });
 
       return isPrivate;
     } catch (error) {
       console.error('❌ 无痕浏览检测失败:', error);
-      // 检测失败时，为了安全起见，假设是无痕模式
-      return true;
+      // 检测失败时，假设是普通模式，避免误判
+      return false;
     }
   }
 
@@ -924,6 +843,13 @@ class MelodyCounterSystem {
 
   // 显示计数状态
   showCounterStatus(status) {
+    // 🔥 优先检查：完整版用户权限（最高优先级）
+    if (this.hasValidLocalAccessCode()) {
+      console.log('🎫 showCounterStatus: 检测到完整版用户，隐藏所有试用UI');
+      this.hideAllTrialUI();
+      return; // 完整版用户不显示任何试用状态
+    }
+
     // 查找或创建状态显示区域
     let statusDiv = document.getElementById('melody-counter-status');
     if (!statusDiv) {
@@ -1179,6 +1105,28 @@ class MelodyCounterSystem {
       // 预加载设备指纹
       this.preloadDeviceFingerprint();
 
+      // 🔥 优先检查：完整版用户权限（最高优先级）
+      if (this.hasValidLocalAccessCode()) {
+        console.log('🎫 初始化检测到完整版用户，跳过所有限制');
+        const fullAccessStatus = {
+          success: true,
+          allowed: true,
+          hasFullAccess: true,
+          expired: false,
+          used: 0,
+          total: Infinity,
+          remaining: Infinity,
+          message: '',
+          isFirstTime: false
+        };
+
+        this.currentStatus = fullAccessStatus;
+        this.showCounterStatus(fullAccessStatus);
+        this.updateGenerateButton(fullAccessStatus);
+        this.hideAllTrialUI();
+        return;
+      }
+
       // 检测无痕模式
       const isPrivateBrowsing = this.isLikelyPrivateBrowsing();
       console.log('🕵️ 初始化无痕模式检测:', isPrivateBrowsing);
@@ -1281,7 +1229,9 @@ class MelodyCounterSystem {
         'button[onclick*="upgrade"]',
         'button[onclick*="purchase"]',
         '.purchase-prompt',
-        '.upgrade-prompt'
+        '.upgrade-prompt',
+        '#melody-counter-status',
+        '#trial-status'  // 添加主要的试用状态元素
       ];
 
       selectors.forEach(selector => {
@@ -1307,7 +1257,8 @@ class MelodyCounterSystem {
         if (text.includes('试用次数已用完') ||
             text.includes('请购买完整版') ||
             text.includes('试用已结束') ||
-            text.includes('条旋律')) {
+            text.includes('条旋律') ||
+            text.includes('剩余试用')) {
           element.style.display = 'none';
         }
       });
