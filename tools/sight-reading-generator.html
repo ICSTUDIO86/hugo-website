@@ -297,6 +297,21 @@
             display: block !important;
         }
 
+        /* 手机端计数器显示优化 */
+        @media (max-width: 768px) {
+            #melody-counter-status {
+                margin: 10px 0 !important;
+                padding: 10px 15px !important;
+                font-size: 13px !important;
+                border-radius: 6px !important;
+            }
+
+            #melody-counter-status div {
+                font-size: 13px !important;
+                line-height: 1.4 !important;
+            }
+        }
+
         /* 隐藏包含特定文字的内容 */
         *:contains("🆓"),
         *:contains("免费试用模式") {

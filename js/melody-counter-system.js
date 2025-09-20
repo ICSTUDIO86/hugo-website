@@ -1082,10 +1082,33 @@ class MelodyCounterSystem {
       // 预加载设备指纹
       this.preloadDeviceFingerprint();
 
-      // 检查初始状态
-      const status = await this.requestMelodyGeneration('check');
+      // 检测无痕模式
+      const isPrivateBrowsing = this.isLikelyPrivateBrowsing();
+      console.log('🕵️ 初始化无痕模式检测:', isPrivateBrowsing);
+
+      let status;
+      if (isPrivateBrowsing) {
+        // 无痕模式：使用本地计数
+        const privateUsage = this.getPrivateBrowsingUsage();
+        status = {
+          success: true,
+          allowed: privateUsage < 3,
+          expired: privateUsage >= 3,
+          used: privateUsage,
+          total: 3,
+          remaining: Math.max(0, 3 - privateUsage),
+          message: privateUsage >= 3 ? '无痕浏览试用已用完' : `无痕模式剩余 ${Math.max(0, 3 - privateUsage)} 条旋律`,
+          isPrivateMode: true
+        };
+      } else {
+        // 正常模式：检查服务端状态
+        status = await this.requestMelodyGeneration('check');
+      }
+
       console.log('📊 后台状态检查完成:', {
+        isPrivateMode: status.isPrivateMode,
         used: status.used,
+        total: status.total,
         remaining: status.remaining,
         expired: status.expired
       });
