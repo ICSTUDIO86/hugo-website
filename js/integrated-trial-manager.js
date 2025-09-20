@@ -200,7 +200,7 @@ class IntegratedTrialManager {
           <h3 style="color: #e74c3c;">⏰ 试用已结束</h3>
           <p style="color: #e74c3c;">${status.message || '您的试用次数已用完，请购买完整版继续使用。'}</p>
           <div class="upgrade-options" style="margin-top: 15px;">
-            <button onclick="document.querySelector('#zpay-btn').scrollIntoView()"
+            <button onclick="window.location.href='/sight-reading-tool/#action-section'"
                     style="background: #e74c3c; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 600;">
               立即购买完整版
             </button>
