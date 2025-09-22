@@ -6,9 +6,7 @@
  * 
  * Author: Igor Chen
  * Website: https://icstudio.club
- * Email: service@icstudio.club
- * 
- * Version: 20250908 - Updated for cache control
+ * Email: icstudio@fastmail.com
  */
 :root {
     /* Apple-style color palette - Light Mode */
@@ -29,6 +27,10 @@
     --border-color: rgba(0, 0, 0, 0.06);
     --border-color-medium: rgba(0, 0, 0, 0.08);
     --body-bg: #f5f5f7;
+    --info-bg: #f8f9fa;
+    --info-border: #e9ecef;
+    --secondary-text: #6c757d;
+    --heading-text: #495057;
     
     /* Typography system */
     --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -54,6 +56,10 @@
     --border-color: rgba(255, 255, 255, 0.15);
     --border-color-medium: rgba(255, 255, 255, 0.25);
     --body-bg: #1D1D1F;            /* Apple-style dark gray background */
+    --info-bg: #3A3A3C;
+    --info-border: rgba(255, 255, 255, 0.2);
+    --secondary-text: #8E8E93;
+    --heading-text: #F2F2F7;
 }
 
 * {
@@ -677,6 +683,46 @@ input[type="range"]::-moz-range-thumb {
     align-items: center;
 }
 
+/* Melody Visibility Button */
+.melody-visibility-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: #f2f2f7;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px var(--card-shadow);
+}
+
+.melody-visibility-btn:hover {
+    background: var(--neutral-light);
+    border-color: var(--border-color-medium);
+    transform: translateY(-1px) scale(1.05);
+    box-shadow: 0 4px 16px var(--card-shadow-hover);
+}
+
+.melody-visibility-btn:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 8px var(--card-shadow);
+}
+
+.melody-visibility-btn.hidden-state {
+    background: var(--accent-orange);
+    color: #FFFFFF;
+    border-color: var(--accent-orange);
+}
+
+.melody-visibility-btn.hidden-state:hover {
+    background: #E6850E;
+    border-color: #E6850E;
+}
+
 button {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, 'Microsoft YaHei', sans-serif;
     font-size: 1.1rem;
@@ -1101,6 +1147,13 @@ text[class*="PartName"] {
     display: block !important;
     margin: 0 auto !important;
     border-radius: 8px;
+    transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+/* Melody hidden state */
+#score svg.melody-hidden {
+    opacity: 0 !important;
+    filter: blur(10px) !important;
 }
 
 
@@ -1579,11 +1632,10 @@ body::before {
     transform: translateY(0);
     box-shadow: 0 2px 8px var(--card-shadow);
 }
-
 .settings-menu {
     position: absolute;
     top: calc(100% + 8px);
-    left: 0;
+    right: 0;
     background: var(--neutral-white);
     border-radius: 16px;
     box-shadow: 0 12px 48px var(--card-shadow-hover);
@@ -1860,6 +1912,85 @@ body::before {
     color: #FFFFFF !important;
 }
 
+/* Dark mode function selector styles */
+[data-theme="dark"] .function-btn {
+    background: var(--primary-blue) !important;
+    border-color: var(--primary-blue) !important;
+    color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .function-btn span {
+    color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .function-btn:hover {
+    background: #1E8FFF !important;
+    border-color: #1E8FFF !important;
+}
+
+[data-theme="dark"] .function-btn:active {
+    background: #0056CC !important;
+}
+
+[data-theme="dark"] .function-menu {
+    background: var(--neutral-white) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-theme="dark"] .function-option {
+    background: var(--neutral-white) !important;
+    color: var(--neutral-black) !important;
+}
+
+/* 深色模式下的悬浮颜色 */
+[data-theme="dark"] .function-option:hover {
+    color: #FFFFFF !important;
+}
+
+/* 旋律视奏 - 蓝色 */
+[data-theme="dark"] .function-option:nth-child(1):hover {
+    background: #007AFF !important;
+}
+
+/* 音程视奏 - 绿色 */
+[data-theme="dark"] .function-option:nth-child(2):hover {
+    background: #34C759 !important;
+}
+
+/* 和弦视奏 - 橙色 */
+[data-theme="dark"] .function-option:nth-child(3):hover {
+    background: #FF9500 !important;
+}
+
+[data-theme="dark"] .function-option:active {
+    background: #0056CC !important;
+    color: #FFFFFF !important;
+}
+
+/* Dark mode melody visibility button */
+[data-theme="dark"] .melody-visibility-btn {
+    background: var(--neutral-light) !important;
+    border-color: var(--border-color) !important;
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] .melody-visibility-btn:hover {
+    background: var(--neutral-medium) !important;
+    border-color: var(--border-color-medium) !important;
+}
+
+[data-theme="dark"] .melody-visibility-btn.hidden-state {
+    background: var(--accent-orange) !important;
+    color: #FFFFFF !important;
+    border-color: var(--accent-orange) !important;
+}
+
+[data-theme="dark"] .melody-visibility-btn.hidden-state:hover {
+    background: #E6850E !important;
+    border-color: #E6850E !important;
+}
+
 /* Language Switcher Styles (legacy - keep for compatibility) */
 
 /* Override global button styles specifically for language button */
@@ -1908,6 +2039,133 @@ button.language-btn:focus {
     gap: 12px;
     z-index: 9997;
     padding: 0 0;
+}
+
+/* Function Selector Styles */
+.function-selector {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    z-index: 9998;
+}
+
+.function-btn {
+    background: var(--primary-blue);
+    border: 1px solid var(--primary-blue);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #FFFFFF !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    white-space: nowrap;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.function-btn span {
+    color: #FFFFFF !important;
+}
+
+.function-btn:hover {
+    background: #0056CC;
+    border-color: #0056CC;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+    transform: translateY(-1px);
+}
+
+.function-btn:active {
+    background: #004499;
+    color: #FFFFFF !important;
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+}
+
+.function-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: var(--neutral-white);
+    border-radius: 16px;
+    box-shadow: 0 12px 48px var(--card-shadow-hover);
+    overflow: visible;
+    z-index: 9999;
+    min-width: 180px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border: 1px solid var(--border-color);
+}
+
+.function-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.function-option {
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--neutral-black);
+    background: var(--neutral-white);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    position: relative;
+    z-index: 10000;
+}
+
+.function-option:first-child {
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.function-option:last-child {
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+/* 为不同功能设置特定的悬浮颜色 */
+.function-option:hover {
+    color: #FFFFFF;
+}
+
+/* 旋律视奏 - 蓝色 */
+.function-option:nth-child(1):hover {
+    background: #007AFF;
+}
+
+/* 音程视奏 - 绿色 */
+.function-option:nth-child(2):hover {
+    background: #34C759;
+}
+
+/* 和弦视奏 - 橙色 */
+.function-option:nth-child(3):hover {
+    background: #FF9500;
+}
+
+.function-option:active {
+    background: #0056CC;
+    color: #FFFFFF;
+}
+
+.function-icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
 }
 
 /* Theme Switcher Styles */
@@ -2125,7 +2383,26 @@ button.theme-switcher:hover {
         min-width: 120px;
         padding: 12px 20px;
     }
-    
+
+    .function-selector {
+        align-items: center;
+    }
+
+    .function-menu {
+        left: 50%;
+        transform: translateX(-50%) translateY(-10px);
+        min-width: 200px;
+    }
+
+    .function-menu.show {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .function-btn {
+        min-width: 140px;
+        padding: 12px 20px;
+    }
+
     .metronome-compact {
         padding: 6px 10px;
         gap: 6px;
@@ -2145,5 +2422,221 @@ button.theme-switcher:hover {
     .metronome-beat-indicator {
         width: 6px;
         height: 6px;
+    }
+}
+
+/* Mobile landscape optimization - 手机横屏优化 */
+@media (orientation: landscape) and (max-height: 599px) {
+    body {
+        padding: 0;
+        margin: 0;
+    }
+    
+    .container {
+        border-radius: 4px;
+        margin: 0;
+    }
+    
+    .header {
+        padding: 8px 4px;
+    }
+    
+    .header h1 {
+        font-size: 1.4rem;
+    }
+    
+    .controls {
+        padding: 6px;
+    }
+    
+    .score-container {
+        padding: 0;
+    }
+    
+    #score {
+        min-height: 160px;
+        max-width: calc(100vw - 8px);
+        width: calc(100vw - 8px);
+        padding: 3px;
+        margin: 0;
+        border-radius: 4px;
+    }
+    
+    /* 横屏时旋律可以更大 */
+    #score svg {
+        max-width: 100% !important;
+        width: auto !important;
+        height: auto !important;
+        min-width: 300px;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+    
+    #score .osmd-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+    }
+    
+    button {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+    }
+    
+    .btn-primary {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Extreme small mobile devices (very small phones) */
+@media (max-width: 360px) {
+    body {
+        padding: 0;
+        margin: 0;
+    }
+    
+    .container {
+        border-radius: 2px;
+        margin: 0;
+    }
+    
+    .score-container { 
+        padding: 0; 
+    }
+    
+    #score { 
+        min-height: 180px;
+        max-width: calc(100vw - 6px);
+        width: calc(100vw - 6px);
+        padding: 2px;
+        margin: 0;
+        border-radius: 2px;
+    }
+    
+    /* 极度紧凑的音乐显示 - 完全无边距 */
+    #score svg {
+        min-width: 150px;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+    
+    #score .osmd-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+    }
+    
+    .header { 
+        padding: 12px 2px; 
+    }
+    
+    .header h1 { 
+        font-size: 1.4rem; 
+    }
+    
+    .controls { 
+        padding: 4px; 
+    }
+    
+    button {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+    }
+    
+    .btn-primary {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (min-width: 600px) and (max-width: 899px) {
+    .score-container { 
+        padding: 24px; 
+    }
+    
+    .control-row { 
+        gap: 20px; 
+    }
+}
+
+@media (min-width: 900px) {
+    .control-row { 
+        gap: 28px; 
+    }
+    
+    .container:hover {
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+    }
+}
+/* 🎵 试用系统样式 - 20条旋律严格限制系统 */
+.trial-info {
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 15px;
+    padding: 8px 12px;
+}
+
+.trial-info.trial-active {
+    background: #f0f9ff !important;
+    border: 1px solid #0ea5e9 !important;
+    color: #0369a1;
+}
+
+.trial-info.trial-exceeded {
+    background: #fef2f2 !important;
+    border: 1px solid #ef4444 !important;
+    color: #dc2626;
+}
+
+.trial-info.full-version {
+    background: #f0fdf4 !important;
+    border: 1px solid #22c55e !important;
+    color: #15803d;
+}
+
+.trial-info.trial-remaining {
+    background: #f0f9ff !important;
+    border: 1px solid #0ea5e9 !important;
+    color: #0369a1;
+}
+
+.trial-info.trial-expired {
+    background: #fef2f2 !important;
+    border: 1px solid #ef4444 !important;
+    color: #dc2626;
+}
+
+.trial-info strong {
+    font-weight: 600;
+}
+
+
+/* 响应式设计 - 移动端优化 */
+@media (max-width: 599px) {
+    .trial-info {
+        font-size: 13px;
+        padding: 6px 10px;
+        margin-bottom: 12px;
+    }
+}
+
+@media (max-width: 360px) {
+    .trial-info {
+        font-size: 12px;
+        padding: 5px 8px;
+        margin-bottom: 10px;
     }
 }

@@ -135,6 +135,8 @@
 <ul>
 <li><strong>全拍号支持</strong>：完整覆盖 4/4、3/4、6/8等常用拍号，每种拍号皆有独特节奏模式。</li>
 <li><strong>内置节拍器</strong>：无需额外工具，即可在练习时保持稳定的节奏感。</li>
+<li><strong>音频播放</strong>：可以播放随机生成的旋律，用户可以用来做听力练习或者与正确的演奏进行对照。</li>
+<li><strong>支持手机端/平板端/电脑端</strong>：可以用任何设备练习视奏！</li>
 </ul>
 <h2 id="未来功能">未来功能</h2>
 <ul>
@@ -142,8 +144,8 @@
 <li><strong>和弦视奏</strong>：随机生成 <a href="/guitar-voicings/">Guitar voicings</a>（三和弦，drop 2，drop 3，shell voicings等），提高你视奏和弦的能力。</li>
 <li><strong>低音生成器</strong>：随机生成一串低音，可以用来练习四部和声，和弦写作。（之后我会单独出一期视频讲解）</li>
 <li><strong>和弦进行生成器</strong>：随机生成一串<strong>和弦代号</strong>，乐手可以根据和弦代号自行配和声。</li>
-<li><strong>音频播放</strong>：可以播放随机生成的旋律，用户可以用来做听力练习或者与正确的演奏进行对照。</li>
-<li><strong>支持手机端</strong>：目前漂亮的五线谱只能在电脑或者平板上看到，不久之后就会出手机端的版本。</li>
+<li>✅<strong>音频播放</strong>：可以播放随机生成的旋律，用户可以用来做听力练习或者与正确的演奏进行对照。</li>
+<li>✅<strong>支持手机端</strong>：目前漂亮的五线谱只能在电脑或者平板上看到，不久之后就会出手机端的版本。</li>
 </ul>
 <p>（现在购买可以在未来免费解锁进阶功能，之后出了这些功能之后会涨价）</p>
 <h2 id="适用人群">适用人群</h2>
@@ -1114,12 +1116,19 @@ async function verifyAccessCodeWithServer() {
         
         if (result.success) {
             console.log('✅ 访问码验证成功:', result.data);
+
+            // 立即设置完整版状态
+            localStorage.setItem('ic_full_version', 'true');
+            localStorage.setItem('ic_verified_from_access_page', 'true');
+            localStorage.setItem('ic_verified_timestamp', Date.now().toString());
+            console.log('🎯 访问码验证成功，已设置完整版状态');
+
             resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 访问码验证成功！</span>';
-            
+
             // 重新启用按钮
             button.disabled = false;
             button.style.opacity = '1';
-            
+
             // 延迟显示弹窗，让用户看到成功消息
             setTimeout(() => {
                 showPaymentSuccessPopup(code, result.data);
@@ -1319,6 +1328,13 @@ function closeSuccessPopup() {
 
 // 前往视奏工具页面
 function goToSightReadingTool() {
+    // 在跳转前设置完整版状态
+    localStorage.setItem('ic_full_version', 'true');
+    localStorage.setItem('ic_verified_from_access_page', 'true');
+    localStorage.setItem('ic_verified_timestamp', Date.now().toString());
+
+    console.log('🎯 设置完整版状态，准备跳转到工具页面');
+
     closeSuccessPopup();
     // 跳转到完整版视奏工具页面
     window.open('/tools/sight-reading-generator.html', '_blank');
