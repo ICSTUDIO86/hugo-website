@@ -329,7 +329,7 @@ class RealAlipayPayment {
         'type': 'alipay',
         'out_trade_no': orderId,
         'notify_url': 'https://icstudio.club/api/callback',
-        'return_url': 'https://icstudio.club/sight-reading-tool/',
+        'return_url': `${window.location.origin}/sight-reading-tool/`,
         'name': this.config.productName,
         'money': this.config.amount.toFixed(2),
         'clientip': '192.168.1.1',

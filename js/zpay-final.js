@@ -54,7 +54,7 @@
     params['pid'] = CONFIG.pid;
     params['type'] = 'alipay';
     params['out_trade_no'] = orderId;
-    params['return_url'] = 'https://icstudio.club/sight-reading-tool/';
+    params['return_url'] = `${window.location.origin}/sight-reading-tool/`;
     params['name'] = 'IC Studio Tool';
     params['money'] = CONFIG.money;
     
@@ -74,7 +74,7 @@
     paramArray.push(['pid', CONFIG.pid]);
     paramArray.push(['type', 'alipay']);
     paramArray.push(['out_trade_no', orderId]);
-    paramArray.push(['return_url', 'https://icstudio.club/sight-reading-tool/']);
+    paramArray.push(['return_url', `${window.location.origin}/sight-reading-tool/`]);
     paramArray.push(['name', 'IC Studio Tool']);
     paramArray.push(['money', CONFIG.money]);
     

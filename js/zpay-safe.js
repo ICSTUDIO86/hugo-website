@@ -63,7 +63,7 @@
       paramMap.set('pid', CONFIG.pid);
       paramMap.set('type', 'alipay');
       paramMap.set('out_trade_no', orderId);
-      paramMap.set('return_url', 'https://icstudio.club/sight-reading-tool/');
+      paramMap.set('return_url', `${window.location.origin}/sight-reading-tool/`);
       paramMap.set('name', 'IC Studio Tool');
       paramMap.set('money', CONFIG.money);
       

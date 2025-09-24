@@ -89,7 +89,7 @@
       params['out_trade_no'] = orderId;
       params[notifyKey] = 'https://icstudio.club/api/cb'; // 使用动态构建的key
       params['pid'] = CONFIG.pid;
-      params['return_url'] = 'https://icstudio.club/sight-reading-tool/';
+      params['return_url'] = `${window.location.origin}/sight-reading-tool/`;
       
       console.log('Params before signing:', params);
       
