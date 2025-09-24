@@ -260,7 +260,7 @@ class ZPayStandard {
       name: 'IC Studio 视奏工具',
       money: this.config.money,
       sitename: 'IC Studio',
-      return_url: 'https://icstudio.club/sight-reading-tool/'
+      return_url: `${window.location.origin}/sight-reading-tool/`
     };
     
     // notify_url 单独处理，避免编码问题

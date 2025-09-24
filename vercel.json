@@ -58,6 +58,16 @@
       "source": "/sight-reading-tool",
       "destination": "/sight-reading-tool/",
       "permanent": true
+    },
+    {
+      "source": "/tools/sight-reading-generator.html",
+      "destination": "/tools/sight-reading-generator/",
+      "permanent": true
+    },
+    {
+      "source": "/tools/sight-reading-generator",
+      "destination": "/tools/sight-reading-generator/",
+      "permanent": true
     }
   ],
   "trailingSlash": true,

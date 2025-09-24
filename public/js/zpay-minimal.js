@@ -215,7 +215,7 @@
       'pid': CONFIG.pid,
       'type': 'alipay', 
       'out_trade_no': orderId,
-      'return_url': 'https://icstudio.club/sight-reading-tool/',
+      'return_url': `${window.location.origin}/sight-reading-tool/`,
       'name': 'IC Studio Tool',
       'money': CONFIG.money
     };

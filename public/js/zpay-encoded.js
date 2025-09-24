@@ -63,7 +63,7 @@
       params['pid'] = CONFIG.pid;
       params['type'] = 'alipay';
       params['out_trade_no'] = orderId;
-      params['return_url'] = 'https://icstudio.club/sight-reading-tool/';
+      params['return_url'] = `${window.location.origin}/sight-reading-tool/`;
       params['name'] = 'IC Studio Tool';
       params['money'] = CONFIG.money;
       
@@ -76,7 +76,7 @@
         'pid': CONFIG.pid,
         'type': 'alipay',
         'out_trade_no': orderId,
-        'return_url': 'https://icstudio.club/sight-reading-tool/',
+        'return_url': `${window.location.origin}/sight-reading-tool/`,
         'name': 'IC Studio Tool',
         'money': CONFIG.money,
         'notify_url': 'https://icstudio.club/api/cb'  // 签名时使用正确的参数名
