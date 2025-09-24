@@ -1,7 +1,7 @@
 ---
 title: "如何实现高把位弹唱？掌握 Drop2 和声，让你的吉他弹唱脱胎换骨"
 date: 2024-09-24
-draft: false
+draft: true
 tags: ["Drop2和声", "高把位弹唱", "吉他指法", "和声技巧", "吉他技巧"]
 categories: ["音乐内容"]
 weight: 1

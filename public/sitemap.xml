@@ -2,111 +2,111 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>http://localhost:1313/composition/</loc>
+    <loc>https://icstudio.club/composition/</loc>
     <lastmod>2024-03-15T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/about/</loc>
+    <loc>https://icstudio.club/about/</loc>
   </url><url>
-    <loc>http://localhost:1313/composition-intro/</loc>
+    <loc>https://icstudio.club/composition-intro/</loc>
   </url><url>
-    <loc>http://localhost:1313/reharmonization/</loc>
+    <loc>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/</loc>
+    <lastmod>2024-09-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://icstudio.club/reharmonization/</loc>
     <lastmod>2024-02-20T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/lessons/</loc>
+    <loc>https://icstudio.club/lessons/</loc>
   </url><url>
-    <loc>http://localhost:1313/blog/</loc>
+    <loc>https://icstudio.club/blog/</loc>
     <lastmod>2025-08-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/sight-reading-tool/</loc>
+    <loc>https://icstudio.club/sight-reading-tool/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/scales/</loc>
+    <loc>https://icstudio.club/scales/</loc>
     <lastmod>2024-01-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/guitar-voicings/</loc>
-    <lastmod>2024-01-22T00:00:00+00:00</lastmod>
+    <loc>https://icstudio.club/guitar-voicings/</loc>
+    <lastmod>2024-09-24T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/membership/</loc>
+    <loc>https://icstudio.club/membership/</loc>
   </url><url>
-    <loc>http://localhost:1313/donate/</loc>
+    <loc>https://icstudio.club/donate/</loc>
   </url><url>
-    <loc>http://localhost:1313/contact/</loc>
+    <loc>https://icstudio.club/contact/</loc>
     <lastmod>2020-01-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/</loc>
+    <loc>https://icstudio.club/</loc>
     <lastmod>2025-09-07T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/disclaimer/</loc>
+    <loc>https://icstudio.club/disclaimer/</loc>
     <lastmod>2025-09-07T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/terms-of-service/</loc>
+    <loc>https://icstudio.club/terms-of-service/</loc>
     <lastmod>2025-09-07T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/refund-policy/</loc>
+    <loc>https://icstudio.club/refund-policy/</loc>
     <lastmod>2025-09-07T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/privacy-policy/</loc>
+    <loc>https://icstudio.club/privacy-policy/</loc>
     <lastmod>2025-09-07T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/tags/</loc>
+    <loc>https://icstudio.club/tags/</loc>
     <lastmod>2025-08-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/tags/web/</loc>
+    <loc>https://icstudio.club/tags/web/</loc>
     <lastmod>2025-08-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/blog/ai-learning/</loc>
+    <loc>https://icstudio.club/blog/ai-learning/</loc>
     <lastmod>2025-08-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/blog/vibe-coding/</loc>
+    <loc>https://icstudio.club/blog/vibe-coding/</loc>
     <lastmod>2025-08-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/categories/</loc>
+    <loc>https://icstudio.club/categories/</loc>
+    <lastmod>2024-09-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://icstudio.club/categories/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/</loc>
+    <lastmod>2024-09-24T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://icstudio.club/tags/%E4%B9%90%E8%B0%B1%E7%94%9F%E6%88%90%E5%99%A8/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/tags/%E4%B9%90%E8%B0%B1%E7%94%9F%E6%88%90%E5%99%A8/</loc>
+    <loc>https://icstudio.club/categories/%E4%BA%94%E7%BA%BF%E8%B0%B1%E5%AD%A6%E4%B9%A0/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/categories/%E4%BA%94%E7%BA%BF%E8%B0%B1%E5%AD%A6%E4%B9%A0/</loc>
+    <loc>https://icstudio.club/tags/%E4%BA%94%E7%BA%BF%E8%B0%B1%E7%BB%83%E4%B9%A0/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/tags/%E4%BA%94%E7%BA%BF%E8%B0%B1%E7%BB%83%E4%B9%A0/</loc>
+    <loc>https://icstudio.club/tags/%E5%90%89%E4%BB%96%E8%A7%86%E5%A5%8F/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/tags/%E5%90%89%E4%BB%96%E8%A7%86%E5%A5%8F/</loc>
+    <loc>https://icstudio.club/tags/%E6%95%B0%E5%AD%97%E9%9F%B3%E4%B9%90%E6%95%99%E5%AD%A6/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/tags/%E6%95%B0%E5%AD%97%E9%9F%B3%E4%B9%90%E6%95%99%E5%AD%A6/</loc>
+    <loc>https://icstudio.club/categories/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/categories/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/</loc>
+    <loc>https://icstudio.club/tags/%E8%A7%86%E5%A5%8F%E5%B7%A5%E5%85%B7/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/tags/%E8%A7%86%E5%A5%8F%E5%B7%A5%E5%85%B7/</loc>
+    <loc>https://icstudio.club/categories/%E8%A7%86%E5%A5%8F%E7%BB%83%E4%B9%A0/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/categories/%E8%A7%86%E5%A5%8F%E7%BB%83%E4%B9%A0/</loc>
+    <loc>https://icstudio.club/tags/%E8%AF%BB%E8%B0%B1%E8%AE%AD%E7%BB%83/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/tags/%E8%AF%BB%E8%B0%B1%E8%AE%AD%E7%BB%83/</loc>
+    <loc>https://icstudio.club/tags/%E9%9F%B3%E4%B9%90%E5%AD%A6%E4%B9%A0/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/tags/%E9%9F%B3%E4%B9%90%E5%AD%A6%E4%B9%A0/</loc>
+    <loc>https://icstudio.club/categories/%E9%9F%B3%E4%B9%90%E6%95%99%E8%82%B2/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/categories/%E9%9F%B3%E4%B9%90%E6%95%99%E8%82%B2/</loc>
+    <loc>https://icstudio.club/tags/%E9%9F%B3%E4%B9%90%E6%95%99%E8%82%B2%E8%BD%AF%E4%BB%B6/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/tags/%E9%9F%B3%E4%B9%90%E6%95%99%E8%82%B2%E8%BD%AF%E4%BB%B6/</loc>
-    <lastmod>2024-09-01T00:00:00+00:00</lastmod>
+    <loc>https://icstudio.club/tags/feature/</loc>
   </url><url>
-    <loc>http://localhost:1313/categories/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/</loc>
-    <lastmod>2024-03-15T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/</loc>
-    <lastmod>2024-03-15T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/tags/feature/</loc>
-  </url><url>
-    <loc>http://localhost:1313/tags/music/</loc>
+    <loc>https://icstudio.club/tags/music/</loc>
   </url>
 </urlset>
