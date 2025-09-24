@@ -1,17 +1,16 @@
 {
   "build": {
     "env": {
-      "HUGO_VERSION": "0.121.0",
+      "HUGO_VERSION": "0.148.2",
       "NODE_VERSION": "18",
       "TZ": "Asia/Shanghai"
     }
   },
-  "buildCommand": "npm run build:css && hugo --gc --minify --cleanDestinationDir --baseURL https://icstudio.club",
+  "buildCommand": "npm run build:css && hugo --gc --minify --cleanDestinationDir",
   "outputDirectory": "public",
   "installCommand": "npm ci",
   "devCommand": "npm run dev",
   "framework": null,
-  "functions": {},
   "headers": [
     {
       "source": "/(.*)",
