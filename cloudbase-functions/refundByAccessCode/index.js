@@ -4,6 +4,7 @@
  */
 
 const crypto = require('crypto');
+const { checkRefundTimeLimit, formatRefundTimeError } = require('./utils/refundTimeChecker');
 
 exports.main = async (event, context) => {
   console.log('🔄 访问码退款请求:', JSON.stringify(event, null, 2));
@@ -164,7 +165,50 @@ exports.main = async (event, context) => {
       console.log('✅ 直接在 orders 集合中找到订单:', order.out_trade_no);
     }
     console.log('📦 找到订单:', order._id, '订单号:', order.out_trade_no);
-    
+
+    // 🕐 检查退款时间期限（7天内）
+    console.log('🕐 检查退款时间期限...');
+    const timeCheck = checkRefundTimeLimit(order, null);
+
+    if (!timeCheck.valid) {
+      console.log('❌ 超过退款期限:', timeCheck.message);
+
+      // 记录超期退款尝试日志
+      try {
+        await db.collection('refund_logs').add({
+          data: {
+            order_id: order._id,
+            order_no: order.out_trade_no,
+            access_code: access_code ? access_code.toUpperCase() : null,
+            status: 'rejected_time_expired_by_access_code',
+            rejection_reason: timeCheck.message,
+            days_passed: timeCheck.days_passed,
+            purchase_time: timeCheck.purchase_time,
+            attempt_time: new Date(),
+            source: 'refund_by_access_code',
+            order_source: orderSource,
+            request_id: `refund_access_code_expired_${Date.now()}`
+          }
+        });
+      } catch (logError) {
+        console.warn('⚠️ 超期退款日志记录失败:', logError);
+      }
+
+      // 返回时间期限错误
+      const timeError = formatRefundTimeError(timeCheck, order.out_trade_no);
+      return {
+        success: false,
+        error: timeError.error,
+        message: timeError.message,
+        details: timeError.details,
+        code: 'REFUND_TIME_EXPIRED',
+        order_id: order._id,
+        order_no: order.out_trade_no
+      };
+    }
+
+    console.log('✅ 退款时间检查通过:', `购买${timeCheck.days_passed}天后申请退款`);
+
     // 检查订单状态，防止重复退款
     if (order.refund_status === 'refunded') {
       return {

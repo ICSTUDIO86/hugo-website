@@ -161,7 +161,7 @@
           box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
         " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255, 193, 7, 0.4)'" 
            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 193, 7, 0.3)'">
-          🚀 开始使用
+          开始使用
         </button>
       </div>
 
@@ -179,14 +179,38 @@
       </button>
     `;
 
-    modal.appendChild(content);
+    // 组装弹窗结构：modal > scrollContainer > content
+    scrollContainer.appendChild(content);
+    modal.appendChild(scrollContainer);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
     document.body.appendChild(modal);
   }
 
   // 显示支付界面
   function showPaymentInterface(paymentData) {
     hideLoading();
-    
+
     const modal = document.createElement('div');
     modal.id = 'zpay-payment-modal';
     modal.style.cssText = `
@@ -200,7 +224,59 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
+      padding: 20px;
+      box-sizing: border-box;
     `;
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 420px;
+      max-height: 80vh;
+      overflow-y: auto !important;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: #1677FF rgba(0, 0, 0, 0.05);
+    `;
+
+    // 为当前滚动容器添加类名以便样式定位
+    scrollContainer.className = 'alipay-payment-scroll';
+
+    if (!document.getElementById('alipay-payment-scrollbar-styles')) {
+      const style = document.createElement('style');
+      style.id = 'alipay-payment-scrollbar-styles';
+      style.textContent = `
+        .alipay-payment-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .alipay-payment-scroll::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.05);
+          border-radius: 3px;
+        }
+
+        .alipay-payment-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(135deg, #1677FF 0%, #0E5CE6 100%);
+          border-radius: 3px;
+          transition: all 0.3s ease;
+        }
+
+        .alipay-payment-scroll::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(135deg, #0E5CE6 0%, #0A47C7 100%);
+          box-shadow: 0 2px 4px rgba(22, 119, 255, 0.3);
+        }
+
+        .alipay-payment-scroll::-webkit-scrollbar-thumb:active {
+          background: linear-gradient(135deg, #0A47C7 0%, #0638A8 100%);
+        }
+      `;
+      document.head.appendChild(style);
+    }
 
     const content = document.createElement('div');
     content.style.cssText = `
@@ -208,11 +284,10 @@
       padding: 0;
       border-radius: 12px;
       text-align: center;
-      max-width: 420px;
-      width: 90%;
+      width: 100%;
       position: relative;
-      overflow: hidden;
       box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+      min-height: 400px;
     `;
 
     let paymentContent = `
@@ -373,7 +448,303 @@
     `;
 
     content.innerHTML = paymentContent;
-    modal.appendChild(content);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    // 组装弹窗结构：modal(overlay) > scrollContainer > content
+    scrollContainer.appendChild(content);
+    modal.appendChild(scrollContainer);
+    document.body.appendChild(modal);
+
+    // 开始轮询支付状态
+    startPaymentPolling(paymentData.out_trade_no);
+  }
+
+  // 显示微信支付界面
+  function showWxPaymentInterface(paymentData) {
+    hideLoading();
+
+    const modal = document.createElement('div');
+    modal.id = 'zpay-payment-modal';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 420px;
+      max-height: 80vh;
+      overflow-y: auto !important;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: #09BB07 rgba(0, 0, 0, 0.05);
+    `;
+
+    // 为当前滚动容器添加类名以便样式定位
+    scrollContainer.className = 'wx-payment-scroll';
+
+    if (!document.getElementById('wx-payment-scrollbar-styles')) {
+      const style = document.createElement('style');
+      style.id = 'wx-payment-scrollbar-styles';
+      style.textContent = `
+        .wx-payment-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .wx-payment-scroll::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.05);
+          border-radius: 3px;
+        }
+
+        .wx-payment-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(135deg, #09BB07 0%, #00D100 100%);
+          border-radius: 3px;
+          transition: all 0.3s ease;
+        }
+
+        .wx-payment-scroll::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(135deg, #00A300 0%, #00BB00 100%);
+          box-shadow: 0 2px 4px rgba(9, 187, 7, 0.3);
+        }
+
+        .wx-payment-scroll::-webkit-scrollbar-thumb:active {
+          background: linear-gradient(135deg, #008800 0%, #009900 100%);
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    const content = document.createElement('div');
+    content.style.cssText = `
+      background: white;
+      padding: 0;
+      border-radius: 12px;
+      text-align: center;
+      width: 100%;
+      position: relative;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+      min-height: 400px;
+    `;
+
+    let paymentContent = `
+      <!-- 微信风格顶部绿色区域 -->
+      <div style="background: linear-gradient(135deg, #09BB07 0%, #00D100 100%); padding: 24px 30px; color: white; position: relative;">
+        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+          <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+              <path d="M8.691 2.188C8.691 1.531 8.159 1 7.5 1S6.309 1.531 6.309 2.188v11.85c-.76-.648-1.77-1.188-2.809-1.188C1.636 12.85.5 13.987.5 15.35S1.636 17.85 3.5 17.85c1.864 0 3-1.136 3-2.5V6.518c1.09.757 2.295 1.394 3.691 1.394 1.396 0 2.601-.637 3.691-1.394v8.832c0 1.364 1.136 2.5 3 2.5s3-1.136 3-2.5-1.136-2.5-3-2.5c-1.039 0-2.049.54-2.809 1.188V2.188C13.309 1.531 12.777 1 12.118 1s-1.191.531-1.191 1.188v11.85c-.76-.648-1.77-1.188-2.809-1.188C6.254 12.85 5.118 13.987 5.118 15.35s1.136 2.5 3 2.5 3-1.136 3-2.5V6.518c1.09.757 2.295 1.394 3.691 1.394 1.396 0 2.601-.637 3.691-1.394v8.832c0 1.364 1.136 2.5 3 2.5s3-1.136 3-2.5-1.136-2.5-3-2.5Z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 style="color: white; margin: 0; font-size: 18px; font-weight: 600;">确认支付</h3>
+          </div>
+        </div>
+        <div style="background: rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 8px; margin-top: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="color: rgba(255,255,255,0.8); font-size: 14px;">商品</span>
+            <span style="color: white; font-size: 14px; font-weight: 500;">IC Studio 视奏工具</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="color: rgba(255,255,255,0.8); font-size: 14px;">订单号</span>
+            <span style="color: white; font-size: 12px; font-family: monospace;">${paymentData.out_trade_no}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: rgba(255,255,255,0.8); font-size: 14px;">金额</span>
+            <span style="color: white; font-size: 20px; font-weight: 600;">¥${paymentData.order_info?.money || '1.00'}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 主要内容区域 -->
+      <div style="padding: 24px 30px;">
+        <!-- 使用条款确认 - 微信风格 -->
+        <div id="payment-terms-section" style="margin-bottom: 24px; padding: 16px; background: #F0F9FF; border-radius: 8px; border: 1px solid #E0F2FE; text-align: left;">
+          <label style="display: flex; align-items: flex-start; cursor: pointer; font-size: 14px; color: #333;">
+            <input type="checkbox" id="payment-terms-checkbox" onchange="togglePaymentQRCode()" style="margin-right: 12px; margin-top: 2px; transform: scale(1.3); accent-color: #09BB07;">
+            <span>我已阅读并同意 <a href="#" onclick="showPaymentTermsDialog()" style="color: #09BB07; text-decoration: none; font-weight: 500;">《用户协议》</a> 和 <a href="#" onclick="showPaymentPrivacyDialog()" style="color: #09BB07; text-decoration: none; font-weight: 500;">《隐私政策》</a></span>
+          </label>
+        </div>
+
+        <!-- 支付二维码区域（初始隐藏） -->
+        <div id="payment-qrcode-section" style="display: none;">
+    `;
+
+    // 根据API返回的支付方式显示不同内容
+    if (paymentData.img) {
+      // 有二维码图片，直接显示（微信风格）
+      paymentContent += `
+        <div style="background: #F0FDF4; border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid #BBF7D0;">
+          <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+            <div style="width: 24px; height: 24px; background: #09BB07; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 8px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M3,11H5V13H3V11M11,5H13V9H11V5M9,11H13V15H11V13H9V11M15,5H19V9H17V7H15V5M19,13V15H17V11H19V13M21,21H3V19H21V21Z"/>
+              </svg>
+            </div>
+            <span style="color: #09BB07; font-weight: 600; font-size: 16px;">扫码支付</span>
+          </div>
+          <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+            <div style="padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+              <img src="${paymentData.img}" alt="微信支付二维码" style="width: 180px; height: 180px; display: block; border-radius: 4px;">
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <p style="color: #09BB07; font-size: 14px; margin: 0 0 4px 0; font-weight: 500;">请使用微信扫描二维码</p>
+            <p style="color: #666; font-size: 12px; margin: 0;">扫码后确认支付即可获得访问码</p>
+          </div>
+        </div>
+      `;
+    } else if (paymentData.payurl) {
+      // 有支付链接，提供按钮跳转（微信风格）
+      paymentContent += `
+        <div style="background: #F0FDF4; border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid #BBF7D0; text-align: center;">
+          <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #09BB07 0%, #00D100 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.488"/>
+              </svg>
+            </div>
+          </div>
+          <h4 style="color: #09BB07; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">微信支付</h4>
+          <p style="color: #666; font-size: 14px; margin: 0 0 20px 0;">点击下方按钮跳转到微信完成支付</p>
+          <button onclick="window.open('${paymentData.payurl}', '_blank')" style="
+            background: linear-gradient(135deg, #09BB07 0%, #00D100 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(9, 187, 7, 0.3);
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 200px;
+          " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(9, 187, 7, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(9, 187, 7, 0.3)'">
+            立即支付
+          </button>
+          <p style="color: #999; font-size: 12px; margin: 12px 0 0 0;">支付完成后页面将自动更新</p>
+        </div>
+      `;
+    } else if (paymentData.qrcode) {
+      // 有二维码链接但无图片（居中对齐）
+      paymentContent += `
+        <div style="margin: 20px 0; padding: 20px; border: 2px dashed #ddd; border-radius: 8px; display: flex; flex-direction: column; align-items: center;">
+          <p style="margin: 0 0 15px 0; color: #666; text-align: center;">扫码支付</p>
+          <button onclick="window.open('${paymentData.qrcode}', '_blank')" style="
+            background: #f0f0f0;
+            color: #333;
+            padding: 10px 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+          ">打开二维码</button>
+        </div>
+      `;
+    } else {
+      // fallback - 直接显示支付链接（居中对齐）
+      paymentContent += `
+        <div style="margin: 20px 0; display: flex; flex-direction: column; align-items: center;">
+          <p style="color: #f56565; margin-bottom: 15px; text-align: center;">⚠️ 未获取到支付二维码</p>
+          <p style="color: #666; font-size: 14px; text-align: center;">请联系客服处理</p>
+        </div>
+      `;
+    }
+
+    // 支付状态显示区域（微信风格）
+    paymentContent += `
+        <div id="payment-status" style="margin-top: 16px; padding: 16px; background: #F0FDF4; border-radius: 8px; text-align: center; border: 1px solid #BBF7D0;">
+          <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+            <div id="status-icon" style="font-size: 18px; margin-right: 8px;">🔍</div>
+            <div id="status-text" style="color: #09BB07; font-size: 14px; font-weight: 500;">正在检测支付状态...</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 关闭按钮 - 微信风格
+    paymentContent += `
+      <button onclick="window.closePaymentModal()" style="
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255,255,255,0.9);
+        border: none;
+        font-size: 16px;
+        color: rgba(255,255,255,0.8);
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      " onmouseover="this.style.background='rgba(255,255,255,1)'; this.style.color='#999'" onmouseout="this.style.background='rgba(255,255,255,0.9)'; this.style.color='rgba(255,255,255,0.8)'">×</button>
+    `;
+
+    content.innerHTML = paymentContent;
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    // 组装弹窗结构：modal(overlay) > scrollContainer > content
+    scrollContainer.appendChild(content);
+    modal.appendChild(scrollContainer);
     document.body.appendChild(modal);
 
     // 开始轮询支付状态
@@ -452,12 +823,12 @@
     if (modal) modal.remove();
   };
 
-  // 主支付函数 - 使用API接口
+  // 主支付函数 - 支付宝支付
   window.createZPayment = async function() {
-    console.log('[zpay-simple] 开始API接口支付流程');
+    console.log('[zpay-simple] 开始支付宝支付流程');
     console.log('[zpay-simple] createZPayment函数被调用');
-    
-    showLoading('正在创建支付订单');
+
+    showLoading('正在创建支付宝订单');
 
     try {
       // 调用云函数创建支付订单
@@ -478,7 +849,7 @@
       }
 
       const result = await response.json();
-      console.log('[zpay-simple] 支付创建结果:', result);
+      console.log('[zpay-simple] 支付宝支付创建结果:', result);
 
       if (!result.ok) {
         throw new Error(result.msg || '创建支付订单失败');
@@ -488,14 +859,57 @@
       showPaymentInterface(result);
 
     } catch (error) {
-      console.error('[zpay-simple] 支付创建失败:', error);
+      console.error('[zpay-simple] 支付宝支付创建失败:', error);
       hideLoading();
       alert(`支付创建失败: ${error.message}\n\n请检查网络连接或稍后重试`);
     }
   };
 
+  // 微信支付函数
+  window.createWxPayment = async function() {
+    console.log('[zpay-simple] 开始微信支付流程');
+    console.log('[zpay-simple] createWxPayment函数被调用');
+
+    showLoading('正在创建微信支付订单');
+
+    try {
+      // 调用云函数创建微信支付订单
+      const response = await fetch(API_ENDPOINTS.createPayment, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: 'IC Studio 视奏工具授权',
+          money: '48.00',
+          type: 'wxpay'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('[zpay-simple] 微信支付创建结果:', result);
+
+      if (!result.ok) {
+        throw new Error(result.msg || '创建微信支付订单失败');
+      }
+
+      // 显示支付界面
+      showWxPaymentInterface(result);
+
+    } catch (error) {
+      console.error('[zpay-simple] 微信支付创建失败:', error);
+      hideLoading();
+      alert(`微信支付创建失败: ${error.message}\n\n请检查网络连接或稍后重试`);
+    }
+  };
+
   console.log('✅ Z-Pay API接口支付系统已加载');
   console.log('🔒 所有敏感信息安全存储在云函数中');
+  console.log('💳 支持支付宝和微信两种支付方式');
   console.log('📱 支持二维码扫码和跳转支付两种方式');
 
   // 下载应用函数 - 显示平台选择界面
@@ -517,6 +931,22 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
     `;
 
     const content = document.createElement('div');
@@ -525,9 +955,9 @@
       padding: 30px;
       border-radius: 16px;
       text-align: center;
-      max-width: 500px;
-      width: 90%;
+      width: 100%;
       position: relative;
+      box-sizing: border-box;
     `;
 
     content.innerHTML = `
@@ -649,7 +1079,31 @@
       " onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='none'">×</button>
     `;
 
-    modal.appendChild(content);
+    // 组装弹窗结构：modal > scrollContainer > content
+    scrollContainer.appendChild(content);
+    modal.appendChild(scrollContainer);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
     document.body.appendChild(modal);
   }
   
@@ -780,6 +1234,22 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
     `;
 
     const content = document.createElement('div');
@@ -788,9 +1258,9 @@
       padding: 40px;
       border-radius: 16px;
       text-align: center;
-      max-width: 400px;
-      width: 90%;
+      width: 100%;
       position: relative;
+      box-sizing: border-box;
     `;
 
     content.innerHTML = `
@@ -800,7 +1270,31 @@
       <p style="margin: 0; color: #f39c12; font-size: 12px;">💡 刚支付完成的访问码可能需要等待10-15秒<br><small style="color: #999;">中国用户可能因网络环境需要更长时间</small></p>
     `;
 
-    progressModal.appendChild(content);
+    // 组装弹窗结构：progressModal > scrollContainer > content
+    scrollContainer.appendChild(content);
+    progressModal.appendChild(scrollContainer);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
     document.body.appendChild(progressModal);
   }
   
@@ -818,6 +1312,22 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
     `;
 
     const content = document.createElement('div');
@@ -827,9 +1337,9 @@
       padding: 40px;
       border-radius: 16px;
       text-align: center;
-      max-width: 400px;
-      width: 90%;
+      width: 100%;
       position: relative;
+      box-sizing: border-box;
     `;
 
     content.innerHTML = `
@@ -842,7 +1352,31 @@
       <p style="margin: 0; opacity: 0.8; font-size: 14px;" id="countdown-text">3秒后自动跳转...</p>
     `;
 
-    redirectModal.appendChild(content);
+    // 组装弹窗结构：redirectModal > scrollContainer > content
+    scrollContainer.appendChild(content);
+    redirectModal.appendChild(scrollContainer);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
     document.body.appendChild(redirectModal);
     
     // 进度条动画和倒计时
@@ -880,6 +1414,22 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
+      padding: 20px;
+      box-sizing: border-box;
+    `;
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
     `;
 
     const content = document.createElement('div');
@@ -889,9 +1439,9 @@
       padding: 40px;
       border-radius: 16px;
       text-align: center;
-      max-width: 400px;
-      width: 90%;
+      width: 100%;
       position: relative;
+      box-sizing: border-box;
     `;
 
     content.innerHTML = `
@@ -915,7 +1465,31 @@
       </button>
     `;
 
-    successModal.appendChild(content);
+    // 组装弹窗结构：successModal > scrollContainer > content
+    scrollContainer.appendChild(content);
+    successModal.appendChild(scrollContainer);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
     document.body.appendChild(successModal);
   }
 
@@ -953,7 +1527,7 @@
 
   function showTempTermsDialog() {
     const dialog = document.createElement('div');
-    dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100000; display: flex; align-items: center; justify-content: center;';
+    dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100000; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: auto; padding: 20px;';
     dialog.innerHTML = `
       <div style="background: white; padding: 30px; border-radius: 16px; max-width: 700px; max-height: 80vh; overflow-y: auto; margin: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
         <h3 style="color: #2d3748; margin-bottom: 20px; text-align: center;">📜 用户协议</h3>
@@ -999,7 +1573,7 @@
 
   function showTempPrivacyDialog() {
     const dialog = document.createElement('div');
-    dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100000; display: flex; align-items: center; justify-content: center;';
+    dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100000; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: auto; padding: 20px;';
     dialog.innerHTML = `
       <div style="background: white; padding: 30px; border-radius: 16px; max-width: 700px; max-height: 80vh; overflow-y: auto; margin: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
         <h3 style="color: #2d3748; margin-bottom: 20px; text-align: center;">🔒 隐私政策</h3>

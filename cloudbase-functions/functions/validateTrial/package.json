@@ -1,9 +1,0 @@
-{
-  "name": "validateTrial",
-  "version": "1.0.0",
-  "description": "严格的服务端试用验证",
-  "main": "index.js",
-  "dependencies": {
-    "@cloudbase/node-sdk": "^2.2.0"
-  }
-}

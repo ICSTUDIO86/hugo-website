@@ -9,6 +9,7 @@
  */
 
 const cloud = require('@cloudbase/node-sdk')
+const { checkRefundTimeLimit, formatRefundTimeError } = require('../../../cloudbase-functions/utils/refundTimeChecker')
 
 const app = cloud.init({
   env: cloud.SYMBOL_CURRENT_ENV
@@ -299,22 +300,27 @@ async function checkRefundEligibility(data, clientIp, userAgent) {
     }
   }
   
-  // 检查30天期限
-  const paidAt = new Date(order.paidAt)
-  const now = new Date()
-  const daysSincePurchase = Math.floor((now - paidAt) / (24 * 60 * 60 * 1000))
-  
-  if (daysSincePurchase > REFUND_PERIOD_DAYS) {
+  // 🕐 检查退款时间期限（7天内）- 使用统一时间检查器
+  const orderRecord = {
+    paid_at: order.paidAt,
+    paidAt: order.paidAt // 兼容不同字段名
+  };
+
+  const timeCheck = checkRefundTimeLimit(orderRecord);
+
+  if (!timeCheck.valid) {
     return {
       success: false,
       eligible: false,
-      message: `购买已超过${REFUND_PERIOD_DAYS}天，超出退款期限`,
+      message: timeCheck.message,
       reason: 'REFUND_PERIOD_EXPIRED',
-      purchaseDate: paidAt.toLocaleDateString('zh-CN'),
-      daysSincePurchase: daysSincePurchase,
-      refundDeadline: new Date(paidAt.getTime() + REFUND_PERIOD_MS).toLocaleDateString('zh-CN')
+      purchaseDate: timeCheck.purchase_time_str,
+      daysSincePurchase: timeCheck.days_passed,
+      refundDeadline: new Date(new Date(order.paidAt).getTime() + REFUND_PERIOD_MS).toLocaleDateString('zh-CN')
     }
   }
+
+  const daysSincePurchase = timeCheck.days_passed;
   
   await logRefundAction('ELIGIBILITY_CHECK', 'SUCCESS', {
     orderId: orderId,

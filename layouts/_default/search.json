@@ -1,5 +1,15 @@
 {{- $.Scratch.Add "index" slice -}}
 {{- range where site.RegularPages "Type" "in" site.Params.mainSections -}}
-  {{- $.Scratch.Add "index" (dict "title" .Title "href" .Permalink "content" (.Plain | truncate 500) "summary" .Summary "date" .Date.Format "2006-01-02") -}}
+  {{- $.Scratch.Add "index" (dict
+    "title" .Title
+    "href" .Permalink
+    "content" (.Plain | truncate 3000)
+    "summary" .Summary
+    "description" .Description
+    "date" .Date.Format "2006-01-02"
+    "type" .Type
+    "tags" (.Params.tags | default slice)
+    "categories" (.Params.categories | default slice)
+  ) -}}
 {{- end -}}
 {{- $.Scratch.Get "index" | jsonify -}}

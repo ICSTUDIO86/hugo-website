@@ -1,9 +1,0 @@
-{
-  "name": "testRefund",
-  "version": "1.0.0", 
-  "description": "Test refund function",
-  "main": "index.js",
-  "dependencies": {
-    "@cloudbase/node-sdk": "^2.4.1"
-  }
-}

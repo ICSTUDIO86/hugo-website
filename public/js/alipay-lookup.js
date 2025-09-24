@@ -11,8 +11,9 @@ function showAlipayLookupDialog() {
     const dialog = document.createElement('div');
     dialog.id = 'alipay-lookup-dialog';
     dialog.innerHTML = `
-        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;">
-            <div style="background: white; padding: 40px; border-radius: 16px; max-width: 500px; width: 90%; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 0; margin: 0; box-sizing: border-box;" id="alipay-modal-overlay">
+            <div style="width: 100%; max-width: 500px; max-height: 100vh; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 20px; box-sizing: border-box; margin: 20px;" id="alipay-modal-scroll-container">
+                <div style="background: white; padding: 40px; border-radius: 16px; width: 100%; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); box-sizing: border-box; min-height: min-content;">
                 <div style="margin-bottom: 30px; text-align: center;">
                     <h1 style="color: #333; margin-bottom: 10px;">🔍 通过订单号找回访问码</h1>
                 </div>
@@ -48,11 +49,46 @@ function showAlipayLookupDialog() {
                         • 任意一种订单号都可以找回对应的访问码
                     </p>
                 </div>
+                </div>
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(dialog);
+
+    // 专用移动端滚动事件处理 - 适用于所有移动浏览器
+    const modalOverlay = dialog.querySelector('#alipay-modal-overlay');
+    const modalScrollContainer = dialog.querySelector('#alipay-modal-scroll-container');
+
+    if (modalOverlay && modalScrollContainer) {
+        // 点击背景关闭弹窗
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                closeAlipayLookupDialog();
+            }
+        });
+
+        // 防止滚动事件传播到背景 - 适用于所有移动浏览器
+        modalScrollContainer.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        }, { passive: true });
+
+        modalScrollContainer.addEventListener('touchmove', function(e) {
+            e.stopPropagation();
+        }, { passive: true });
+
+        modalScrollContainer.addEventListener('wheel', function(e) {
+            e.stopPropagation();
+        }, { passive: false });
+
+        modalScrollContainer.addEventListener('scroll', function(e) {
+            e.stopPropagation();
+        }, { passive: true });
+
+        modalScrollContainer.addEventListener('touchend', function(e) {
+            e.stopPropagation();
+        }, { passive: true });
+    }
     
     // 聚焦到输入框
     setTimeout(() => {

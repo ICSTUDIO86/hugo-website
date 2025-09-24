@@ -183,63 +183,20 @@ class TrialLimiter {
           <p style="color: #3498db;">正在验证您的权限...</p>
         </div>
       `;
-    } else {
-      statusContent = `
-        <div class="trial-welcome">
-          <h3>🎵 欢迎使用 IC 视奏工具！</h3>
-          <p>现在由智能计数器系统管理使用限制</p>
-        </div>
-      `;
-    }
 
     statusDisplayDiv.innerHTML = statusContent;
   }
 
-  // 确保访问码区域存在（保持不变）
-  ensureAccessCodeArea() {
-    const statusElement = document.getElementById('trial-status');
-    if (!statusElement) return;
-
-    // 检查是否已有访问码区域
-    let accessCodeDiv = statusElement.querySelector('#access-code-area');
-    if (accessCodeDiv) {
-      return; // 已存在，不需要重新创建
-    }
-
-    // 创建访问码区域（只创建一次）
-    accessCodeDiv = document.createElement('div');
-    accessCodeDiv.id = 'access-code-area';
-    accessCodeDiv.style.marginTop = '20px';
-
-    accessCodeDiv.innerHTML = `
-      <h3 style="color: #667eea; margin-bottom: 10px;">输入访问码</h3>
-      <div style="display: flex; gap: 10px; align-items: center;">
-        <input type="text" id="access-code-input" placeholder="输入访问码(11-12位)"
-               style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; text-transform: uppercase;"
-               maxlength="12">
-        <button onclick="directVerifyCode()"
-                style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
-          验证
-        </button>
-      </div>
-      <div id="verify-result" style="margin-top: 10px; font-size: 14px;"></div>
-      <div style="text-align: center;">
-        <button id="forgot-code-btn"
-                onclick="showForgotCodeDialog()"
-                style="background: none; border: none; color: #888; font-size: 14px; text-decoration: underline; cursor: pointer; padding: 8px; transition: color 0.3s ease;"
-                onmouseover="this.style.color='#667eea';"
-                onmouseout="this.style.color='#888';">
-          忘记访问码？点击找回
-        </button>
-      </div>
-    `;
-
-    statusElement.appendChild(accessCodeDiv);
-    console.log('✅ 访问码输入区域已创建');
-  }
-
   // 初始化权限管理器（简化版）
   async init() {
+    // 检查早期权限检测结果
+    if (window.IC_EARLY_PREMIUM_DETECTED === true) {
+      console.log('🚀 Trial-Limiter: 早期检测到完整版用户，跳过试用设置');
+      this.ensureToolAccess();
+      // 不显示任何试用状态，完整版用户不需要看到
+      return true;
+    }
+
     const status = this.checkTrialStatus();
 
     if (status.hasAccess) {

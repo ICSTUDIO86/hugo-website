@@ -1,9 +1,0 @@
-{
-  "name": "syncAlipayAccounts",
-  "version": "1.0.0",
-  "description": "Sync Alipay account information between user_accounts and codes/orders collections",
-  "main": "index.js",
-  "dependencies": {
-    "@cloudbase/node-sdk": "^2.4.1"
-  }
-}

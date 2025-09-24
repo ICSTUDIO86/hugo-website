@@ -1,0 +1,66 @@
+{
+  "build": {
+    "env": {
+      "HUGO_VERSION": "0.121.0",
+      "NODE_VERSION": "18",
+      "TZ": "Asia/Shanghai"
+    }
+  },
+  "buildCommand": "npm run build:css && hugo --gc --minify --cleanDestinationDir --baseURL https://icstudio.club",
+  "outputDirectory": "public",
+  "installCommand": "npm ci",
+  "devCommand": "npm run dev",
+  "framework": null,
+  "functions": {},
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    },
+    {
+      "source": "/css/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/js/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/images/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/sight-reading-tool",
+      "destination": "/sight-reading-tool/",
+      "permanent": true
+    }
+  ],
+  "trailingSlash": true,
+  "cleanUrls": true
+}

@@ -10,15 +10,20 @@
     {{ if $blogSection }}
       {{- partial "content/card" $blogSection -}}
     {{ end }}
-    
+
     {{ $lessonsPage := site.GetPage "lessons.md" }}
     {{ if $lessonsPage }}
       {{- partial "content/card" $lessonsPage -}}
     {{ end }}
-    
-    {{ $sightReadingPage := site.GetPage "sight-reading-tool.md" }}
+
+    {{ $sightReadingPage := site.GetPage "sight-reading-tool" }}
     {{ if $sightReadingPage }}
       {{- partial "content/card" $sightReadingPage -}}
+    {{ else }}
+      <!-- Fallback: Use range to find sight-reading-tool page -->
+      {{ range where site.RegularPages "RelPermalink" "/sight-reading-tool/" }}
+        {{- partial "content/card" . -}}
+      {{ end }}
     {{ end }}
   </div>
 </section>

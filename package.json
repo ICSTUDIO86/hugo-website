@@ -12,7 +12,10 @@
     "build": "run-p build:*",
     "build:css": "npx tailwindcss -i ./assets/input.css -o ./static/css/main.css --minify",
     "build:js": "echo 'No JS build needed'",
-    "optimize": "echo 'Static resources optimization completed'"
+    "optimize": "echo 'Static resources optimization completed'",
+    "vercel-build": "npm run build:css && hugo --gc --minify --cleanDestinationDir",
+    "preview": "hugo server --disableFastRender --navigateToChanged",
+    "clean": "rm -rf public resources .hugo_build.lock"
   },
   "keywords": [
     "hugo",

@@ -1,9 +1,0 @@
-{
-  "name": "trialCounter",
-  "version": "1.0.0",
-  "description": "严格的30条旋律试用计数系统",
-  "main": "index.js",
-  "dependencies": {
-    "@cloudbase/node-sdk": "^2.2.0"
-  }
-}

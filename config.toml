@@ -13,8 +13,8 @@ pageRef = 'blog'
 weight = 12
 
 [[menus.main]]
-name = '音乐内容'
-pageRef = '音乐内容'
+name = '视奏工具'
+url = 'https://icstudio.club/tools/sight-reading-generator.html'
 weight = 20
 
 [module]
@@ -31,7 +31,7 @@ weight = 20
   logo = "images/ICLOGO.png"
   favicon_icon = "ICLOGO.png"
   description = "欢迎来到 IC Studio 官方网站！一个分享音乐学习过程与经验的平台。"
-  mainSections = ["blog", "音乐内容"]
+  mainSections = ["blog", "视奏工具"]
 
 [pagination]
   pagerSize = 6

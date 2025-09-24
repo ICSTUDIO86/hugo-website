@@ -76,9 +76,18 @@ class PremiumUIManager {
 
   // 设置UI界面
   setupUI() {
+    // 检查早期权限检测结果，避免重复处理
+    if (window.IC_EARLY_PREMIUM_DETECTED === true) {
+      console.log('🚀 Premium-UI-Manager: 早期检测到完整版用户，跳过UI设置');
+      // 早期检测已经隐藏了试用界面，这里只需要确保完整版功能启用
+      this.enableAllFeatures();
+      this.showPremiumWelcome();
+      return;
+    }
+
     // 首先清理测试访问码
     this.cleanupTestAccessCodes();
-    
+
     const hasAccess = this.hasValidAccessCode();
     console.log('🎨 设置UI界面，用户状态:', hasAccess ? '付费用户' : '免费用户');
 

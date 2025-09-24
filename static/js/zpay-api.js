@@ -117,8 +117,24 @@
       align-items: center;
       justify-content: center;
       z-index: 99999;
+      padding: 20px;
+      box-sizing: border-box;
     `;
-    
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+      width: 100%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      box-sizing: border-box;
+    `;
+
     const modal = document.createElement('div');
     modal.style.cssText = `
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -127,8 +143,9 @@
       border-radius: 16px;
       text-align: center;
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-      max-width: 400px;
+      width: 100%;
       animation: slideIn 0.3s ease-out;
+      box-sizing: border-box;
     `;
     
     modal.innerHTML = `
@@ -157,7 +174,31 @@
       document.head.appendChild(style);
     }
     
-    overlay.appendChild(modal);
+    // 组装弹窗结构：overlay > scrollContainer > modal
+    scrollContainer.appendChild(modal);
+    overlay.appendChild(scrollContainer);
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+      e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+
     document.body.appendChild(overlay);
     
     return overlay;

@@ -487,63 +487,79 @@ class MelodyCounterSystem {
     document.head.appendChild(style);
   }
 
-  // 检测是否为无痕浏览模式（增强版）
+  // 检测是否为无痕浏览模式（只检测最可靠的指标）
   isLikelyPrivateBrowsing() {
     try {
       const indicators = [];
 
-      // 检查localStorage限制
+      // 识别浏览器类型
+      const userAgent = navigator.userAgent;
+      const isChrome = /Chrome/.test(userAgent) && !/Edge/.test(userAgent);
+      const isFirefox = /Firefox/.test(userAgent);
+      const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
+      const isEdge = /Edge/.test(userAgent) || /Edg\//.test(userAgent);
+
+      console.log('🌐 浏览器检测:', { isChrome, isFirefox, isSafari, isEdge });
+
+      // 只检测最核心和可靠的无痕模式指标
+
+      // 1. 存储检测（最重要）
       try {
-        const testKey = '_private_test_' + Date.now();
+        const testKey = '_incognito_test_' + Date.now();
         localStorage.setItem(testKey, '1');
         localStorage.removeItem(testKey);
       } catch (e) {
+        // localStorage 被阻止是无痕模式的强指标
         indicators.push('localStorage-blocked');
+        console.log('  ⚠️ localStorage 被阻止');
       }
 
-      // 检查sessionStorage限制
-      try {
-        const testKey = '_session_test_' + Date.now();
-        sessionStorage.setItem(testKey, '1');
-        sessionStorage.removeItem(testKey);
-      } catch (e) {
-        indicators.push('sessionStorage-blocked');
+      // 2. Chrome特定：文件系统API检测
+      if (isChrome && !window.webkitRequestFileSystem) {
+        indicators.push('chrome-no-filesystem');
+        console.log('  ⚠️ Chrome 无文件系统API');
       }
 
-      // IndexedDB检测
-      if (!window.indexedDB) {
-        indicators.push('no-indexedDB');
+      // 3. Firefox特定：IndexedDB检测（在 Private 模式下被禁用）
+      if (isFirefox && !window.indexedDB) {
+        indicators.push('firefox-no-indexedDB');
+        console.log('  ⚠️ Firefox 无 IndexedDB');
       }
 
-      // WebRTC检测
-      if (!window.RTCPeerConnection && !window.webkitRTCPeerConnection) {
-        indicators.push('no-webrtc');
-      }
-
-      // 通知权限检测
-      if (navigator.permissions && Notification.permission === 'default') {
+      // 4. Safari特定：存储配额检测
+      if (isSafari) {
         try {
-          navigator.permissions.query({name: 'notifications'}).then(result => {
-            if (result.state === 'denied') {
-              indicators.push('notifications-denied');
-            }
-          });
+          const testData = 'x'.repeat(1024 * 100); // 100KB测试
+          const testKey = '_safari_quota_' + Date.now();
+          localStorage.setItem(testKey, testData);
+          localStorage.removeItem(testKey);
         } catch (e) {
-          indicators.push('permissions-blocked');
+          indicators.push('safari-quota-limited');
+          console.log('  ⚠️ Safari 存储配额受限');
         }
       }
 
-      // 如果有多个指示器，很可能是无痕模式
-      const isPrivate = indicators.length >= 1;
+      // 严格判断：必须有明确的存储限制才认为是无痕模式
+      const hasStorageRestriction = indicators.some(indicator =>
+        indicator.includes('localStorage-blocked') ||
+        indicator.includes('quota-limited') ||
+        indicator.includes('indexedDB')
+      );
 
-      console.log('🕵️ 无痕浏览检测:', {
+      // 只有真正检测到存储限制才判定为无痕模式
+      const isPrivate = hasStorageRestriction && indicators.length >= 1;
+
+      console.log('🕵️ 简化无痕检测:', {
+        browser: { isChrome, isFirefox, isSafari, isEdge },
         indicators: indicators,
-        isLikelyPrivate: isPrivate
+        hasStorageRestriction: hasStorageRestriction,
+        isPrivateBrowsing: isPrivate
       });
 
       return isPrivate;
     } catch (error) {
       console.error('❌ 无痕浏览检测失败:', error);
+      // 检测失败时，假设是普通模式，避免误判
       return false;
     }
   }
@@ -827,6 +843,13 @@ class MelodyCounterSystem {
 
   // 显示计数状态
   showCounterStatus(status) {
+    // 🔥 优先检查：完整版用户权限（最高优先级）
+    if (this.hasValidLocalAccessCode()) {
+      console.log('🎫 showCounterStatus: 检测到完整版用户，隐藏所有试用UI');
+      this.hideAllTrialUI();
+      return; // 完整版用户不显示任何试用状态
+    }
+
     // 查找或创建状态显示区域
     let statusDiv = document.getElementById('melody-counter-status');
     if (!statusDiv) {
@@ -849,48 +872,35 @@ class MelodyCounterSystem {
 
     if (!statusDiv) return;
 
-    // 根据状态显示不同的信息
-    const modePrefix = status.isLocalMode ? '🏠 [本地模式] ' : '';
-
+    // 根据状态显示简洁的试用信息
     if (status.hasFullAccess) {
       statusDiv.style.display = 'none';
-
       // 隐藏所有试用相关的UI元素
       this.hideAllTrialUI();
     } else if (status.expired) {
+      // 试用结束时显示提示
       statusDiv.style.background = '#ffebee';
       statusDiv.style.color = '#c62828';
       statusDiv.innerHTML = `
-        <div style="font-weight: 600; margin-bottom: 8px;">😔 ${modePrefix}试用次数已用完</div>
-        <div style="font-size: 12px;">您已生成了 ${status.used || 20} 条旋律</div>
-        <div style="font-size: 12px; margin-top: 8px;">${status.isLocalMode ? '本地模式限制' : '请购买完整版继续使用'}</div>
+        <div style="font-weight: 600; margin-bottom: 8px;">😔 试用次数已用完</div>
+        <div style="font-size: 12px; margin-top: 8px;">请购买完整版继续使用</div>
       `;
     } else if (status.error) {
+      // 错误状态
       statusDiv.style.background = '#fff3e0';
       statusDiv.style.color = '#e65100';
       statusDiv.innerHTML = `⚠️ ${status.error}`;
-    } else if (status.isFirstTime) {
-      statusDiv.style.background = '#e3f2fd';
-      statusDiv.style.color = '#1565c0';
-      statusDiv.innerHTML = `
-        <div style="font-weight: 600; margin-bottom: 8px;">🎉 ${modePrefix}欢迎试用！</div>
-        <div>您有 <strong>${status.total || 20}</strong> 条免费旋律</div>
-      `;
     } else {
-      const percentage = ((status.used || 0) / (status.total || 20)) * 100;
-      const progressColor = percentage > 80 ? '#ff9800' : '#4caf50';
+      // 显示简洁的剩余次数信息（无"免费试用模式"等文字）
+      const used = status.used || 0;
+      const total = status.total || 20;
+      const remaining = status.remaining || (total - used);
 
       statusDiv.style.background = '#f5f5f5';
       statusDiv.style.color = '#424242';
       statusDiv.innerHTML = `
-        <div style="margin-bottom: 8px;">
-          ${modePrefix}已使用: <strong>${status.used || 0}</strong> / ${status.total || 20} 条旋律
-        </div>
-        <div style="background: #e0e0e0; height: 6px; border-radius: 3px; overflow: hidden;">
-          <div style="background: ${progressColor}; width: ${percentage}%; height: 100%; transition: width 0.3s ease;"></div>
-        </div>
-        <div style="font-size: 12px; margin-top: 8px; color: #757575;">
-          剩余: <strong>${status.remaining || 0}</strong> 条
+        <div style="text-align: center; font-size: 14px;">
+          剩余试用: <strong>${remaining}</strong> / ${total} 次
         </div>
       `;
     }
@@ -1095,10 +1105,55 @@ class MelodyCounterSystem {
       // 预加载设备指纹
       this.preloadDeviceFingerprint();
 
-      // 检查初始状态
-      const status = await this.requestMelodyGeneration('check');
+      // 🔥 优先检查：完整版用户权限（最高优先级）
+      if (this.hasValidLocalAccessCode()) {
+        console.log('🎫 初始化检测到完整版用户，跳过所有限制');
+        const fullAccessStatus = {
+          success: true,
+          allowed: true,
+          hasFullAccess: true,
+          expired: false,
+          used: 0,
+          total: Infinity,
+          remaining: Infinity,
+          message: '',
+          isFirstTime: false
+        };
+
+        this.currentStatus = fullAccessStatus;
+        this.showCounterStatus(fullAccessStatus);
+        this.updateGenerateButton(fullAccessStatus);
+        this.hideAllTrialUI();
+        return;
+      }
+
+      // 检测无痕模式
+      const isPrivateBrowsing = this.isLikelyPrivateBrowsing();
+      console.log('🕵️ 初始化无痕模式检测:', isPrivateBrowsing);
+
+      let status;
+      if (isPrivateBrowsing) {
+        // 无痕模式：使用本地计数
+        const privateUsage = this.getPrivateBrowsingUsage();
+        status = {
+          success: true,
+          allowed: privateUsage < 3,
+          expired: privateUsage >= 3,
+          used: privateUsage,
+          total: 3,
+          remaining: Math.max(0, 3 - privateUsage),
+          message: privateUsage >= 3 ? '无痕浏览试用已用完' : `无痕模式剩余 ${Math.max(0, 3 - privateUsage)} 条旋律`,
+          isPrivateMode: true
+        };
+      } else {
+        // 正常模式：检查服务端状态
+        status = await this.requestMelodyGeneration('check');
+      }
+
       console.log('📊 后台状态检查完成:', {
+        isPrivateMode: status.isPrivateMode,
         used: status.used,
+        total: status.total,
         remaining: status.remaining,
         expired: status.expired
       });
@@ -1174,7 +1229,9 @@ class MelodyCounterSystem {
         'button[onclick*="upgrade"]',
         'button[onclick*="purchase"]',
         '.purchase-prompt',
-        '.upgrade-prompt'
+        '.upgrade-prompt',
+        '#melody-counter-status',
+        '#trial-status'  // 添加主要的试用状态元素
       ];
 
       selectors.forEach(selector => {
@@ -1200,7 +1257,8 @@ class MelodyCounterSystem {
         if (text.includes('试用次数已用完') ||
             text.includes('请购买完整版') ||
             text.includes('试用已结束') ||
-            text.includes('条旋律')) {
+            text.includes('条旋律') ||
+            text.includes('剩余试用')) {
           element.style.display = 'none';
         }
       });

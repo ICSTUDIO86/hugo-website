@@ -25,19 +25,39 @@ function showRealRefundSuccess(data = {
         justify-content: center;
         z-index: 10000;
         backdrop-filter: blur(5px);
+        padding: 20px;
+        box-sizing: border-box;
     `;
-    
-    // 创建弹窗内容（与真实代码完全一致）
-    overlay.innerHTML = `
-        <div id="refund-modal" style="
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 450px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: modalAppear 0.3s ease-out;
-        ">
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+        width: 100%;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+        box-sizing: border-box;
+    `;
+    scrollContainer.id = 'refund-modal-scroll-container';
+
+    // 创建弹窗内容
+    const modal = document.createElement('div');
+    modal.id = 'refund-modal';
+    modal.style.cssText = `
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: modalAppear 0.3s ease-out;
+        box-sizing: border-box;
+    `;
+
+    modal.innerHTML = `
             <div style="text-align: center;">
                 <!-- 成功图标 -->
                 <div style="
@@ -143,9 +163,40 @@ function showRealRefundSuccess(data = {
         }
     `;
     document.head.appendChild(style);
-    
+
+    // 组装弹窗结构：overlay > scrollContainer > modal
+    scrollContainer.appendChild(modal);
+    overlay.appendChild(scrollContainer);
     document.body.appendChild(overlay);
-    
+
+    // 添加移动端滚动事件处理
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+            overlay.remove();
+        }
+    });
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+        e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+        e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+        e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+        e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+        e.stopPropagation();
+    }, { passive: true });
+
     // 绑定确认按钮事件
     const confirmBtn = document.getElementById('success-confirm-btn');
     if (confirmBtn) {
@@ -181,19 +232,39 @@ function showRealRefundDialog() {
         justify-content: center;
         z-index: 10000;
         backdrop-filter: blur(5px);
+        padding: 20px;
+        box-sizing: border-box;
     `;
-    
-    // 创建弹窗内容（与真实代码完全一致）
-    overlay.innerHTML = `
-        <div id="refund-modal" style="
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 450px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: modalAppear 0.3s ease-out;
-        ">
+
+    // 创建滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.cssText = `
+        width: 100%;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+        box-sizing: border-box;
+    `;
+    scrollContainer.id = 'refund-dialog-scroll-container';
+
+    // 创建弹窗内容
+    const modal = document.createElement('div');
+    modal.id = 'refund-modal';
+    modal.style.cssText = `
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: modalAppear 0.3s ease-out;
+        box-sizing: border-box;
+    `;
+
+    modal.innerHTML = `
             <!-- 标题 -->
             <div style="text-align: center; margin-bottom: 25px;">
                 <h2 style="
@@ -353,8 +424,39 @@ function showRealRefundDialog() {
         }
     `;
     document.head.appendChild(style);
-    
+
+    // 组装弹窗结构：overlay > scrollContainer > modal
+    scrollContainer.appendChild(modal);
+    overlay.appendChild(scrollContainer);
     document.body.appendChild(overlay);
+
+    // 添加移动端滚动事件处理
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+            overlay.remove();
+        }
+    });
+
+    // 防止滚动事件传播到背景
+    scrollContainer.addEventListener('touchstart', function(e) {
+        e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchmove', function(e) {
+        e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('wheel', function(e) {
+        e.stopPropagation();
+    }, { passive: false });
+
+    scrollContainer.addEventListener('scroll', function(e) {
+        e.stopPropagation();
+    }, { passive: true });
+
+    scrollContainer.addEventListener('touchend', function(e) {
+        e.stopPropagation();
+    }, { passive: true });
     
     // 绑定事件
     const cancelBtn = document.getElementById('cancel-refund-btn');

@@ -1,9 +1,0 @@
-{
-  "name": "bindAlipayAccount",
-  "version": "1.0.0",
-  "description": "Bind Alipay account to access codes and orders",
-  "main": "index.js",
-  "dependencies": {
-    "@cloudbase/node-sdk": "^2.4.1"
-  }
-}

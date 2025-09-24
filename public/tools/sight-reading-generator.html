@@ -7,7 +7,7 @@
     
     Author: Igor Chen
     Website: https://icstudio.club
-    Email: service@icstudio.club
+    Email: icstudio@fastmail.com
     
     This software provides professional-grade sight-reading melody generation
     with advanced music theory features and Apple-inspired design.
@@ -15,321 +15,53 @@
 <html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IC Studio 视奏工具 - 专业级视奏旋律生成器</title>
+    <title>IC 视奏工具</title>
     
-    <!-- Favicon - 多种格式支持 -->
-    <link rel="icon" type="image/svg+xml" href="sight-reading-icon.svg">
-    <link rel="alternate icon" href="sight-reading-icon.svg">
-    <link rel="shortcut icon" type="image/svg+xml" href="sight-reading-icon.svg">
-    <link rel="apple-touch-icon" href="sight-reading-icon.svg">
-    <link rel="mask-icon" href="sight-reading-icon.svg" color="#007AFF">
-    
-    <!-- Preconnect to external domains -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
-
-    <!-- Umami Analytics -->
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
-
-    <!-- Critical CSS - Inlined for faster loading and fallback -->
-    <style>
-        /* 完整的关键样式 - 确保页面在任何情况下都能正常显示 */
-        :root {
-            --primary-blue: #007AFF;
-            --secondary-blue: #5AC8FA;
-            --neutral-white: #FFFFFF;
-            --neutral-light: #F2F2F7;
-            --neutral-medium: #C7C7CC;
-            --neutral-dark: #8E8E93;
-            --neutral-black: #1D1D1F;
-            --accent-green: #34C759;
-            --accent-orange: #FF9500;
-            --background-blur: rgba(255, 255, 255, 0.8);
-            --card-shadow: rgba(0, 0, 0, 0.04);
-            --border-color: rgba(0, 0, 0, 0.06);
-            --body-bg: #f5f5f7;
-            --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        }
-        [data-theme="dark"] {
-            --primary-blue: #0A84FF;
-            --neutral-white: #2C2C2E;
-            --neutral-light: #3A3A3C;
-            --neutral-medium: #48484A;
-            --neutral-dark: #8E8E93;
-            --neutral-black: #F2F2F7;
-            --accent-green: #32D74B;
-            --accent-orange: #FF9F0A;
-            --background-blur: rgba(44, 44, 46, 0.8);
-            --card-shadow: rgba(0, 0, 0, 0.4);
-            --border-color: rgba(255, 255, 255, 0.1);
-            --body-bg: #1C1C1E;
-        }
-        body {
-            font-family: var(--font-system);
-            background: var(--body-bg);
-            color: var(--neutral-black);
-            margin: 0;
-            padding: 0;
-            -webkit-font-smoothing: antialiased;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            background: var(--neutral-white);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 20px var(--card-shadow);
-        }
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            font-size: 18px;
-        }
-        /* 关键组件样式 - 确保基本布局始终正常 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: #ffffff;
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-radius: 18px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 8px 32px var(--card-shadow);
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            position: relative;
-            z-index: 1;
-            border-top: 8px solid #007bff58;
-        }
-        .header {
-            background: #007bff05;
-            color: #1d1d1f;
-            padding: 40px 30px;
-            text-align: center;
-            border-bottom: 1px solid #d2d2d7;
-        }
-        .header h1 {
-            font-family: var(--font-system);
-            font-size: 3.2rem;
-            margin-bottom: 12px;
-            font-weight: 400;
-            letter-spacing: -0.03em;
-            line-height: 1.1;
-            color: #1d1d1f;
-        }
-        .control-panel {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            padding: 30px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-        }
-        .control-section {
-            background: #ffffff;
-            padding: 22px;
-            border-radius: 14px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(0, 0, 0, 0.04);
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        .control-section:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
-            border-color: rgba(0, 122, 255, 0.1);
-        }
-        .primary-button {
-            width: 100%;
-            background: linear-gradient(135deg, #007aff 0%, #5ac8fa 100%);
-            color: #FFFFFF;
-            padding: 14px 28px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.25);
-            position: relative;
-            overflow: hidden;
-        }
-        .primary-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 122, 255, 0.35);
-        }
-        select, input {
-            width: 100%;
-            padding: 14px 18px;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 400;
-            color: #1d1d1f;
-            background: #ffffff;
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-        }
-        select:focus, input:focus {
-            outline: none;
-            border-color: #007aff;
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
-            transform: translateY(-1px);
-        }
-        #scoreContainer {
-            margin: 30px;
-            padding: 40px;
-            background: #ffffff;
-            border-radius: 14px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-            min-height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(0, 0, 0, 0.04);
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #6e6e73;
-            letter-spacing: -0.01em;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@300;400;500;600;700&family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- 主样式文件 - 使用绝对路径确保强制刷新时能正确加载 -->
-    <link rel="stylesheet" href="/tools/apple-ui-styles.css?v=20250908">
-    
-    <!-- 字体文件 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.16/400.css">
-    
-    <!-- OpenSheetMusicDisplay from CDN -->
-    <script async src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.8.5/build/opensheetmusicdisplay.min.js"></script>
+    <!-- OpenSheetMusicDisplay -->
+    <script src="./视奏旋律生成器 - 终极版_files/opensheetmusicdisplay.min.js"></script>
 
-    <!-- OSMD Loader Fix - 确保库正确加载 -->
-    <script src="js/osmd-loader-fix.js"></script>
-    <script src="js/osmd-quick-fix.js"></script>
+    <!-- 删除SpessaSynth - 改用更简单的Web Audio API方案 -->
 
-    <!-- Umami Analytics -->
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
+    <link rel="stylesheet" href="apple-ui-styles.css">
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div style="text-align: center;">
-            <div>正在加载 IC Studio 视奏工具...</div>
-            <div style="font-size: 14px; margin-top: 10px; opacity: 0.7;">请稍候片刻</div>
-        </div>
-    </div>
-    
-    <!-- Immediate loading hide script -->
-    <script>
-    (function() {
-        console.log('🚀 Immediate loading hide script started');
-        
-        // Hide loading after 1 second, no matter what
-        setTimeout(function() {
-            var loadingOverlay = document.getElementById('loadingOverlay');
-            if (loadingOverlay) {
-                console.log('⚡ Force hiding loading overlay (1 second timer)');
-                loadingOverlay.style.opacity = '0';
-                loadingOverlay.style.transition = 'opacity 0.3s ease';
-                setTimeout(function() {
-                    loadingOverlay.style.display = 'none';
-                    console.log('✅ Loading overlay forcefully hidden');
-                }, 300);
-            }
-        }, 1000);
-        
-        // Emergency fallback - hide after 500ms
-        setTimeout(function() {
-            var loadingOverlay = document.getElementById('loadingOverlay');
-            if (loadingOverlay && loadingOverlay.style.display !== 'none') {
-                console.log('🆘 Emergency fallback - hiding loading overlay');
-                loadingOverlay.style.display = 'none';
-            }
-        }, 500);
-    })();
-    </script>
-    
-    <!-- Trial Timer Removed - Now Using Counter System -->
-    
-    <!-- Premium Access Verification -->
-    <!-- Premium overlay removed - integrated trial system replaces this -->
-
     <div class="container">
-        <!-- 试用状态显示区域 -->
-        <div id="trial-status" style="margin: 20px 0; padding: 15px; border-radius: 8px; background: #f8f9fa;"></div>
-        
-        <!-- 支付区域 -->
-        <div id="zpay-container" style="display: none; margin: 20px 0; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <!-- 隐藏支付按钮部分 -->
-            <div id="payment-section" style="display: none;">
-                <h3 style="color: #667eea; margin-bottom: 15px;">购买完整版</h3>
-                
-                <!-- 使用条款确认 -->
-                <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
-                    <label style="display: flex; align-items: flex-start; cursor: pointer; font-size: 14px; color: #555;">
-                        <input type="checkbox" id="terms-checkbox" onchange="togglePaymentButton()" style="margin-right: 10px; margin-top: 3px; transform: scale(1.2);">
-                        <span>我已阅读并同意 <a href="#" onclick="showTermsDialog()" style="color: #667eea; text-decoration: none;">《使用条款》</a> 和 <a href="#" onclick="showPrivacyDialog()" style="color: #667eea; text-decoration: none;">《隐私政策》</a></span>
-                    </label>
-                </div>
-                
-                <div id="payment-button-container" style="display: none;">
-                    <button id="zpay-btn" onclick="window.createZPayment()" style="display: inline-block; background: linear-gradient(135deg, #1677FF 0%, #00A0E9 100%); color: white; padding: 15px 30px; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 8px 25px rgba(22, 119, 255, 0.3); cursor: pointer;">
-                        支付宝 ￥48.00 (早鸟价)
-                    </button>
-                    <p style="font-size: 14px; color: #888; margin-top: 15px;">*使用支付宝安全支付，支付成功后立即获得专属访问码*</p>
-                </div>
-            </div>
-            
-            <!-- 访问码验证区域 -->
-            <div style="margin-top: 20px;">
-                <h3 style="color: #667eea; margin-bottom: 10px;">输入访问码</h3>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="text" id="access-code-input" placeholder="输入访问码(11-12位)" 
-                           style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; text-transform: uppercase; transition: border-color 0.3s ease;"
-                           maxlength="12" oninput="handleInputChange()" onkeyup="handleInputChange()" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#ddd'">
-                    <button onclick="handleVerifyClick()" id="verify-btn"
-                            style="padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: not-allowed; font-weight: 600; font-size: 14px; transition: all 0.3s ease; opacity: 1;"
-                            onmousedown="this.style.opacity='0.3'; this.style.transform='scale(0.98)'"
-                            onmouseup="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)"
-                            onmouseleave="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)">
-                        验证
-                    </button>
-                </div>
-                <div id="verify-result" style="margin-top: 10px; font-size: 14px;"></div>
-                <!-- 忘记访问码功能已移除，请参考FAQ -->
-            </div>
-        </div>
         <div class="header">
             <div class="header-content">
                 <div class="header-text">
-                    <h1 data-i18n="app.title">IC Studio - 视奏旋律生成器</h1>
+                    <h1 data-i18n="app.title">IC Studio - 旋律视奏生成器</h1>
                     <p data-i18n="app.subtitle">专业级乐谱渲染与音乐理论工具</p>
                 </div>
+                <!-- 试用信息显示 -->
+                <div class="trial-info" id="trialInfo"></div>
                 <div class="header-controls">
+                    <div class="function-selector">
+                        <button class="function-btn" id="functionBtn" onclick="toggleFunctionSelector()">
+                            🎵 <span id="currentFunction" data-i18n="app.melodyMode">旋律视奏</span>
+                        </button>
+                        <div class="function-menu" id="functionMenu">
+                            <div class="function-option" onclick="switchFunction('melody')">
+                                <span class="function-icon">🎵</span>
+                                <span data-i18n="app.melodyMode">旋律视奏</span>
+                            </div>
+                            <div class="function-option" onclick="switchFunction('interval')">
+                                <span class="function-icon">🎼</span>
+                                <span data-i18n="app.intervalMode">音程视奏</span>
+                            </div>
+                            <div class="function-option" onclick="switchFunction('chord')">
+                                <span class="function-icon">🎹</span>
+                                <span data-i18n="app.chordMode">和弦视奏</span>
+                            </div>
+                        </div>
+                    </div>
                     <div class="settings-dropdown">
                         <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">
-                            <span data-i18n="settings.title">设置</span>
+                            ⚙️ <span data-i18n="settings.title">设置</span>
                         </button>
                         <div class="settings-menu" id="settingsMenu">
                             <!-- 主题设置 -->
@@ -337,9 +69,11 @@
                                 <div class="settings-section-title" data-i18n="settings.theme">主题</div>
                                 <div class="theme-options">
                                     <div class="theme-option" onclick="setTheme('light')">
+                                        <span class="theme-icon">☀️</span>
                                         <span data-i18n="settings.lightMode">浅色模式</span>
                                     </div>
                                     <div class="theme-option" onclick="setTheme('dark')">
+                                        <span class="theme-icon">🌙</span>
                                         <span data-i18n="settings.darkMode">深色模式</span>
                                     </div>
                                 </div>
@@ -466,12 +200,12 @@
                         <option value="67">G4</option>
                         <option value="69">A4</option>
                         <option value="71">B4</option>
-                        <option value="72">C5</option>
+                        <option value="72" selected="">C5</option>
                         <option value="74">D5</option>
                         <option value="76">E5</option>
                         <option value="77">F5</option>
                         <option value="79">G5</option>
-                        <option value="81" selected="">A5</option>
+                        <option value="81">A5</option>
                         <option value="82">B5</option>
                         <option value="83">C6</option>
                         <option value="84">D6</option>
@@ -504,12 +238,21 @@
                     <button class="btn-primary" onclick="generateMelody()" data-i18n="controls.generate">
                         生成旋律
                     </button>
+                    <span id="trialCounter" style="display: none; margin-left: 8px; background: #f0f0f0; color: #666; padding: 2px 6px; border-radius: 4px; font-size: 12px;"></span>
                     <div class="button-group">
                         <button class="btn-secondary" onclick="previousMelody()" data-i18n="controls.previous">
                             上一条
                         </button>
                         <button class="btn-secondary" onclick="nextMelody()" data-i18n="controls.next">
                             下一条
+                        </button>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-secondary" id="playMelodyBtn" onclick="directPlayTest()" data-i18n="controls.play">
+                            ▶️ 播放
+                        </button>
+                        <button class="melody-visibility-btn" id="melodyVisibilityBtn" onclick="toggleMelodyVisibility()" title="隐藏/显示旋律">
+                            👀
                         </button>
                     </div>
                     <div class="button-group">
@@ -609,60 +352,82 @@
                         </label>
                     </div>
                 </div>
-                
+
+                <!-- 🔥 通用附点音符选项 -->
+                <div class="rhythm-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--info-border);">
+                    <h4 style="margin-bottom: 15px;">附点音符选项</h4>
+                    <div style="background: var(--info-bg); padding: 15px; border-radius: 8px;">
+                        <label class="checkbox-item" style="margin-bottom: 10px;">
+                            <input type="checkbox" id="allowDottedNotes" value="dotted">
+                            <span>允许附点音符 (根据已选节奏自动生成附点版本)</span>
+                        </label>
+                        <p style="font-size: 0.85rem; color: var(--secondary-text); margin: 0; line-height: 1.4;">
+                            勾选后将自动为已选择的节奏类型生成附点版本<br>
+                            例如：勾选四分音符+附点音符 → 可生成四分音符和附点四分音符
+                        </p>
+                    </div>
+                </div>
+
                 <!-- 高级设置区域 -->
-                <div id="rhythmAdvancedSettings" style="display: none; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-                    <h4 style="margin-bottom: 15px; color: #495057;">高级频率设置</h4>
-                    <p style="font-size: 0.9rem; color: #6c757d; margin-bottom: 20px;">调整各节奏单位在旋律中的出现频率 (0% = 不使用, 100% = 优先使用)</p>
+                <div id="rhythmAdvancedSettings" style="display: none; margin-top: 20px; padding: 20px; background: var(--info-bg); border-radius: 8px; border: 2px solid var(--info-border);">
+                    <h4 style="margin-bottom: 15px; color: var(--heading-text);">高级频率设置</h4>
+                    <p style="font-size: 0.9rem; color: var(--secondary-text); margin-bottom: 20px;">调整各节奏单位在旋律中的出现频率 (0% = 不使用, 100% = 优先使用)</p>
                     
                     <div class="rhythm-frequency-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div class="frequency-item" id="freq-whole-item">
                             <label for="freq-whole" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;">全音符频率:</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="freq-whole" min="0" max="100" value="10" style="flex: 1;">
-                                <span id="freq-whole-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">10%</span>
+                                <input type="range" id="freq-whole" min="0" max="100" value="20" style="flex: 1;">
+                                <span id="freq-whole-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">20%</span>
                             </div>
                         </div>
                         <div class="frequency-item" id="freq-dotted-half-item" style="display: none;">
                             <label for="freq-dotted-half" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;">附点二分音符频率:</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="freq-dotted-half" min="0" max="100" value="15" style="flex: 1;">
-                                <span id="freq-dotted-half-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">15%</span>
+                                <input type="range" id="freq-dotted-half" min="0" max="100" value="12" style="flex: 1;">
+                                <span id="freq-dotted-half-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">12%</span>
                             </div>
                         </div>
                         <div class="frequency-item" id="freq-half-item">
                             <label for="freq-half" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;">二分音符频率:</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="freq-half" min="0" max="100" value="30" style="flex: 1;">
-                                <span id="freq-half-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">30%</span>
+                                <input type="range" id="freq-half" min="0" max="100" value="8" style="flex: 1;">
+                                <span id="freq-half-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">8%</span>
                             </div>
                         </div>
                         <div class="frequency-item" id="freq-dotted-quarter-item" style="display: none;">
                             <label for="freq-dotted-quarter" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;">附点四分音符频率:</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="freq-dotted-quarter" min="0" max="100" value="35" style="flex: 1;">
-                                <span id="freq-dotted-quarter-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">35%</span>
+                                <input type="range" id="freq-dotted-quarter" min="0" max="100" value="60" style="flex: 1;">
+                                <span id="freq-dotted-quarter-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">60%</span>
+                            </div>
+                        </div>
+                        <div class="frequency-item" id="freq-dotted-eighth-item" style="display: none;">
+                            <label for="freq-dotted-eighth" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;">附点八分音符频率:</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="freq-dotted-eighth" min="0" max="100" value="25" style="flex: 1;">
+                                <span id="freq-dotted-eighth-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">25%</span>
                             </div>
                         </div>
                         <div class="frequency-item">
                             <label for="freq-quarter" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;">四分音符频率:</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="freq-quarter" min="0" max="100" value="50" style="flex: 1;">
-                                <span id="freq-quarter-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">50%</span>
+                                <input type="range" id="freq-quarter" min="0" max="100" value="25" style="flex: 1;">
+                                <span id="freq-quarter-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">25%</span>
                             </div>
                         </div>
                         <div class="frequency-item">
                             <label for="freq-eighth" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;">八分音符频率:</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="freq-eighth" min="0" max="100" value="40" style="flex: 1;">
-                                <span id="freq-eighth-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">40%</span>
+                                <input type="range" id="freq-eighth" min="0" max="100" value="15" style="flex: 1;">
+                                <span id="freq-eighth-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">15%</span>
                             </div>
                         </div>
                         <div class="frequency-item">
                             <label for="freq-16th" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;">十六分音符频率:</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="freq-16th" min="0" max="100" value="20" style="flex: 1;">
-                                <span id="freq-16th-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">20%</span>
+                                <input type="range" id="freq-16th" min="0" max="100" value="6" style="flex: 1;">
+                                <span id="freq-16th-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">6%</span>
                             </div>
                         </div>
                         <div class="frequency-item" id="freq-triplet-item">
@@ -675,15 +440,15 @@
                         <div class="frequency-item" id="freq-duplet-item" style="display: none;">
                             <label for="freq-duplet" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;">二连音频率:</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="freq-duplet" min="0" max="100" value="30" style="flex: 1;">
-                                <span id="freq-duplet-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">30%</span>
+                                <input type="range" id="freq-duplet" min="0" max="100" value="25" style="flex: 1;">
+                                <span id="freq-duplet-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">25%</span>
                             </div>
                         </div>
                         <div class="frequency-item" id="freq-quadruplet-item" style="display: none;">
                             <label for="freq-quadruplet" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;">四连音频率:</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="freq-quadruplet" min="0" max="100" value="25" style="flex: 1;">
-                                <span id="freq-quadruplet-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">25%</span>
+                                <input type="range" id="freq-quadruplet" min="0" max="100" value="20" style="flex: 1;">
+                                <span id="freq-quadruplet-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">20%</span>
                             </div>
                         </div>
                     </div>
@@ -770,9 +535,9 @@
                 </div>
 
                 <!-- 高级设置区域 -->
-                <div id="articulationAdvancedSettings" style="display: none; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;">
-                    <h4 style="margin-bottom: 15px; color: #495057;">高级频率设置</h4>
-                    <p style="font-size: 0.9rem; color: #6c757d; margin-bottom: 20px;">调整各演奏法在旋律中的出现频率 (0% = 不使用, 100% = 经常使用)</p>
+                <div id="articulationAdvancedSettings" style="display: none; margin-top: 20px; padding: 20px; background: var(--info-bg); border-radius: 8px; border: 2px solid var(--info-border);">
+                    <h4 style="margin-bottom: 15px; color: var(--heading-text);">高级频率设置</h4>
+                    <p style="font-size: 0.9rem; color: var(--secondary-text); margin-bottom: 20px;">调整各演奏法在旋律中的出现频率 (0% = 不使用, 100% = 经常使用)</p>
                     
                     <div style="margin-bottom: 20px;">
                         <h5 style="color: #495057; margin-bottom: 10px;">基本演奏法频率</h5>
@@ -1117,13 +882,13 @@
         </div>
     </div>
 
-    <script src="js/minor-scale-spelling.js?v=20250908"></script>
-    <script src="js/sight-reading-final.js?v=20250908"></script>
-    <script src="js/minor-alterations.js?v=20250908"></script>
-    <script src="js/emergency-fix.js?v=20250908"></script>
-    
+    <script src="./视奏旋律生成器 - 终极版_files/minor-scale-spelling.js"></script>
+    <script src="./视奏旋律生成器 - 终极版_files/sight-reading-final.js"></script>
+    <script src="./视奏旋律生成器 - 终极版_files/minor-alterations.js"></script>
+    <script src="./视奏旋律生成器 - 终极版_files/emergency-fix.js"></script>
+
     <!-- 增强的全选切换功能 -->
-    <script src="enhanced-select-all.js?v=20250908"></script>
+    <!-- <script src="enhanced-select-all.js"></script> -->
     
     <!-- 主题切换系统 -->
     <script>
@@ -1132,8 +897,8 @@
         
         // 主题图标
         const themeIcons = {
-            'light': '深色', // 在light模式显示深色选项
-            'dark': '浅色'   // 在dark模式显示浅色选项
+            'light': '🌙', // 在light模式显示月亮图标，点击切换到dark
+            'dark': '☀️'   // 在dark模式显示太阳图标，点击切换到light
         };
         
         // 切换主题 (保留向后兼容性)
@@ -1203,6 +968,140 @@
             document.removeEventListener('click', handleClickOutside);
         }
         
+        // 功能选择器控制
+        function toggleFunctionSelector() {
+            const functionMenu = document.getElementById('functionMenu');
+            const isVisible = functionMenu.classList.contains('show');
+            
+            if (isVisible) {
+                closeFunctionSelector();
+            } else {
+                openFunctionSelector();
+            }
+        }
+        
+        function openFunctionSelector() {
+            const functionMenu = document.getElementById('functionMenu');
+            functionMenu.classList.add('show');
+            
+            // 添加点击外部区域关闭菜单的监听器
+            setTimeout(() => {
+                document.addEventListener('click', handleFunctionClickOutside);
+            }, 10);
+        }
+        
+        function closeFunctionSelector() {
+            const functionMenu = document.getElementById('functionMenu');
+            functionMenu.classList.remove('show');
+            
+            // 移除点击外部区域的监听器
+            document.removeEventListener('click', handleFunctionClickOutside);
+        }
+        
+        // 处理点击外部区域关闭功能菜单
+        function handleFunctionClickOutside(event) {
+            const functionSelector = document.querySelector('.function-selector');
+            
+            if (functionSelector && !functionSelector.contains(event.target)) {
+                closeFunctionSelector();
+            }
+        }
+        
+        // 当前功能模式
+        let currentFunctionMode = 'melody';
+        
+        // 切换功能
+        function switchFunction(mode) {
+            if (mode === 'melody') {
+                // 已经在旋律视奏页面
+                closeFunctionSelector();
+                console.log('已在旋律视奏模式');
+            } else if (mode === 'interval') {
+                // 显示音程视奏开发中弹窗
+                showDevelopmentModal('音程视奏');
+                closeFunctionSelector();
+            } else if (mode === 'chord') {
+                // 显示和弦视奏开发中弹窗
+                showDevelopmentModal('和弦视奏');
+                closeFunctionSelector();
+            }
+        }
+
+        // 显示开发中弹窗
+        function showDevelopmentModal(featureName) {
+            // 创建弹窗
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(10px);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            `;
+
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: #ffffff;
+                border-radius: 16px;
+                padding: 40px;
+                max-width: 400px;
+                text-align: center;
+                box-shadow: 0 20px 64px rgba(0, 0, 0, 0.15);
+                border: 1px solid #d2d2d7;
+                position: relative;
+            `;
+
+            modalContent.innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 20px;">🚧</div>
+                <h3 style="font-size: 1.5rem; color: #1d1d1f; margin-bottom: 16px; font-weight: 600;">${featureName}功能开发中</h3>
+                <p style="color: #86868b; font-size: 1rem; line-height: 1.5; margin-bottom: 30px;">
+                    该功能正在开发中，敬请期待！<br>
+                    目前仅提供旋律视奏功能。
+                </p>
+                <button onclick="closeDevelopmentModal()" style="
+                    background: #007aff;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 12px 24px;
+                    font-size: 16px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: background 0.2s ease;
+                " onmouseover="this.style.background='#005FCC'" onmouseout="this.style.background='#007aff'">
+                    了解
+                </button>
+            `;
+
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            modal.id = 'developmentModal';
+
+            // 显示动画
+            setTimeout(() => {
+                modal.style.opacity = '1';
+            }, 10);
+        }
+
+        // 关闭开发中弹窗
+        function closeDevelopmentModal() {
+            const modal = document.getElementById('developmentModal');
+            if (modal) {
+                modal.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(modal);
+                }, 300);
+            }
+        }
+        
         // 处理点击外部区域关闭设置菜单
         function handleClickOutside(event) {
             const settingsDropdown = document.querySelector('.settings-dropdown');
@@ -1245,20 +1144,20 @@
 
                 const oscillator = metronomeAudioContext.createOscillator();
                 const gainNode = metronomeAudioContext.createGain();
-                
+
                 oscillator.connect(gainNode);
                 gainNode.connect(metronomeAudioContext.destination);
-                
-                // 设置音调 (高音调的嘀嗒声)
-                oscillator.frequency.setValueAtTime(800, metronomeAudioContext.currentTime);
-                
-                // 设置音量包络
-                gainNode.gain.setValueAtTime(0, metronomeAudioContext.currentTime);
-                gainNode.gain.linearRampToValueAtTime(0.3, metronomeAudioContext.currentTime + 0.01);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, metronomeAudioContext.currentTime + 0.1);
-                
+
+                // 使用方波和自然音高 (参考NiceChord节拍器)
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(523.25, metronomeAudioContext.currentTime); // C5音高
+
+                // 设置自然的音量包络 (更好的release time)
+                gainNode.gain.setValueAtTime(0.25, metronomeAudioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, metronomeAudioContext.currentTime + 0.05);
+
                 oscillator.start(metronomeAudioContext.currentTime);
-                oscillator.stop(metronomeAudioContext.currentTime + 0.1);
+                oscillator.stop(metronomeAudioContext.currentTime + 0.05);
 
                 // 视觉反馈 - 更新header指示器
                 const headerIndicator = document.getElementById('headerBeatIndicator');
@@ -1528,6 +1427,9 @@
             'zh-CN': {
                 'app.title': 'IC Studio - 视奏旋律生成器',
                 'app.subtitle': '专业级乐谱渲染与音乐理论工具',
+                'app.melodyMode': '旋律视奏',
+                'app.intervalMode': '音程视奏',
+                'app.chordMode': '和弦视奏',
                 'controls.interval': '音程跨度',
                 'controls.intervalSettings': '音程设置',
                 'controls.measures': '小节数',
@@ -1547,6 +1449,10 @@
                 'controls.generate': '生成旋律',
                 'controls.previous': '上一条',
                 'controls.next': '下一条',
+                'controls.play': '播放',
+                'controls.stop': '停止',
+                'controls.tempo': '速度',
+                'controls.playbackNote': '播放速度跟随节拍器设置',
                 'controls.rhythm': '节奏设置',
                 'controls.articulation': '演奏技巧',
                 'score.empty': '点击生成旋律开始练习',
@@ -1563,6 +1469,9 @@
             'zh-TW': {
                 'app.title': 'IC Studio - 視奏旋律生成器',
                 'app.subtitle': '專業級樂譜渲染與音樂理論工具',
+                'app.melodyMode': '旋律視奏',
+                'app.intervalMode': '音程視奏',
+                'app.chordMode': '和弦視奏',
                 'controls.interval': '音程跨度',
                 'controls.intervalSettings': '音程設置',
                 'controls.measures': '小節數',
@@ -1582,6 +1491,10 @@
                 'controls.generate': '生成旋律',
                 'controls.previous': '上一條',
                 'controls.next': '下一條',
+                'controls.play': '播放',
+                'controls.stop': '停止',
+                'controls.tempo': '速度',
+                'controls.playbackNote': '播放速度跟隨節拍器設置',
                 'controls.rhythm': '節奏設置',
                 'controls.articulation': '演奏技巧',
                 'score.empty': '點擊生成旋律開始練習',
@@ -1598,6 +1511,9 @@
             'en': {
                 'app.title': 'IC Studio - Sight-Reading Generator',
                 'app.subtitle': 'Professional Music Score Rendering & Music Theory Tool',
+                'app.melodyMode': 'Melody Sight-Reading',
+                'app.intervalMode': 'Interval Sight-Reading',
+                'app.chordMode': 'Chord Sight-Reading',
                 'controls.interval': 'Interval Range',
                 'controls.intervalSettings': 'Interval Settings',
                 'controls.measures': 'Measures',
@@ -1617,6 +1533,10 @@
                 'controls.generate': 'Generate Melody',
                 'controls.previous': 'Previous',
                 'controls.next': 'Next',
+                'controls.play': 'Play',
+                'controls.stop': 'Stop',
+                'controls.tempo': 'Tempo',
+                'controls.playbackNote': 'Playback follows metronome tempo',
                 'controls.rhythm': 'Rhythm Settings',
                 'controls.articulation': 'Articulations',
                 'score.empty': 'Click Generate Melody to Start Practice',
@@ -1784,8 +1704,78 @@
                             console.log('隐藏元素:', element.tagName, text);
                         }
                     });
+
+                    // 🔧 修复：移除多余的断奏点（staccato dots）
+                    removeExtraStaccatoDots();
                 }
             }, 500);
+        }
+
+        // 🔧 修复MusicXML中的多余附点
+        function cleanupExcessiveDots(musicXML) {
+            console.log('🔧 开始清理MusicXML中的多余附点...');
+
+            // 方法1：完全移除所有 <dot/> 元素
+            let cleanedXML = musicXML.replace(/<dot\s*\/?>|<dot><\/dot>/g, '');
+
+            // 方法2：如果需要保留合理的附点，可以使用更精确的清理
+            // 这里我们先简单地移除所有附点，因为生成的音符应该都是基础时值
+
+            console.log('🔧 已移除所有 <dot> 元素');
+
+            return cleanedXML;
+        }
+
+        // 🔧 修复附点问题：移除多余的断奏点
+        function removeExtraStaccatoDots() {
+            const scoreDiv = document.getElementById('score');
+            if (!scoreDiv) return;
+
+            // 查找所有可能的断奏点元素
+            const svgElements = scoreDiv.querySelectorAll('svg circle, svg ellipse, svg use, svg path');
+
+            let removedCount = 0;
+
+            svgElements.forEach((element, index) => {
+                // 检查是否是小圆点（断奏记号）
+                if (element.tagName === 'circle') {
+                    const radius = parseFloat(element.getAttribute('r')) || 0;
+                    const cx = parseFloat(element.getAttribute('cx')) || 0;
+                    const cy = parseFloat(element.getAttribute('cy')) || 0;
+
+                    // 如果是小圆点（半径小于3），很可能是断奏记号
+                    if (radius > 0 && radius < 3) {
+                        // 隐藏这个元素
+                        element.style.display = 'none';
+                        element.style.visibility = 'hidden';
+                        removedCount++;
+                    }
+                }
+
+                // 检查use元素（可能是符号引用）
+                if (element.tagName === 'use') {
+                    const href = element.getAttribute('href') || element.getAttribute('xlink:href') || '';
+                    if (href.includes('staccato') || href.includes('dot') || href.includes('articulation')) {
+                        element.style.display = 'none';
+                        element.style.visibility = 'hidden';
+                        removedCount++;
+                    }
+                }
+
+                // 检查path元素中可能的断奏点
+                if (element.tagName === 'path') {
+                    const d = element.getAttribute('d') || '';
+                    // 如果路径很短且包含圆弧，可能是断奏点
+                    if (d.length < 50 && (d.includes('C') || d.includes('A'))) {
+                        const bbox = element.getBBox ? element.getBBox() : { width: 0, height: 0 };
+                        if (bbox.width < 10 && bbox.height < 10) {
+                            element.style.display = 'none';
+                            element.style.visibility = 'hidden';
+                            removedCount++;
+                        }
+                    }
+                }
+            });
         }
         
         // 清除空谱子提示信息
@@ -1799,1058 +1789,1589 @@
             }
         }
 
-        // 监听OSMD渲染完成 - 临时禁用所有重写
-        /*
+        // 试用限制管理系统
+        const TrialManager = {
+            maxTrialUses: 20, // 免费试用最大次数
+
+            // 检查是否为完整版用户
+            isFullVersion() {
+                return localStorage.getItem('ic_full_version') === 'true';
+            },
+
+            // 获取当前试用次数
+            getTrialCount() {
+                const count = localStorage.getItem('ic_trial_count');
+                return count ? parseInt(count) : 0;
+            },
+
+            // 增加试用次数
+            incrementTrialCount() {
+                const currentCount = this.getTrialCount();
+                const newCount = currentCount + 1;
+                localStorage.setItem('ic_trial_count', newCount.toString());
+                return newCount;
+            },
+
+            // 获取剩余试用次数
+            getRemainingTrials() {
+                return Math.max(0, this.maxTrialUses - this.getTrialCount());
+            },
+
+            // 检查是否可以继续使用
+            canUse() {
+                return this.isFullVersion() || this.getRemainingTrials() > 0;
+            },
+
+            // 更新试用信息显示
+            updateTrialDisplay() {
+                const trialInfo = document.getElementById('trialInfo');
+                const trialCounter = document.getElementById('trialCounter');
+
+                if (this.isFullVersion()) {
+                    // 完整版用户：隐藏所有试用相关显示
+                    if (trialInfo) {
+                        trialInfo.style.display = 'none';
+                    }
+                    if (trialCounter) {
+                        trialCounter.style.display = 'none';
+                    }
+                } else {
+                    // 试用版用户：隐藏header中的提示，只在按钮旁显示简单数字
+                    if (trialInfo) {
+                        trialInfo.style.display = 'none';
+                    }
+                    if (trialCounter) {
+                        const remaining = this.getRemainingTrials();
+                        if (remaining > 0) {
+                            trialCounter.innerHTML = `${remaining}`;
+                            trialCounter.style.display = 'inline-block';
+                        } else {
+                            trialCounter.innerHTML = '0';
+                            trialCounter.style.display = 'inline-block';
+                        }
+                    }
+                }
+            },
+
+            // 显示试用限制警告
+            showTrialLimitWarning() {
+                // 静默处理：试用次数用完后不显示任何提示，直接返回 false
+                return false;
+            },
+
+            // 验证访问码
+            validateAccessCode(code) {
+                // 这里可以设置多个有效的访问码
+                const validCodes = [
+                    'IC2025FULL',
+                    'ICSTUDIO2025',
+                    'SIGHT2025',
+                    'MELODY2025'
+                ];
+                return validCodes.includes(code.toUpperCase());
+            }
+        };
+
+        // 监听OSMD渲染完成
         const originalGenerateMelody = window.generateMelody;
         if (originalGenerateMelody) {
             window.generateMelody = function(...args) {
+                // 检查试用限制
+                if (!TrialManager.canUse()) {
+                    const unlocked = TrialManager.showTrialLimitWarning();
+                    if (!unlocked) {
+                        return; // 如果没有解锁成功，则停止执行
+                    }
+                    // 如果解锁成功，继续执行下面的代码
+                }
+
+                // 自动停止当前播放
+                if (window.isPlayingMelody) {
+                    window.isPlayingMelody = false;
+                    // 停止所有调度的播放
+                    if (window.melodyScheduledSounds) {
+                        window.melodyScheduledSounds.forEach(sound => {
+                            try {
+                                if (sound.oscillator) {
+                                    sound.oscillator.stop();
+                                }
+                            } catch (e) {
+                                // 振荡器可能已经停止，忽略错误
+                            }
+                        });
+                        window.melodyScheduledSounds = [];
+                    }
+                    // 更新播放按钮状态
+                    if (typeof updatePlayButton === 'function') {
+                        updatePlayButton();
+                    }
+                }
+
                 // 清除空谱子提示信息
                 clearEmptyScoreMessage();
-                
+
+                // 非完整版用户增加试用计数
+                if (!TrialManager.isFullVersion()) {
+                    TrialManager.incrementTrialCount();
+                    TrialManager.updateTrialDisplay();
+                }
+
                 const result = originalGenerateMelody.apply(this, args);
                 hideTitleAndInstrumentElements();
+
+                // 检查并应用隐藏状态（如果用户之前开启了隐藏功能）
+                setTimeout(() => {
+                    if (typeof isMelodyHidden !== 'undefined' && isMelodyHidden) {
+                        console.log('🔄 检测到隐藏状态，应用到新生成的旋律');
+                        const scoreElement = document.getElementById('score');
+                        if (scoreElement) {
+                            const svgElements = scoreElement.querySelectorAll('svg');
+                            svgElements.forEach(svg => {
+                                svg.classList.add('melody-hidden');
+                                svg.style.opacity = '0';
+                                svg.style.filter = 'blur(10px)';
+                            });
+                        }
+                    }
+                }, 500); // 等待OSMD渲染完成
+
                 return result;
             };
         }
-        */
         
+
         // 页面加载完成后也执行一次
         document.addEventListener('DOMContentLoaded', () => {
             hideTitleAndInstrumentElements();
+
+            // 检查是否从访问码页面跳转过来
+            const verifiedFromAccessPage = localStorage.getItem('ic_verified_from_access_page');
+            const verifiedTimestamp = localStorage.getItem('ic_verified_timestamp');
+
+            if (verifiedFromAccessPage === 'true' && verifiedTimestamp) {
+                const timeDiff = Date.now() - parseInt(verifiedTimestamp);
+                // 如果是5分钟内从访问码页面跳转过来的，确保完整版状态
+                if (timeDiff < 5 * 60 * 1000) {
+                    console.log('🎯 检测到从访问码页面跳转，确保完整版状态');
+                    localStorage.setItem('ic_full_version', 'true');
+                    // 清除跳转标记
+                    localStorage.removeItem('ic_verified_from_access_page');
+                    localStorage.removeItem('ic_verified_timestamp');
+                }
+            }
+
+            // 初始化试用信息显示
+            TrialManager.updateTrialDisplay();
+
             // 定期检查
             setInterval(hideTitleAndInstrumentElements, 2000);
+
+            // 🎵 添加乐谱容器点击事件，触发生成旋律
+            const scoreContainer = document.getElementById('score');
+            if (scoreContainer) {
+                scoreContainer.addEventListener('click', function(event) {
+                    console.log('🎵 用户点击乐谱容器，触发生成旋律');
+                    // 检查是否点击的是乐谱内容而不是控制按钮
+                    if (!event.target.closest('button') && !event.target.closest('.control')) {
+                        generateMelody();
+                    }
+                });
+                // 添加样式提示，让用户知道容器可以点击
+                scoreContainer.style.cursor = 'pointer';
+                scoreContainer.title = '点击生成新旋律';
+            }
         });
-    </script>
 
+        // ====== 直接在HTML中定义的简单播放器 ======
+        console.log('🎹 直接在HTML中创建播放器...');
 
-    <!-- Trial Management Script Removed - Now Using Counter System -->
-    <script>
-        console.log("⚡ 时间限制系统已移除，现在使用计数器系统管理");
-        // 移除所有试用相关的localStorage数据
-        localStorage.removeItem("ic_studio_trial_data");
-        localStorage.removeItem("trial-start-time");
-        localStorage.removeItem("trial-used-time");
-        localStorage.removeItem("trial-end-time");
-        console.log("🧹 已清理所有时间相关存储数据");
-    </script>
-    <!-- 全局错误拦截器 - 必须最先加载 -->
-    <script src="/js/global-error-interceptor.js?v=20250908"></script>
-    
-    <!-- 自动填充访问码脚本 -->
-    <script>
-        // 检查是否需要自动填充访问码
-        function checkAutoFillAccessCode() {
-            const accessData = localStorage.getItem('ic-premium-access');
-            if (accessData) {
-                try {
-                    const data = JSON.parse(accessData);
-                    if (data && data.autoFill && data.code) {
-                        console.log('🎯 检测到自动填充标记，准备填入访问码:', data.code);
-                        
-                        // 延迟执行确保DOM已加载
-                        setTimeout(() => {
-                            const accessInput = document.getElementById('access-code-input');
-                            const verifyResult = document.getElementById('verify-result');
-                            
-                            if (accessInput && verifyResult) {
-                                // 自动填入访问码
-                                accessInput.value = data.code;
-                                console.log('✅ 访问码已自动填入:', data.code);
-                                
-                                // 清除自动填充标记
-                                data.autoFill = false;
-                                localStorage.setItem('ic-premium-access', JSON.stringify(data));
-                                
-                                // 自动触发验证
-                                verifyResult.innerHTML = '<span style="color: #3498db;">🎯 自动验证访问码中...</span>';
-                                
-                                setTimeout(() => {
-                                    if (window.directVerifyCode) {
-                                        directVerifyCode();
-                                        console.log('✅ 自动验证访问码已触发');
-                                    } else {
-                                        console.log('⚠️ directVerifyCode函数未找到，手动处理验证');
-                                        // 手动验证逻辑
-                                        const accessData = {
-                                            code: data.code,
-                                            activatedAt: Date.now(),
-                                            deviceId: 'auto-fill-' + Date.now(),
-                                            expiresAt: null,
-                                            version: '2.0-auto-fill',
-                                            source: 'auto-fill'
-                                        };
-                                        localStorage.setItem('ic-premium-access', JSON.stringify(accessData));
-                                        verifyResult.innerHTML = '<span style="color: #27ae60;">✅ 访问码自动验证成功！</span>';
-                                        
-                                        // 隐藏支付相关区域
-                                        const zpayContainer = document.getElementById('zpay-container');
-                                        if (zpayContainer) zpayContainer.style.display = 'none';
-                                        
-                                        const accessCodeContainer = document.getElementById('access-code-container');
-                                        if (accessCodeContainer) accessCodeContainer.style.display = 'none';
-                                        
-                                        setTimeout(() => {
-                                            window.location.reload();
-                                        }, 1500);
-                                    }
-                                }, 500);
-                                
-                            } else {
-                                console.log('⚠️ 访问码输入框未找到，延迟重试');
-                                setTimeout(checkAutoFillAccessCode, 1000);
+        window.isPlayingMelody = false;
+        window.melodyAudioCtx = null;
+
+        function directPlayTest() {
+            console.log('🎵 直接播放被调用');
+
+            if (window.isPlayingMelody) {
+                // 停止播放
+                window.isPlayingMelody = false;
+                // 停止所有调度的播放
+                if (window.melodyScheduledSounds) {
+                    window.melodyScheduledSounds.forEach(sound => {
+                        try {
+                            if (sound.oscillator) {
+                                sound.oscillator.stop();
                             }
-                        }, 100);
-                    }
-                } catch (e) {
-                    console.log('⚠️ 访问码数据解析失败:', e);
-                }
-            }
-        }
-        
-        // 页面加载完成后检查
-        document.addEventListener('DOMContentLoaded', checkAutoFillAccessCode);
-        
-        // 额外的延迟检查（确保所有脚本加载完毕）
-        setTimeout(checkAutoFillAccessCode, 1000);
-    </script>
-    
-    <!-- 20条旋律严格计数系统 - 必须最先加载以拦截generateMelody -->
-    <script src="/js/melody-counter-system.js?v=20250113-fix"></script>
-
-    <!-- 试用限制器 (已移除时间限制，现在使用计数器系统) -->
-    <script src="/js/trial-limiter.js?v=20250114"></script>
-
-    <!-- 付费用户界面管理器 -->
-    <script src="/js/premium-ui-manager.js?v=20250908"></script>
-    
-    <!-- 支付状态管理器 - 解决验证不一致和状态持久化问题 -->
-    <script src="/js/payment-state-manager.js?v=20250909"></script>
-    
-    <!-- 访问码验证增强器 -->
-    <script src="/js/access-code-enhancer.js?v=20250909"></script>
-    
-    <!-- 确保全局函数可用的备用脚本 -->
-    <script>
-    // 【增强】保护访问码输入框不被意外清空或替换
-    function protectAccessCodeInput() {
-        const input = document.getElementById('access-code-input');
-        if (input && !input.hasAttribute('data-protected')) {
-            input.setAttribute('data-protected', 'true');
-            
-            // 备份当前值
-            let userValue = input.value;
-            let isUserTyping = false;
-            let protectionActive = true;
-            
-            // 监听用户输入事件
-            input.addEventListener('input', function() {
-                isUserTyping = true;
-                userValue = this.value;
-                console.log('📝 用户输入访问码:', userValue);
-            });
-            
-            input.addEventListener('focus', function() {
-                isUserTyping = true;
-                console.log('🎯 用户聚焦访问码输入框');
-            });
-            
-            input.addEventListener('blur', function() {
-                setTimeout(() => { isUserTyping = false; }, 1000);
-                console.log('👤 用户离开访问码输入框');
-            });
-            
-            // 监听DOM变化，防止整个输入框被替换
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'childList') {
-                        // 检查访问码输入框是否还存在
-                        const currentInput = document.getElementById('access-code-input');
-                        if (!currentInput && protectionActive) {
-                            console.log('⚠️ 访问码输入框被移除，尝试恢复');
-                            setTimeout(protectAccessCodeInput, 100);
-                        } else if (currentInput && currentInput !== input && protectionActive) {
-                            console.log('⚠️ 访问码输入框被替换，恢复用户数据');
-                            if (userValue) {
-                                currentInput.value = userValue;
-                                console.log('✅ 已恢复用户输入:', userValue);
-                            }
-                            setTimeout(protectAccessCodeInput, 100);
+                        } catch (e) {
+                            // 振荡器可能已经停止，忽略错误
                         }
-                    }
-                });
-            });
-            
-            // 开始观察DOM变化
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
-            
-            // 重写value属性保护
-            const originalDescriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
-            Object.defineProperty(input, 'value', {
-                get: function() {
-                    return originalDescriptor.get.call(this);
-                },
-                set: function(newValue) {
-                    // 如果用户正在输入且新值为空，则保护用户数据
-                    if (isUserTyping && newValue === '' && userValue !== '') {
-                        console.log('🛡️ 阻止清空用户正在输入的访问码:', userValue);
-                        return;
-                    }
-                    // 如果不是用户输入且有备份值，询问是否恢复
-                    if (!isUserTyping && newValue === '' && userValue !== '') {
-                        console.log('🔄 检测到输入框被清空，保持用户数据:', userValue);
-                        originalDescriptor.set.call(this, userValue);
-                        return;
-                    }
-                    originalDescriptor.set.call(this, newValue);
-                },
-                configurable: true
-            });
-            
-            // 页面卸载时清理
-            window.addEventListener('beforeunload', function() {
-                protectionActive = false;
-                observer.disconnect();
-            });
-            
-            console.log('🛡️ 增强版访问码输入框保护已启用');
-        }
-    }
-    
-    // 调试功能：监控访问码输入框的所有变化
-    function debugAccessCodeInput() {
-        const input = document.getElementById('access-code-input');
-        if (input && !input.hasAttribute('data-debug')) {
-            input.setAttribute('data-debug', 'true');
-            
-            // 监控所有可能的事件
-            ['input', 'change', 'keydown', 'keyup', 'focus', 'blur', 'select'].forEach(eventType => {
-                input.addEventListener(eventType, function(e) {
-                    console.log(`🔍 访问码输入框事件 [${eventType}]:`, this.value, e);
-                });
-            });
-            
-            // 监控value属性被直接设置
-            const originalDescriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
-            if (originalDescriptor && !input.hasAttribute('data-value-monitored')) {
-                input.setAttribute('data-value-monitored', 'true');
-                
-                Object.defineProperty(input, 'value', {
-                    get: function() {
-                        const value = originalDescriptor.get.call(this);
-                        console.log('🔍 读取访问码输入框值:', value);
-                        return value;
-                    },
-                    set: function(newValue) {
-                        const oldValue = originalDescriptor.get.call(this);
-                        console.log('🔍 设置访问码输入框值:', oldValue, '=>', newValue);
-                        console.trace('调用堆栈:');
-                        originalDescriptor.set.call(this, newValue);
-                    },
-                    configurable: true
-                });
-            }
-            
-            console.log('🔍 访问码输入框调试监控已启用');
-        }
-    }
-    
-    // 页面加载后启用保护和调试
-    document.addEventListener('DOMContentLoaded', function() {
-        protectAccessCodeInput();
-        debugAccessCodeInput();
-    });
-    
-    // 定期检查并保护（减少频率）- 临时禁用，避免干扰验证
-    // setInterval(function() {
-    //     protectAccessCodeInput();
-    //     debugAccessCodeInput();
-    // }, 3000);
-    
-    // 备用重置函数，确保控制台可用
-    if (!window.resetToFreshUser) {
-        window.resetToFreshUser = function() {
-            console.log('🔄 使用备用重置函数');
-            
-            try {
-                // 清理所有存储的用户数据
-                localStorage.removeItem('ic-premium-access');
-                localStorage.removeItem('ic-full-access');
-                localStorage.removeItem('ic-verified-user');
-                localStorage.removeItem('ic-sight-reading-trial');
-                localStorage.removeItem('ic-device-id');
-                localStorage.removeItem('ic-trial-end');
-                localStorage.removeItem('ic-reset-count');
-                localStorage.removeItem('ic-anticheat-exempt');
-                
-                // 清理会话存储
-                sessionStorage.removeItem('ic-device-id-session');
-                
-                // 清理cookie
-                document.cookie = 'ic_device_backup=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                
-                console.log('✅ 已清理所有用户数据');
-                
-                // 刷新页面重新开始
-                window.location.reload();
-                
-            } catch (error) {
-                console.error('❌ 重置过程中出现错误:', error);
-                alert('⚠️ 重置过程中出现错误，建议手动刷新页面');
-            }
-        };
-    }
-    
-    // 确保其他常用函数也可用
-    if (!window.debugAccessSystem) {
-        window.debugAccessSystem = function() {
-            console.log('🔍 访问系统调试信息:');
-            console.log('💾 LocalStorage数据:');
-            console.log('  - ic-premium-access:', localStorage.getItem('ic-premium-access'));
-            console.log('  - ic-sight-reading-trial:', localStorage.getItem('ic-sight-reading-trial'));
-            console.log('  - ic-device-id:', localStorage.getItem('ic-device-id'));
-            
-            console.log('🔧 系统状态:');
-            console.log('  - cloudbaseAPI:', !!window.cloudbaseAPI);
-            console.log('  - trialLimiter:', !!window.trialLimiter);
-            console.log('  - premiumUIManager:', !!window.premiumUIManager);
-            
-            return {
-                localStorage: {
-                    premiumAccess: localStorage.getItem('ic-premium-access'),
-                    trial: localStorage.getItem('ic-sight-reading-trial'),
-                    deviceId: localStorage.getItem('ic-device-id')
-                },
-                functions: {
-                    resetToFreshUser: typeof window.resetToFreshUser,
-                    trialLimiter: !!window.trialLimiter,
-                    uiManager: !!window.premiumUIManager,
-                    cloudbaseAPI: !!window.cloudbaseAPI
+                    });
+                    window.melodyScheduledSounds = [];
                 }
-            };
-        };
-    }
-    
-    // 【新增】简化的访问码测试函数
-    if (!window.testAccessCodeDirect) {
-        window.testAccessCodeDirect = async function(code) {
-            if (!code) {
-                console.error('❌ 请提供访问码，例如: testAccessCodeDirect("ABC123456789")');
+                updatePlayButton();
+                console.log('⏹️ 停止钢琴播放');
                 return;
             }
-            
-            console.log('🧪 直接测试访问码验证:', code);
-            
+
             try {
-                if (!window.cloudbaseAPI) {
-                    console.error('❌ CloudBase API未初始化');
-                    return { error: 'CloudBase API未初始化' };
+                // 创建音频上下文
+                if (!window.melodyAudioCtx) {
+                    window.melodyAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('🎹 创建了新的AudioContext');
                 }
-                
-                console.log('🔄 开始验证...');
-                const result = await window.cloudbaseAPI.verifyAccessCode(code);
-                
-                console.log('📥 验证结果:', result);
-                
-                if (result && result.valid) {
-                    console.log('✅ 验证成功！保存到localStorage...');
-                    
-                    const accessData = {
-                        code: result.data.code,
-                        activatedAt: Date.now(),
-                        deviceId: window.trialLimiter?.deviceId || 'test',
-                        expiresAt: result.data.expiresAt,
-                        version: '3.0-test',
-                        purchaseDate: result.data.purchaseDate,
-                        features: result.data.features || ['sight-reading-tool']
-                    };
-                    
-                    localStorage.setItem('ic-premium-access', JSON.stringify(accessData));
-                    console.log('✅ 已保存访问码，2秒后刷新页面...');
-                    
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-                    
-                    return { success: true, data: accessData };
+
+                // 检查状态
+                if (window.melodyAudioCtx.state === 'suspended') {
+                    window.melodyAudioCtx.resume().then(() => {
+                        console.log('🔄 AudioContext已恢复');
+                        startMelodyPlayback();
+                    });
                 } else {
-                    console.log('❌ 验证失败:', result?.error || '未知错误');
-                    return { success: false, error: result?.error || '验证失败' };
+                    startMelodyPlayback();
                 }
-                
+
             } catch (error) {
-                console.error('❌ 测试过程中发生错误:', error);
-                return { success: false, error: error.message };
+                console.error('❌ 播放错误:', error);
+                alert('播放出错: ' + error.message);
             }
-        };
-    }
-    
-    // 【临时调试】检查访问码验证函数状态
-    window.debugVerificationSystem = function() {
-        console.log('🔍 访问码验证系统调试:');
-        
-        if (window.cloudbaseAPI) {
-            console.log('✅ CloudBase API已加载');
-            console.log('API版本:', window.cloudbaseAPI.version);
-            console.log('API模式:', window.cloudbaseAPI.getCurrentMode ? window.cloudbaseAPI.getCurrentMode() : '未知');
-            
-            // 测试一个12位随机访问码
-            const testCode = 'AB8X3KL9MN12';
-            console.log('🧪 测试随机访问码格式验证:', testCode);
-            
-            // 检查应急验证逻辑
+        }
+
+        function startMelodyPlayback() {
+            console.log('🎵 开始旋律播放');
+
+            // 获取当前旋律数据
+            let melodyData = null;
+            if (typeof getCurrentMelodyData === 'function') {
+                melodyData = getCurrentMelodyData();
+            } else {
+                // 如果函数不存在，尝试从全局变量获取
+                if (typeof melodyHistory !== 'undefined' && typeof currentHistoryIndex !== 'undefined' &&
+                    melodyHistory && melodyHistory.length > 0 && currentHistoryIndex >= 0 &&
+                    currentHistoryIndex < melodyHistory.length) {
+                    melodyData = melodyHistory[currentHistoryIndex];
+                    console.log('📋 从全局变量获取旋律数据:', melodyData);
+                }
+            }
+
+            if (!melodyData) {
+                console.log('⚠️ 没有旋律数据，播放测试音符');
+                playTestNote();
+                return;
+            }
+
+            // 检查是否为隐藏模式
+            const isHiddenMode = checkIfMelodyHidden();
+
+            if (isHiddenMode) {
+                console.log('🎼 隐藏模式激活，启动count-in + 节拍器');
+                playCountInThenMelody(melodyData);
+            } else {
+                console.log('🎶 普通模式，直接播放旋律');
+                playFullMelody(melodyData);
+            }
+        }
+
+        // 检查旋律是否隐藏
+        function checkIfMelodyHidden() {
+            // 检查全局变量isMelodyHidden
+            if (typeof isMelodyHidden !== 'undefined' && isMelodyHidden) {
+                return true;
+            }
+
+            // 检查SVG是否有hidden class
+            const scoreElement = document.getElementById('score');
+            if (scoreElement) {
+                const svgElements = scoreElement.querySelectorAll('svg');
+                for (let svg of svgElements) {
+                    if (svg.classList.contains('melody-hidden')) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        function playTestNote() {
             try {
-                const isValidFormat = /^[A-Z0-9]{11,12}$/.test(testCode);
-                console.log('格式验证结果:', isValidFormat);
-                
-                if (window.cloudbaseAPI.verifyAccessCode) {
-                    console.log('开始API验证测试...');
-                    window.cloudbaseAPI.verifyAccessCode(testCode).then(result => {
-                        console.log('API验证结果:', result);
-                    }).catch(error => {
-                        console.log('API验证错误:', error);
+                console.log('🎹 播放440Hz钢琴测试音符');
+
+                window.isPlayingMelody = true;
+                updatePlayButton();
+
+                // 使用新的钢琴音色播放测试音符
+                const now = window.melodyAudioCtx.currentTime;
+                const testDuration = 1.0;
+                const pianoTestNote = createPianoNote(440, now, testDuration);
+
+                console.log('✅ 钢琴测试音符开始播放');
+
+                // 1.5秒后停止状态
+                setTimeout(() => {
+                    window.isPlayingMelody = false;
+                    updatePlayButton();
+                    console.log('✅ 钢琴音色播放完成 - 音频系统工作正常');
+
+                    // 播放成功后可以扩展到完整旋律播放
+                    if (typeof getCurrentMelodyData === 'function') {
+                        console.log('🎵 钢琴音色测试成功，系统准备就绪');
+                    }
+                }, 1500);
+
+            } catch (error) {
+                console.error('❌ 钢琴测试音符播放失败:', error);
+                window.isPlayingMelody = false;
+                updatePlayButton();
+            }
+        }
+
+        function updatePlayButton() {
+            const playBtn = document.getElementById('playMelodyBtn');
+            if (playBtn) {
+                if (window.isPlayingMelody) {
+                    playBtn.innerHTML = '⏸️ 停止';
+                } else {
+                    playBtn.innerHTML = '▶️ 播放';
+                }
+                console.log('🔄 按钮状态已更新:', window.isPlayingMelody ? '播放中' : '已停止');
+            }
+        }
+
+        // 切换旋律显示/隐藏
+        var isMelodyHidden = false;
+        function toggleMelodyVisibility() {
+            isMelodyHidden = !isMelodyHidden;
+            const visibilityBtn = document.getElementById('melodyVisibilityBtn');
+            const scoreElement = document.getElementById('score');
+
+            if (isMelodyHidden) {
+                // 隐藏旋律
+                if (scoreElement) {
+                    const svgElements = scoreElement.querySelectorAll('svg');
+                    svgElements.forEach(svg => {
+                        svg.classList.add('melody-hidden');
+                        svg.style.opacity = '0';
+                        svg.style.filter = 'blur(10px)';
                     });
                 }
-            } catch (error) {
-                console.error('调试过程出错:', error);
-            }
-        } else {
-            console.error('❌ CloudBase API未加载');
-        }
-    };
-    </script>
-    
-    <!-- 集成统一支付系统 -->
-    <script src="/js/cloudbase-api.js?v=20250908"></script>
-    <script src="/js/payment-success-handler.js?v=20250910"></script>
-    <script src="/js/zpay-simple.js?v=1.0.0"></script>
-    
-    <!-- 测试支付注入器（仅在开发环境） -->
-    <script src="/js/test-payment-injector.js?v=20250908"></script>
-    
-    <!-- 使用条款弹窗 -->
-    <div id="terms-dialog" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center;">
-        <div style="background: white; padding: 30px; border-radius: 16px; max-width: 600px; max-height: 80vh; overflow-y: auto; margin: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
-            <h3 style="color: #2d3748; margin-bottom: 20px; text-align: center;">📜 使用条款</h3>
-            <div style="line-height: 1.6; color: #4a5568; font-size: 14px;">
-                <h4>1. 服务说明</h4>
-                <p>IC Studio 视奏工具为用户提供专业级视奏旋律生成服务。</p>
-                
-                <h4>2. 购买及使用</h4>
-                <p>一次性购买，永久使用。支付成功后立即获得访问码。</p>
-                
-                <h4>3. 退款政策</h4>
-                <p>支持<strong>7天无理由退款</strong>，超过期限不支持退款。</p>
-                
-                <h4>4. 隐私保护</h4>
-                <p>我们严格保护您的个人信息，不会泄露给第三方。</p>
-                
-                <h4>5. 联系方式</h4>
-                <p>如有问题，请发邮件至 service@icstudio.club</p>
-            </div>
-            <div style="text-align: center; margin-top: 25px;">
-                <button onclick="closeTermsDialog()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
-                    关闭
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 隐私政策弹窗 -->
-    <div id="privacy-dialog" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center;">
-        <div style="background: white; padding: 30px; border-radius: 16px; max-width: 600px; max-height: 80vh; overflow-y: auto; margin: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
-            <h3 style="color: #2d3748; margin-bottom: 20px; text-align: center;">🔒 隐私政策</h3>
-            <div style="line-height: 1.6; color: #4a5568; font-size: 14px;">
-                <h4>1. 信息收集</h4>
-                <p>我们只收集必要的交易信息，不会收集与服务无关的个人信息。</p>
-                
-                <h4>2. 信息使用</h4>
-                <p>您的信息仅用于提供服务和客户支持。</p>
-                
-                <h4>3. 信息保护</h4>
-                <p>我们采用业界标准的安全措施保护您的信息。</p>
-                
-                <h4>4. 信息共享</h4>
-                <p>除法律要求外，我们不会与第三方共享您的信息。</p>
-            </div>
-            <div style="text-align: center; margin-top: 25px;">
-                <button onclick="closePrivacyDialog()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
-                    关闭
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // 访问码输入验证按钮状态更新
-        function updateVerifyButton() {
-            const input = document.getElementById('access-code-input');
-            const button = document.getElementById('verify-btn');
-            
-            if (input && button) {
-                const code = input.value.trim();
-                const isValid = code.length === 12 && /^[A-Z0-9]{12}$/.test(code);
-                
-                button.disabled = !isValid;
-                button.style.opacity = isValid ? '1' : '0.5';
-                button.style.cursor = isValid ? 'pointer' : 'not-allowed';
-            }
-        }
-
-        // 处理输入变化
-        function handleInputChange() {
-            const input = document.getElementById('access-code-input');
-            const button = document.getElementById('verify-btn');
-            
-            if (input && button) {
-                const code = input.value.trim();
-                const isValid = code.length >= 11 && code.length <= 12 && /^[A-Z0-9]+$/.test(code);
-                
-                button.dataset.valid = isValid;
-                button.style.opacity = '1'; // 始终保持完全不透明
-                button.style.cursor = isValid ? 'pointer' : 'not-allowed';
-                button.style.background = '#667eea';
-                
-                console.log('🔄 输入变化处理:', { code, isValid });
-            }
-        }
-
-        // 处理验证按钮点击
-        function handleVerifyClick() {
-            console.log('🎯 验证按钮被点击');
-            const button = document.getElementById('verify-btn');
-            
-            if (!button) {
-                console.error('❌ 找不到验证按钮');
-                return;
-            }
-            
-            const isValid = button.dataset.valid === 'true';
-            console.log('🔍 按钮状态检查:', { isValid });
-            
-            if (!isValid) {
-                console.log('⚠️ 按钮处于禁用状态，不执行验证');
-                const resultDiv = document.getElementById('verify-result');
-                if (resultDiv) {
-                    resultDiv.innerHTML = '<span style="color: #e74c3c;">❌ 请输入有效的11-12位访问码</span>';
+                if (visibilityBtn) {
+                    visibilityBtn.innerHTML = '👂';
+                    visibilityBtn.title = '显示旋律';
+                    visibilityBtn.classList.add('hidden-state');
                 }
-                return;
+                console.log('👂 旋律已隐藏');
+            } else {
+                // 显示旋律
+                if (scoreElement) {
+                    const svgElements = scoreElement.querySelectorAll('svg');
+                    svgElements.forEach(svg => {
+                        svg.classList.remove('melody-hidden');
+                        svg.style.opacity = '1';
+                        svg.style.filter = 'none';
+                    });
+                }
+                if (visibilityBtn) {
+                    visibilityBtn.innerHTML = '👀';
+                    visibilityBtn.title = '隐藏旋律';
+                    visibilityBtn.classList.remove('hidden-state');
+                }
+                console.log('👀 旋律已显示');
             }
-            
-            // 执行验证
-            console.log('✅ 开始执行访问码验证');
-            verifyAccessCodeWithServer();
         }
 
-        // 使用服务器端验证访问码
-        async function verifyAccessCodeWithServer() {
-            const input = document.getElementById('access-code-input');
-            const resultDiv = document.getElementById('verify-result');
-            const button = document.getElementById('verify-btn');
-            
-            if (!input || !resultDiv) {
-                console.error('❌ 找不到必要的页面元素');
-                return;
+        // MIDI转频率的辅助函数
+        function midiToFrequency(midiNote) {
+            return 440 * Math.pow(2, (midiNote - 69) / 12);
+        }
+
+        // 音符时值转秒数的辅助函数
+        function durationToSeconds(duration, tempo = 60) {
+            const beatsPerSecond = tempo / 60;
+            const durationMap = {
+                'whole': 4,
+                'half': 2,
+                'quarter': 1,
+                'eighth': 0.5,
+                '16th': 0.25,
+                'dotted-half': 3,
+                'dotted-quarter': 1.5,
+                'dotted-eighth': 0.75
+            };
+            const beats = durationMap[duration] || 1;
+            return beats / beatsPerSecond;
+        }
+
+
+        // 安排单个音符播放 - 钢琴音色版本
+        function scheduleNotePlay(frequency, startTime, duration) {
+            try {
+                // 创建钢琴音色的复合音符
+                const pianoSound = createPianoNote(frequency, startTime, duration);
+
+                // 记录所有组件以便停止时清理
+                window.melodyScheduledSounds.push(...pianoSound.components);
+
+            } catch (error) {
+                console.error('❌ 音符播放安排失败:', error);
             }
-            
-            const code = input.value.trim().toUpperCase();
-            if (!code) {
-                resultDiv.innerHTML = '<span style="color: #e74c3c;">❌ 请输入访问码</span>';
-                return;
+        }
+
+        // 创建高品质钢琴音色
+        function createPianoNote(frequency, startTime, duration) {
+            const components = [];
+
+            // 🎹 根据音高调整参数
+            const isLowNote = frequency < 130; // C3以下
+            const isMidNote = frequency >= 130 && frequency < 520; // C3-C5
+            const isHighNote = frequency >= 520; // C5以上
+
+            // 📊 音高相关的音色参数
+            const harmonicWeights = getHarmonicWeights(frequency);
+            const envelopeParams = getEnvelopeParams(frequency, duration);
+
+            // 🎼 主音频链：基频 + 滤波器 + 压缩器
+            const fundamental = window.melodyAudioCtx.createOscillator();
+            const fundamentalGain = window.melodyAudioCtx.createGain();
+            const mainFilter = window.melodyAudioCtx.createBiquadFilter();
+            const compressor = window.melodyAudioCtx.createDynamicsCompressor();
+
+            // 基频设置
+            fundamental.frequency.value = frequency;
+            fundamental.type = isMidNote ? 'triangle' : 'sawtooth';
+
+            // 主滤波器 - 模拟钢琴的木质共鸣，降低截止频率削弱高频
+            mainFilter.type = 'lowpass';
+            mainFilter.frequency.value = frequency * (isLowNote ? 2.5 : isHighNote ? 6 : 4);
+            mainFilter.Q.value = isLowNote ? 0.7 : 1.0;
+
+            // 压缩器设置 - 模拟钢琴的动态响应
+            compressor.threshold.value = -18;
+            compressor.knee.value = 12;
+            compressor.ratio.value = isLowNote ? 3 : 6;
+            compressor.attack.value = 0.003;
+            compressor.release.value = 0.1;
+
+            // 连接主音频链
+            fundamental.connect(mainFilter);
+            mainFilter.connect(fundamentalGain);
+            fundamentalGain.connect(compressor);
+            compressor.connect(window.melodyAudioCtx.destination);
+
+            // 🎵 谐波系列 - 模拟真实钢琴的谐波结构
+            const harmonics = [];
+            const harmonicRatios = [2, 3, 4, 5, 6, 7, 8]; // 八度、十二度、两八度等
+
+            harmonicRatios.forEach((ratio, index) => {
+                const weight = harmonicWeights[index] || 0;
+                if (weight > 0.01) {
+                    const harmonic = window.melodyAudioCtx.createOscillator();
+                    const harmonicGain = window.melodyAudioCtx.createGain();
+                    const harmonicFilter = window.melodyAudioCtx.createBiquadFilter();
+
+                    harmonic.frequency.value = frequency * ratio;
+                    harmonic.type = ratio % 2 === 0 ? 'triangle' : 'sine';
+
+                    // 谐波滤波器 - 进一步削弱高频
+                    harmonicFilter.type = 'lowpass';
+                    harmonicFilter.frequency.value = frequency * ratio * 1.2;
+                    harmonicFilter.Q.value = 0.6;
+
+                    harmonic.connect(harmonicFilter);
+                    harmonicFilter.connect(harmonicGain);
+                    harmonicGain.connect(compressor);
+
+                    harmonics.push({ oscillator: harmonic, gainNode: harmonicGain, filter: harmonicFilter, weight });
+                }
+            });
+
+            // 🎭 噪音成分已移除 - 提供更纯净的音色
+
+            // 🎼 高级ADSR包络
+            const now = startTime;
+            const { attack, decay, sustain, release } = envelopeParams;
+
+            // 主音包络
+            fundamentalGain.gain.setValueAtTime(0, now);
+            fundamentalGain.gain.linearRampToValueAtTime(0.5, now + attack);
+            fundamentalGain.gain.exponentialRampToValueAtTime(0.5 * sustain, now + attack + decay);
+            fundamentalGain.gain.setValueAtTime(0.5 * sustain, now + duration - release);
+            fundamentalGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            // 谐波包络 - 每个谐波有不同的衰减特性
+            harmonics.forEach(({ gainNode, weight }, index) => {
+                const harmonicAttack = attack * (0.8 + index * 0.1);
+                const harmonicDecay = decay * (0.5 + index * 0.2);
+                const harmonicSustain = sustain * (0.6 - index * 0.1);
+                const harmonicRelease = release * (0.8 + index * 0.15);
+
+                gainNode.gain.setValueAtTime(0, now);
+                gainNode.gain.linearRampToValueAtTime(weight, now + harmonicAttack);
+                gainNode.gain.exponentialRampToValueAtTime(weight * harmonicSustain, now + harmonicAttack + harmonicDecay);
+                gainNode.gain.setValueAtTime(weight * harmonicSustain, now + duration - harmonicRelease);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
+            });
+
+            // 噪音包络已移除
+
+            // 🎹 动态滤波器包络 - 更保守的高频控制
+            mainFilter.frequency.setValueAtTime(frequency * 5, now);
+            mainFilter.frequency.exponentialRampToValueAtTime(frequency * 2.5, now + attack + decay);
+            mainFilter.frequency.setValueAtTime(frequency * 2.5, now + duration - release);
+            mainFilter.frequency.exponentialRampToValueAtTime(frequency * 1.8, now + duration);
+
+            // 启动所有振荡器
+            fundamental.start(now);
+            harmonics.forEach(({ oscillator }) => oscillator.start(now));
+
+            // 停止所有振荡器
+            fundamental.stop(now + duration);
+            harmonics.forEach(({ oscillator }) => oscillator.stop(now + duration));
+
+            // 记录组件
+            components.push({ oscillator: fundamental, gainNode: fundamentalGain, filter: mainFilter });
+            components.push(...harmonics);
+
+            console.log(`🎹 创建纯净钢琴音色: ${frequency.toFixed(1)}Hz (基频 + ${harmonics.length}个谐波)`);
+
+            return { components };
+        }
+
+        // 根据音高获取谐波权重
+        function getHarmonicWeights(frequency) {
+            const isLowNote = frequency < 130;
+            const isMidNote = frequency >= 130 && frequency < 520;
+            const isHighNote = frequency >= 520;
+
+            if (isLowNote) {
+                // 低音：更多低次谐波，厚重感，大幅削弱第4个泛音列
+                return [0.25, 0.12, 0.025, 0.015, 0.01, 0.003, 0.001];
+            } else if (isHighNote) {
+                // 高音：保持明亮但大幅削弱高频成分，特别是第4个泛音列
+                return [0.18, 0.18, 0.06, 0.04, 0.02, 0.008, 0.002];
+            } else {
+                // 中音：平衡结构，大幅削弱第4个泛音列
+                return [0.22, 0.15, 0.04, 0.03, 0.018, 0.01, 0.003];
             }
-            
-            if (code.length !== 12 && code.length !== 11) {
-                resultDiv.innerHTML = '<span style="color: #e74c3c;">❌ 访问码必须是11-12位</span>';
-                return;
-            }
-            
-            if (!/^[A-Z0-9]+$/.test(code)) {
-                resultDiv.innerHTML = '<span style="color: #e74c3c;">❌ 访问码只能包含字母和数字</span>';
-                return;
+        }
+
+        // 根据音高和时长获取包络参数
+        function getEnvelopeParams(frequency, duration) {
+            const isLowNote = frequency < 130;
+            const isMidNote = frequency >= 130 && frequency < 520;
+            const isHighNote = frequency >= 520;
+
+            let attack, decay, sustain, release;
+
+            if (isLowNote) {
+                // 低音：较慢的起音，长的衰减
+                attack = Math.max(0.008, 0.03 - (frequency / 200) * 0.01);
+                decay = 0.5;
+                sustain = 0.3;
+                release = Math.min(1.5, duration * 0.3);
+            } else if (isHighNote) {
+                // 高音：快起音，短衰减
+                attack = 0.003;
+                decay = 0.15;
+                sustain = 0.2;
+                release = Math.min(0.3, duration * 0.2);
+            } else {
+                // 中音：平衡的参数
+                attack = 0.005;
+                decay = 0.3;
+                sustain = 0.25;
+                release = Math.min(0.8, duration * 0.25);
             }
 
-            // 禁用按钮防止重复点击
-            button.disabled = true;
-            button.style.opacity = '0.5';
-            resultDiv.innerHTML = '<span style="color: #3498db;">🔄 正在验证访问码...</span>';
+            return {
+                attack,
+                decay,
+                sustain,
+                release
+            };
+        }
+
+        // 改进的MusicXML音符解析函数
+        function parseNotesFromMusicXML(musicXML) {
+            const notes = [];
 
             try {
-                // 等待 PaymentStateManager 加载
-                if (!window.paymentManager) {
-                    resultDiv.innerHTML = '<span style="color: #f39c12;">⏳ 正在加载验证系统...</span>';
-                    
-                    // 等待最多5秒让PaymentStateManager加载
-                    let attempts = 0;
-                    while (!window.paymentManager && attempts < 50) {
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                        attempts++;
+                console.log('🎼 开始详细解析MusicXML...');
+
+                // 🔍 调试：输出原始MusicXML以分析附点问题
+                console.log('📋 原始MusicXML内容:', musicXML);
+
+                // 🔍 检查MusicXML中的 <dot> 元素
+                const dotCount = (musicXML.match(/<dot/g) || []).length;
+                console.log(`🔍 检测到 ${dotCount} 个 <dot> 元素`);
+
+                // 🔧 修复：如果检测到多余的附点，进行清理
+                if (dotCount > 0) {
+                    console.log(`⚠️ 发现 ${dotCount} 个附点元素，开始清理多余附点...`);
+                    musicXML = cleanupExcessiveDots(musicXML);
+                    const cleanedDotCount = (musicXML.match(/<dot/g) || []).length;
+                    console.log(`✅ 清理完成，剩余 ${cleanedDotCount} 个附点元素`);
+                }
+
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(musicXML, 'text/xml');
+
+                // 查找所有note元素
+                const noteElements = xmlDoc.getElementsByTagName('note');
+                console.log(`🔍 XML中找到 ${noteElements.length} 个note元素`);
+
+                for (let i = 0; i < noteElements.length; i++) {
+                    const noteElement = noteElements[i];
+
+                    // 获取基本的duration信息（MusicXML duration单位）
+                    const durationElement = noteElement.getElementsByTagName('duration')[0];
+                    const xmlDuration = durationElement ? parseInt(durationElement.textContent) : 4;
+
+                    // 获取时值类型
+                    const typeElement = noteElement.getElementsByTagName('type')[0];
+                    const noteType = typeElement ? typeElement.textContent : 'quarter';
+
+                    // 检查是否有附点
+                    const dotElements = noteElement.getElementsByTagName('dot');
+                    const hasDot = dotElements.length > 0;
+
+                    // 🔍 调试：显示每个音符的附点情况
+                    console.log(`🔍 音符 ${i+1}: 类型=${noteType}, 附点数量=${dotElements.length}`);
+                    if (dotElements.length > 0) {
+                        console.log(`⚠️ 检测到异常！音符有 ${dotElements.length} 个附点`);
                     }
-                    
-                    if (!window.paymentManager) {
-                        throw new Error('验证系统加载超时，请刷新页面重试');
+
+                    // 计算实际的duration字符串
+                    let actualDuration = noteType;
+                    if (hasDot) {
+                        actualDuration = `dotted-${noteType}`;
+                    }
+
+                    // 检查是否是休止符
+                    const restElement = noteElement.getElementsByTagName('rest')[0];
+                    if (restElement) {
+                        const restObj = {
+                            type: 'rest',
+                            duration: actualDuration,
+                            xmlDuration: xmlDuration,
+                            beats: calculateBeatsFromDuration(actualDuration)
+                        };
+                        console.log(`🎵 解析休止符: ${actualDuration} (${restObj.beats}拍)`);
+                        notes.push(restObj);
+                        continue;
+                    }
+
+                    // 获取音高信息
+                    const pitchElement = noteElement.getElementsByTagName('pitch')[0];
+                    if (pitchElement) {
+                        const step = pitchElement.getElementsByTagName('step')[0]?.textContent;
+                        const octave = parseInt(pitchElement.getElementsByTagName('octave')[0]?.textContent);
+                        const alterElement = pitchElement.getElementsByTagName('alter')[0];
+                        const alter = alterElement ? parseInt(alterElement.textContent) : 0;
+
+                        // 检查连线信息
+                        const tieElements = noteElement.getElementsByTagName('tie');
+                        let tieInfo = null;
+                        if (tieElements.length > 0) {
+                            const tieTypes = Array.from(tieElements).map(tie => tie.getAttribute('type'));
+                            tieInfo = {
+                                isStart: tieTypes.includes('start'),
+                                isStop: tieTypes.includes('stop'),
+                                types: tieTypes
+                            };
+                        }
+
+                        // 计算MIDI音符号
+                        if (step && !isNaN(octave)) {
+                            const midi = stepOctaveToMidi(step, octave, alter);
+
+                            const noteObj = {
+                                type: 'note',
+                                step: step,
+                                octave: octave,
+                                alter: alter,
+                                midi: midi,
+                                duration: actualDuration,
+                                xmlDuration: xmlDuration,
+                                beats: calculateBeatsFromDuration(actualDuration),
+                                tied: tieInfo ? true : false,
+                                tieInfo: tieInfo
+                            };
+
+                            const tieStr = tieInfo ? ` [连线:${tieInfo.types.join(',')}]` : '';
+                            console.log(`🎵 解析音符: ${step}${alter > 0 ? '#' : alter < 0 ? 'b' : ''}${octave} (MIDI: ${midi}) ${actualDuration} (${noteObj.beats}拍)${tieStr}`);
+                            notes.push(noteObj);
+                        }
                     }
                 }
-                
-                console.log('🔍 使用 PaymentStateManager 验证访问码:', code);
-                resultDiv.innerHTML = '<span style="color: #3498db;">🔄 正在服务器验证...</span>';
-                
-                const result = await window.paymentManager.verifyAccessCode(code, true);
-                
-                if (result.success) {
-                    console.log('✅ 访问码验证成功:', result.data);
-                    resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 访问码验证成功！</span>';
-                    
-                    // 重新启用按钮
-                    button.disabled = false;
-                    button.style.opacity = '1';
-                    
-                    // 延迟显示弹窗，让用户看到成功消息
-                    setTimeout(() => {
-                        showPaymentSuccessPopup(code, result.data);
-                    }, 800);
-                    
-                } else {
-                    console.log('❌ 访问码验证失败:', result.error);
-                    resultDiv.innerHTML = `<span style="color: #e74c3c;">❌ ${result.error}</span>`;
-                    button.disabled = false;
-                    button.style.opacity = '1';
+
+                console.log(`🎼 XML解析完成，共${notes.length}个音符/休止符`);
+
+            } catch (error) {
+                console.error('❌ MusicXML解析错误:', error);
+            }
+
+            return notes;
+        }
+
+        // 计算音符时值对应的拍数
+        function calculateBeatsFromDuration(duration) {
+            const baseDurations = {
+                'whole': 4,
+                'half': 2,
+                'quarter': 1,
+                'eighth': 0.5,
+                '16th': 0.25,
+                '32nd': 0.125
+            };
+
+            // 处理附点音符（用于解析现有MusicXML）
+            if (duration.startsWith('dotted-')) {
+                const baseDuration = duration.replace('dotted-', '');
+                const baseBeats = baseDurations[baseDuration] || 1;
+                return baseBeats * 1.5; // 附点增加50%时值
+            }
+
+            return baseDurations[duration] || 1;
+        }
+
+        // 将音名和八度转换为MIDI音符号
+        function stepOctaveToMidi(step, octave, alter = 0) {
+            const stepToSemitone = {
+                'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11
+            };
+
+            const baseMidi = stepToSemitone[step];
+            if (baseMidi === undefined) return 60; // 默认C4
+
+            return (octave + 1) * 12 + baseMidi + alter;
+        }
+
+
+
+        // 获取拍号信息
+        function getTimeSignature(melodyData) {
+            // 默认值
+            let timeSignature = { numerator: 4, denominator: 4 };
+
+            try {
+                // 从config中获取
+                if (melodyData.config && melodyData.config.timeSignature) {
+                    const ts = melodyData.config.timeSignature;
+                    if (ts.includes('/')) {
+                        const parts = ts.split('/');
+                        timeSignature.numerator = parseInt(parts[0]) || 4;
+                        timeSignature.denominator = parseInt(parts[1]) || 4;
+                    }
+                }
+
+                // 从musicXML中获取
+                if (melodyData.musicXML && timeSignature.numerator === 4) {
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(melodyData.musicXML, 'text/xml');
+                    const timeElements = xmlDoc.getElementsByTagName('time');
+
+                    if (timeElements.length > 0) {
+                        const beats = timeElements[0].getElementsByTagName('beats')[0]?.textContent;
+                        const beatType = timeElements[0].getElementsByTagName('beat-type')[0]?.textContent;
+
+                        if (beats && beatType) {
+                            timeSignature.numerator = parseInt(beats) || 4;
+                            timeSignature.denominator = parseInt(beatType) || 4;
+                        }
+                    }
                 }
             } catch (error) {
-                console.error('验证访问码失败:', error);
-                resultDiv.innerHTML = `<span style="color: #e74c3c;">❌ ${error.message || '验证失败，请稍后重试'}</span>`;
-                button.disabled = false;
-                button.style.opacity = '1';
-            }
-        }
-
-        // ===== 支付成功弹窗相关函数 =====
-        function showPaymentSuccessPopup(accessCode, orderData) {
-            // 创建弹窗HTML
-            const popup = document.createElement('div');
-            popup.id = 'success-popup';
-            popup.innerHTML = `
-                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;">
-                    <div style="background: white; padding: 40px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">
-                        <div style="margin-bottom: 30px;">
-                            <div style="width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px;">✓</div>
-                            <h2 style="color: #333; margin-bottom: 10px;">🎉 访问验证成功！</h2>
-                            <p style="color: #666; font-size: 16px; margin-bottom: 0;">您的访问码已验证，现在可以使用完整版功能</p>
-                        </div>
-                        
-                        <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: left;">
-                            <h3 style="color: #333; margin-bottom: 15px; text-align: center;">📋 验证信息</h3>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; align-items: center;">
-                                <span style="color: #666;">访问码：</span>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-family: monospace; font-weight: bold; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">${accessCode}</span>
-                                    <button onclick="copyAccessCode('${accessCode}')" 
-                                            style="background: #3b82f6; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s ease;"
-                                            onmouseover="this.style.background='#2563eb'"
-                                            onmouseout="this.style.background='#3b82f6'"
-                                            title="复制访问码">
-                                        📋
-                                    </button>
-                                </div>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                <span style="color: #666;">产品：</span>
-                                <span>${orderData.product_name || 'IC Studio 视奏工具'}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: #666;">验证时间：</span>
-                                <span>${new Date().toLocaleString()}</span>
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom: 30px;">
-                            <h3 style="color: #333; margin-bottom: 20px;">📦 下载资源</h3>
-                            <div style="display: grid; gap: 10px;">
-                                <a href="javascript:void(0)" onclick="downloadFile('/software-packages/IC Studio 视奏工具-1.0.0-mac-x64.dmg', 'IC Studio 视奏工具-1.0.0-mac-x64.dmg')"
-                                   style="display: block; background: #f0f9ff; color: #1e40af; padding: 12px 20px; border: 2px solid #93c5fd; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer;"
-                                   onmouseover="this.style.background='#1e40af'; this.style.color='white';" 
-                                   onmouseout="this.style.background='#f0f9ff'; this.style.color='#1e40af';">
-                                    🍎 Mac版本 (DMG)
-                                </a>
-                                <a href="javascript:void(0)" onclick="downloadFile('/software-packages/IC Studio 视奏工具-1.0.0-win-x64.exe', 'IC Studio 视奏工具-1.0.0-win-x64.exe')"
-                                   style="display: block; background: #f0fdf4; color: #166534; padding: 12px 20px; border: 2px solid #86efac; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer;"
-                                   onmouseover="this.style.background='#166534'; this.style.color='white';" 
-                                   onmouseout="this.style.background='#f0fdf4'; this.style.color='#166534';">
-                                    💻 Windows版本 (EXE)
-                                </a>
-                                <a href="javascript:void(0)" onclick="downloadFile('/software-packages/IC Studio 视奏工具-1.0.0-linux-x86_64.AppImage', 'IC Studio 视奏工具-1.0.0-linux-x86_64.AppImage')"
-                                   style="display: block; background: #fef3c7; color: #92400e; padding: 12px 20px; border: 2px solid #fbbf24; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer;"
-                                   onmouseover="this.style.background='#92400e'; this.style.color='white';" 
-                                   onmouseout="this.style.background='#fef3c7'; this.style.color='#92400e';">
-                                    🐧 Linux版本 (AppImage)
-                                </a>
-                            </div>
-                            <p style="font-size: 12px; color: #888; margin-top: 15px;">下载完成后，使用以上访问码激活完整版功能</p>
-                        </div>
-
-                        <div style="display: flex; gap: 15px; justify-content: center;">
-                            <button onclick="closeSuccessPopup()" 
-                                    style="padding: 15px 30px; background: #f8f9fa; color: #333; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;"
-                                    onmouseover="this.style.background='#e2e8f0'" 
-                                    onmouseout="this.style.background='#f8f9fa'">
-                                关闭弹窗
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(popup);
-        }
-
-        // 关闭成功弹窗
-        function closeSuccessPopup() {
-            const popup = document.getElementById('success-popup');
-            if (popup) {
-                popup.remove();
+                console.warn('⚠️ 无法解析拍号，使用默认4/4拍:', error);
             }
 
-            // Command+R 风格的页面刷新
-            // 添加轻微的视觉反馈，然后执行刷新
-            document.body.style.opacity = '0.95';
-            document.body.style.transition = 'opacity 0.1s ease';
+            console.log(`🎼 检测到拍号: ${timeSignature.numerator}/${timeSignature.denominator}`);
+            return timeSignature;
+        }
 
+        // 播放完整旋律（纯旋律，不带节拍器）
+        function playFullMelody(melodyData, customStartTime = null) {
+            console.log('🎶 开始旋律播放');
+
+            // 只在首次调用时设置播放状态，count-in调用时已经设置过了
+            if (!window.isPlayingMelody) {
+                window.isPlayingMelody = true;
+                updatePlayButton();
+                window.melodyScheduledSounds = [];
+            }
+
+            // 获取节拍器速度
+            let tempo = 60;
+            if (typeof getCurrentTempo === 'function') {
+                tempo = getCurrentTempo();
+            }
+            console.log('🕰️ 播放速度:', tempo, 'BPM');
+
+            // 解析音符数据
+            let notes = extractNotesFromMelodyData(melodyData);
+
+            if (notes.length === 0) {
+                console.log('⚠️ 没有找到音符，播放钢琴测试音符');
+                playTestNote();
+                return;
+            }
+
+            console.log(`🎵 找到 ${notes.length} 个音符，开始安排播放`);
+
+            // 处理连线音符和休止符
+            const processedNotes = processNotesForPlayback(notes);
+            console.log(`🎵 处理后的音符: ${processedNotes.length}个事件`);
+
+            // 计算总时长并安排播放
+            const startTime = customStartTime || window.melodyAudioCtx.currentTime;
+            let totalDuration = 0;
+            let currentTime = 0;
+
+            // 安排音符播放
+            processedNotes.forEach((event, index) => {
+                const eventStartTime = startTime + currentTime;
+                const eventDuration = durationToSeconds(event.duration || 'quarter', tempo);
+
+                if (event.type === 'note' && event.midi && !event.isTiedContinuation) {
+                    // 播放音符（跳过连线的延续部分）
+                    const frequency = midiToFrequency(event.midi);
+                    scheduleNotePlay(frequency, eventStartTime, eventDuration);
+                    console.log(`🎹 安排播放: MIDI ${event.midi} @ ${eventStartTime.toFixed(2)}s, 时长 ${eventDuration.toFixed(2)}s`);
+                } else if (event.type === 'rest') {
+                    // 休止符 - 只计时，不播放
+                    console.log(`🔇 休止符: ${eventDuration.toFixed(2)}s @ ${eventStartTime.toFixed(2)}s`);
+                }
+
+                totalDuration = Math.max(totalDuration, currentTime + eventDuration);
+                currentTime += eventDuration;
+            });
+
+            // 设置播放完成回调
             setTimeout(() => {
-                // 强制刷新页面，类似 Command+R 的效果
-                window.location.reload(true);
-            }, 100);
+                if (window.isPlayingMelody) {
+                    window.isPlayingMelody = false;
+                    updatePlayButton();
+                    window.melodyScheduledSounds = [];
+                    console.log('✅ 旋律播放完成');
+                }
+            }, (totalDuration + 0.5) * 1000);
+
+            console.log(`🎼 播放安排完成: ${totalDuration.toFixed(2)}秒`);
         }
 
-        // 复制访问码功能
-        function copyAccessCode(accessCode) {
-            console.log('📋 复制访问码:', accessCode);
-            
-            // 使用现代的Clipboard API
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(accessCode).then(() => {
-                    showCopyNotification('访问码已复制到剪贴板');
-                }).catch(err => {
-                    console.error('复制失败:', err);
-                    fallbackCopyTextToClipboard(accessCode);
+        // 提取音符数据的辅助函数
+        function extractNotesFromMelodyData(melodyData) {
+            let notes = [];
+
+            // 方法1：检查measures结构
+            if (melodyData.measures && Array.isArray(melodyData.measures)) {
+                melodyData.measures.forEach((measure, measureIndex) => {
+                    if (measure.notes && Array.isArray(measure.notes)) {
+                        measure.notes.forEach(note => {
+                            notes.push(note);
+                        });
+                    }
                 });
-            } else {
-                // 降级方案
-                fallbackCopyTextToClipboard(accessCode);
             }
+
+            // 方法2：检查是否有直接的notes数组
+            if (notes.length === 0 && melodyData.notes && Array.isArray(melodyData.notes)) {
+                notes = melodyData.notes;
+            }
+
+            // 方法3：检查musicXML中是否能解析出音符
+            if (notes.length === 0 && melodyData.musicXML) {
+                notes = parseNotesFromMusicXML(melodyData.musicXML);
+            }
+
+            return notes;
         }
 
-        function fallbackCopyTextToClipboard(text) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.top = '0';
-            textArea.style.left = '0';
-            textArea.style.position = 'fixed';
-            
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    showCopyNotification('访问码已复制到剪贴板');
+        // 处理连线音符和休止符
+        function processNotesForPlayback(notes) {
+            const processedNotes = [];
+            let i = 0;
+
+            while (i < notes.length) {
+                const currentNote = notes[i];
+
+                if (currentNote.type === 'rest') {
+                    // 休止符直接添加
+                    processedNotes.push(currentNote);
+                    i++;
+                } else if (currentNote.type === 'note') {
+                    if (currentNote.tied && currentNote.tieInfo && currentNote.tieInfo.isStart) {
+                        // 这是连线的开始，需要合并后续的连线音符
+                        const mergedNote = mergeTiedNotes(notes, i);
+                        processedNotes.push(mergedNote.note);
+                        i = mergedNote.nextIndex;
+                    } else if (currentNote.tied && currentNote.tieInfo && currentNote.tieInfo.isStop && !currentNote.tieInfo.isStart) {
+                        // 这是连线的结束，但不是开始，标记为延续（不播放）
+                        const continuationNote = {
+                            ...currentNote,
+                            isTiedContinuation: true
+                        };
+                        processedNotes.push(continuationNote);
+                        i++;
+                    } else {
+                        // 普通音符，直接添加
+                        processedNotes.push(currentNote);
+                        i++;
+                    }
                 } else {
-                    showCopyNotification('复制失败，请手动复制', 'error');
+                    // 其他类型，直接添加
+                    processedNotes.push(currentNote);
+                    i++;
                 }
-            } catch (err) {
-                console.error('降级复制失败:', err);
-                showCopyNotification('复制失败，请手动复制', 'error');
             }
-            
-            document.body.removeChild(textArea);
+
+            return processedNotes;
         }
 
-        function showCopyNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            const bgColor = type === 'success' ? '#22c55e' : '#ef4444';
-            
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${bgColor};
-                color: white;
-                padding: 15px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-                z-index: 10000;
-                font-size: 14px;
-                font-weight: 600;
-            `;
-            
-            if (type === 'success') {
-                notification.innerHTML = `🔽 ${message}`;
-            } else {
-                notification.innerHTML = `❌ ${message}`;
-            }
-            
-            document.body.appendChild(notification);
-            
-            // 3秒后移除通知
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.style.opacity = '0';
-                    notification.style.transition = 'opacity 0.3s ease';
-                    setTimeout(() => {
-                        if (notification.parentNode) {
-                            document.body.removeChild(notification);
-                        }
-                    }, 300);
+        // 合并连线音符
+        function mergeTiedNotes(notes, startIndex) {
+            const startNote = notes[startIndex];
+            let totalBeats = startNote.beats || calculateBeatsFromDuration(startNote.duration);
+            let nextIndex = startIndex + 1;
+
+            console.log(`🔗 开始处理连线: ${startNote.step}${startNote.octave} (开始音符: ${startNote.beats}拍)`);
+
+            // 查找后续的连线音符
+            while (nextIndex < notes.length) {
+                const nextNote = notes[nextIndex];
+
+                // 检查是否是同音高的连线音符
+                if (nextNote.type === 'note' &&
+                    nextNote.tied &&
+                    nextNote.midi === startNote.midi &&
+                    nextNote.tieInfo) {
+
+                    const noteBeats = nextNote.beats || calculateBeatsFromDuration(nextNote.duration);
+                    totalBeats += noteBeats;
+                    console.log(`🔗 合并连线音符: +${noteBeats}拍, 总计: ${totalBeats}拍`);
+
+                    nextIndex++;
+
+                    // 如果这是连线的结束，停止合并
+                    if (nextNote.tieInfo.isStop && !nextNote.tieInfo.isStart) {
+                        break;
+                    }
+                } else {
+                    // 遇到非连线音符，停止
+                    break;
                 }
-            }, 3000);
+            }
+
+            // 计算合并后的duration
+            const mergedDuration = beatsToClosestDuration(totalBeats);
+
+            const mergedNote = {
+                ...startNote,
+                duration: mergedDuration,
+                beats: totalBeats,
+                isMergedTie: true,
+                originalDuration: startNote.duration
+            };
+
+            console.log(`🔗 连线合并完成: ${startNote.step}${startNote.octave}, 总时长: ${totalBeats}拍 (${mergedDuration})`);
+
+            return {
+                note: mergedNote,
+                nextIndex: nextIndex
+            };
         }
 
-        // 下载文件功能
-        function downloadFile(url, filename) {
-            console.log('🔽 开始下载文件:', filename);
-            console.log('🔗 原始URL:', url);
-            
-            // 构建完整URL
-            const fullUrl = new URL(url, window.location.origin).href;
-            console.log('📍 完整URL:', fullUrl);
-            
-            // 创建临时下载链接元素
-            const downloadLink = document.createElement('a');
-            downloadLink.href = fullUrl;
-            downloadLink.download = filename;
-            downloadLink.style.display = 'none';
-            
-            // 添加到页面
-            document.body.appendChild(downloadLink);
-            
+        // 将拍数转换为最接近的duration字符串
+        function beatsToClosestDuration(beats) {
+            // 基础音符时值对应的拍数（不包含附点）
+            const durationMap = [
+                { beats: 4, duration: 'whole' },
+                { beats: 2, duration: 'half' },
+                { beats: 1, duration: 'quarter' },
+                { beats: 0.5, duration: 'eighth' },
+                { beats: 0.25, duration: '16th' },
+                { beats: 0.125, duration: '32nd' }
+            ];
+
+            // 找到最接近的时值
+            let closestDuration = 'quarter';
+            let minDifference = Infinity;
+
+            for (const { beats: targetBeats, duration } of durationMap) {
+                const difference = Math.abs(beats - targetBeats);
+                if (difference < minDifference) {
+                    minDifference = difference;
+                    closestDuration = duration;
+                }
+            }
+
+            // 如果没有精确匹配，使用简单的映射
+            if (minDifference > 0.01) {
+                if (beats >= 4) return 'whole';
+                if (beats >= 2) return 'half';
+                if (beats >= 1) return 'quarter';
+                if (beats >= 0.5) return 'eighth';
+                return '16th';
+            }
+
+            return closestDuration;
+        }
+
+        // ====== 隐藏模式下的节拍器功能 ======
+
+        // 创建节拍器声音
+        function createMetronomeClick(frequency = 523.25, isDownbeat = false) {
             try {
-                // 触发下载
-                downloadLink.click();
-                console.log('✅ 下载已启动:', filename);
-                showDownloadNotification(filename);
+                const oscillator = window.melodyAudioCtx.createOscillator();
+                const gainNode = window.melodyAudioCtx.createGain();
+
+                // 使用方波和自然音高 (与主节拍器保持一致)
+                oscillator.type = 'square';
+                oscillator.frequency.setValueAtTime(
+                    isDownbeat ? frequency * 1.2 : frequency,
+                    window.melodyAudioCtx.currentTime
+                );
+
+                oscillator.connect(gainNode);
+                gainNode.connect(window.melodyAudioCtx.destination);
+
+                return { oscillator, gainNode };
             } catch (error) {
-                console.error('❌ 下载失败:', error);
-                // 降级到直接打开
-                window.open(fullUrl, '_blank');
-                showDownloadNotification(filename);
+                console.error('❌ 创建节拍器声音失败:', error);
+                return null;
             }
-            
-            // 清理临时元素
+        }
+
+        // 播放节拍器点击声
+        function playMetronomeClick(startTime, isDownbeat = false) {
+            const metronome = createMetronomeClick(523.25, isDownbeat);
+            if (!metronome) return;
+
+            const { oscillator, gainNode } = metronome;
+
+            // 使用与NiceChord节拍器一致的包络
+            const clickDuration = 0.05;
+            const volume = 0.25; // 统一音量
+
+            gainNode.gain.setValueAtTime(volume, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + clickDuration);
+
+            oscillator.start(startTime);
+            oscillator.stop(startTime + clickDuration);
+
+            // 记录以便停止时清理
+            window.melodyScheduledSounds.push({ oscillator, gainNode });
+
+            console.log(`🥁 节拍器: ${isDownbeat ? '强拍' : '弱拍'} @ ${startTime.toFixed(2)}s`);
+        }
+
+        // 启动页面上的节拍器
+        function startPageMetronome() {
+            // 查找页面上的节拍器按钮并启动
+            const metronomeBtn = document.querySelector('#headerMetronomePlay, .metronome-play-btn');
+            if (metronomeBtn && !metronomeBtn.classList.contains('playing')) {
+                console.log('🎼 启动页面节拍器');
+                metronomeBtn.click();
+                return true;
+            }
+            return false;
+        }
+
+        // 停止页面上的节拍器
+        function stopPageMetronome() {
+            const metronomeBtn = document.querySelector('#headerMetronomePlay, .metronome-play-btn');
+            if (metronomeBtn && metronomeBtn.classList.contains('playing')) {
+                console.log('⏹️ 停止页面节拍器');
+                metronomeBtn.click();
+                return true;
+            }
+            return false;
+        }
+
+        // Count-in然后播放旋律（隐藏模式专用）
+        function playCountInThenMelody(melodyData) {
+            console.log('🎼 隐藏模式：开始count-in（仅count-in，不启动页面节拍器）');
+
+            window.isPlayingMelody = true;
+            updatePlayButton();
+            window.melodyScheduledSounds = [];
+
+            // 获取节拍器速度和拍号
+            let tempo = 60;
+            if (typeof getCurrentTempo === 'function') {
+                tempo = getCurrentTempo();
+            }
+
+            // 获取拍号信息
+            const timeSignature = getTimeSignature(melodyData);
+            const countInBeats = timeSignature.numerator; // 使用拍号分子作为count-in次数
+
+            console.log(`🎼 Count-in设置: ${tempo} BPM, 拍号 ${timeSignature.numerator}/${timeSignature.denominator}, count-in ${countInBeats}下`);
+
+            const beatDuration = 60 / tempo; // 每拍的秒数
+            const now = window.melodyAudioCtx.currentTime;
+
+            // 注释掉启动页面节拍器的代码
+            // startPageMetronome();
+
+            // 播放count-in（根据拍号分子决定次数）
+            for (let beat = 0; beat < countInBeats; beat++) {
+                const beatTime = now + beat * beatDuration;
+                const isDownbeat = beat === 0;
+                playMetronomeClick(beatTime, isDownbeat);
+            }
+
+            // count-in完成后的处理
+            const countInEndTime = now + countInBeats * beatDuration;
+            console.log(`🎵 Count-in将在${countInEndTime.toFixed(2)}s结束，然后开始旋律播放`);
+
+            // 在count-in结束后开始播放旋律（不需要停止页面节拍器，因为没有启动过）
             setTimeout(() => {
-                if (downloadLink.parentNode) {
-                    document.body.removeChild(downloadLink);
+                if (window.isPlayingMelody) {
+                    console.log('🎼 Count-in结束，开始旋律播放');
+                    // 由于没有启动页面节拍器，这里不需要停止操作
+
+                    // 开始播放旋律
+                    playFullMelody(melodyData, countInEndTime);
                 }
-            }, 100);
+            }, countInBeats * beatDuration * 1000);
         }
 
-        function showDownloadNotification(message, type = 'success') {
-            // 创建临时通知
-            const notification = document.createElement('div');
-            const bgColor = type === 'success' ? '#22c55e' : '#ef4444';
-            
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                background: ${bgColor};
-                color: white;
-                padding: 15px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-                z-index: 10000;
-                font-size: 14px;
-                font-weight: 600;
-            `;
-            
-            if (type === 'success') {
-                notification.innerHTML = `🔽 正在下载 ${message}...`;
-            } else {
-                notification.innerHTML = `❌ ${message}`;
+        // 🎹 临时样本生成器 - 测试用
+        function generateTestSample(frequency, name, audioContext) {
+            console.log(`🎵 生成测试样本: ${name} (${frequency}Hz)`);
+
+            const duration = 2.5;
+            const sampleRate = 22050;
+            const length = duration * sampleRate;
+
+            // 创建AudioBuffer
+            const buffer = audioContext.createBuffer(1, length, sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // 根据具体音符调整谐波结构
+            let harmonics, decay, brightness;
+
+            switch(name) {
+                case 'C4':
+                    harmonics = [1.0, 0.5, 0.3, 0.2, 0.12, 0.08, 0.05]; // 温暖的中音
+                    decay = 0.7;
+                    brightness = 0.8;
+                    break;
+                case 'E4':
+                    harmonics = [1.0, 0.45, 0.35, 0.22, 0.15, 0.09, 0.04]; // 略带明亮
+                    decay = 0.65;
+                    brightness = 0.9;
+                    break;
+                case 'G4':
+                    harmonics = [1.0, 0.4, 0.4, 0.25, 0.18, 0.1, 0.03]; // 平衡的高中音
+                    decay = 0.6;
+                    brightness = 1.0;
+                    break;
+                case 'A4':
+                    harmonics = [1.0, 0.35, 0.45, 0.28, 0.2, 0.12, 0.02]; // 明亮的A4
+                    decay = 0.58;
+                    brightness = 1.1;
+                    break;
+                default:
+                    harmonics = [1.0, 0.4, 0.3, 0.2, 0.1, 0.05];
+                    decay = 0.7;
+                    brightness = 1.0;
             }
-            
-            document.body.appendChild(notification);
-            
-            // 3秒后移除通知
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.style.opacity = '0';
-                    notification.style.transition = 'opacity 0.3s ease';
-                    setTimeout(() => {
-                        if (notification.parentNode) {
-                            document.body.removeChild(notification);
-                        }
-                    }, 300);
+
+            // 生成样本数据
+            for (let i = 0; i < length; i++) {
+                const t = i / sampleRate;
+                let sample = 0;
+
+                // 添加谐波系列
+                harmonics.forEach((amplitude, index) => {
+                    const harmonic = index + 1;
+                    const freq = frequency * harmonic;
+
+                    // 高次谐波随时间衰减更快
+                    const harmonicDecay = decay * (1 + index * 0.3);
+                    const envelope = Math.exp(-harmonicDecay * t);
+
+                    sample += amplitude * Math.sin(2 * Math.PI * freq * t) * envelope;
+                });
+
+                // 添加轻微的琴弦共鸣噪声
+                const noiseLevel = 0.015 * Math.exp(-t * 3);
+                sample += (Math.random() - 0.5) * noiseLevel;
+
+                // 总体音量包络（模拟钢琴触键）
+                const attack = Math.min(1, t * 50); // 快速攻击
+                const sustain = Math.exp(-t * 0.8); // 自然衰减
+                const totalEnvelope = attack * sustain;
+
+                data[i] = sample * totalEnvelope * 0.25; // 控制总音量
+            }
+
+            console.log(`✅ ${name} 样本生成完成，时长 ${duration}s`);
+            return buffer;
+        }
+
+        // 🎹 测试样本播放器
+        window.testSamplePlayback = function(sampleName) {
+            console.log(`🎵 测试播放样本: ${sampleName}`);
+
+            // 确保AudioContext已初始化
+            if (!window.melodyAudioCtx) {
+                console.log('🔧 初始化AudioContext...');
+                try {
+                    window.melodyAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('✅ AudioContext初始化成功');
+                } catch (error) {
+                    console.error('❌ AudioContext初始化失败:', error);
+                    return;
                 }
-            }, 3000);
-        }
+            }
 
-        // 使用条款和隐私政策相关函数
-        function togglePaymentButton() {
-            const checkbox = document.getElementById('terms-checkbox');
-            const buttonContainer = document.getElementById('payment-button-container');
-            
-            if (checkbox && buttonContainer) {
-                buttonContainer.style.display = checkbox.checked ? 'block' : 'none';
+            // 确保AudioContext未被暂停
+            if (window.melodyAudioCtx.state === 'suspended') {
+                window.melodyAudioCtx.resume();
             }
-        }
 
-        function showTermsDialog() {
-            const dialog = document.getElementById('terms-dialog');
-            if (dialog) {
-                dialog.style.display = 'flex';
-            }
-        }
+            const frequencies = {
+                'C4': 261.63,
+                'E4': 329.63,
+                'G4': 392.00,
+                'A4': 440.00
+            };
 
-        function closeTermsDialog() {
-            const dialog = document.getElementById('terms-dialog');
-            if (dialog) {
-                dialog.style.display = 'none';
+            const frequency = frequencies[sampleName];
+            if (!frequency) {
+                console.error(`❌ 未知样本: ${sampleName}`);
+                return;
             }
-        }
 
-        function showPrivacyDialog() {
-            const dialog = document.getElementById('privacy-dialog');
-            if (dialog) {
-                dialog.style.display = 'flex';
-            }
-        }
+            try {
+                // 生成测试样本
+                const buffer = generateTestSample(frequency, sampleName, window.melodyAudioCtx);
 
-        function closePrivacyDialog() {
-            const dialog = document.getElementById('privacy-dialog');
-            if (dialog) {
-                dialog.style.display = 'none';
-            }
-        }
+                // 播放样本
+                const source = window.melodyAudioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(window.melodyAudioCtx.destination);
 
-        // 点击对话框外部关闭
-        document.addEventListener('click', function(event) {
-            const termsDialog = document.getElementById('terms-dialog');
-            const privacyDialog = document.getElementById('privacy-dialog');
-            
-            if (event.target === termsDialog) {
-                closeTermsDialog();
-            }
-            if (event.target === privacyDialog) {
-                closePrivacyDialog();
-            }
-        });
+                const now = window.melodyAudioCtx.currentTime;
+                source.start(now);
 
-        // 🧪 测试函数：立即显示支付界面（用于测试使用条款功能）
-        window.showPaymentInterface = function() {
-            console.log('🧪 测试：显示支付界面');
-            
-            // 显示支付容器
-            const zpayContainer = document.getElementById('zpay-container');
-            if (zpayContainer) {
-                zpayContainer.style.display = 'block';
+                console.log(`🔊 ${sampleName} 样本开始播放`);
+
+                // 记录播放状态
+                setTimeout(() => {
+                    console.log(`✅ ${sampleName} 样本播放完成`);
+                }, 3000);
+
+            } catch (error) {
+                console.error(`❌ ${sampleName} 样本播放失败:`, error);
             }
-            
-            // 显示支付区域
-            const paymentSection = document.getElementById('payment-section');
-            if (paymentSection) {
-                paymentSection.style.display = 'block';
-            }
-            
-            console.log('✅ 支付界面已显示，现在您可以测试使用条款确认功能了！');
-            console.log('💡 勾选"我已阅读并同意"复选框后，支付按钮将会显示');
         };
 
-        // 新增：跳过试用阶段但显示购买页面的函数
-        // 将函数提升到全局作用域确保控制台可访问
-        window.showPurchaseMode = function showPurchaseMode() {
-            console.log('🛒 进入购买模式（跳过试用）');
-            
-            try {
-                // 1. 停止试用计时器
-                if (window.trialLimiter) {
-                    // 设置试用为过期状态，但不完全阻止功能
-                    window.trialLimiter.isTrialActive = false;
+        // 🎹 播放所有测试样本（按顺序）
+        window.testAllSamples = function() {
+            console.log('🎵 === 开始测试所有中高音样本 ===');
+
+            const samples = ['C4', 'E4', 'G4', 'A4'];
+            let currentIndex = 0;
+
+            function playNext() {
+                if (currentIndex >= samples.length) {
+                    console.log('✅ === 所有样本测试完成 ===');
+                    return;
                 }
-                
-                // 2. 隐藏试用计时器
-                const trialTimer = document.getElementById('trialTimer');
-                if (trialTimer) {
-                    trialTimer.style.display = 'none';
-                }
-                
-                // 3. 显示试用结束状态
-                const trialStatus = document.getElementById('trial-status');
-                if (trialStatus) {
-                    trialStatus.innerHTML = `
-                        <div style="background: #fff8e1; padding: 20px; border-radius: 12px; border: 2px solid #ffb74d; text-align: center;">
-                            <h3 style="color: #ef6c00; margin-bottom: 15px;">🛒 购买完整版解锁所有功能</h3>
-                            <p style="color: #ef6c00; margin-bottom: 0;">现在可以购买完整版或输入访问码立即解锁</p>
-                        </div>
-                    `;
-                    trialStatus.style.display = 'block';
-                }
-                
-                // 4. 显示访问码输入区域
-                const accessCodeContainer = document.getElementById('access-code-container');
-                if (accessCodeContainer) {
-                    accessCodeContainer.style.display = 'block';
-                }
-                
-                // 5. 显示支付区域
-                const zpayContainer = document.getElementById('zpay-container');
-                if (zpayContainer) {
-                    zpayContainer.style.display = 'block';
-                    zpayContainer.scrollIntoView({ behavior: 'smooth' });
-                }
-                
-                // 6. 禁用生成按钮，显示需要购买
-                const generateBtn = document.getElementById('generateBtn') || 
-                                   document.querySelector('button[onclick*="generateMelody"]') ||
-                                   document.querySelector('button.btn-primary');
-                if (generateBtn) {
-                    generateBtn.disabled = true;
-                    generateBtn.style.opacity = '0.6';
-                    generateBtn.textContent = '请购买完整版或输入访问码';
-                    generateBtn.style.cursor = 'not-allowed';
-                }
-                
-                alert('🛒 已进入购买模式！\n\n您可以：\n• 购买完整版获得永久访问权\n• 输入访问码立即解锁功能');
-                
-                console.log('✅ 购买模式已激活');
-                
-            } catch (error) {
-                console.error('❌ 进入购买模式失败:', error);
-                alert('⚠️ 切换到购买模式时出现错误');
+
+                const sample = samples[currentIndex];
+                console.log(`\n🎵 第${currentIndex + 1}个样本: ${sample}`);
+                window.testSamplePlayback(sample);
+
+                currentIndex++;
+                setTimeout(playNext, 3500); // 3.5秒间隔
             }
+
+            playNext();
+        };
+
+        // 🎹 测试pitch shifting效果
+        window.testPitchShifting = function() {
+            console.log('🎵 === Pitch Shifting 测试 ===');
+
+            // 使用A4样本生成不同音高
+            const baseFreq = 440; // A4
+            const baseSample = generateTestSample(baseFreq, 'A4');
+
+            // 测试不同的pitch shifting比例
+            const testNotes = [
+                { name: 'C3', freq: 130.81, ratio: 130.81/440 },  // 向下shift
+                { name: 'F3', freq: 174.61, ratio: 174.61/440 },  // 中等向下
+                { name: 'A4', freq: 440, ratio: 1.0 },            // 原音
+                { name: 'C5', freq: 523.25, ratio: 523.25/440 },  // 向上shift
+                { name: 'F5', freq: 698.46, ratio: 698.46/440 }   // 大幅向上
+            ];
+
+            let index = 0;
+            function playNextShifted() {
+                if (index >= testNotes.length) {
+                    console.log('✅ Pitch Shifting 测试完成');
+                    return;
+                }
+
+                const note = testNotes[index];
+                console.log(`🎵 测试 ${note.name}: 比例 ${note.ratio.toFixed(2)}x`);
+
+                const source = window.melodyAudioCtx.createBufferSource();
+                source.buffer = baseSample;
+                source.playbackRate.value = note.ratio;
+                source.connect(window.melodyAudioCtx.destination);
+
+                source.start(window.melodyAudioCtx.currentTime);
+
+                index++;
+                setTimeout(playNextShifted, 2500);
+            }
+
+            playNextShifted();
+        };
+
+        console.log('✅ HTML内播放器创建完成（含隐藏模式节拍器 + 样本测试功能）');
+
+        // 🎯 通用弹窗外部点击关闭功能
+        function initializeModalClickOutsideToClose() {
+            const modalIds = [
+                'rhythmModal',
+                'articulationModal',
+                'keySignatureModal',
+                'timeSignatureModal',
+                'intervalModal',
+                'clefModal'
+            ];
+
+            modalIds.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.addEventListener('click', function(event) {
+                        // 只有当点击的是弹窗背景（modal容器本身）时才关闭
+                        if (event.target === modal) {
+                            console.log(`🎯 点击外部区域关闭弹窗: ${modalId}`);
+
+                            // 根据弹窗类型调用相应的关闭函数
+                            switch(modalId) {
+                                case 'rhythmModal':
+                                    if (typeof closeRhythmSettings === 'function') {
+                                        closeRhythmSettings();
+                                    }
+                                    break;
+                                case 'articulationModal':
+                                    if (typeof closeArticulationSettings === 'function') {
+                                        closeArticulationSettings();
+                                    }
+                                    break;
+                                case 'keySignatureModal':
+                                    if (typeof closeKeySettings === 'function') {
+                                        closeKeySettings();
+                                    }
+                                    break;
+                                case 'timeSignatureModal':
+                                    if (typeof closeTimeSignatureSettings === 'function') {
+                                        closeTimeSignatureSettings();
+                                    }
+                                    break;
+                                case 'intervalModal':
+                                    if (typeof closeIntervalSettings === 'function') {
+                                        closeIntervalSettings();
+                                    }
+                                    break;
+                                case 'clefModal':
+                                    if (typeof closeClefSettings === 'function') {
+                                        closeClefSettings();
+                                    }
+                                    break;
+                                default:
+                                    // 通用关闭方法
+                                    modal.style.display = 'none';
+                            }
+                        }
+                    });
+                    console.log(`✅ 已为 ${modalId} 添加外部点击关闭功能`);
+                }
+            });
         }
 
-        console.log('🎉 访问码功能已加载');
-        console.log('💡 可用的命令:');
-        console.log('  - showPurchaseMode() - 跳过试用，显示购买页面');
-        console.log('  - updateVerifyButton() - 更新验证按钮状态');
-        console.log('  - verifyAccessCodeWithServer() - 验证访问码');
+        // 在页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeModalClickOutsideToClose();
+            console.log('🎯 弹窗外部点击关闭功能已初始化');
+        });
+
+        // 核心重置函数 - 重置所有设置到默认状态
+        window.nuclearReset = function() {
+            console.log('🚀 开始执行核心重置...');
+
+            try {
+                // 1. 重置节奏设置
+                if (typeof resetRhythmFrequencies === 'function') {
+                    resetRhythmFrequencies();
+                    console.log('✅ 节奏频率已重置');
+                }
+
+                // 2. 重置全选状态
+                if (typeof resetSelectAllStates === 'function') {
+                    resetSelectAllStates();
+                    console.log('✅ 全选状态已重置');
+                }
+
+                // 3. 重置表单控件到默认值
+                const defaults = {
+                    'measures-4': true,
+                    'rangeMin': '60',
+                    'rangeMax': '72',
+                    'accidentalRate': '0',
+                    'headerMetronomeBpm': '60'
+                };
+
+                Object.entries(defaults).forEach(([id, value]) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        if (element.type === 'radio' || element.type === 'checkbox') {
+                            element.checked = value;
+                        } else {
+                            element.value = value;
+                        }
+                    }
+                });
+
+                // 4. 更新临时记号显示
+                const accidentalDisplay = document.getElementById('accidentalRateValue');
+                if (accidentalDisplay) {
+                    accidentalDisplay.textContent = '0%';
+                }
+
+                // 5. 重置所有模态框状态
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    modal.style.display = 'none';
+                });
+
+                // 6. 清空乐谱显示
+                const scoreDiv = document.getElementById('score');
+                if (scoreDiv) {
+                    scoreDiv.innerHTML = '<div class="empty-score-message"><p data-i18n="score.empty">点击生成旋律开始练习</p></div>';
+                }
+
+                // 7. 停止任何播放中的音频
+                if (window.isPlayingMelody) {
+                    window.isPlayingMelody = false;
+                    if (typeof updatePlayButton === 'function') {
+                        updatePlayButton();
+                    }
+                }
+
+                // 8. 停止节拍器
+                if (isMetronomeRunning) {
+                    if (typeof stopMetronome === 'function') {
+                        stopMetronome();
+                    }
+                }
+
+                console.log('🎯 核心重置完成！所有设置已恢复到默认状态');
+
+                // 显示重置完成提示
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #34C759;
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    z-index: 10000;
+                    box-shadow: 0 4px 16px rgba(52, 199, 89, 0.3);
+                    opacity: 0;
+                    transform: translateX(100px);
+                    transition: all 0.3s ease;
+                `;
+                notification.textContent = '🎯 重置完成！';
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.style.opacity = '1';
+                    notification.style.transform = 'translateX(0)';
+                }, 10);
+
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(100px)';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 2000);
+
+            } catch (error) {
+                console.error('❌ 重置过程中出现错误:', error);
+            }
+        };
+
+        console.log('🚀 nuclearReset() 函数已初始化完成');
+
+        // 试用管理开发者工具 - 仅用于开发和测试
+        window.devTools = {
+            // 设置为完整版用户
+            setFullVersion() {
+                localStorage.setItem('ic_full_version', 'true');
+                TrialManager.updateTrialDisplay();
+                console.log('✅ 已设置为完整版用户');
+            },
+
+            // 重置为试用用户
+            setTrialVersion() {
+                localStorage.removeItem('ic_full_version');
+                TrialManager.updateTrialDisplay();
+                console.log('✅ 已重置为试用用户');
+            },
+
+            // 重置试用次数
+            resetTrialCount() {
+                localStorage.removeItem('ic_trial_count');
+                TrialManager.updateTrialDisplay();
+                console.log('✅ 试用次数已重置');
+            },
+
+            // 设置试用次数
+            setTrialCount(count) {
+                localStorage.setItem('ic_trial_count', count.toString());
+                TrialManager.updateTrialDisplay();
+                console.log(`✅ 试用次数已设置为 ${count}`);
+            },
+
+            // 查看当前状态
+            getStatus() {
+                const isFullVersion = TrialManager.isFullVersion();
+                const trialCount = TrialManager.getTrialCount();
+                const remaining = TrialManager.getRemainingTrials();
+
+                console.log('📊 当前试用状态:');
+                console.log(`   完整版用户: ${isFullVersion ? '是' : '否'}`);
+                console.log(`   已使用次数: ${trialCount}`);
+                console.log(`   剩余次数: ${remaining}`);
+
+                return {
+                    isFullVersion,
+                    trialCount,
+                    remaining
+                };
+            }
+        };
+
+        console.log('🛠️ 开发者工具已加载:');
+        console.log('   - devTools.setFullVersion() - 设置为完整版');
+        console.log('   - devTools.setTrialVersion() - 设置为试用版');
+        console.log('   - devTools.resetTrialCount() - 重置试用次数');
+        console.log('   - devTools.setTrialCount(n) - 设置试用次数');
+        console.log('   - devTools.getStatus() - 查看当前状态');
     </script>
 
-    <!-- 确保20条旋律计数系统正确初始化 -->
-    <script>
-    // 等待所有脚本加载完成后初始化计数系统
-    window.addEventListener('load', function() {
-        setTimeout(function() {
-            console.log('🎯 强制初始化20条旋律计数系统...');
-
-            // 如果计数系统存在但未初始化，手动初始化
-            if (window.melodyCounterSystem && !window.melodyCounterSystem.initialized) {
-                window.melodyCounterSystem.init();
-            }
-
-            // 如果generateMelody还未被包装，手动包装
-            if (window.generateMelody && window.melodyCounterSystem && !window.melodyCounterSystem.originalGenerateMelody) {
-                console.log('📦 手动包装generateMelody函数...');
-                window.melodyCounterSystem.wrapGenerateMelodyFunction();
-            }
-
-            // 跳过自动激活检查，让用户正常使用试用版
-            console.log('🔍 跳过自动激活检查，保持试用版状态');
-
-            console.log('✅ 计数系统检查完成');
-        }, 2000); // 延迟2秒确保所有脚本都加载完成
-    });
-    </script>
 
 </body></html>

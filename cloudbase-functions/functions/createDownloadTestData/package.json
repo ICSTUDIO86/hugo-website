@@ -1,9 +1,0 @@
-{
-  "name": "createDownloadTestData",
-  "version": "1.0.0",
-  "description": "创建下载功能测试数据",
-  "main": "index.js",
-  "dependencies": {
-    "@cloudbase/node-sdk": "^2.0.0"
-  }
-}

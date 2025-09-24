@@ -6,7 +6,7 @@
  * 
  * Author: Igor Chen
  * Website: https://icstudio.club
- * Email: service@icstudio.club
+ * Email: icstudio@fastmail.com
  * 
  * Features:
  * - 严格遵循音乐理论，使用OSMD专业渲染
@@ -2320,8 +2320,9 @@ const RHYTHM_NOTATION_RULES = {
         const violations = [];
         let currentPosition = 0;
         
-        // 获取小节边界（4/4拍子 = 4拍）
-        const measureBeats = timeSignature === '4/4' ? 4 : 4;
+        // 获取小节边界（根据拍号确定正确的拍数）
+        const structure = this.getBeatStructure(timeSignature);
+        const measureBeats = structure.beatsPerMeasure;
         
         notes.forEach((note, index) => {
             if (!note.isTriplet) { // 排除三连音，但包括音符和休止符
@@ -2804,15 +2805,30 @@ class IntelligentMelodyGenerator {
                 console.error(`  - 是否允许三连音: ${this.rules.allowedDurations.includes('triplet')}`);
                 
                 console.log(`🚨 强制添加应急休止符以继续循环`);
-                const emergencyBeats = Math.min(remainingBeats, 0.125); // 最多32nd note
+                let emergencyBeats = Math.min(remainingBeats, 0.125); // 最多32nd note
+
+                // 🔥 6/8拍特殊处理：确保应急休止符不跨越边界
+                if (this.timeSignature === '6/8') {
+                    const noteEndPosition = currentBeat + emergencyBeats;
+                    const criticalBoundaries = [0, 1.5, 3];
+
+                    for (const boundary of criticalBoundaries) {
+                        if (currentBeat < boundary && noteEndPosition > boundary) {
+                            emergencyBeats = boundary - currentBeat;
+                            console.log(`⚠️ 6/8拍应急休止符边界调整：避免跨越边界${boundary}，调整为${emergencyBeats}拍`);
+                            break;
+                        }
+                    }
+                }
+
                 const emergencyRestDuration = this.beatsToRestDuration(emergencyBeats);
-                
+
                 notes.push({
                     type: 'rest',
                     duration: emergencyRestDuration,
                     beats: emergencyBeats
                 });
-                
+
                 console.log(`✅ 添加应急休止符: ${emergencyRestDuration} (${emergencyBeats}拍)`);
                 remainingBeats -= emergencyBeats;
                 currentBeat += emergencyBeats;
@@ -3115,15 +3131,38 @@ class IntelligentMelodyGenerator {
             if (beats > remainingBeats + 0.001) {
                 // 时值过大，改用休止符填充
                 console.log(`⚠️ 所选时值${beats}拍过大，剩余仅${remainingBeats}拍，用休止符填充`);
-                const restDuration = this.beatsToRestDuration(remainingBeats);
+
+                // 🔥 6/8拍特殊处理：计算安全的休止符时值
+                let safeRestBeats = remainingBeats;
+                if (this.timeSignature === '6/8') {
+                    // 确保休止符不会跨越6/8拍的关键边界
+                    const noteEndPosition = currentBeat + remainingBeats;
+                    const criticalBoundaries = [0, 1.5, 3];
+
+                    for (const boundary of criticalBoundaries) {
+                        if (currentBeat < boundary && noteEndPosition > boundary) {
+                            safeRestBeats = boundary - currentBeat;
+                            console.log(`⚠️ 6/8拍填充休止符边界调整：${remainingBeats}拍 -> ${safeRestBeats}拍（避免跨越边界${boundary}）`);
+                            break;
+                        }
+                    }
+                }
+
+                const restDuration = this.beatsToRestDuration(safeRestBeats);
                 notes.push({
                     type: 'rest',
                     duration: restDuration,
-                    beats: remainingBeats
+                    beats: safeRestBeats
                 });
-                console.log(`✅ 添加填充休止符: ${restDuration} (${remainingBeats}拍)`);
-                remainingBeats = 0; // 确保循环结束
-                break;
+                console.log(`✅ 添加填充休止符: ${restDuration} (${safeRestBeats}拍)`);
+                remainingBeats -= safeRestBeats;
+                currentBeat += safeRestBeats;
+
+                // 如果还有剩余拍数，继续循环；否则结束
+                if (remainingBeats <= 0.001) {
+                    break;
+                }
+                continue; // 继续处理剩余拍数
             }
             
             // 决定是音符还是休止符
@@ -3135,13 +3174,34 @@ class IntelligentMelodyGenerator {
             console.log(`🎯 音符类型决策: ${shouldBeRest ? '休止符' : '音符'}`);
             
             if (shouldBeRest) {
-                // 添加休止符
+                // 添加休止符，但需要检查6/8拍边界
+                let safeBeats = beats;
+                let safeDuration = duration;
+
+                if (this.timeSignature === '6/8') {
+                    const noteEndPosition = currentBeat + beats;
+                    const criticalBoundaries = [0, 1.5, 3];
+
+                    for (const boundary of criticalBoundaries) {
+                        if (currentBeat < boundary && noteEndPosition > boundary) {
+                            safeBeats = boundary - currentBeat;
+                            safeDuration = this.beatsToRestDuration(safeBeats);
+                            console.log(`⚠️ 6/8拍休止符边界调整：${duration}(${beats}拍) -> ${safeDuration}(${safeBeats}拍)`);
+                            break;
+                        }
+                    }
+                }
+
                 notes.push({
                     type: 'rest',
-                    duration: duration,
-                    beats: beats
+                    duration: safeDuration,
+                    beats: safeBeats
                 });
-                console.log(`    ✅ 添加休止符: ${duration} (${beats}拍)`);
+                console.log(`    ✅ 添加休止符: ${safeDuration} (${safeBeats}拍)`);
+
+                // 更新剩余拍数和位置（使用实际添加的拍数）
+                remainingBeats -= safeBeats;
+                currentBeat += safeBeats;
             } else {
                 // 生成音符
                 console.log(`🎵 开始生成下一个音符: 当前MIDI=${currentMidi}, 方向=${currentDirection}`);
@@ -3268,11 +3328,14 @@ class IntelligentMelodyGenerator {
                 currentMidi = nextMidi;
                 
                 console.log(`    音符: ${step}${octave} ${duration} (${beats}拍) MIDI:${nextMidi}`);
+
+                // 音符也需要更新剩余拍数和位置
+                remainingBeats -= beats;
+                currentBeat += beats;
             }
-            
-            remainingBeats -= beats;
-            currentBeat += beats;
-            console.log(`✅ 完成一次迭代: 减少${beats}拍，剩余${remainingBeats}拍，当前位置${currentBeat}，小节现有${notes.length}个元素`);
+
+            // 注意：休止符的剩余拍数和位置已在上面更新了，这里不需要重复更新
+            console.log(`✅ 完成一次迭代: 剩余${remainingBeats}拍，当前位置${currentBeat}，小节现有${notes.length}个元素`);
         }
         
         // 循环安全检查
@@ -3369,12 +3432,42 @@ class IntelligentMelodyGenerator {
             if (absoluteFinalDifference > 0.001) {
                 // 仍然不足，强制添加休止符
                 console.log(`强制添加最后的休止符: ${absoluteFinalDifference}拍`);
-                const emergencyRestDuration = this.beatsToRestDuration(absoluteFinalDifference);
+
+                // 🔥 6/8拍特殊处理：确保最终填充休止符不跨越边界
+                let safeRestBeats = absoluteFinalDifference;
+                if (this.timeSignature === '6/8') {
+                    // 计算当前位置（基于已有音符的总时长）
+                    const currentPosition = this.beatsPerMeasure - absoluteFinalDifference;
+                    const noteEndPosition = currentPosition + absoluteFinalDifference;
+                    const criticalBoundaries = [0, 1.5, 3];
+
+                    for (const boundary of criticalBoundaries) {
+                        if (currentPosition < boundary && noteEndPosition > boundary) {
+                            safeRestBeats = boundary - currentPosition;
+                            console.log(`⚠️ 6/8拍最终填充休止符边界调整：${absoluteFinalDifference}拍 -> ${safeRestBeats}拍（避免跨越边界${boundary}）`);
+                            break;
+                        }
+                    }
+                }
+
+                const emergencyRestDuration = this.beatsToRestDuration(safeRestBeats);
                 notes.push({
                     type: 'rest',
                     duration: emergencyRestDuration,
-                    beats: absoluteFinalDifference
+                    beats: safeRestBeats
                 });
+
+                // 如果调整后还有剩余，递归添加
+                const remainingAfterAdjustment = absoluteFinalDifference - safeRestBeats;
+                if (remainingAfterAdjustment > 0.001) {
+                    console.log(`递归添加剩余填充: ${remainingAfterAdjustment}拍`);
+                    const additionalRestDuration = this.beatsToRestDuration(remainingAfterAdjustment);
+                    notes.push({
+                        type: 'rest',
+                        duration: additionalRestDuration,
+                        beats: remainingAfterAdjustment
+                    });
+                }
             } else if (absoluteFinalDifference < -0.001) {
                 // 超出了，截断最后的音符
                 console.log(`小节超长，尝试截断最后的元素`);
@@ -6363,7 +6456,56 @@ class IntelligentMelodyGenerator {
                 }
             }
         }
-        
+
+        // 🔥 6/8拍特殊处理：确保不违反拍点结构
+        if (this.timeSignature === '6/8') {
+            const selectedBeats = this.durationToBeats(selectedDuration);
+            const noteEndPosition = currentBeat + selectedBeats;
+
+            // 检查是否会跨越不合适的拍点边界
+            // 6/8拍的关键边界是 0, 1.5, 3（两个大拍点）
+            const criticalBoundaries = [0, 1.5, 3];
+            let crossesBoundary = false;
+            let boundaryPosition = 0;
+
+            for (const boundary of criticalBoundaries) {
+                if (currentBeat < boundary && noteEndPosition > boundary) {
+                    crossesBoundary = true;
+                    boundaryPosition = boundary;
+                    break;
+                }
+            }
+
+            if (crossesBoundary) {
+                // 计算到边界的剩余拍数
+                const beatsToBoundary = boundaryPosition - currentBeat;
+                console.log(`⚠️ 6/8拍边界检查：选择的时值${selectedDuration}(${selectedBeats}拍)会从位置${currentBeat}跨越边界${boundaryPosition}，调整为${beatsToBoundary}拍`);
+
+                // 选择不会跨越边界的时值
+                const safeDuration = this.beatsToNoteDuration(beatsToBoundary);
+                if (available.includes(safeDuration)) {
+                    selectedDuration = safeDuration;
+                    console.log(`✅ 6/8拍边界修正：改用${safeDuration}`);
+                } else {
+                    // 如果安全时值不在可用列表中，选择最接近且不超过的时值
+                    const safeAvailable = available.filter(d => {
+                        const dBeats = this.durationToBeats(d);
+                        return dBeats <= beatsToBoundary + 0.001;
+                    });
+
+                    if (safeAvailable.length > 0) {
+                        // 选择最接近的安全时值
+                        selectedDuration = safeAvailable.reduce((best, current) => {
+                            const bestBeats = this.durationToBeats(best);
+                            const currentBeats = this.durationToBeats(current);
+                            return Math.abs(currentBeats - beatsToBoundary) < Math.abs(bestBeats - beatsToBoundary) ? current : best;
+                        });
+                        console.log(`✅ 6/8拍边界修正：从安全列表选择${selectedDuration}`);
+                    }
+                }
+            }
+        }
+
         console.log(`🎯 最终选择的节奏时值: ${selectedDuration}`);
         return selectedDuration;
     }
@@ -8674,8 +8816,26 @@ class IntelligentMelodyGenerator {
      * 拍数转休止符时值
      */
     beatsToRestDuration(beats) {
-        const duration = this.beatsToNoteDuration(beats);
-        console.log(`拍数转休止符: ${beats}拍 -> ${duration}`);
+        // 🔥 6/8拍特殊处理：确保休止符也遵循拍点结构
+        let adjustedBeats = beats;
+
+        if (this.timeSignature === '6/8') {
+            // 在6/8拍中，休止符不能跨越关键边界
+            // 如果超过1.5拍，限制为1.5拍（附点四分音符休止符）
+            if (beats > 1.5 && beats < 3.0) {
+                adjustedBeats = 1.5;
+                console.log(`⚠️ 6/8拍休止符调整：${beats}拍 -> ${adjustedBeats}拍（限制到附点四分音符）`);
+            }
+            // 如果是2拍，在6/8拍中是不合法的，调整为1.5拍
+            else if (Math.abs(beats - 2.0) < 0.01) {
+                adjustedBeats = 1.5;
+                console.log(`⚠️ 6/8拍休止符调整：${beats}拍 -> ${adjustedBeats}拍（2拍在6/8拍中不合法）`);
+            }
+            // 如果是1拍，检查是否会违反拍点结构（保持1拍是可以的）
+        }
+
+        const duration = this.beatsToNoteDuration(adjustedBeats);
+        console.log(`拍数转休止符: ${beats}拍 -> ${duration}（实际使用${adjustedBeats}拍）`);
         return duration;
     }
 
@@ -16660,14 +16820,14 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
     
     // 更多四分音符模式（只有当高级设置允许时才可用）- 🔥 修复：包括附点四分音符
     if (isQuarterAllowed || isDottedQuarterAllowed) {
-        // 四分音符模式3: 独立的强拍四分音符（不依赖八分音符）
+        // 四分音符模式3: 适合6/8拍的四分音符强拍模式
         availablePatterns.push({
-            name: '纯四分音符强拍',
+            name: '6/8拍四分音符强拍',
             rhythm: [
-                { position: 0.0, duration: 4, type: 'quarter', isStrong: true },     // 第1组强拍长音
-                { position: 1.0, duration: 2, type: 'quarter-rest', isStrong: false }, // 第1组弱拍休止
-                { position: 1.5, duration: 4, type: 'quarter', isStrong: true },     // 第2组强拍长音
-                { position: 2.5, duration: 2, type: 'quarter-rest', isStrong: false }  // 第2组弱拍休止
+                { position: 0.0, duration: 4, type: 'quarter', isStrong: true },     // 第1组强拍长音 (0-1拍)
+                { position: 1.0, duration: 2, type: 'eighth-rest', isStrong: false }, // 第1组弱拍休止 (1-1.5拍，调整为八分休止符)
+                { position: 1.5, duration: 4, type: 'quarter', isStrong: true },     // 第2组强拍长音 (1.5-2.5拍)
+                { position: 2.5, duration: 2, type: 'eighth-rest', isStrong: false }  // 第2组弱拍休止 (2.5-3拍，调整为八分休止符)
             ]
         });
 
@@ -16676,7 +16836,7 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
             name: '第一组四分音符',
             rhythm: [
                 { position: 0.0, duration: 4, type: 'quarter', isStrong: true },     // 第1组: 1拍长音
-                { position: 1.0, duration: 2, type: 'quarter-rest', isStrong: false }, // 第1组: 3拍休止
+                { position: 1.0, duration: 2, type: 'eighth-rest', isStrong: false }, // 第1组: 3拍休止 (1-1.5拍，调整为八分休止符)
                 { position: 1.5, duration: 6, type: 'quarter', dots: 1, isStrong: true }  // 第2组: 整组附点四分音符
             ]
         });
@@ -16686,8 +16846,8 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
             name: '第二组四分音符',
             rhythm: [
                 { position: 0.0, duration: 6, type: 'quarter', dots: 1, isStrong: true }, // 第1组: 整组附点四分音符
-                { position: 1.5, duration: 4, type: 'quarter', isStrong: true },     // 第2组: 1拍长音
-                { position: 2.5, duration: 2, type: 'quarter-rest', isStrong: false }  // 第2组: 3拍休止
+                { position: 1.5, duration: 4, type: 'quarter', isStrong: true },     // 第2组: 1拍长音 (1.5-2.5拍)
+                { position: 2.5, duration: 2, type: 'eighth-rest', isStrong: false }  // 第2组: 3拍休止 (2.5-3拍，调整为八分休止符)
             ]
         });
 
@@ -16907,7 +17067,8 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
             name: '连续休止符1',
             rhythm: [
                 { position: 0.0, duration: 2, type: 'eighth', isStrong: true },       // 第1组: 1拍强
-                { position: 0.5, duration: 4, type: 'quarter-rest', isStrong: false }, // 第1组: 2-3拍合并四分休止符
+                { position: 0.5, duration: 2, type: 'eighth-rest', isStrong: false }, // 第1组: 2拍休止 (0.5-1拍)
+                { position: 1.0, duration: 2, type: 'eighth-rest', isStrong: false }, // 第1组: 3拍休止 (1-1.5拍)
                 { position: 1.5, duration: 2, type: 'eighth', isStrong: true },       // 第2组: 1拍强
                 { position: 2.0, duration: 2, type: 'eighth', isStrong: false },      // 第2组: 2拍弱
                 { position: 2.5, duration: 2, type: 'eighth', isStrong: false }       // 第2组: 3拍弱
@@ -16922,7 +17083,8 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                 { position: 0.5, duration: 2, type: 'eighth', isStrong: false },      // 第1组: 2拍弱
                 { position: 1.0, duration: 2, type: 'eighth', isStrong: false },      // 第1组: 3拍弱
                 { position: 1.5, duration: 2, type: 'eighth', isStrong: true },       // 第2组: 1拍强
-                { position: 2.0, duration: 4, type: 'quarter-rest', isStrong: false }  // 第2组: 2-3拍合并四分休止符
+                { position: 2.0, duration: 2, type: 'eighth-rest', isStrong: false }, // 第2组: 2拍休止 (2-2.5拍)
+                { position: 2.5, duration: 2, type: 'eighth-rest', isStrong: false }  // 第2组: 3拍休止 (2.5-3拍)
             ]
         });
         
@@ -16970,9 +17132,11 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
             name: '极简休止符',
             rhythm: [
                 { position: 0.0, duration: 2, type: 'eighth', isStrong: true },       // 第1组: 1拍强
-                { position: 0.5, duration: 4, type: 'quarter-rest', isStrong: false }, // 第1组: 2-3拍合并四分休止符
+                { position: 0.5, duration: 2, type: 'eighth-rest', isStrong: false }, // 第1组: 2拍休止 (0.5-1拍)
+                { position: 1.0, duration: 2, type: 'eighth-rest', isStrong: false }, // 第1组: 3拍休止 (1-1.5拍)
                 { position: 1.5, duration: 2, type: 'eighth', isStrong: true },       // 第2组: 1拍强
-                { position: 2.0, duration: 4, type: 'quarter-rest', isStrong: false }  // 第2组: 2-3拍合并四分休止符
+                { position: 2.0, duration: 2, type: 'eighth-rest', isStrong: false }, // 第2组: 2拍休止 (2-2.5拍)
+                { position: 2.5, duration: 2, type: 'eighth-rest', isStrong: false }  // 第2组: 3拍休止 (2.5-3拍)
             ]
         });
     }

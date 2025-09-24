@@ -1,9 +1,0 @@
-{
-  "name": "initUserAccountsCollection",
-  "version": "1.0.0",
-  "description": "Initialize user_accounts collection in database",
-  "main": "index.js",
-  "dependencies": {
-    "@cloudbase/node-sdk": "^2.4.1"
-  }
-}

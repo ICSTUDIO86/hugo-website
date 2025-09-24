@@ -4,9 +4,24 @@ slug: /sight-reading-tool/
 description: 专业级视奏旋律生成器，助力音乐学习者快速提升读谱技能！
 image: images/sight-reading-tool.png
 categories:
+  - 网站内容
+  - 音乐教育
+  - 视奏练习
+  - 五线谱学习
 weight: 3
 tags:
   - web
+  - 视奏工具
+  - 五线谱练习
+  - 音乐教育软件
+  - 乐谱生成器
+  - 读谱训练
+  - 音乐学习
+  - 吉他视奏
+  - 数字音乐教学
+keywords: "视奏练习,五线谱学习,音乐教育工具,乐谱生成器,读谱训练,视奏软件,音乐学习app,吉他视奏,数字音乐教学,AI音乐教育"
+author: "IC Studio"
+date: "2024-09-01"
 draft: false
 ---
 
@@ -37,6 +52,8 @@ draft: false
 
 - **全拍号支持**：完整覆盖 4/4、3/4、6/8等常用拍号，每种拍号皆有独特节奏模式。
 - **内置节拍器**：无需额外工具，即可在练习时保持稳定的节奏感。 
+- **音频播放**：可以播放随机生成的旋律，用户可以用来做听力练习或者与正确的演奏进行对照。
+- **支持手机端/平板端/电脑端**：可以用任何设备练习视奏！
 
 ## 未来功能
 
@@ -44,61 +61,49 @@ draft: false
 - **和弦视奏**：随机生成 [Guitar voicings](/guitar-voicings/)（三和弦，drop 2，drop 3，shell voicings等），提高你视奏和弦的能力。
 - **低音生成器**：随机生成一串低音，可以用来练习四部和声，和弦写作。（之后我会单独出一期视频讲解）
 - **和弦进行生成器**：随机生成一串**和弦代号**，乐手可以根据和弦代号自行配和声。
-（现在购买可以在未来免费解锁以下功能，之后出了这些功能之后会涨价）
+- ✅**音频播放**：可以播放随机生成的旋律，用户可以用来做听力练习或者与正确的演奏进行对照。
+- ✅**支持手机端**：目前漂亮的五线谱只能在电脑或者平板上看到，不久之后就会出手机端的版本。
+
+（现在购买可以在未来免费解锁进阶功能，之后出了这些功能之后会涨价）
  
 ## 适用人群
 - **音乐学生 / 自学者**：快速提升视奏水平。
 - **音乐教师**：高效生成教学素材，轻松定制个性化练习内容。
 
-## 🎯 立即行动 
-⚡ **早鸟价 48.00¥**（截止于10月01日）—— 现在购买可在未来**免费解锁**更进阶的功能！
+## 🎯 立即行动 {#action-section}
+⚡ **早鸟价 48.00¥**（截止于10月01日）—— 支持网页版以及电脑软件，现在购买可在未来**免费解锁**更进阶的功能！
 
 <div style="display: flex; gap: 30px; margin: 30px auto; max-width: 1000px; align-items: flex-start; flex-wrap: wrap;">
 
 <div style="flex: 1; min-width: 300px; padding: 25px; background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); border: 2px solid #e6edff; text-align: center;">
-<div style="margin-bottom: 20px;">
-<h3 style="color: #4a5568; margin-bottom: 6px; font-size: 20px;">国内用户购买</h3>
-<p style="color: #718096; font-size: 14px; margin: 0;">支持 7 天无理由退款</p>
-</div>
-<div style="display: flex; gap: 15px; align-items: stretch; justify-content: center;">
-<div style="flex: 1; display: flex; flex-direction: column;">
-<a href="/tools/sight-reading-generator.html" target="_blank" style="display: block; background: #f8f9fa; color: #667eea; padding: 15px 20px; border: 2px solid #667eea; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s ease; margin-bottom: 8px; text-align: center; flex-grow: 1; min-height: 50px; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='#667eea'; this.style.color='white';" onmouseout="this.style.background='#f8f9fa'; this.style.color='#667eea';">免费试用</a>
-<p style="color: #888; font-size: 12px; margin: 0; text-align: center; line-height: 1.3;">免费生成20次旋律<br/>已购用户直接使用</p>
-</div>
-<div style="flex: 1; display: flex; flex-direction: column;">
-<button id="zpay-btn" onclick="window.createZPayment()" style="background: linear-gradient(135deg, #1677FF 0%, #00A0E9 100%); color: white; padding: 15px 20px; border: none; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(22, 119, 255, 0.3); transition: all 0.3s ease; cursor: pointer; margin-bottom: 8px; width: 100%; text-align: center; flex-grow: 1; min-height: 50px;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(22, 119, 255, 0.4)';" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(22, 119, 255, 0.3)';">支付宝支付</button>
-<p style="color: #888; font-size: 12px; margin: 0; text-align: center; line-height: 1.3;">¥48.00<br/>早鸟价</p>
-</div>
+<h3 style="color: #4a5568; margin-bottom: 6px; font-size: 20px;">解锁视奏工具</h3>
+<p style="color: #718096; font-size: 14px; margin: 0 0 20px 0;">支持 7 天无理由退款</p>
+
+<a href="/tools/sight-reading-generator.html" target="_blank" style="display: block; background: #f8f9fa; color: #667eea; padding: 12px 20px; border: 2px solid #667eea; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s ease; margin-bottom: 15px;" onmouseover="this.style.background='#667eea'; this.style.color='white';" onmouseout="this.style.background='#f8f9fa'; this.style.color='#667eea';">免费试用</a>
+
+<div style="display: flex; gap: 10px; margin-bottom: 20px;">
+<button id="zpay-btn" onclick="window.createZPayment()" style="flex: 1; background: linear-gradient(135deg, #1677FF 0%, #00A0E9 100%); color: white; padding: 12px 16px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(22, 119, 255, 0.3); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(22, 119, 255, 0.4)';" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(22, 119, 255, 0.3)';">支付宝支付</button>
+<button id="wxpay-btn" onclick="window.createWxPayment()" style="flex: 1; background: linear-gradient(135deg, #09BB07 0%, #00D100 100%); color: white; padding: 12px 16px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 15px rgba(9, 187, 7, 0.3); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(9, 187, 7, 0.4)';" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(9, 187, 7, 0.3)';">微信支付</button>
 </div>
 
-<!-- 访问码验证区域 -->
-<div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e6edff;">
-    <h3 style="color: #667eea; margin-bottom: 15px; font-size: 18px;">已有访问码？立即使用</h3>
-    <p style="color: #888; font-size: 12px; margin: 6; text-align: center; line-height: 1;">可下载电脑软件&查询订单号</p>
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <input type="text" id="access-code-input" placeholder="输入访问码(11-12位)" 
-               style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; text-transform: uppercase; transition: border-color 0.3s ease;"
-               maxlength="12" oninput="handleInputChange()" onkeyup="handleInputChange()" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#ddd'">
-        <button id="verify-btn" onclick="handleVerifyClick()" 
-                style="padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: not-allowed; font-weight: 600; font-size: 14px; transition: all 0.3s ease; opacity: 1;"
-                onmousedown="this.style.opacity='0.3'; this.style.transform='scale(0.98)'"
-                onmouseup="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)"
-                onmouseleave="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)">
-            验证
-        </button>
-    </div>
-    <div id="verify-result" style="margin-top: 15px; font-size: 14px; text-align: center;"></div>
+<div style="border-top: 1px solid #e6edff; padding-top: 6px;">
+<h3 style="color: #667eea; margin-bottom: 15px; font-size: 18px;">已有访问码？立即使用</h3>
+<div style="display: flex; gap: 10px; align-items: center;">
+<input type="text" id="access-code-input" placeholder="输入访问码(11-12位)" style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; text-transform: uppercase; transition: border-color 0.3s ease;" maxlength="12" oninput="handleInputChange()" onkeyup="handleInputChange()" onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#ddd'">
+<button id="verify-btn" onclick="handleVerifyClick()" style="padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: not-allowed; font-weight: 600; font-size: 14px; transition: all 0.3s ease; opacity: 1;" onmousedown="this.style.opacity='0.3'; this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)" onmouseleave="this.style.transform='scale(1)'; setTimeout(() => { this.style.opacity='1'; }, 100)">验证</button>
+</div>
+<div id="verify-result" style="margin-top: 15px; font-size: 14px; text-align: center;"></div>
 </div>
 
 </div>
 
-<iframe src="https://icstudio3.gumroad.com/l/sight-reading-tools" frameborder="0" width="370" height=500" style="border:0;"></iframe>
+<div style="flex: 1; min-width: 50%;">
+<iframe src="https://icstudio3.gumroad.com/l/sight-reading-tools" frameborder="0" width="100%" height="500" style="border:0;"></iframe>
+</div>
 
 </div>
 
 ## ❓ 常见问题 FAQ
-
-<div style="max-width: 800px; margin: 30px auto; background: #f9f9f9; padding: 30px; border-radius: 12px;">
 
 ### 忘记访问码了怎么办？
 
@@ -123,9 +128,16 @@ draft: false
 </div> 
 
 **说明：**
-- 订单号或者商家订单号可在支付宝的**账单记录**里找到。
+- 订单号或者商家订单号可在支付宝或者微信的**账单记录**里找到。
 - **商家订单号**格式如 `IC17575395673154298`
 - **订单号**格式如 `2025097832001480241441480505`
+</div>
+
+### 访问码不能正常工作？
+
+<div style="background: #efe7f2ff; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #bba0ca;">
+如果在输入验证码之后工具还是处于试用版本的话，只要多刷新一下页面就好了。
+
 </div>
 
 ### 如何退款？
@@ -164,7 +176,7 @@ draft: false
 - 使用工具时有遇到bug
 - 找回访问码不能正常工作
 - 退款按钮不能正常工作
-- 询问任何其他关于产品的咨询
+- 任何其他关于产品的咨询
 
 **联系方式：**
 - 邮箱：**service@icstudio.club**  
@@ -181,7 +193,10 @@ draft: false
 <!-- 统一支付成功处理器 -->
 <script src="/js/payment-success-handler.js?v=20250909"></script>
 
-<!-- 试用系统 -->
+<!-- 高级试用保护系统 -->
+<script src="/js/advanced-trial-protection.js?v=20250920"></script>
+
+<!-- 原有试用系统（作为备用） -->
 <script src="/js/trial-limiter.js?v=20250909"></script>
 <script src="/js/cloudbase-api.js?v=20250909"></script>
 
@@ -1047,12 +1062,19 @@ async function verifyAccessCodeWithServer() {
         
         if (result.success) {
             console.log('✅ 访问码验证成功:', result.data);
+
+            // 立即设置完整版状态
+            localStorage.setItem('ic_full_version', 'true');
+            localStorage.setItem('ic_verified_from_access_page', 'true');
+            localStorage.setItem('ic_verified_timestamp', Date.now().toString());
+            console.log('🎯 访问码验证成功，已设置完整版状态');
+
             resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 访问码验证成功！</span>';
-            
+
             // 重新启用按钮
             button.disabled = false;
             button.style.opacity = '1';
-            
+
             // 延迟显示弹窗，让用户看到成功消息
             setTimeout(() => {
                 showPaymentSuccessPopup(code, result.data);
@@ -1078,8 +1100,8 @@ function showPaymentSuccessPopup(accessCode, orderData) {
     const popup = document.createElement('div');
     popup.id = 'success-popup';
     popup.innerHTML = `
-        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;">
-            <div style="background: white; padding: 40px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px; box-sizing: border-box;" id="modal-overlay">
+            <div style="background: white; padding: 40px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); max-height: 80vh; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;" id="modal-scroll-container">
                 <div style="margin-bottom: 30px;">
                     <div style="width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px;">✓</div>
                     <h2 style="color: #333; margin-bottom: 10px;">🎉 访问验证成功！</h2>
@@ -1157,7 +1179,7 @@ function showPaymentSuccessPopup(accessCode, orderData) {
                             style="padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;"
                             onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'" 
                             onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
-                        🚀 开始使用
+                        开始使用
                     </button>
                 </div>
             </div>
@@ -1165,7 +1187,57 @@ function showPaymentSuccessPopup(accessCode, orderData) {
     `;
     
     document.body.appendChild(popup);
-    
+
+    // 强制锁定背景滚动
+    window.modalScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${window.modalScrollTop}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+
+    // 智能事件处理器 - 只阻止弹窗外的滚动
+    window.modalPreventAllScroll = function(e) {
+        // 检查事件目标是否在弹窗内
+        const modalContent = e.target.closest('#modal-scroll-container');
+        if (!modalContent) {
+            // 不在弹窗内，阻止滚动
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    };
+
+    document.addEventListener('touchmove', window.modalPreventAllScroll, { passive: false, capture: true });
+    document.addEventListener('wheel', window.modalPreventAllScroll, { passive: false, capture: true });
+    document.addEventListener('scroll', window.modalPreventAllScroll, { passive: false, capture: true });
+
+    // 弹窗滚动控制
+    const modalOverlay = popup.querySelector('#modal-overlay');
+    const modalScrollContainer = popup.querySelector('#modal-scroll-container');
+
+    if (modalOverlay) {
+        // 点击背景关闭弹窗
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                closeSuccessPopup();
+            }
+        });
+    }
+
+    if (modalScrollContainer) {
+        // 重新启用弹窗内的滚动，同时阻止事件传播
+        const enableModalScroll = function(e) {
+            e.stopPropagation(); // 阻止传播到document
+        };
+
+        modalScrollContainer.addEventListener('touchstart', enableModalScroll, { passive: true });
+        modalScrollContainer.addEventListener('touchmove', enableModalScroll, { passive: true });
+        modalScrollContainer.addEventListener('wheel', enableModalScroll, { passive: true });
+        modalScrollContainer.addEventListener('scroll', enableModalScroll, { passive: true });
+    }
+
     // 绑定弹窗下载按钮事件
     bindPopupDownloadEvents(accessCode);
 }
@@ -1175,11 +1247,40 @@ function closeSuccessPopup() {
     const popup = document.getElementById('success-popup');
     if (popup) {
         popup.remove();
+
+        // 移除全局滚动阻止事件监听器
+        if (window.modalPreventAllScroll) {
+            document.removeEventListener('touchmove', window.modalPreventAllScroll, { capture: true });
+            document.removeEventListener('wheel', window.modalPreventAllScroll, { capture: true });
+            document.removeEventListener('scroll', window.modalPreventAllScroll, { capture: true });
+            window.modalPreventAllScroll = null;
+        }
+
+        // 恢复body滚动
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+
+        // 恢复到之前的滚动位置
+        if (window.modalScrollTop) {
+            window.scrollTo(0, window.modalScrollTop);
+            window.modalScrollTop = null;
+        }
     }
 }
 
 // 前往视奏工具页面
 function goToSightReadingTool() {
+    // 在跳转前设置完整版状态
+    localStorage.setItem('ic_full_version', 'true');
+    localStorage.setItem('ic_verified_from_access_page', 'true');
+    localStorage.setItem('ic_verified_timestamp', Date.now().toString());
+
+    console.log('🎯 设置完整版状态，准备跳转到工具页面');
+
     closeSuccessPopup();
     // 跳转到完整版视奏工具页面
     window.open('/tools/sight-reading-generator.html', '_blank');
