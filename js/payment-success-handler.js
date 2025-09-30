@@ -118,7 +118,7 @@
             // 准备显示数据
             console.log('📋 订单数据详情:', orderData);
             const orderNumber = orderData?.out_trade_no || orderData?.order_id || 'IC' + Date.now().toString().substr(-8);
-            const paymentAmount = orderData?.amount || orderData?.money || '48.00';
+            const paymentAmount = orderData?.amount || orderData?.money || '68.00';
 
             console.log('📋 提取到的订单信息:', {
                 orderNumber,
