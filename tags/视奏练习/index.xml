@@ -1,53 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>视奏练习 on IC Studio</title><link>https://icstudio.club/tags/%E8%A7%86%E5%A5%8F%E7%BB%83%E4%B9%A0/</link><description>Recent content in 视奏练习 on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Sun, 01 Sep 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://icstudio.club/tags/%E8%A7%86%E5%A5%8F%E7%BB%83%E4%B9%A0/index.xml" rel="self" type="application/rss+xml"/><item><title>IC 视奏工具</title><link>https://icstudio.club/sight-reading-tool/</link><pubDate>Sun, 01 Sep 2024 00:00:00 +0000</pubDate><guid>https://icstudio.club/sight-reading-tool/</guid><description>&lt;h1 id="ic-studio---专业级视奏旋律生成器">IC Studio - 专业级视奏旋律生成器&lt;/h1>
-&lt;p>&lt;img src="https://icstudio.club/images/sight-reading-tool-interface.png" alt="IC Studio 视奏完整界面">&lt;/p>
-&lt;blockquote>
-&lt;p>点击这里&lt;a href="https://icstudio.club/tools/sight-reading-generator.html">免费试用&lt;/a>&lt;/p>&lt;/blockquote>
-&lt;h2 id="核心特色">核心特色&lt;/h2>
-&lt;ul>
-&lt;li>&lt;strong>智能生成逻辑&lt;/strong>：旋律虽由算法随机生成，但并非完全无序；它们保持&lt;strong>平衡的旋律线条&lt;/strong>与&lt;strong>音乐性&lt;/strong>，确保练习曲目既有挑战也具备可听性。&lt;/li>
-&lt;li>&lt;strong>专业乐谱渲染&lt;/strong>：基于 OpenSheetMusicDisplay引擎，提供出版级别的清晰乐谱显示。&lt;/li>
-&lt;/ul>
-&lt;p>&lt;img src="https://icstudio.club/images/sight-reading-tool-score-example.png" alt="生成的乐谱示例">&lt;/p>
-&lt;ul>
-&lt;li>&lt;strong>完全自定义&lt;/strong>：支持调号、音域、节奏类型、音程跨度、临时记号等多维度个性化设置。&lt;/li>
-&lt;/ul>
-&lt;p>&lt;img src="https://icstudio.club/images/sight-reading-tool-full-interface.png" alt="IC Studio 视奏工具完整界面">&lt;/p>
-&lt;h2 id="专业功能">专业功能&lt;/h2>
-&lt;ul>
-&lt;li>&lt;strong>24 个大小调支持&lt;/strong>：涵盖所有常见调性，以及小调中的&lt;strong>自然小调&lt;/strong>、&lt;strong>和声小调&lt;/strong>与&lt;strong>旋律小调&lt;/strong>的变化处理。&lt;/li>
-&lt;li>&lt;strong>丰富节奏选择&lt;/strong>：从全音符到十六分音符，囊括附点、三连音等复杂节奏。&lt;/li>
-&lt;/ul>
-&lt;p>&lt;img src="https://icstudio.club/images/sight-reading-tool-rhythm-settings.png" alt="节奏设置详细配置">&lt;/p>
-&lt;ul>
-&lt;li>&lt;strong>音程跨度控制&lt;/strong>：自由设定旋律的跳进与级进范围，匹配不同学习阶段。&lt;/li>
-&lt;li>&lt;strong>临时记号系统&lt;/strong>：智能插入升降号，增加音乐表现力与挑战性。&lt;/li>
-&lt;li>&lt;strong>吉他技巧支持&lt;/strong>：重音、断奏、短倚音、击弦、勾弦全面涵盖。&lt;/li>
-&lt;/ul>
-&lt;p>&lt;img src="https://icstudio.club/images/sight-reading-tool-articulations.png" alt="演奏技巧详细设置">&lt;/p>
-&lt;ul>
-&lt;li>&lt;strong>全拍号支持&lt;/strong>：完整覆盖 4/4、3/4、6/8等常用拍号，每种拍号皆有独特节奏模式。&lt;/li>
-&lt;li>&lt;strong>内置节拍器&lt;/strong>：无需额外工具，即可在练习时保持稳定的节奏感。&lt;/li>
-&lt;li>&lt;strong>音频播放&lt;/strong>：可以播放随机生成的旋律，用户可以用来做听力练习或者与正确的演奏进行对照。&lt;/li>
-&lt;li>&lt;strong>支持手机端/平板端/电脑端&lt;/strong>：可以用任何设备练习视奏！&lt;/li>
-&lt;/ul>
-&lt;h2 id="未来功能">未来功能&lt;/h2>
-&lt;ul>
-&lt;li>&lt;strong>音程视奏&lt;/strong>：随机生成有音乐性以及旋律线条的音程，帮助你熟悉指板音程逻辑。&lt;/li>
-&lt;li>&lt;strong>和弦视奏&lt;/strong>：随机生成 &lt;a href="https://icstudio.club/guitar-voicings/">Guitar voicings&lt;/a>（三和弦，drop 2，drop 3，shell voicings等），提高你视奏和弦的能力。&lt;/li>
-&lt;li>&lt;strong>低音生成器&lt;/strong>：随机生成一串低音，可以用来练习四部和声，和弦写作。（之后我会单独出一期视频讲解）&lt;/li>
-&lt;li>&lt;strong>和弦进行生成器&lt;/strong>：随机生成一串&lt;strong>和弦代号&lt;/strong>，乐手可以根据和弦代号自行配和声。&lt;/li>
-&lt;li>✅&lt;strong>音频播放&lt;/strong>：可以播放随机生成的旋律，用户可以用来做听力练习或者与正确的演奏进行对照。&lt;/li>
-&lt;li>✅&lt;strong>支持手机端&lt;/strong>：目前漂亮的五线谱只能在电脑或者平板上看到，不久之后就会出手机端的版本。&lt;/li>
-&lt;/ul>
-&lt;p>（现在购买可以在未来免费解锁进阶功能，之后出了这些功能之后会涨价）&lt;/p>
-&lt;h2 id="适用人群">适用人群&lt;/h2>
-&lt;ul>
-&lt;li>&lt;strong>音乐学生 / 自学者&lt;/strong>：快速提升视奏水平。&lt;/li>
-&lt;li>&lt;strong>音乐教师&lt;/strong>：高效生成教学素材，轻松定制个性化练习内容。&lt;/li>
-&lt;/ul>
-&lt;h2 id="action-section">🎯 立即行动&lt;/h2>
-&lt;p>⚡ &lt;strong>68.00¥&lt;/strong>—— 支持网页版以及电脑软件，现在购买可在未来&lt;strong>免费解锁&lt;/strong>更进阶的功能！&lt;/p>
-&lt;div style="display: flex; gap: 30px; margin: 30px auto; max-width: 1000px; align-items: flex-start; flex-wrap: wrap;">
-&lt;div style="flex: 1; min-width: 300px; padding: 25px; background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); border: 2px solid #e6edff; text-align: center;">
-&lt;h3 style="color: #4a5568; margin-bottom: 6px; font-size: 20px;">解锁视奏工具&lt;/h3>
-&lt;p style="color: #718096; font-size: 14px; margin: 0 0 20px 0;">支持 7 天无理由退款&lt;/p></description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>视奏练习 on IC Studio</title>
+    <link>http://localhost:1313/tags/%E8%A7%86%E5%A5%8F%E7%BB%83%E4%B9%A0/</link>
+    <description>Recent content in 视奏练习 on IC Studio</description>
+    <generator>Hugo</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sun, 01 Sep 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/%E8%A7%86%E5%A5%8F%E7%BB%83%E4%B9%A0/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>IC 视奏工具</title>
+      <link>http://localhost:1313/sight-reading-tool/</link>
+      <pubDate>Sun, 01 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/sight-reading-tool/</guid>
+      <description>&lt;!-- 引入新的专业风格样式表 --&gt;&#xA;&lt;link rel=&#34;stylesheet&#34; href=&#34;http://localhost:1313/css/sight-reading-pro.css&#34;&gt;&#xA;&lt;!-- Hero 区域 --&gt;&#xA;&lt;div class=&#34;hero-section&#34;&gt;&#xA;  &lt;div class=&#34;hero-content animate-fade-in&#34;&gt;&#xA;    &lt;h1 class=&#34;hero-title&#34;&gt;&#xA;      提升你的&lt;span class=&#34;gradient-text&#34;&gt;视奏能力&lt;/span&gt;&#xA;    &lt;/h1&gt;&#xA;    &lt;p class=&#34;hero-subtitle&#34;&gt;&#xA;      专业级视奏旋律生成器，助力音乐学习者快速提升读谱技能！&lt;br&gt;&#xA;      &lt;span class=&#34;highlight&#34;&gt;智能生成逻辑 · 专业乐谱渲染 · 完全自定义&lt;/span&gt;&#xA;    &lt;/p&gt;&#xA;    &lt;div style=&#34;margin-top: 2rem;&#34;&gt;&#xA;      &lt;a href=&#34;http://localhost:1313/tools/sight-reading-generator.html&#34; class=&#34;btn-primary&#34;&gt;立即免费试用&lt;/a&gt;&#xA;    &lt;/div&gt;&#xA;  &lt;/div&gt;&#xA;&lt;/div&gt;&#xA;&lt;!-- 功能特色区域 --&gt;&#xA;&lt;div style=&#34;max-width: 1200px; margin: 3rem auto; padding: 0 1.5rem;&#34;&gt;&#xA;  &lt;h2 style=&#34;text-align: center; font-size: clamp(2rem, 4vw, 2.5rem); margin-bottom: 3rem; color: #1a202c;&#34;&gt;&#xA;    核心&lt;span class=&#34;text-gradient&#34;&gt;功能特色&lt;/span&gt;&#xA;  &lt;/h2&gt;&#xA;  &lt;div class=&#34;features-grid&#34;&gt;&#xA;    &lt;div class=&#34;feature-card&#34;&gt;&#xA;      &lt;span class=&#34;feature-icon&#34;&gt;🎵&lt;/span&gt;&#xA;      &lt;h3 class=&#34;feature-title&#34;&gt;智能生成逻辑&lt;/h3&gt;&#xA;      &lt;p class=&#34;feature-description&#34;&gt;&#xA;        旋律虽由算法随机生成，但并非完全无序；它们保持平衡的旋律线条与音乐性，确保练习曲目既有挑战也具备可听性。&#xA;      &lt;/p&gt;&#xA;    &lt;/div&gt;&#xA;&lt;pre&gt;&lt;code&gt;&amp;lt;div class=&amp;quot;feature-card&amp;quot;&amp;gt;&#xA;  &amp;lt;span class=&amp;quot;feature-icon&amp;quot;&amp;gt;📄&amp;lt;/span&amp;gt;&#xA;  &amp;lt;h3 class=&amp;quot;feature-title&amp;quot;&amp;gt;专业乐谱渲染&amp;lt;/h3&amp;gt;&#xA;  &amp;lt;p class=&amp;quot;feature-description&amp;quot;&amp;gt;&#xA;    基于 OpenSheetMusicDisplay 引擎，提供出版级别的清晰乐谱显示，让你在练习时获得专业的阅读体验。&#xA;  &amp;lt;/p&amp;gt;&#xA;&amp;lt;/div&amp;gt;&#xA;&#xA;&amp;lt;div class=&amp;quot;feature-card&amp;quot;&amp;gt;&#xA;  &amp;lt;span class=&amp;quot;feature-icon&amp;quot;&amp;gt;⚙️&amp;lt;/span&amp;gt;&#xA;  &amp;lt;h3 class=&amp;quot;feature-title&amp;quot;&amp;gt;完全自定义&amp;lt;/h3&amp;gt;&#xA;  &amp;lt;p class=&amp;quot;feature-description&amp;quot;&amp;gt;&#xA;    支持调号、音域、节奏类型、音程跨度、临时记号等多维度个性化设置，打造专属练习方案。&#xA;  &amp;lt;/p&amp;gt;&#xA;&amp;lt;/div&amp;gt;&#xA;&#xA;&amp;lt;div class=&amp;quot;feature-card&amp;quot;&amp;gt;&#xA;  &amp;lt;span class=&amp;quot;feature-icon&amp;quot;&amp;gt;🎹&amp;lt;/span&amp;gt;&#xA;  &amp;lt;h3 class=&amp;quot;feature-title&amp;quot;&amp;gt;24 个大小调支持&amp;lt;/h3&amp;gt;&#xA;  &amp;lt;p class=&amp;quot;feature-description&amp;quot;&amp;gt;&#xA;    涵盖所有常见调性，以及小调中的自然小调、和声小调与旋律小调的变化处理。&#xA;  &amp;lt;/p&amp;gt;&#xA;&amp;lt;/div&amp;gt;&#xA;&#xA;&amp;lt;div class=&amp;quot;feature-card&amp;quot;&amp;gt;&#xA;  &amp;lt;span class=&amp;quot;feature-icon&amp;quot;&amp;gt;🎼&amp;lt;/span&amp;gt;&#xA;  &amp;lt;h3 class=&amp;quot;feature-title&amp;quot;&amp;gt;丰富节奏选择&amp;lt;/h3&amp;gt;&#xA;  &amp;lt;p class=&amp;quot;feature-description&amp;quot;&amp;gt;&#xA;    从全音符到十六分音符，囊括附点、三连音等复杂节奏，满足各个学习阶段的需求。&#xA;  &amp;lt;/p&amp;gt;&#xA;&amp;lt;/div&amp;gt;&#xA;&#xA;&amp;lt;div class=&amp;quot;feature-card&amp;quot;&amp;gt;&#xA;  &amp;lt;span class=&amp;quot;feature-icon&amp;quot;&amp;gt;🎸&amp;lt;/span&amp;gt;&#xA;  &amp;lt;h3 class=&amp;quot;feature-title&amp;quot;&amp;gt;吉他技巧支持&amp;lt;/h3&amp;gt;&#xA;  &amp;lt;p class=&amp;quot;feature-description&amp;quot;&amp;gt;&#xA;    重音、断奏、短倚音、击弦、勾弦全面涵盖，让你的视奏练习更贴近实际演奏。&#xA;  &amp;lt;/p&amp;gt;&#xA;&amp;lt;/div&amp;gt;&#xA;&#xA;&amp;lt;div class=&amp;quot;feature-card&amp;quot;&amp;gt;&#xA;  &amp;lt;span class=&amp;quot;feature-icon&amp;quot;&amp;gt;⏱️&amp;lt;/span&amp;gt;&#xA;  &amp;lt;h3 class=&amp;quot;feature-title&amp;quot;&amp;gt;内置节拍器&amp;lt;/h3&amp;gt;&#xA;  &amp;lt;p class=&amp;quot;feature-description&amp;quot;&amp;gt;&#xA;    无需额外工具，即可在练习时保持稳定的节奏感，全拍号支持（4/4、3/4、6/8等）。&#xA;  &amp;lt;/p&amp;gt;&#xA;&amp;lt;/div&amp;gt;&#xA;&#xA;&amp;lt;div class=&amp;quot;feature-card&amp;quot;&amp;gt;&#xA;  &amp;lt;span class=&amp;quot;feature-icon&amp;quot;&amp;gt;🔊&amp;lt;/span&amp;gt;&#xA;  &amp;lt;h3 class=&amp;quot;feature-title&amp;quot;&amp;gt;音频播放&amp;lt;/h3&amp;gt;&#xA;  &amp;lt;p class=&amp;quot;feature-description&amp;quot;&amp;gt;&#xA;    可以播放随机生成的旋律，用户可以用来做听力练习或者与正确的演奏进行对照。&#xA;  &amp;lt;/p&amp;gt;&#xA;&amp;lt;/div&amp;gt;&#xA;&#xA;&amp;lt;div class=&amp;quot;feature-card&amp;quot;&amp;gt;&#xA;  &amp;lt;span class=&amp;quot;feature-icon&amp;quot;&amp;gt;📱&amp;lt;/span&amp;gt;&#xA;  &amp;lt;h3 class=&amp;quot;feature-title&amp;quot;&amp;gt;多平台支持&amp;lt;/h3&amp;gt;&#xA;  &amp;lt;p class=&amp;quot;feature-description&amp;quot;&amp;gt;&#xA;    完美适配手机端、平板端、电脑端，让你随时随地都能练习视奏！&#xA;  &amp;lt;/p&amp;gt;&#xA;&amp;lt;/div&amp;gt;&#xA;&lt;/code&gt;&lt;/pre&gt;&#xA;  &lt;/div&gt;&#xA;&lt;/div&gt;&#xA;&lt;!-- 界面展示 --&gt;&#xA;&lt;div style=&#34;max-width: 1200px; margin: 3rem auto; padding: 0 1.5rem;&#34;&gt;&#xA;  &lt;div style=&#34;text-align: center; margin: 2rem 0;&#34;&gt;&#xA;    &lt;img src=&#34;http://localhost:1313/images/sight-reading-tool-interface.png&#34; alt=&#34;IC Studio 视奏工具完整界面&#34; style=&#34;width: 100%; border-radius: 1rem; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);&#34;&gt;&#xA;  &lt;/div&gt;&#xA;  &lt;div style=&#34;text-align: center; margin: 2rem 0;&#34;&gt;&#xA;    &lt;img src=&#34;http://localhost:1313/images/sight-reading-tool-score-example.png&#34; alt=&#34;生成的乐谱示例&#34; style=&#34;width: 100%; border-radius: 1rem; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);&#34;&gt;&#xA;  &lt;/div&gt;&#xA;  &lt;div style=&#34;text-align: center; margin: 2rem 0;&#34;&gt;&#xA;    &lt;img src=&#34;http://localhost:1313/images/sight-reading-tool-rhythm-settings.png&#34; alt=&#34;节奏设置详细配置&#34; style=&#34;width: 100%; border-radius: 1rem; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);&#34;&gt;&#xA;  &lt;/div&gt;&#xA;  &lt;div style=&#34;text-align: center; margin: 2rem 0;&#34;&gt;&#xA;    &lt;img src=&#34;http://localhost:1313/images/sight-reading-tool-articulations.png&#34; alt=&#34;演奏技巧详细设置&#34; style=&#34;width: 100%; border-radius: 1rem; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);&#34;&gt;&#xA;  &lt;/div&gt;&#xA;&lt;/div&gt;&#xA;&lt;!-- 未来功能区域 --&gt;&#xA;&lt;div style=&#34;max-width: 1000px; margin: 4rem auto; padding: 2rem 1.5rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 1rem; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);&#34;&gt;&#xA;  &lt;h2 style=&#34;text-align: center; font-size: clamp(1.75rem, 4vw, 2.25rem); margin-bottom: 2rem; color: #92400e;&#34;&gt;&#xA;    🚀 即将推出&#xA;  &lt;/h2&gt;&#xA;  &lt;div style=&#34;display: grid; gap: 1rem; margin-bottom: 1.5rem;&#34;&gt;&#xA;    &lt;div style=&#34;background: rgba(255, 255, 255, 0.8); padding: 1.25rem; border-radius: 0.75rem; border-left: 4px solid #f59e0b;&#34;&gt;&#xA;      &lt;strong style=&#34;color: #92400e;&#34;&gt;🎵 音程视奏：&lt;/strong&gt;&#xA;      &lt;span style=&#34;color: #78350f;&#34;&gt;随机生成有音乐性以及旋律线条的音程，帮助你熟悉指板音程逻辑。&lt;/span&gt;&#xA;    &lt;/div&gt;&#xA;    &lt;div style=&#34;background: rgba(255, 255, 255, 0.8); padding: 1.25rem; border-radius: 0.75rem; border-left: 4px solid #f59e0b;&#34;&gt;&#xA;      &lt;strong style=&#34;color: #92400e;&#34;&gt;🎸 和弦视奏：&lt;/strong&gt;&#xA;      &lt;span style=&#34;color: #78350f;&#34;&gt;随机生成 Guitar voicings（三和弦，drop 2，drop 3，shell voicings等），提高你视奏和弦的能力。&lt;/span&gt;&#xA;    &lt;/div&gt;&#xA;    &lt;div style=&#34;background: rgba(255, 255, 255, 0.8); padding: 1.25rem; border-radius: 0.75rem; border-left: 4px solid #f59e0b;&#34;&gt;&#xA;      &lt;strong style=&#34;color: #92400e;&#34;&gt;🎹 低音生成器：&lt;/strong&gt;&#xA;      &lt;span style=&#34;color: #78350f;&#34;&gt;随机生成一串低音，可以用来练习四部和声、和弦写作。&lt;/span&gt;&#xA;    &lt;/div&gt;&#xA;    &lt;div style=&#34;background: rgba(255, 255, 255, 0.8); padding: 1.25rem; border-radius: 0.75rem; border-left: 4px solid #f59e0b;&#34;&gt;&#xA;      &lt;strong style=&#34;color: #92400e;&#34;&gt;🎼 和弦进行生成器：&lt;/strong&gt;&#xA;      &lt;span style=&#34;color: #78350f;&#34;&gt;随机生成一串和弦代号，乐手可以根据和弦代号自行配和声。&lt;/span&gt;&#xA;    &lt;/div&gt;&#xA;  &lt;/div&gt;&#xA;  &lt;p style=&#34;text-align: center; font-weight: 600; color: #92400e; font-size: 1.125rem;&#34;&gt;&#xA;    💡 现在购买可以在未来免费解锁进阶功能，之后出了这些功能之后会涨价！&#xA;  &lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

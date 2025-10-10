@@ -1,0 +1,139 @@
+{
+  "hero": {
+    "title": "提升你的",
+    "titleHighlight": "视奏能力",
+    "subtitle": "专业级视奏旋律生成器，助力音乐学习者快速提升读谱技能！",
+    "features": "智能生成逻辑 · 专业乐谱渲染 · 完全自定义",
+    "tryButton": "立即免费试用"
+  },
+  "features": {
+    "title": "核心",
+    "titleHighlight": "功能特色",
+    "intelligent": {
+      "title": "智能生成逻辑",
+      "desc": "旋律虽由算法随机生成，但并非完全无序；它们保持平衡的旋律线条与音乐性，确保练习曲目既有挑战也具备可听性。"
+    },
+    "professional": {
+      "title": "专业乐谱渲染",
+      "desc": "基于 OpenSheetMusicDisplay 引擎，提供出版级别的清晰乐谱显示，让你在练习时获得专业的阅读体验。"
+    },
+    "customize": {
+      "title": "完全自定义",
+      "desc": "支持调号、音域、节奏类型、音程跨度、临时记号等多维度个性化设置，打造专属练习方案。"
+    },
+    "keys": {
+      "title": "24 个大小调支持",
+      "desc": "涵盖所有常见调性，以及小调中的自然小调、和声小调与旋律小调的变化处理。"
+    },
+    "rhythm": {
+      "title": "丰富节奏选择",
+      "desc": "从全音符到十六分音符，囊括附点、三连音等复杂节奏，满足各个学习阶段的需求。"
+    },
+    "guitar": {
+      "title": "吉他技巧支持",
+      "desc": "重音、断奏、短倚音、击弦、勾弦全面涵盖，让你的视奏练习更贴近实际演奏。"
+    },
+    "metronome": {
+      "title": "内置节拍器",
+      "desc": "无需额外工具，即可在练习时保持稳定的节奏感，全拍号支持（4/4、3/4、6/8等）。"
+    },
+    "audio": {
+      "title": "音频播放",
+      "desc": "可以播放随机生成的旋律，用户可以用来做听力练习或者与正确的演奏进行对照。"
+    },
+    "multiplatform": {
+      "title": "多平台支持",
+      "desc": "完美适配手机端、平板端、电脑端，让你随时随地都能练习视奏！"
+    }
+  },
+  "upcoming": {
+    "title": "即将推出",
+    "interval": {
+      "title": "音程视奏：",
+      "desc": "随机生成有音乐性以及旋律线条的音程，帮助你熟悉指板音程逻辑。"
+    },
+    "chord": {
+      "title": "和弦视奏：",
+      "desc": "随机生成 Guitar voicings（三和弦，drop 2，drop 3，shell voicings等），提高你视奏和弦的能力。"
+    },
+    "bass": {
+      "title": "低音生成器：",
+      "desc": "随机生成一串低音，可以用来练习四部和声、和弦写作。"
+    },
+    "progression": {
+      "title": "和弦进行生成器：",
+      "desc": "随机生成一串和弦代号，乐手可以根据和弦代号自行配和声。"
+    },
+    "note": "现在购买可以在未来免费解锁进阶功能，之后出了这些功能之后会涨价！"
+  },
+  "audience": {
+    "title": "适合",
+    "titleHighlight": "哪些人群",
+    "students": {
+      "title": "音乐学生 / 自学者",
+      "desc": "快速提升视奏水平，通过科学的练习方法掌握读谱技能。"
+    },
+    "teachers": {
+      "title": "音乐教师",
+      "desc": "高效生成教学素材，轻松定制个性化练习内容，提高教学效率。"
+    }
+  },
+  "cta": {
+    "title": "立即开始使用",
+    "price": "68.00¥",
+    "subtitle": "支持网页版以及电脑软件",
+    "futureAccess": "现在购买可在未来",
+    "freeUnlock": "免费解锁",
+    "advancedFeatures": "更进阶的功能！",
+    "unlockTitle": "解锁视奏工具",
+    "refundPolicy": "支持 7 天无理由退款",
+    "freeTrial": "免费试用",
+    "alipay": "支付宝支付",
+    "wechat": "微信支付",
+    "hasCodeTitle": "已有访问码？立即使用",
+    "accessCodePlaceholder": "输入访问码(11-12位)",
+    "verify": "验证"
+  },
+  "faq": {
+    "title": "常见问题",
+    "titleHighlight": "FAQ",
+    "forgotCode": {
+      "title": "忘记访问码了怎么办？",
+      "desc": "如果您忘记了访问码，可以通过您的订单号找回：",
+      "recoverButton": "通过订单号找回访问码",
+      "noteTitle": "说明：",
+      "note1": "订单号或者商家订单号可在支付宝或者微信的账单记录里找到。",
+      "note2": "商家订单号格式如",
+      "note3": "订单号格式如"
+    },
+    "codeNotWorking": {
+      "title": "访问码不能正常工作？",
+      "desc": "如果在输入验证码之后工具还是处于试用版本的话，只要多刷新一下页面就好了。如果问题依然存在，请联系我们的客服支持。"
+    },
+    "refund": {
+      "title": "如何退款？",
+      "desc": "我们理解您可能会遇到各种情况，因此提供",
+      "policy": "7天无理由退款政策",
+      "conditionsTitle": "退款条件：",
+      "condition1": "购买后7天内可申请退款",
+      "condition2": "超过7天不支持退款",
+      "onlineRefund": "在线退款：",
+      "refundButton": "申请在线退款"
+    },
+    "contact": {
+      "title": "有其他问题？欢迎联系我！",
+      "desc": "如果您在使用过程中遇到以下任何问题，欢迎通过下面的联系方式联系我，我会尽快为您解决：",
+      "issue1": "使用工具时有遇到 bug",
+      "issue2": "找回访问码不能正常工作",
+      "issue3": "退款按钮不能正常工作",
+      "issue4": "任何其他关于产品的咨询",
+      "contactInfo": "联系方式：",
+      "email": "邮箱：",
+      "contactPage": "联系页面：",
+      "clickVisit": "点此访问",
+      "responseTime": "所有信息将在最多",
+      "hours": "48 小时",
+      "withinReply": "内回复"
+    }
+  }
+}

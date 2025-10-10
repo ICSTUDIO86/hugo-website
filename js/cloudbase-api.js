@@ -785,7 +785,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (window.location.pathname.includes('premium-sight-reading')) {
     if (!accessResult.hasAccess && !window.location.search.includes('verified=true')) {
       alert('⚠️ 需要有效的访问码才能使用完整版功能');
-      window.location.href = '/tools/sight-reading-generator.html';
+      window.location.href = '/tools/melody-generator.html';
     }
   }
 });

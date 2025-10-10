@@ -1,3 +1,85 @@
+// ========================================
+// 🛡️ 第一层防护：阻止file://协议
+// ========================================
+// 必须在所有代码之前执行，防止用户下载后离线使用
+(function() {
+  if (window.location.protocol === 'file:') {
+    console.error('🚫 检测到file://协议，已阻止');
+
+    // 立即阻止页面加载
+    document.addEventListener('DOMContentLoaded', function() {
+      document.body.innerHTML = `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          padding: 20px;
+          text-align: center;
+        ">
+          <div style="
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+          ">
+            <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
+            <h1 style="
+              color: #333;
+              font-size: 28px;
+              margin: 0 0 20px 0;
+              font-weight: 600;
+            ">无法离线使用</h1>
+            <p style="
+              color: #666;
+              font-size: 16px;
+              line-height: 1.6;
+              margin: 0 0 30px 0;
+            ">
+              IC视奏工具需要在线使用以验证授权。<br>
+              请访问在线版本以获得完整体验。
+            </p>
+            <a href="https://icstudio.club/tools/" style="
+              display: inline-block;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              padding: 14px 32px;
+              border-radius: 30px;
+              text-decoration: none;
+              font-size: 16px;
+              font-weight: 600;
+              box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+              transition: all 0.3s ease;
+            " onmouseover="
+              this.style.transform='translateY(-2px)';
+              this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.5)';
+            " onmouseout="
+              this.style.transform='translateY(0)';
+              this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)';
+            ">
+              访问在线版本 →
+            </a>
+            <p style="
+              color: #999;
+              font-size: 14px;
+              margin: 30px 0 0 0;
+            ">
+              如需离线版本，请联系开发者购买离线授权包
+            </p>
+          </div>
+        </div>
+      `;
+    });
+
+    // 立即抛出错误，阻止所有后续脚本执行
+    throw new Error('File protocol is not supported. Please visit https://icstudio.club/tools/');
+  }
+})();
+
 /**
  * IC 视奏工具 - 20条旋律严格计数系统
  * 基于服务端验证，刷新无法绕过
@@ -12,6 +94,8 @@ class MelodyCounterSystem {
     this.originalGenerateMelody = null;
     this.initialized = false; // 标记是否已初始化
     this.cachedFingerprint = null; // 缓存设备指纹以提升性能
+    this.lastOnlineTime = Date.now(); // 最后在线时间
+    this.heartbeatInterval = null; // 心跳定时器
   }
 
   // 生成设备指纹（与服务端保持一致）
@@ -199,6 +283,22 @@ class MelodyCounterSystem {
         parts.push('MEM:' + navigator.deviceMemory);
       }
 
+      // 10. 音频指纹（第二层防护）
+      try {
+        const audioFP = this.getAudioFingerprint();
+        parts.push('AUDIO:' + audioFP);
+      } catch (e) {
+        parts.push('AUDIO:error');
+      }
+
+      // 11. 字体指纹
+      try {
+        const fontFP = this.getFontFingerprint();
+        parts.push('FONTS:' + fontFP);
+      } catch (e) {
+        parts.push('FONTS:error');
+      }
+
       return parts.join('|');
     } catch (e) {
       return 'super-fingerprint-error:' + e.message;
@@ -316,6 +416,221 @@ class MelodyCounterSystem {
     } catch (e) {
       return 'webgl_error';
     }
+  }
+
+  // ========================================
+  // 🔊 第二层防护：音频指纹（增强设备唯一性）
+  // ========================================
+  // 音频指纹通过AudioContext生成，不同设备/浏览器有细微差异
+  getAudioFingerprint() {
+    try {
+      // 检查AudioContext支持
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) {
+        return 'no_audio_context';
+      }
+
+      const audioContext = new AudioContext();
+      const oscillator = audioContext.createOscillator();
+      const analyser = audioContext.createAnalyser();
+      const gainNode = audioContext.createGain();
+      const scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+
+      // 设置增益为0，避免产生声音
+      gainNode.gain.value = 0;
+
+      // 连接音频节点
+      oscillator.connect(analyser);
+      analyser.connect(scriptProcessor);
+      scriptProcessor.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      // 收集音频特征
+      const fingerprint = [];
+
+      // 1. AudioContext基本属性
+      fingerprint.push(`SR:${audioContext.sampleRate}`); // 采样率
+      fingerprint.push(`CH:${audioContext.destination.maxChannelCount}`); // 最大通道数
+      fingerprint.push(`STATE:${audioContext.state}`); // 状态
+
+      // 2. Analyser节点属性
+      fingerprint.push(`FFT:${analyser.fftSize}`); // FFT大小
+      fingerprint.push(`FREQ:${analyser.frequencyBinCount}`); // 频率bin数量
+      fingerprint.push(`MIN:${analyser.minDecibels}`); // 最小分贝
+      fingerprint.push(`MAX:${analyser.maxDecibels}`); // 最大分贝
+
+      // 3. Oscillator属性
+      fingerprint.push(`OSC:${oscillator.type}`); // 振荡器类型
+
+      // 清理资源
+      try {
+        oscillator.disconnect();
+        analyser.disconnect();
+        scriptProcessor.disconnect();
+        gainNode.disconnect();
+        audioContext.close();
+      } catch (e) {
+        // 清理失败，忽略
+      }
+
+      const result = fingerprint.join('|');
+      console.log('  🔊 音频指纹:', result);
+      return result;
+    } catch (e) {
+      console.warn('  ⚠️ 音频指纹生成失败:', e.message);
+      return 'audio_error';
+    }
+  }
+
+  // 电池状态指纹（异步）
+  async getBatteryFingerprint() {
+    try {
+      if (!navigator.getBattery) {
+        return 'no_battery_api';
+      }
+
+      const battery = await navigator.getBattery();
+      const fingerprint = [
+        `CHARGING:${battery.charging}`,
+        `LEVEL:${Math.floor(battery.level * 100)}`,
+        `CHARGE_TIME:${battery.chargingTime === Infinity ? 'inf' : Math.floor(battery.chargingTime / 60)}`,
+        `DISCHARGE_TIME:${battery.dischargingTime === Infinity ? 'inf' : Math.floor(battery.dischargingTime / 60)}`
+      ];
+
+      const result = fingerprint.join('|');
+      console.log('  🔋 电池指纹:', result);
+      return result;
+    } catch (e) {
+      console.warn('  ⚠️ 电池指纹获取失败:', e.message);
+      return 'battery_error';
+    }
+  }
+
+  // 字体检测指纹
+  getFontFingerprint() {
+    try {
+      const baseFonts = ['monospace', 'sans-serif', 'serif'];
+      const testFonts = [
+        'Arial', 'Helvetica', 'Times New Roman', 'Courier New',
+        'Verdana', 'Georgia', 'Comic Sans MS', 'Trebuchet MS',
+        'Microsoft YaHei', 'SimSun', 'SimHei', 'PingFang SC'
+      ];
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.font = '72px monospace';
+
+      const baseWidth = ctx.measureText('mmmmmmmmmmlli').width;
+      const baseHeight = ctx.measureText('M').width;
+
+      const availableFonts = [];
+
+      testFonts.forEach(font => {
+        ctx.font = `72px '${font}', monospace`;
+        const width = ctx.measureText('mmmmmmmmmmlli').width;
+        const height = ctx.measureText('M').width;
+
+        if (width !== baseWidth || height !== baseHeight) {
+          availableFonts.push(font.substring(0, 3)); // 只取前3个字符节省空间
+        }
+      });
+
+      const result = availableFonts.length > 0 ? availableFonts.join(',') : 'no_custom_fonts';
+      console.log('  🔤 字体指纹:', result);
+      return result;
+    } catch (e) {
+      console.warn('  ⚠️ 字体指纹生成失败:', e.message);
+      return 'font_error';
+    }
+  }
+
+  // ========================================
+  // 🌐 第四层防护：在线心跳检测
+  // ========================================
+  // 确保用户必须保持在线，防止访问一次后断网长期使用
+
+  // 启动在线心跳检测
+  startHeartbeat() {
+    // 如果已经有心跳在运行，先停止
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+    }
+
+    console.log('💓 启动在线心跳检测（每5分钟检查一次）');
+
+    // 每5分钟检查一次在线状态
+    this.heartbeatInterval = setInterval(async () => {
+      try {
+        console.log('💓 心跳检测: 检查在线状态...');
+
+        // 尝试向服务器发送心跳请求
+        const response = await fetch(this.apiEndpoint, {
+          method: 'HEAD', // 使用HEAD请求，不需要响应体
+          mode: 'no-cors', // 避免CORS问题
+          cache: 'no-cache'
+        });
+
+        // 更新最后在线时间
+        this.lastOnlineTime = Date.now();
+        console.log('💓 心跳检测: 在线 ✅');
+
+      } catch (error) {
+        console.warn('💓 心跳检测: 离线或网络异常 ⚠️');
+
+        // 检查离线时长
+        const offlineTime = Date.now() - this.lastOnlineTime;
+        const maxOfflineTime = 10 * 60 * 1000; // 10分钟
+
+        if (offlineTime > maxOfflineTime) {
+          console.error('❌ 连续离线超过10分钟，禁用生成功能');
+          this.disableGenerationDueToOffline();
+        } else {
+          const remainingMinutes = Math.ceil((maxOfflineTime - offlineTime) / 60000);
+          console.log(`⏰ 剩余离线时间: ${remainingMinutes} 分钟`);
+        }
+      }
+    }, 5 * 60 * 1000); // 每5分钟检查一次
+  }
+
+  // 停止心跳检测
+  stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+      console.log('💓 心跳检测已停止');
+    }
+  }
+
+  // 因离线而禁用生成功能
+  disableGenerationDueToOffline() {
+    // 更新状态为网络异常
+    this.currentStatus = {
+      ...this.currentStatus,
+      expired: true,
+      networkError: true,
+      message: '网络连接异常，请刷新页面'
+    };
+
+    // 更新UI
+    this.showCounterStatus({
+      error: '网络异常，请刷新页面重新连接',
+      networkError: true
+    });
+
+    this.updateGenerateButton({
+      expired: true,
+      hasFullAccess: false
+    });
+
+    // 显示友好提示
+    this.showCustomAlert(
+      '🌐 网络连接异常',
+      '检测到长时间离线。\n\n请检查网络连接并刷新页面以继续使用。',
+      '刷新页面',
+      () => {
+        window.location.reload();
+      }
+    );
   }
 
   // 美观的自定义弹窗
@@ -487,10 +802,11 @@ class MelodyCounterSystem {
     document.head.appendChild(style);
   }
 
-  // 检测是否为无痕浏览模式（只检测最可靠的指标）
-  isLikelyPrivateBrowsing() {
+  // 检测是否为无痕浏览模式（增强版检测）
+  async isLikelyPrivateBrowsing() {
     try {
       const indicators = [];
+      let score = 0; // 无痕模式可能性评分
 
       // 识别浏览器类型
       const userAgent = navigator.userAgent;
@@ -501,32 +817,51 @@ class MelodyCounterSystem {
 
       console.log('🌐 浏览器检测:', { isChrome, isFirefox, isSafari, isEdge });
 
-      // 只检测最核心和可靠的无痕模式指标
-
-      // 1. 存储检测（最重要）
+      // === 检测方法 1: localStorage 限制 ===
       try {
         const testKey = '_incognito_test_' + Date.now();
         localStorage.setItem(testKey, '1');
         localStorage.removeItem(testKey);
       } catch (e) {
-        // localStorage 被阻止是无痕模式的强指标
         indicators.push('localStorage-blocked');
-        console.log('  ⚠️ localStorage 被阻止');
+        score += 50; // 强指标
+        console.log('  ⚠️ localStorage 被阻止 (+50分)');
       }
 
-      // 2. Chrome特定：文件系统API检测
+      // === 检测方法 2: 存储配额检测 ===
+      if ('storage' in navigator && 'estimate' in navigator.storage) {
+        try {
+          const estimate = await navigator.storage.estimate();
+          const quota = estimate.quota || 0;
+          const usage = estimate.usage || 0;
+          console.log(`  📊 存储配额: ${quota} bytes, 已用: ${usage} bytes`);
+
+          // 无痕模式配额通常很小（小于120MB）
+          if (quota > 0 && quota < 120 * 1024 * 1024) {
+            indicators.push('small-quota');
+            score += 30;
+            console.log(`  ⚠️ 配额较小 (${(quota / 1024 / 1024).toFixed(2)}MB) (+30分)`);
+          }
+        } catch (e) {
+          console.log('  ℹ️ 无法获取存储配额');
+        }
+      }
+
+      // === 检测方法 3: Chrome 文件系统API ===
       if (isChrome && !window.webkitRequestFileSystem) {
         indicators.push('chrome-no-filesystem');
-        console.log('  ⚠️ Chrome 无文件系统API');
+        score += 25;
+        console.log('  ⚠️ Chrome 无文件系统API (+25分)');
       }
 
-      // 3. Firefox特定：IndexedDB检测（在 Private 模式下被禁用）
+      // === 检测方法 4: Firefox IndexedDB ===
       if (isFirefox && !window.indexedDB) {
         indicators.push('firefox-no-indexedDB');
-        console.log('  ⚠️ Firefox 无 IndexedDB');
+        score += 50;
+        console.log('  ⚠️ Firefox 无 IndexedDB (+50分)');
       }
 
-      // 4. Safari特定：存储配额检测
+      // === 检测方法 5: Safari 配额限制 ===
       if (isSafari) {
         try {
           const testData = 'x'.repeat(1024 * 100); // 100KB测试
@@ -535,25 +870,63 @@ class MelodyCounterSystem {
           localStorage.removeItem(testKey);
         } catch (e) {
           indicators.push('safari-quota-limited');
-          console.log('  ⚠️ Safari 存储配额受限');
+          score += 40;
+          console.log('  ⚠️ Safari 存储配额受限 (+40分)');
         }
       }
 
-      // 严格判断：必须有明确的存储限制才认为是无痕模式
-      const hasStorageRestriction = indicators.some(indicator =>
-        indicator.includes('localStorage-blocked') ||
-        indicator.includes('quota-limited') ||
-        indicator.includes('indexedDB')
-      );
+      // === 检测方法 6: ServiceWorker 限制 ===
+      if (!('serviceWorker' in navigator)) {
+        indicators.push('no-service-worker');
+        score += 15;
+        console.log('  ⚠️ 无 ServiceWorker 支持 (+15分)');
+      }
 
-      // 只有真正检测到存储限制才判定为无痕模式
-      const isPrivate = hasStorageRestriction && indicators.length >= 1;
+      // === 检测方法 7: IndexedDB 配额检测 ===
+      try {
+        const dbName = '_incognito_test_' + Date.now();
+        const request = indexedDB.open(dbName);
+        request.onsuccess = () => {
+          indexedDB.deleteDatabase(dbName);
+        };
+        request.onerror = () => {
+          indicators.push('indexeddb-blocked');
+          score += 35;
+          console.log('  ⚠️ IndexedDB 被阻止 (+35分)');
+        };
+      } catch (e) {
+        indicators.push('indexeddb-error');
+        score += 20;
+        console.log('  ⚠️ IndexedDB 错误 (+20分)');
+      }
 
-      console.log('🕵️ 简化无痕检测:', {
+      // === 检测方法 8: 持久化存储 ===
+      if ('storage' in navigator && 'persisted' in navigator.storage) {
+        try {
+          const persisted = await navigator.storage.persisted();
+          if (!persisted) {
+            indicators.push('not-persisted');
+            score += 10;
+            console.log('  ⚠️ 存储未持久化 (+10分)');
+          }
+        } catch (e) {
+          console.log('  ℹ️ 无法检查持久化状态');
+        }
+      }
+
+      // === 判定逻辑：分数阈值 ===
+      // 分数 >= 40: 很可能是无痕模式
+      // 分数 >= 25: 可能是无痕模式
+      // 分数 < 25: 可能不是无痕模式
+      const isPrivate = score >= 25;
+
+      console.log('🕵️ 增强无痕检测结果:', {
         browser: { isChrome, isFirefox, isSafari, isEdge },
         indicators: indicators,
-        hasStorageRestriction: hasStorageRestriction,
-        isPrivateBrowsing: isPrivate
+        score: score,
+        threshold: 25,
+        isPrivateBrowsing: isPrivate,
+        confidence: score >= 40 ? '高' : score >= 25 ? '中' : '低'
       });
 
       return isPrivate;
@@ -713,12 +1086,34 @@ class MelodyCounterSystem {
   // 检查用户是否有有效的访问码（优先级最高）
   hasValidLocalAccessCode() {
     try {
+      // 检查新访问码系统 (ic-premium-access)
       const accessData = localStorage.getItem('ic-premium-access');
-      if (!accessData) return false;
+      if (accessData) {
+        try {
+          const data = JSON.parse(accessData);
+          if (data && data.code && data.code.length >= 10) {
+            console.log('✅ 检测到 ic-premium-access 付费标志，完整版用户');
+            return true;
+          }
+        } catch (e) {
+          // JSON解析失败，尝试直接使用
+          if (accessData.length >= 10) {
+            console.log('✅ 检测到 ic-premium-access 付费标志（纯文本），完整版用户');
+            return true;
+          }
+        }
+      }
 
-      const data = JSON.parse(accessData);
-      if (data && data.code && data.code.length >= 10) {
-        console.log('✅ 检测到本地有效访问码，完整版用户');
+      // 检查旧完整版标志 (ic_full_version)
+      if (localStorage.getItem('ic_full_version') === 'true') {
+        console.log('✅ 检测到 ic_full_version 付费标志，完整版用户');
+        return true;
+      }
+
+      // 检查许可证系统 (ic-sight-reading-license)
+      const licenseData = localStorage.getItem('ic-sight-reading-license');
+      if (licenseData) {
+        console.log('✅ 检测到 ic-sight-reading-license 付费标志，完整版用户');
         return true;
       }
     } catch (error) {
@@ -853,8 +1248,13 @@ class MelodyCounterSystem {
     // 查找或创建状态显示区域
     let statusDiv = document.getElementById('melody-counter-status');
     if (!statusDiv) {
-      // 在生成按钮附近创建状态显示
-      const generateBtn = document.querySelector('button[onclick*="generateMelody"]');
+      // 在生成按钮附近创建状态显示（支持旋律、音程、和弦三种工具）
+      const generateBtn = document.querySelector('button[onclick*="generateMelody"]') ||
+                         document.querySelector('button[onclick*="generateIntervals"]') ||
+                         document.querySelector('button[onclick*="generatePianoChords"]') ||
+                         document.getElementById('generateBtn') ||
+                         document.querySelector('button.btn-primary');
+
       if (generateBtn && generateBtn.parentElement) {
         statusDiv = document.createElement('div');
         statusDiv.id = 'melody-counter-status';
@@ -910,9 +1310,16 @@ class MelodyCounterSystem {
   updateGenerateButton(status) {
     const generateBtn = document.getElementById('generateBtn') ||
                        document.querySelector('button[onclick*="generateMelody"]') ||
+                       document.querySelector('button[onclick*="generateIntervals"]') ||
+                       document.querySelector('button[onclick*="generatePianoChords"]') ||
                        document.querySelector('button.btn-primary');
 
     if (!generateBtn) return;
+
+    // 保存原始按钮文本（只保存一次）
+    if (!generateBtn.dataset.originalText) {
+      generateBtn.dataset.originalText = generateBtn.textContent;
+    }
 
     if (status.expired && !status.hasFullAccess) {
       generateBtn.disabled = true;
@@ -926,7 +1333,8 @@ class MelodyCounterSystem {
       generateBtn.disabled = false;
       generateBtn.style.opacity = '1';
       generateBtn.style.cursor = 'pointer';
-      generateBtn.textContent = '生成旋律';
+      // 恢复原始按钮文本
+      generateBtn.textContent = generateBtn.dataset.originalText || '生成旋律';
     }
   }
 
@@ -938,18 +1346,16 @@ class MelodyCounterSystem {
       return;
     }
 
-    // 保存原始函数（确保不是undefined）
+    // 保存原始函数（如果不存在则跳过，这在其他工具页面是正常的）
     if (!window.generateMelody) {
-      console.error('❌ generateMelody函数还不存在，延迟包装...');
-      // 延迟重试
-      setTimeout(() => this.wrapGenerateMelodyFunction(), 500);
+      console.log('⚠️ generateMelody函数不存在，跳过包装（可能是音程或和弦页面）');
       return;
     }
 
     this.originalGenerateMelody = window.generateMelody;
     console.log('📌 保存原始generateMelody函数:', typeof this.originalGenerateMelody);
 
-    // 创建新的包装函数 - 完全异步模式
+    // 创建新的包装函数 - 完全异步模式，零延迟
     const self = this;
     window.generateMelody = function() {
       console.log('🎼 用户点击生成旋律按钮');
@@ -971,30 +1377,6 @@ class MelodyCounterSystem {
         return self.originalGenerateMelody.call(this);
       }
 
-      // 检测无痕浏览并应用严格限制
-      const isPrivateBrowsing = self.isLikelyPrivateBrowsing();
-      if (isPrivateBrowsing) {
-        console.log('🕵️ 检测到疑似无痕浏览模式');
-
-        // 对无痕浏览应用更严格的限制
-        const privateUsage = self.getPrivateBrowsingUsage();
-        if (privateUsage >= 3) { // 无痕模式只允许3次试用
-          console.log('🚫 无痕浏览试用次数已用完');
-          self.showCounterStatus({
-            success: true,
-            allowed: false,
-            expired: true,
-            used: privateUsage,
-            total: 3,
-            remaining: 0,
-            message: '无痕浏览模式限制3次试用',
-            isPrivateMode: true
-          });
-          self.showPurchasePrompt();
-          return;
-        }
-      }
-
       // 只有在明确知道已过期时才阻止（基于上次API结果）
       if (self.currentStatus && self.currentStatus.expired && !self.currentStatus.hasFullAccess) {
         console.log('🚫 已知状态：试用已过期');
@@ -1002,7 +1384,7 @@ class MelodyCounterSystem {
         return;
       }
 
-      // ⚡ 立即调用原始函数 - 零延迟响应
+      // ⚡ 立即调用原始函数 - 零延迟响应，无任何检测阻塞
       console.log('⚡ 立即响应：调用原始generateMelody');
       let result;
       if (self.originalGenerateMelody) {
@@ -1016,8 +1398,10 @@ class MelodyCounterSystem {
         }
       }
 
-      // 🔄 后台异步处理所有验证和计数（完全不阻塞）
-      setTimeout(() => {
+      // 🔄 后台异步处理所有验证和计数（完全不阻塞，包括无痕模式检测）
+      setTimeout(async () => {
+        // 在后台异步检测无痕模式，不阻塞生成流程
+        const isPrivateBrowsing = await self.isLikelyPrivateBrowsing();
         self.handleBackgroundValidation(isPrivateBrowsing);
       }, 0);
 
@@ -1028,6 +1412,114 @@ class MelodyCounterSystem {
     window.generateMelody._isWrapped = true;
 
     console.log('✅ 旋律计数系统已激活');
+  }
+
+  // 包装音程生成函数
+  wrapGenerateIntervalsFunction() {
+    // 防止重复包装
+    if (window.generateIntervals && window.generateIntervals._isWrapped) {
+      console.log('⚠️ generateIntervals已经被包装过了');
+      return;
+    }
+
+    // 保存原始函数
+    if (!window.generateIntervals) {
+      console.log('⚠️ generateIntervals函数不存在，跳过包装');
+      return;
+    }
+
+    const originalGenerateIntervals = window.generateIntervals;
+    console.log('📌 保存原始generateIntervals函数:', typeof originalGenerateIntervals);
+
+    // 创建新的包装函数 - 零延迟模式
+    const self = this;
+    window.generateIntervals = async function() {
+      console.log('🎼 用户点击生成音程按钮');
+
+      // 🔥 优先检查：完整版用户
+      if (self.hasValidLocalAccessCode()) {
+        console.log('🎫 完整版用户，立即允许生成音程');
+        self.hideAllTrialUI();
+        self.showCounterStatus({ hasFullAccess: true, allowed: true, message: '' });
+        return originalGenerateIntervals.call(this);
+      }
+
+      // 检查是否已过期
+      if (self.currentStatus && self.currentStatus.expired && !self.currentStatus.hasFullAccess) {
+        console.log('🚫 试用已过期');
+        self.showPurchasePrompt();
+        return;
+      }
+
+      // ⚡ 立即调用原始函数
+      console.log('⚡ 立即响应：调用原始generateIntervals');
+      const result = await originalGenerateIntervals.apply(this, arguments);
+
+      // 🔄 后台异步验证
+      setTimeout(async () => {
+        const isPrivateBrowsing = await self.isLikelyPrivateBrowsing();
+        self.handleBackgroundValidation(isPrivateBrowsing);
+      }, 0);
+
+      return result;
+    };
+
+    window.generateIntervals._isWrapped = true;
+    console.log('✅ 音程计数系统已激活');
+  }
+
+  // 包装和弦生成函数
+  wrapGeneratePianoChordsFunction() {
+    // 防止重复包装
+    if (window.generatePianoChords && window.generatePianoChords._isWrapped) {
+      console.log('⚠️ generatePianoChords已经被包装过了');
+      return;
+    }
+
+    // 保存原始函数
+    if (!window.generatePianoChords) {
+      console.log('⚠️ generatePianoChords函数不存在，跳过包装');
+      return;
+    }
+
+    const originalGeneratePianoChords = window.generatePianoChords;
+    console.log('📌 保存原始generatePianoChords函数:', typeof originalGeneratePianoChords);
+
+    // 创建新的包装函数 - 零延迟模式
+    const self = this;
+    window.generatePianoChords = function() {
+      console.log('🎼 用户点击生成和弦按钮');
+
+      // 🔥 优先检查：完整版用户
+      if (self.hasValidLocalAccessCode()) {
+        console.log('🎫 完整版用户，立即允许生成和弦');
+        self.hideAllTrialUI();
+        self.showCounterStatus({ hasFullAccess: true, allowed: true, message: '' });
+        return originalGeneratePianoChords.call(this);
+      }
+
+      // 检查是否已过期
+      if (self.currentStatus && self.currentStatus.expired && !self.currentStatus.hasFullAccess) {
+        console.log('🚫 试用已过期');
+        self.showPurchasePrompt();
+        return;
+      }
+
+      // ⚡ 立即调用原始函数
+      console.log('⚡ 立即响应：调用原始generatePianoChords');
+      const result = originalGeneratePianoChords.apply(this, arguments);
+
+      // 🔄 后台异步验证
+      setTimeout(async () => {
+        const isPrivateBrowsing = await self.isLikelyPrivateBrowsing();
+        self.handleBackgroundValidation(isPrivateBrowsing);
+      }, 0);
+
+      return result;
+    };
+
+    window.generatePianoChords._isWrapped = true;
+    console.log('✅ 和弦计数系统已激活');
   }
 
   // 后台验证处理（完全异步，不阻塞用户体验）
@@ -1128,7 +1620,7 @@ class MelodyCounterSystem {
       }
 
       // 检测无痕模式
-      const isPrivateBrowsing = this.isLikelyPrivateBrowsing();
+      const isPrivateBrowsing = await this.isLikelyPrivateBrowsing();
       console.log('🕵️ 初始化无痕模式检测:', isPrivateBrowsing);
 
       let status;
@@ -1165,6 +1657,14 @@ class MelodyCounterSystem {
       // 如果已经过期，显示购买提示
       if (status.expired && !status.hasFullAccess) {
         this.showPurchasePrompt();
+      }
+
+      // 🌐 启动在线心跳检测（非完整版用户）
+      if (!status.hasFullAccess) {
+        console.log('💓 非完整版用户，启动在线心跳检测');
+        this.startHeartbeat();
+      } else {
+        console.log('✨ 完整版用户，无需心跳检测');
       }
 
       console.log('✅ 后台初始化完成');
@@ -1357,6 +1857,8 @@ class MelodyCounterSystem {
 
       // 立即包装生成函数，确保用户可以立即使用
       this.wrapGenerateMelodyFunction();
+      this.wrapGenerateIntervalsFunction();
+      this.wrapGeneratePianoChordsFunction();
 
       // 所有状态检查都在后台进行，不阻塞初始化
       setTimeout(() => {
@@ -1390,21 +1892,35 @@ window.melodyCounterSystem = new MelodyCounterSystem();
   }
 
   function initSystem() {
-    // 等待generateMelody函数就绪的辅助函数
-    function waitForGenerateMelody(maxWait = 10000) {
+    // 等待生成函数就绪的辅助函数（支持旋律/音程/和弦三种工具）
+    function waitForGenerateFunction(maxWait = 10000) {
       const startTime = Date.now();
 
       function check() {
-        console.log('🔍 检查generateMelody状态:', typeof window.generateMelody);
+        console.log('🔍 检查生成函数状态:', {
+          generateMelody: typeof window.generateMelody,
+          generateIntervals: typeof window.generateIntervals,
+          generatePianoChords: typeof window.generatePianoChords
+        });
 
-        if (typeof window.generateMelody === 'function') {
-          console.log('✅ generateMelody已就绪，启动计数系统');
+        // 检查三个函数中的任何一个是否存在
+        const hasMelody = typeof window.generateMelody === 'function';
+        const hasIntervals = typeof window.generateIntervals === 'function';
+        const hasChords = typeof window.generatePianoChords === 'function';
+
+        if (hasMelody || hasIntervals || hasChords) {
+          console.log('✅ 生成函数已就绪，启动计数系统');
+          console.log('  - generateMelody:', hasMelody);
+          console.log('  - generateIntervals:', hasIntervals);
+          console.log('  - generatePianoChords:', hasChords);
 
           // 检查页面是否为视奏工具页面
           if (window.location.pathname.includes('sight-reading') ||
+              window.location.pathname.includes('interval') ||
+              window.location.pathname.includes('chord') ||
               document.querySelector('.sight-reading-tool') ||
               window.location.pathname.includes('tools')) {
-            console.log('🎵 启动旋律计数系统...');
+            console.log('🎵 启动计数系统...');
             window.melodyCounterSystem.init();
           } else {
             console.log('⏭️ 非视奏工具页面，跳过计数系统');
@@ -1414,7 +1930,7 @@ window.melodyCounterSystem = new MelodyCounterSystem();
 
         // 检查超时
         if (Date.now() - startTime > maxWait) {
-          console.error('❌ 等待generateMelody超时');
+          console.error('❌ 等待生成函数超时');
           return;
         }
 
@@ -1430,8 +1946,10 @@ window.melodyCounterSystem = new MelodyCounterSystem();
     console.log('  - 当前路径:', window.location.pathname);
     console.log('  - sight-reading-tool元素:', !!document.querySelector('.sight-reading-tool'));
     console.log('  - generateMelody函数:', typeof window.generateMelody);
+    console.log('  - generateIntervals函数:', typeof window.generateIntervals);
+    console.log('  - generatePianoChords函数:', typeof window.generatePianoChords);
 
-    // 开始等待generateMelody
-    waitForGenerateMelody();
+    // 开始等待生成函数
+    waitForGenerateFunction();
   }
 })();

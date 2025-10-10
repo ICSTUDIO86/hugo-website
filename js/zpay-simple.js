@@ -1395,7 +1395,7 @@
       if (countdown <= 0) {
         clearInterval(interval);
         // 跳转到完整版视奏工具，使用URL参数激活完整版
-        window.location.href = '/tools/sight-reading-generator.html?premium=true&source=payment';
+        window.location.href = '/tools/melody-generator.html?premium=true&source=payment';
       }
     }, 1000);
   }

@@ -67,7 +67,7 @@
       "name": "免费试用",
       "short_name": "试用",
       "description": "10分钟免费试用视奏工具",
-      "url": "/tools/sight-reading-generator.html",
+      "url": "/tools/melody-generator.html",
       "icons": [
         {
           "src": "/images/icons/shortcut-trial.png",
@@ -137,7 +137,7 @@
   "protocol_handlers": [
     {
       "protocol": "web+music",
-      "url": "/tools/sight-reading-generator.html?music=%s"
+      "url": "/tools/melody-generator.html?music=%s"
     }
   ],
   

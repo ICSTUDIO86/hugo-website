@@ -17,7 +17,7 @@ const STATIC_ASSETS = [
   '/js/performance-optimizer.js',
   '/images/ICLOGO.png',
   '/images/sight-reading-tool.png',
-  '/tools/sight-reading-generator.html',
+  '/tools/melody-generator.html',
   '/manifest.json'
 ];
 

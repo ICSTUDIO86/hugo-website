@@ -230,7 +230,7 @@
 
         window.goToSightReadingTool = function() {
             window.closeSuccessPopup();
-            window.location.href = '/tools/sight-reading-generator.html';
+            window.location.href = '/tools/melody-generator.html';
         };
 
         // 创建和显示界面

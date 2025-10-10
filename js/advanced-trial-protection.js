@@ -139,9 +139,29 @@ class AdvancedTrialProtection {
     });
   }
 
+  // 检查是否为本地开发环境
+  isLocalDevelopment() {
+    const hostname = window.location.hostname;
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+    const isPrivateIP = hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.');
+    const isProduction = hostname.includes('icstudio.club') || hostname.includes('github.io');
+
+    if (isProduction) {
+      return false;
+    }
+
+    return isLocalhost || isPrivateIP;
+  }
+
   // 服务器端验证试用状态
   async verifyTrialWithServer(fingerprint, action = 'check') {
     try {
+      // 本地开发环境直接使用本地验证
+      if (this.isLocalDevelopment()) {
+        console.log('🏠 本地开发环境，使用本地验证');
+        return this.fallbackLocalVerification(fingerprint, action);
+      }
+
       // 检测无痕模式
       const isIncognito = await this.detectIncognitoMode();
 
