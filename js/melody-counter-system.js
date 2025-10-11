@@ -1253,6 +1253,7 @@ class MelodyCounterSystem {
                          document.querySelector('button[onclick*="generateIntervals"]') ||
                          document.querySelector('button[onclick*="generatePianoChords"]') ||
                          document.getElementById('generateBtn') ||
+                         document.getElementById('generateChordsBtn') ||
                          document.querySelector('button.btn-primary');
 
       if (generateBtn && generateBtn.parentElement) {
@@ -1309,6 +1310,7 @@ class MelodyCounterSystem {
   // 更新生成按钮状态
   updateGenerateButton(status) {
     const generateBtn = document.getElementById('generateBtn') ||
+                       document.getElementById('generateChordsBtn') ||
                        document.querySelector('button[onclick*="generateMelody"]') ||
                        document.querySelector('button[onclick*="generateIntervals"]') ||
                        document.querySelector('button[onclick*="generatePianoChords"]') ||
@@ -1338,69 +1340,100 @@ class MelodyCounterSystem {
     }
   }
 
+  // 验证函数包装是否成功的辅助方法
+  verifyFunctionWrapping(functionName, windowFunction) {
+    try {
+      // 检查函数是否存在
+      if (!windowFunction) {
+        console.log(`  ❌ ${functionName} 不存在`);
+        return false;
+      }
+
+      // 检查是否为函数类型
+      if (typeof windowFunction !== 'function') {
+        console.log(`  ❌ ${functionName} 不是函数类型:`, typeof windowFunction);
+        return false;
+      }
+
+      // 检查是否有包装标记
+      if (!windowFunction._isWrapped) {
+        console.log(`  ❌ ${functionName} 没有包装标记`);
+        return false;
+      }
+
+      // 检查包装时间戳
+      if (!windowFunction._wrapTimestamp) {
+        console.log(`  ⚠️ ${functionName} 缺少包装时间戳`);
+      } else {
+        const wrapAge = Date.now() - windowFunction._wrapTimestamp;
+        console.log(`  ✅ ${functionName} 包装成功（${wrapAge}ms前）`);
+      }
+
+      return true;
+    } catch (error) {
+      console.error(`  ❌ ${functionName} 验证失败:`, error);
+      return false;
+    }
+  }
+
   // 拦截并包装原始的generateMelody函数
   wrapGenerateMelodyFunction() {
     // 防止重复包装
     if (window.generateMelody && window.generateMelody._isWrapped) {
       console.log('⚠️ generateMelody已经被包装过了');
-      return;
+      return true; // 返回true表示已包装
     }
 
     // 保存原始函数（如果不存在则跳过，这在其他工具页面是正常的）
     if (!window.generateMelody) {
       console.log('⚠️ generateMelody函数不存在，跳过包装（可能是音程或和弦页面）');
-      return;
+      return false; // 返回false表示包装失败
+    }
+
+    // 验证函数类型
+    if (typeof window.generateMelody !== 'function') {
+      console.error('❌ generateMelody不是函数:', typeof window.generateMelody);
+      return false;
     }
 
     this.originalGenerateMelody = window.generateMelody;
     console.log('📌 保存原始generateMelody函数:', typeof this.originalGenerateMelody);
 
-    // 创建新的包装函数 - 完全异步模式，零延迟
+    // 创建新的包装函数 - 增强状态预检查
     const self = this;
     window.generateMelody = function() {
       console.log('🎼 用户点击生成旋律按钮');
 
-      // 🔥 优先检查：如果用户有有效访问码，直接允许生成，跳过所有限制
+      // 🔥 优先检查：完整版用户（最高优先级）
       if (self.hasValidLocalAccessCode()) {
-        console.log('🎫 完整版用户检测，立即允许生成旋律');
-
-        // 隐藏所有试用相关UI
+        console.log('🎫 完整版用户，立即允许生成旋律');
         self.hideAllTrialUI();
-
-        // 更新UI状态显示完整版权限
-        self.showCounterStatus({
-          hasFullAccess: true,
-          allowed: true,
-          message: ''
-        });
-        // 直接调用原始函数，无需任何验证
+        self.showCounterStatus({ hasFullAccess: true, allowed: true, message: '' });
         return self.originalGenerateMelody.call(this);
       }
 
-      // 只有在明确知道已过期时才阻止（基于上次API结果）
+      // 🔒 强制状态预检查：如果已知过期且没有完整版权限，立即阻止
       if (self.currentStatus && self.currentStatus.expired && !self.currentStatus.hasFullAccess) {
-        console.log('🚫 已知状态：试用已过期');
+        console.log('🚫 已知状态：试用已过期，阻止旋律生成');
         self.showPurchasePrompt();
-        return;
+        self.updateGenerateButton({ expired: true, hasFullAccess: false });
+        return; // 直接返回，不调用原始函数
       }
 
-      // ⚡ 立即调用原始函数 - 零延迟响应，无任何检测阻塞
+      // ⚡ 立即调用原始函数 - 零延迟响应
       console.log('⚡ 立即响应：调用原始generateMelody');
       let result;
-      if (self.originalGenerateMelody) {
-        try {
-          // 立即同步调用，不使用await避免任何延迟
-          result = self.originalGenerateMelody.apply(this, arguments);
-        } catch (error) {
-          console.error('❌ 同步调用失败，尝试异步:', error);
-          // 如果同步失败，回退到异步
-          result = Promise.resolve(self.originalGenerateMelody.apply(this, arguments));
-        }
+      try {
+        result = self.originalGenerateMelody.apply(this, arguments);
+        console.log('✅ 旋律生成函数调用成功');
+      } catch (error) {
+        console.error('❌ 旋律生成函数调用失败:', error);
+        throw error;
       }
 
-      // 🔄 后台异步处理所有验证和计数（完全不阻塞，包括无痕模式检测）
+      // 🔄 后台异步验证和计数（完全不阻塞）
       setTimeout(async () => {
-        // 在后台异步检测无痕模式，不阻塞生成流程
+        console.log('🔄 旋律工具：开始后台验证计数');
         const isPrivateBrowsing = await self.isLikelyPrivateBrowsing();
         self.handleBackgroundValidation(isPrivateBrowsing);
       }, 0);
@@ -1408,10 +1441,19 @@ class MelodyCounterSystem {
       return result;
     };
 
-    // 标记为已包装
+    // 标记为已包装并验证
     window.generateMelody._isWrapped = true;
+    window.generateMelody._wrapTimestamp = Date.now();
 
-    console.log('✅ 旋律计数系统已激活');
+    // 验证包装成功
+    const wrapSuccess = window.generateMelody._isWrapped === true;
+    if (wrapSuccess) {
+      console.log('✅ 旋律计数系统已激活并验证成功');
+    } else {
+      console.error('❌ 旋律计数系统包装验证失败');
+    }
+
+    return wrapSuccess;
   }
 
   // 包装音程生成函数
@@ -1419,24 +1461,30 @@ class MelodyCounterSystem {
     // 防止重复包装
     if (window.generateIntervals && window.generateIntervals._isWrapped) {
       console.log('⚠️ generateIntervals已经被包装过了');
-      return;
+      return true; // 返回true表示已包装
     }
 
     // 保存原始函数
     if (!window.generateIntervals) {
       console.log('⚠️ generateIntervals函数不存在，跳过包装');
-      return;
+      return false; // 返回false表示包装失败
+    }
+
+    // 验证函数类型
+    if (typeof window.generateIntervals !== 'function') {
+      console.error('❌ generateIntervals不是函数:', typeof window.generateIntervals);
+      return false;
     }
 
     const originalGenerateIntervals = window.generateIntervals;
     console.log('📌 保存原始generateIntervals函数:', typeof originalGenerateIntervals);
 
-    // 创建新的包装函数 - 零延迟模式
+    // 创建新的包装函数 - 增强状态预检查
     const self = this;
     window.generateIntervals = async function() {
-      console.log('🎼 用户点击生成音程按钮');
+      console.log('🎵 用户点击生成音程按钮');
 
-      // 🔥 优先检查：完整版用户
+      // 🔥 优先检查：完整版用户（最高优先级）
       if (self.hasValidLocalAccessCode()) {
         console.log('🎫 完整版用户，立即允许生成音程');
         self.hideAllTrialUI();
@@ -1444,19 +1492,28 @@ class MelodyCounterSystem {
         return originalGenerateIntervals.call(this);
       }
 
-      // 检查是否已过期
+      // 🔒 强制状态预检查：如果已知过期且没有完整版权限，立即阻止
       if (self.currentStatus && self.currentStatus.expired && !self.currentStatus.hasFullAccess) {
-        console.log('🚫 试用已过期');
+        console.log('🚫 已知状态：试用已过期，阻止音程生成');
         self.showPurchasePrompt();
-        return;
+        self.updateGenerateButton({ expired: true, hasFullAccess: false });
+        return; // 直接返回，不调用原始函数
       }
 
-      // ⚡ 立即调用原始函数
+      // ⚡ 立即调用原始函数 - 零延迟响应
       console.log('⚡ 立即响应：调用原始generateIntervals');
-      const result = await originalGenerateIntervals.apply(this, arguments);
+      let result;
+      try {
+        result = await originalGenerateIntervals.apply(this, arguments);
+        console.log('✅ 音程生成函数调用成功');
+      } catch (error) {
+        console.error('❌ 音程生成函数调用失败:', error);
+        throw error;
+      }
 
-      // 🔄 后台异步验证
+      // 🔄 后台异步验证和计数（完全不阻塞）
       setTimeout(async () => {
+        console.log('🔄 音程工具：开始后台验证计数');
         const isPrivateBrowsing = await self.isLikelyPrivateBrowsing();
         self.handleBackgroundValidation(isPrivateBrowsing);
       }, 0);
@@ -1464,8 +1521,19 @@ class MelodyCounterSystem {
       return result;
     };
 
+    // 标记为已包装并验证
     window.generateIntervals._isWrapped = true;
-    console.log('✅ 音程计数系统已激活');
+    window.generateIntervals._wrapTimestamp = Date.now();
+
+    // 验证包装成功
+    const wrapSuccess = window.generateIntervals._isWrapped === true;
+    if (wrapSuccess) {
+      console.log('✅ 音程计数系统已激活并验证成功');
+    } else {
+      console.error('❌ 音程计数系统包装验证失败');
+    }
+
+    return wrapSuccess;
   }
 
   // 包装和弦生成函数
@@ -1473,24 +1541,30 @@ class MelodyCounterSystem {
     // 防止重复包装
     if (window.generatePianoChords && window.generatePianoChords._isWrapped) {
       console.log('⚠️ generatePianoChords已经被包装过了');
-      return;
+      return true; // 返回true表示已包装
     }
 
     // 保存原始函数
     if (!window.generatePianoChords) {
       console.log('⚠️ generatePianoChords函数不存在，跳过包装');
-      return;
+      return false; // 返回false表示包装失败
+    }
+
+    // 验证函数类型
+    if (typeof window.generatePianoChords !== 'function') {
+      console.error('❌ generatePianoChords不是函数:', typeof window.generatePianoChords);
+      return false;
     }
 
     const originalGeneratePianoChords = window.generatePianoChords;
     console.log('📌 保存原始generatePianoChords函数:', typeof originalGeneratePianoChords);
 
-    // 创建新的包装函数 - 零延迟模式
+    // 创建新的包装函数 - 增强状态预检查
     const self = this;
     window.generatePianoChords = function() {
-      console.log('🎼 用户点击生成和弦按钮');
+      console.log('🎹 用户点击生成和弦按钮');
 
-      // 🔥 优先检查：完整版用户
+      // 🔥 优先检查：完整版用户（最高优先级）
       if (self.hasValidLocalAccessCode()) {
         console.log('🎫 完整版用户，立即允许生成和弦');
         self.hideAllTrialUI();
@@ -1498,19 +1572,28 @@ class MelodyCounterSystem {
         return originalGeneratePianoChords.call(this);
       }
 
-      // 检查是否已过期
+      // 🔒 强制状态预检查：如果已知过期且没有完整版权限，立即阻止
       if (self.currentStatus && self.currentStatus.expired && !self.currentStatus.hasFullAccess) {
-        console.log('🚫 试用已过期');
+        console.log('🚫 已知状态：试用已过期，阻止和弦生成');
         self.showPurchasePrompt();
-        return;
+        self.updateGenerateButton({ expired: true, hasFullAccess: false });
+        return; // 直接返回，不调用原始函数
       }
 
-      // ⚡ 立即调用原始函数
+      // ⚡ 立即调用原始函数 - 零延迟响应
       console.log('⚡ 立即响应：调用原始generatePianoChords');
-      const result = originalGeneratePianoChords.apply(this, arguments);
+      let result;
+      try {
+        result = originalGeneratePianoChords.apply(this, arguments);
+        console.log('✅ 和弦生成函数调用成功');
+      } catch (error) {
+        console.error('❌ 和弦生成函数调用失败:', error);
+        throw error;
+      }
 
-      // 🔄 后台异步验证
+      // 🔄 后台异步验证和计数（完全不阻塞）
       setTimeout(async () => {
+        console.log('🔄 和弦工具：开始后台验证计数');
         const isPrivateBrowsing = await self.isLikelyPrivateBrowsing();
         self.handleBackgroundValidation(isPrivateBrowsing);
       }, 0);
@@ -1518,8 +1601,99 @@ class MelodyCounterSystem {
       return result;
     };
 
+    // 标记为已包装并验证
     window.generatePianoChords._isWrapped = true;
-    console.log('✅ 和弦计数系统已激活');
+    window.generatePianoChords._wrapTimestamp = Date.now();
+
+    // 验证包装成功
+    const wrapSuccess = window.generatePianoChords._isWrapped === true;
+    if (wrapSuccess) {
+      console.log('✅ 和弦计数系统已激活并验证成功');
+    } else {
+      console.error('❌ 和弦计数系统包装验证失败');
+    }
+
+    return wrapSuccess;
+  }
+
+  // 包装吉他和弦生成函数（吉他模式）
+  wrapGenerateChordsFunction() {
+    // 防止重复包装
+    if (window.generateChords && window.generateChords._isWrapped) {
+      console.log('⚠️ generateChords已经被包装过了');
+      return true; // 返回true表示已包装
+    }
+
+    // 保存原始函数
+    if (!window.generateChords) {
+      console.log('⚠️ generateChords函数不存在，跳过包装');
+      return false; // 返回false表示包装失败
+    }
+
+    // 验证函数类型
+    if (typeof window.generateChords !== 'function') {
+      console.error('❌ generateChords不是函数:', typeof window.generateChords);
+      return false;
+    }
+
+    const originalGenerateChords = window.generateChords;
+    console.log('📌 保存原始generateChords函数（吉他模式）:', typeof originalGenerateChords);
+
+    // 创建新的包装函数 - 增强状态预检查
+    const self = this;
+    window.generateChords = function() {
+      console.log('🎸 用户点击生成和弦按钮（吉他模式）');
+
+      // 🔥 优先检查：完整版用户（最高优先级）
+      if (self.hasValidLocalAccessCode()) {
+        console.log('🎫 完整版用户，立即允许生成吉他和弦');
+        self.hideAllTrialUI();
+        self.showCounterStatus({ hasFullAccess: true, allowed: true, message: '' });
+        return originalGenerateChords.call(this);
+      }
+
+      // 🔒 强制状态预检查：如果已知过期且没有完整版权限，立即阻止
+      if (self.currentStatus && self.currentStatus.expired && !self.currentStatus.hasFullAccess) {
+        console.log('🚫 已知状态：试用已过期，阻止吉他和弦生成');
+        self.showPurchasePrompt();
+        self.updateGenerateButton({ expired: true, hasFullAccess: false });
+        return; // 直接返回，不调用原始函数
+      }
+
+      // ⚡ 立即调用原始函数 - 零延迟响应
+      console.log('⚡ 立即响应：调用原始generateChords（吉他模式）');
+      let result;
+      try {
+        result = originalGenerateChords.apply(this, arguments);
+        console.log('✅ 吉他和弦生成函数调用成功');
+      } catch (error) {
+        console.error('❌ 吉他和弦生成函数调用失败:', error);
+        throw error;
+      }
+
+      // 🔄 后台异步验证和计数（完全不阻塞）
+      setTimeout(async () => {
+        console.log('🔄 和弦工具（吉他模式）：开始后台验证计数');
+        const isPrivateBrowsing = await self.isLikelyPrivateBrowsing();
+        self.handleBackgroundValidation(isPrivateBrowsing);
+      }, 0);
+
+      return result;
+    };
+
+    // 标记为已包装并验证
+    window.generateChords._isWrapped = true;
+    window.generateChords._wrapTimestamp = Date.now();
+
+    // 验证包装成功
+    const wrapSuccess = window.generateChords._isWrapped === true;
+    if (wrapSuccess) {
+      console.log('✅ 吉他和弦计数系统已激活并验证成功');
+    } else {
+      console.error('❌ 吉他和弦计数系统包装验证失败');
+    }
+
+    return wrapSuccess;
   }
 
   // 后台验证处理（完全异步，不阻塞用户体验）
@@ -1594,30 +1768,14 @@ class MelodyCounterSystem {
     try {
       console.log('🔄 后台初始化开始...');
 
-      // 预加载设备指纹
-      this.preloadDeviceFingerprint();
-
-      // 🔥 优先检查：完整版用户权限（最高优先级）
-      if (this.hasValidLocalAccessCode()) {
-        console.log('🎫 初始化检测到完整版用户，跳过所有限制');
-        const fullAccessStatus = {
-          success: true,
-          allowed: true,
-          hasFullAccess: true,
-          expired: false,
-          used: 0,
-          total: Infinity,
-          remaining: Infinity,
-          message: '',
-          isFirstTime: false
-        };
-
-        this.currentStatus = fullAccessStatus;
-        this.showCounterStatus(fullAccessStatus);
-        this.updateGenerateButton(fullAccessStatus);
-        this.hideAllTrialUI();
+      // 🔥 优先检查：如果用户已被识别为完整版（init()中已设置），直接返回
+      if (this.currentStatus && this.currentStatus.hasFullAccess) {
+        console.log('✅ 完整版用户，跳过后台初始化（已在init()中完成）');
         return;
       }
+
+      // 预加载设备指纹（同步执行，不等待）
+      this.preloadDeviceFingerprint();
 
       // 检测无痕模式
       const isPrivateBrowsing = await this.isLikelyPrivateBrowsing();
@@ -1852,21 +2010,94 @@ class MelodyCounterSystem {
     console.log('🚀 初始化20条旋律计数系统...');
 
     try {
-      // 🔄 跳过自动激活检查，保持当前状态
-      console.log('🔍 跳过自动激活检查');
+      // 🔥 立即同步检查：完整版用户（最高优先级，必须立即执行）
+      if (this.hasValidLocalAccessCode()) {
+        console.log('🎫 init: 完整版用户，立即设置状态');
+        const fullAccessStatus = {
+          success: true,
+          allowed: true,
+          hasFullAccess: true,
+          expired: false,
+          used: 0,
+          total: Infinity,
+          remaining: Infinity,
+          message: '',
+          isFirstTime: false
+        };
 
-      // 立即包装生成函数，确保用户可以立即使用
-      this.wrapGenerateMelodyFunction();
-      this.wrapGenerateIntervalsFunction();
-      this.wrapGeneratePianoChordsFunction();
+        this.currentStatus = fullAccessStatus;
 
-      // 所有状态检查都在后台进行，不阻塞初始化
-      setTimeout(() => {
-        this.backgroundInitialization();
-      }, 0);
+        // 立即更新UI（同步执行，防止延迟）
+        this.showCounterStatus(fullAccessStatus);
+        this.updateGenerateButton(fullAccessStatus);
+        this.hideAllTrialUI();
+
+        console.log('✅ 完整版用户状态已立即设置');
+      } else {
+        // 非完整版用户：立即显示默认状态，防止延迟期间绕过限制
+        console.log('🔄 非完整版用户，立即显示默认试用状态');
+
+        // 设置默认状态（假设有试用次数，实际状态将由后台更新）
+        this.currentStatus = {
+          success: true,
+          allowed: true,
+          expired: false,
+          used: 0,
+          total: 20,
+          remaining: 20,
+          message: '加载中...'
+        };
+
+        // 立即显示默认状态
+        this.showCounterStatus(this.currentStatus);
+        this.updateGenerateButton(this.currentStatus);
+      }
+
+      // 立即包装生成函数，确保用户可以立即使用（但受到currentStatus限制）
+      const melodyWrapSuccess = this.wrapGenerateMelodyFunction();
+      const intervalsWrapSuccess = this.wrapGenerateIntervalsFunction();
+      const chordPianoWrapSuccess = this.wrapGeneratePianoChordsFunction();
+      const chordGuitarWrapSuccess = this.wrapGenerateChordsFunction();
+
+      // 验证所有工具包装是否成功
+      console.log('📊 函数包装初步验证结果:', {
+        melody: melodyWrapSuccess,
+        intervals: intervalsWrapSuccess,
+        chordPiano: chordPianoWrapSuccess,
+        chordGuitar: chordGuitarWrapSuccess
+      });
+
+      // 使用验证辅助函数进行深度验证
+      console.log('🔍 开始深度验证包装状态...');
+      const melodyDeepCheck = this.verifyFunctionWrapping('generateMelody', window.generateMelody);
+      const intervalsDeepCheck = this.verifyFunctionWrapping('generateIntervals', window.generateIntervals);
+      const chordPianoDeepCheck = this.verifyFunctionWrapping('generatePianoChords', window.generatePianoChords);
+      const chordGuitarDeepCheck = this.verifyFunctionWrapping('generateChords', window.generateChords);
+
+      console.log('📊 深度验证完成:', {
+        melody: melodyDeepCheck,
+        intervals: intervalsDeepCheck,
+        chordPiano: chordPianoDeepCheck,
+        chordGuitar: chordGuitarDeepCheck
+      });
+
+      // 统计成功包装的函数数量
+      const successCount = [melodyDeepCheck, intervalsDeepCheck, chordPianoDeepCheck, chordGuitarDeepCheck].filter(Boolean).length;
+      if (successCount > 0) {
+        console.log(`✅ 成功包装 ${successCount}/4 个生成函数`);
+      } else {
+        console.warn('⚠️ 没有生成函数被成功包装（可能不在工具页面）');
+      }
 
       this.initialized = true; // 标记已初始化
-      console.log('✅ 计数系统立即初始化完成');
+
+      // 🔄 异步更新实际状态（不阻塞，但UI已经显示）
+      // 使用Promise立即执行而不是setTimeout，减少延迟
+      Promise.resolve().then(() => {
+        this.backgroundInitialization();
+      });
+
+      console.log('✅ 计数系统立即初始化完成（状态将在后台更新）');
       return true;
 
     } catch (error) {
@@ -1900,19 +2131,22 @@ window.melodyCounterSystem = new MelodyCounterSystem();
         console.log('🔍 检查生成函数状态:', {
           generateMelody: typeof window.generateMelody,
           generateIntervals: typeof window.generateIntervals,
-          generatePianoChords: typeof window.generatePianoChords
+          generatePianoChords: typeof window.generatePianoChords,
+          generateChords: typeof window.generateChords
         });
 
-        // 检查三个函数中的任何一个是否存在
+        // 检查四个函数中的任何一个是否存在
         const hasMelody = typeof window.generateMelody === 'function';
         const hasIntervals = typeof window.generateIntervals === 'function';
-        const hasChords = typeof window.generatePianoChords === 'function';
+        const hasChordsPiano = typeof window.generatePianoChords === 'function';
+        const hasChordsGuitar = typeof window.generateChords === 'function';
 
-        if (hasMelody || hasIntervals || hasChords) {
+        if (hasMelody || hasIntervals || hasChordsPiano || hasChordsGuitar) {
           console.log('✅ 生成函数已就绪，启动计数系统');
           console.log('  - generateMelody:', hasMelody);
           console.log('  - generateIntervals:', hasIntervals);
-          console.log('  - generatePianoChords:', hasChords);
+          console.log('  - generatePianoChords:', hasChordsPiano);
+          console.log('  - generateChords (吉他模式):', hasChordsGuitar);
 
           // 检查页面是否为视奏工具页面
           if (window.location.pathname.includes('sight-reading') ||
@@ -1935,11 +2169,11 @@ window.melodyCounterSystem = new MelodyCounterSystem();
         }
 
         // 继续等待
-        setTimeout(check, 500);
+        setTimeout(check, 100);
       }
 
-      // 初始延迟1秒，让页面有时间加载
-      setTimeout(check, 1000);
+      // 初始延迟100ms，快速启动
+      setTimeout(check, 100);
     }
 
     console.log('🎵 检查页面路径和元素...');
@@ -1948,6 +2182,7 @@ window.melodyCounterSystem = new MelodyCounterSystem();
     console.log('  - generateMelody函数:', typeof window.generateMelody);
     console.log('  - generateIntervals函数:', typeof window.generateIntervals);
     console.log('  - generatePianoChords函数:', typeof window.generatePianoChords);
+    console.log('  - generateChords函数（吉他模式）:', typeof window.generateChords);
 
     // 开始等待生成函数
     waitForGenerateFunction();

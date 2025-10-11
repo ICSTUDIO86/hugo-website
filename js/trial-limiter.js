@@ -163,9 +163,8 @@ class TrialLimiter {
       }
 
       console.log('✅ 完整版用户，已隐藏所有付费相关界面');
-    } else {
-      this.ensureAccessCodeArea();
     }
+    // 对于非完整版用户，不需要额外操作，计数器系统会处理显示
   }
 
   // 更新试用状态显示（简化版）
@@ -197,6 +196,7 @@ class TrialLimiter {
           <p style="color: #3498db;">正在验证您的权限...</p>
         </div>
       `;
+    }
 
     statusDisplayDiv.innerHTML = statusContent;
   }

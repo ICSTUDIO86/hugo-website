@@ -21,6 +21,18 @@
     <link rel="stylesheet" href="./IC 和弦视奏工具_files/apple-ui-styles-chord.css">
     <link rel="stylesheet" href="./IC 和弦视奏工具_files/chord-responsive-styles.css">
 
+    <!-- Icon -->    
+
+    <link rel="icon" type="image/png" href="/ICLOGO.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/ICLOGO.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/ICLOGO.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="/ICLOGO.png">
+    <meta name="msapplication-TileImage" content="/ICLOGO.png">
+    <meta name="theme-color" content="#ffffff">
+
+    <!-- Umami Analytics -->
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script> 
+
 </head>
 <body>
     <div class="container">
@@ -2616,8 +2628,8 @@
                             // 🎹 钢琴模式：使用PianoNoteCountEngine
                             console.log('🎹 钢琴模式：使用音数生成引擎');
 
-                            if (typeof generatePianoChords === 'function') {
-                                generatePianoChords();
+                            if (typeof window.generatePianoChords === 'function') {
+                                window.generatePianoChords();
                                 console.log('✅ 钢琴和弦生成完成');
                             } else {
                                 console.error('❌ generatePianoChords 函数不可用');
@@ -4180,52 +4192,6 @@
                 return validCodes.includes(code.toUpperCase());
             }
         };
-
-        // 包装 generatePianoChords 函数以添加试用限制
-        const originalGeneratePianoChords = window.generatePianoChords;
-        if (originalGeneratePianoChords) {
-            window.generatePianoChords = function(...args) {
-                // 检查试用限制
-                if (!TrialManager.canUse()) {
-                    const unlocked = TrialManager.showTrialLimitWarning();
-                    if (!unlocked) {
-                        return; // 如果没有解锁成功，则停止执行
-                    }
-                }
-
-                // 非完整版用户增加试用计数
-                if (!TrialManager.isFullVersion()) {
-                    TrialManager.incrementTrialCount();
-                    TrialManager.updateTrialDisplay();
-                }
-
-                return originalGeneratePianoChords.apply(this, args);
-            };
-        }
-
-        // 页面加载完成后初始化试用信息
-        document.addEventListener('DOMContentLoaded', () => {
-            // 检查是否从访问码页面跳转过来
-            const verifiedFromAccessPage = localStorage.getItem('ic_verified_from_access_page');
-            const verifiedTimestamp = localStorage.getItem('ic_verified_timestamp');
-
-            if (verifiedFromAccessPage === 'true' && verifiedTimestamp) {
-                const timeDiff = Date.now() - parseInt(verifiedTimestamp);
-                // 如果是5分钟内从访问码页面跳转过来的，确保完整版状态
-                if (timeDiff < 5 * 60 * 1000) {
-                    console.log('🎯 检测到从访问码页面跳转，确保完整版状态');
-                    localStorage.setItem('ic_full_version', 'true');
-                    // 清除跳转标记
-                    localStorage.removeItem('ic_verified_from_access_page');
-                    localStorage.removeItem('ic_verified_timestamp');
-                }
-            }
-
-            // 初始化试用信息显示
-            TrialManager.updateTrialDisplay();
-        });
-
-        console.log('✅ 和弦视奏工具试用限制系统已加载');
         ========== 旧的试用限制管理系统结束 ========== */
 
     </script>
