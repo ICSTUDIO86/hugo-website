@@ -70,60 +70,99 @@
   <!-- 语言切换器样式 -->
   <style>
     .lang-switcher {
-      position: fixed !important;
-      top: 20px;
-      right: 20px;
-      z-index: 99999;
-      background: white;
-      border-radius: 30px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      padding: 8px 12px;
-      display: flex;
-      gap: 8px;
+      display: inline-flex;
       align-items: center;
-      transition: all 0.3s ease;
-      transform: translateZ(0);
-      will-change: transform;
-      backface-visibility: hidden;
+      gap: 0;
+      background: #f4f4f5;
+      border-radius: 12px;
+      padding: 4px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .lang-switcher:hover {
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      background: #e4e4e7;
     }
 
     .lang-option {
-      padding: 6px 16px;
-      border-radius: 20px;
+      padding: 8px 16px;
+      border-radius: 8px;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all 0.3s ease;
-      color: #666;
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #71717a;
       background: transparent;
       border: none;
+      position: relative;
+      overflow: hidden;
     }
 
-    .lang-option:hover {
-      background: #f3f4f6;
-      color: #333;
+    .lang-option::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      opacity: 0;
+      transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 8px;
+    }
+
+    .lang-option span {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* 默认显示完整版本 */
+    .lang-option .lang-full {
+      display: inline;
+    }
+
+    .lang-option .lang-short {
+      display: none;
+    }
+
+    .lang-option:hover:not(.active) {
+      color: #27272a;
+      background: rgba(0, 0, 0, 0.05);
     }
 
     .lang-option.active {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+      font-weight: 600;
     }
 
+    .lang-option.active::before {
+      opacity: 1;
+    }
+
+    /* 移动端优化 */
     @media (max-width: 768px) {
       .lang-switcher {
-        top: 10px;
-        right: 10px;
-        padding: 6px 10px;
+        padding: 3px;
+        border-radius: 10px;
       }
 
       .lang-option {
-        padding: 5px 12px;
+        padding: 6px 12px;
         font-size: 13px;
+        border-radius: 8px;
+        min-width: 36px;
+        text-align: center;
+      }
+
+      /* 移动端显示简短版本 */
+      .lang-option .lang-full {
+        display: none;
+      }
+
+      .lang-option .lang-short {
+        display: inline;
+      }
+
+      /* 移动端隐藏搜索按钮 */
+      .toggle-button[onclick="toggleSearch()"] {
+        display: none !important;
       }
     }
   </style>
@@ -267,17 +306,6 @@
 </head>
 <body>
 
-  <!-- 语言切换器 -->
-  <div class="lang-switcher" role="navigation" aria-label="语言切换">
-    <span style="font-size: 16px;" aria-hidden="true">🌐</span>
-    <button class="lang-option active" data-lang="zh-CN" onclick="window.i18n && window.i18n.switchLanguage('zh-CN')" aria-label="切换到中文">
-      中文
-    </button>
-    <button class="lang-option" data-lang="en" onclick="window.i18n && window.i18n.switchLanguage('en')" aria-label="Switch to English">
-      EN
-    </button>
-  </div>
-
   <!-- ==================== Header ==================== -->
   <header class="py-6 border-b">
     <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col">
@@ -300,7 +328,19 @@
             <h2><a class="before:content-[''] before:z-10 before:top-0 before:right-0 before:left-0 before:bottom-0 before:absolute before:pointer-events-auto" href="/">IC Studio</a></h2>
           </div>
         </div>
-        <div class="flex items-center ml-auto">
+        <div class="flex items-center ml-auto space-x-2">
+          <!-- 语言切换器 -->
+          <div class="lang-switcher" role="navigation" aria-label="语言切换">
+            <button class="lang-option active" data-lang="zh-CN" onclick="window.i18n && window.i18n.switchLanguage('zh-CN')" aria-label="切换到中文">
+              <span class="lang-full">中文</span>
+              <span class="lang-short">中</span>
+            </button>
+            <button class="lang-option" data-lang="en" onclick="window.i18n && window.i18n.switchLanguage('en')" aria-label="Switch to English">
+              <span class="lang-full">EN</span>
+              <span class="lang-short">EN</span>
+            </button>
+          </div>
+
           <button class="flex items-center rounded-full p-3 bg-zinc-100 hover:bg-zinc-200 toggle-button" onclick="toggleSearch()">
             <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
               <path id="search-icon" class="transition-all ease-linear" d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
@@ -875,28 +915,10 @@
       window.open('/tools/melody-generator.html', '_blank');
     }
 
-    // ========== 强制语言切换器固定定位 ==========
-    function forceFixedLanguageSwitcher() {
-      const langSwitcher = document.querySelector('.lang-switcher');
-      if (langSwitcher) {
-        // 强制设置固定定位，防止浏览器缓存或其他 CSS 覆盖
-        langSwitcher.style.setProperty('position', 'fixed', 'important');
-        langSwitcher.style.setProperty('top', '20px', 'important');
-        langSwitcher.style.setProperty('right', '20px', 'important');
-        langSwitcher.style.setProperty('z-index', '99999', 'important');
-        langSwitcher.style.setProperty('transform', 'translateZ(0)', 'important');
-        langSwitcher.style.setProperty('will-change', 'transform', 'important');
-        langSwitcher.style.setProperty('backface-visibility', 'hidden', 'important');
-        console.log('✅ 语言切换器已强制设置为固定定位');
-      }
-    }
-
     // ========== 页面加载完成 ==========
     document.addEventListener('DOMContentLoaded', function() {
       console.log('✅ IC Studio 视奏工具页面已加载');
       handleInputChange();
-      // 强制应用固定定位
-      forceFixedLanguageSwitcher();
     });
 
     // ========== Header 菜单和搜索功能 ==========
