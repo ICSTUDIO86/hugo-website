@@ -527,7 +527,7 @@
             <span data-i18n="payment.titleSuffix">之旅</span>
           </h2>
           <div class="payment-price">
-            ⚡ <strong data-i18n="payment.price">68.00¥</strong> —— <span data-i18n="payment.priceText.1">支持网页版以及电脑软件（12号上线）</span>
+            ⚡ <strong data-i18n="payment.price">68.00¥</strong> —— <span data-i18n="payment.priceText.1">支持网页版以及电脑软件</span>
           </div>
         </div>
 
@@ -810,7 +810,14 @@
           button.style.opacity = '1';
 
           setTimeout(() => {
-            showPaymentSuccessPopup(code, result.data);
+            // 优先调用完整弹窗函数
+            if (typeof window.showUnifiedPaymentSuccess === 'function') {
+              console.log('🎉 显示完整验证成功弹窗');
+              window.showUnifiedPaymentSuccess(code, 'manual-verify', result.data);
+            } else {
+              console.log('⚠️ 完整弹窗函数不可用，使用降级方案');
+              showPaymentSuccessPopup(code, result.data);
+            }
           }, 800);
         } else {
           console.log('❌ 访问码验证失败:', result.error);

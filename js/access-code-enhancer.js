@@ -53,25 +53,39 @@
             
             if (result.success) {
               console.log('✅ PaymentStateManager 验证成功:', code);
-              resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 验证成功！正在更新界面...</span>';
-              
-              // 立即更新UI而不刷新页面
-              if (window.premiumUIManager) {
-                window.premiumUIManager.refreshUI();
-                console.log('✅ UI已刷新，无需重载页面');
-                
-                // 显示成功消息后清理输入
+              resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 验证成功！正在显示详情...</span>';
+
+              // 调用完整的支付成功弹窗
+              if (typeof window.showUnifiedPaymentSuccess === 'function') {
+                console.log('🎉 显示完整验证成功弹窗');
+                window.showUnifiedPaymentSuccess(code, 'manual-verify', result.data);
+
+                // 清理输入框和结果显示
                 setTimeout(() => {
                   input.value = '';
-                  resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 高级功能已激活</span>';
-                }, 1000);
-                
+                  resultDiv.innerHTML = '';
+                }, 500);
+
               } else {
-                // 备用：页面刷新
-                console.log('⚠️ UI管理器未找到，执行页面刷新');
-                setTimeout(() => {
-                  window.location.reload();
-                }, 1500);
+                console.log('⚠️ 完整弹窗函数不可用，使用降级方案');
+                // 降级方案：立即更新UI而不刷新页面
+                if (window.premiumUIManager) {
+                  window.premiumUIManager.refreshUI();
+                  console.log('✅ UI已刷新，无需重载页面');
+
+                  // 显示成功消息后清理输入
+                  setTimeout(() => {
+                    input.value = '';
+                    resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 高级功能已激活</span>';
+                  }, 1000);
+
+                } else {
+                  // 备用：页面刷新
+                  console.log('⚠️ UI管理器未找到，执行页面刷新');
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1500);
+                }
               }
               
             } else {
@@ -133,20 +147,34 @@
             
             if (result.success) {
               console.log('✅ PaymentStateManager 验证成功:', code);
-              resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 验证成功！正在激活高级功能...</span>';
-              
-              // 立即更新UI
-              if (window.premiumUIManager) {
+              resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 验证成功！正在显示详情...</span>';
+
+              // 调用完整的支付成功弹窗
+              if (typeof window.showUnifiedPaymentSuccess === 'function') {
+                console.log('🎉 显示完整验证成功弹窗');
+                window.showUnifiedPaymentSuccess(code, 'manual-verify', result.data);
+
+                // 清理输入框和结果显示
                 setTimeout(() => {
-                  window.premiumUIManager.refreshUI();
-                  resultDiv.innerHTML = '<span style="color: #27ae60;">✨ 高级功能已成功激活</span>';
                   input.value = '';
-                }, 1000);
+                  resultDiv.innerHTML = '';
+                }, 500);
+
               } else {
-                // 备用方案
-                setTimeout(() => {
-                  window.location.reload();
-                }, 2000);
+                console.log('⚠️ 完整弹窗函数不可用，使用降级方案');
+                // 降级方案：立即更新UI
+                if (window.premiumUIManager) {
+                  setTimeout(() => {
+                    window.premiumUIManager.refreshUI();
+                    resultDiv.innerHTML = '<span style="color: #27ae60;">✨ 高级功能已成功激活</span>';
+                    input.value = '';
+                  }, 1000);
+                } else {
+                  // 备用方案
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 2000);
+                }
               }
             } else {
               console.log('❌ PaymentStateManager 验证失败:', result.error);

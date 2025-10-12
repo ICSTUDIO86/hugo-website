@@ -175,19 +175,19 @@
 &lt;p>或者你通过我的主邮件联系我：icstudio@fastmail.com（目前邮箱不可用，请联系我的副邮箱）&lt;/p>
 &lt;p>副邮箱：chenigor0806@gmail.com&lt;/p>
 &lt;p>如果只是单纯聊天，欢迎你在我的视频底下留言，或者在哔哩哔哩私信我。（我尽量每条信息都读）&lt;/p></description></item><item><title>什么是 Spread Triads？</title><link>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-voicings/guitar-spread-triads-secret-zh/</link><pubDate>Sat, 11 Oct 2025 00:00:00 +0000</pubDate><guid>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-voicings/guitar-spread-triads-secret-zh/</guid><description>&lt;h2 id="spread-triads-vs-其他三和弦">Spread Triads vs 其他三和弦&lt;/h2>
-&lt;p>在开始了解什么是 Spread&lt;/p>
-&lt;p>&lt;figure style="text-align: center; margin: 20px auto; width: 100%;">
+&lt;p>在开始了解什么是 Spread Triads 之前，我们先听一下它跟我们平常弹的三和弦有什么区别：&lt;/p>
+&lt;figure style="text-align: center; margin: 20px auto; width: 100%;">
  &lt;div style="display: flex; justify-content: center;">
  &lt;audio controls preload="auto" style="max-width: 100%; display: inline-block !important; margin: 0 auto;">
- &lt;source src="https://icstudio.club/audio/melody-example.mp3" type="audio/mpeg">
- &lt;source src="https://icstudio.club/audio/melody-example.mp3" type="audio/mp3">
- &lt;source src="https://icstudio.club/audio/melody-example.mp3" type="audio/wav">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-1.mp3" type="audio/mpeg">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-1.mp3" type="audio/mp3">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-1.mp3" type="audio/wav">
  您的浏览器不支持音频播放。
  &lt;/audio>
  &lt;/div>
  
  &lt;figcaption style="margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;">
- 旋律示例：C大调音阶练习
+ 前三品三和弦
  &lt;/figcaption>
  
 &lt;/figure>
@@ -195,15 +195,15 @@
 &lt;figure style="text-align: center; margin: 20px auto; width: 100%;">
  &lt;div style="display: flex; justify-content: center;">
  &lt;audio controls preload="auto" style="max-width: 100%; display: inline-block !important; margin: 0 auto;">
- &lt;source src="https://icstudio.club/audio/melody-example.mp3" type="audio/mpeg">
- &lt;source src="https://icstudio.club/audio/melody-example.mp3" type="audio/mp3">
- &lt;source src="https://icstudio.club/audio/melody-example.mp3" type="audio/wav">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-2.mp3" type="audio/mpeg">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-2.mp3" type="audio/mp3">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-2.mp3" type="audio/wav">
  您的浏览器不支持音频播放。
  &lt;/audio>
  &lt;/div>
  
  &lt;figcaption style="margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;">
- 旋律示例：C大调音阶练习
+ 紧密三音配置的三和弦
  &lt;/figcaption>
  
 &lt;/figure>
@@ -211,19 +211,20 @@
 &lt;figure style="text-align: center; margin: 20px auto; width: 100%;">
  &lt;div style="display: flex; justify-content: center;">
  &lt;audio controls preload="auto" style="max-width: 100%; display: inline-block !important; margin: 0 auto;">
- &lt;source src="https://icstudio.club/audio/melody-example.mp3" type="audio/mpeg">
- &lt;source src="https://icstudio.club/audio/melody-example.mp3" type="audio/mp3">
- &lt;source src="https://icstudio.club/audio/melody-example.mp3" type="audio/wav">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-3.mp3" type="audio/mpeg">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-3.mp3" type="audio/mp3">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-3.mp3" type="audio/wav">
  您的浏览器不支持音频播放。
  &lt;/audio>
  &lt;/div>
  
  &lt;figcaption style="margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;">
- 旋律示例：C大调音阶练习
+ Spread Triads
  &lt;/figcaption>
  
 &lt;/figure>
- &lt;/p></description></item><item><title>免责声明</title><link>https://icstudio.club/disclaimer/</link><pubDate>Sun, 07 Sep 2025 00:00:00 +0000</pubDate><guid>https://icstudio.club/disclaimer/</guid><description>&lt;h1 id="免责声明">免责声明&lt;/h1>
+ 
+&lt;p>从听感上看，普通三和弦在前三弦的按法更&lt;strong>厚实、集中&lt;/strong>，三音配置（Close Voicing）更&lt;strong>轻盈、单薄&lt;/strong>；而 Spread Triads 介于两者之间：它保留了&lt;strong>清澈与空间感&lt;/strong>，同时通过低音的支撑带来更稳、更饱满的底色。这使它在伴奏与编配里既“通透”，又不“单薄”。你可以对照上面的三段音频示例，先用耳朵建立直觉差异。&lt;/p></description></item><item><title>免责声明</title><link>https://icstudio.club/disclaimer/</link><pubDate>Sun, 07 Sep 2025 00:00:00 +0000</pubDate><guid>https://icstudio.club/disclaimer/</guid><description>&lt;h1 id="免责声明">免责声明&lt;/h1>
 &lt;p>本免责声明适用于 &lt;strong>IC Studio 视奏工具&lt;/strong>（以下简称&amp;quot;本产品&amp;quot;）。请您在使用前仔细阅读并理解以下内容。&lt;/p>
 &lt;h2 id="1-服务现状">1. 服务现状&lt;/h2>
 &lt;p>1.1 本产品以&amp;quot;按现状&amp;quot;（AS IS）方式提供，不对其功能的完整性、准确性、适用性或可用性作任何明示或暗示的保证。&lt;br>
