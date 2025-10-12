@@ -780,7 +780,8 @@
             if (result.access_code) {
               // 使用统一支付成功处理器（支持支付宝账号收集）
               if (window.showUnifiedPaymentSuccess) {
-                window.showUnifiedPaymentSuccess(result.access_code, 'zpay-simple');
+                // 修复：传入完整的订单信息，确保下载按钮可以正常工作
+                window.showUnifiedPaymentSuccess(result.access_code, 'zpay-simple', result.order_info);
               } else {
                 // 降级到原有显示方式
                 showAccessCode(result.access_code, result.order_info);
