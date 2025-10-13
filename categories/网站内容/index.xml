@@ -1,51 +1,8 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>网站内容 on IC Studio</title><link>https://icstudio.club/categories/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/</link><description>Recent content in 网站内容 on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Sun, 01 Sep 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://icstudio.club/categories/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/index.xml" rel="self" type="application/rss+xml"/><item><title>IC 视奏工具</title><link>https://icstudio.club/sight-reading-tool-content/</link><pubDate>Sun, 01 Sep 2024 00:00:00 +0000</pubDate><guid>https://icstudio.club/sight-reading-tool-content/</guid><description>&lt;h1 id="ic-studio---专业级视奏旋律生成器">IC Studio - 专业级视奏旋律生成器&lt;/h1>
-&lt;p>&lt;img src="https://icstudio.club/images/sight-reading-tool-interface.png" alt="IC Studio 视奏完整界面">&lt;/p>
-&lt;h2 id="核心特色">核心特色&lt;/h2>
-&lt;ul>
-&lt;li>&lt;strong>智能生成逻辑&lt;/strong>：旋律虽由算法随机生成，但并非完全无序；它们保持&lt;strong>平衡的旋律线条&lt;/strong>与&lt;strong>音乐性&lt;/strong>，确保练习曲目既有挑战也具备可听性。&lt;/li>
-&lt;li>&lt;strong>专业乐谱渲染&lt;/strong>：基于 OpenSheetMusicDisplay引擎，提供出版级别的清晰乐谱显示。&lt;/li>
-&lt;/ul>
-&lt;p>&lt;img src="https://icstudio.club/images/sight-reading-tool-score-example.png" alt="生成的乐谱示例">&lt;/p>
-&lt;ul>
-&lt;li>&lt;strong>完全自定义&lt;/strong>：支持调号、音域、节奏类型、音程跨度、临时记号等多维度个性化设置。&lt;/li>
-&lt;/ul>
-&lt;p>&lt;img src="https://icstudio.club/images/sight-reading-tool-full-interface.png" alt="IC Studio 视奏工具完整界面">&lt;/p>
-&lt;h2 id="专业功能">专业功能&lt;/h2>
-&lt;ul>
-&lt;li>&lt;strong>24 个大小调支持&lt;/strong>：涵盖所有常见调性，以及小调中的&lt;strong>自然小调&lt;/strong>、&lt;strong>和声小调&lt;/strong>与&lt;strong>旋律小调&lt;/strong>的变化处理。&lt;/li>
-&lt;li>&lt;strong>丰富节奏选择&lt;/strong>：从全音符到十六分音符，囊括附点、三连音等复杂节奏。&lt;/li>
-&lt;/ul>
-&lt;p>&lt;img src="https://icstudio.club/images/sight-reading-tool-rhythm-settings.png" alt="节奏设置详细配置">&lt;/p>
-&lt;ul>
-&lt;li>&lt;strong>音程跨度控制&lt;/strong>：自由设定旋律的跳进与级进范围，匹配不同学习阶段。&lt;/li>
-&lt;li>&lt;strong>临时记号系统&lt;/strong>：智能插入升降号，增加音乐表现力与挑战性。&lt;/li>
-&lt;li>&lt;strong>吉他技巧支持&lt;/strong>：重音、断奏、短倚音、击弦、勾弦全面涵盖。&lt;/li>
-&lt;/ul>
-&lt;p>&lt;img src="https://icstudio.club/images/sight-reading-tool-articulations.png" alt="演奏技巧详细设置">&lt;/p>
-&lt;ul>
-&lt;li>&lt;strong>全拍号支持&lt;/strong>：完整覆盖 4/4、3/4、6/8等常用拍号，每种拍号皆有独特节奏模式。&lt;/li>
-&lt;li>&lt;strong>内置节拍器&lt;/strong>：无需额外工具，即可在练习时保持稳定的节奏感。&lt;/li>
-&lt;li>&lt;strong>音频播放&lt;/strong>：可以播放随机生成的旋律，用户可以用来做听力练习或者与正确的演奏进行对照。&lt;/li>
-&lt;li>&lt;strong>支持手机端/平板端/电脑端&lt;/strong>：可以用任何设备练习视奏！&lt;/li>
-&lt;/ul>
-&lt;h2 id="未来功能">未来功能&lt;/h2>
-&lt;ul>
-&lt;li>&lt;strong>音程视奏&lt;/strong>：随机生成有音乐性以及旋律线条的音程，帮助你熟悉指板音程逻辑。&lt;/li>
-&lt;li>&lt;strong>和弦视奏&lt;/strong>：随机生成 &lt;a href="https://icstudio.club/guitar-voicings/">Guitar voicings&lt;/a>（三和弦，drop 2，drop 3，shell voicings等），提高你视奏和弦的能力。&lt;/li>
-&lt;li>&lt;strong>低音生成器&lt;/strong>：随机生成一串低音，可以用来练习四部和声，和弦写作。（之后我会单独出一期视频讲解）&lt;/li>
-&lt;li>&lt;strong>和弦进行生成器&lt;/strong>：随机生成一串&lt;strong>和弦代号&lt;/strong>，乐手可以根据和弦代号自行配和声。&lt;/li>
-&lt;li>✅&lt;strong>音频播放&lt;/strong>：可以播放随机生成的旋律，用户可以用来做听力练习或者与正确的演奏进行对照。&lt;/li>
-&lt;li>✅&lt;strong>支持手机端&lt;/strong>：目前漂亮的五线谱只能在电脑或者平板上看到，不久之后就会出手机端的版本。&lt;/li>
-&lt;/ul>
-&lt;p>（现在购买可以在未来免费解锁进阶功能，之后出了这些功能之后会涨价）&lt;/p>
-&lt;h2 id="适用人群">适用人群&lt;/h2>
-&lt;ul>
-&lt;li>&lt;strong>音乐学生 / 自学者&lt;/strong>：快速提升视奏水平。&lt;/li>
-&lt;li>&lt;strong>音乐教师&lt;/strong>：高效生成教学素材，轻松定制个性化练习内容。&lt;/li>
-&lt;/ul>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>网站内容 on IC Studio</title><link>https://icstudio.club/categories/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/</link><description>Recent content in 网站内容 on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Sun, 01 Sep 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://icstudio.club/categories/%E7%BD%91%E7%AB%99%E5%86%85%E5%AE%B9/index.xml" rel="self" type="application/rss+xml"/><item><title>IC 视奏工具</title><link>https://icstudio.club/sight-reading-tool-content/</link><pubDate>Sun, 01 Sep 2024 00:00:00 +0000</pubDate><guid>https://icstudio.club/sight-reading-tool-content/</guid><description>&lt;p>····&lt;/p>
 &lt;h2 id="action-section">🎯 立即行动&lt;/h2>
 &lt;p>⚡ &lt;strong>早鸟价 48.00¥&lt;/strong>（截止于10月01日）—— 支持网页版以及电脑软件，现在购买可在未来&lt;strong>免费解锁&lt;/strong>更进阶的功能！&lt;/p>
 &lt;div style="display: flex; gap: 30px; margin: 30px auto; max-width: 1000px; align-items: flex-start; flex-wrap: wrap;">
 &lt;div style="flex: 1; min-width: 300px; padding: 25px; background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); border: 2px solid #e6edff; text-align: center;">
 &lt;h3 style="color: #4a5568; margin-bottom: 6px; font-size: 20px;">解锁视奏工具&lt;/h3>
-&lt;p style="color: #718096; font-size: 14px; margin: 0 0 20px 0;">支持 7 天无理由退款&lt;/p></description></item></channel></rss>
+&lt;p style="color: #718096; font-size: 14px; margin: 0 0 20px 0;">支持 7 天无理由退款&lt;/p>
+&lt;p>&lt;a href="https://icstudio.club/tools/melody-generator.html" target="_blank" style="display: block; background: #f8f9fa; color: #667eea; padding: 12px 20px; border: 2px solid #667eea; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s ease; margin-bottom: 15px;" onmouseover="this.style.background='#667eea'; this.style.color='white';" onmouseout="this.style.background='#f8f9fa'; this.style.color='#667eea';">免费试用&lt;/a>&lt;/p></description></item></channel></rss>
