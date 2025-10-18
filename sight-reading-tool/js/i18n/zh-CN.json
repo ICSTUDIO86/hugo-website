@@ -131,14 +131,12 @@
       "email": "✉️ 邮箱：",
       "contactPage": "🌐 联系页面：",
       "clickVisit": "点此访问",
-      "responseTime": "⏰ 所有信息将在最多",
-      "hours": "48 小时",
-      "withinReply": "内回复"
+      "responseTime": "⏰ 所有信息尽量在最多 48 小时内回复"
     }
   },
 
   "footer": {
     "tagline": "一起在音乐的道路上前进吧！",
-    "copyright": "Copyright © 2025. All rights reserved."
+    "copyright": "Copyright © 2025. All rights reserved. Igor Chen - icstudio.club"
   }
 }

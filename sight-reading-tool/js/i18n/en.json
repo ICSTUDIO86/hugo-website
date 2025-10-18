@@ -131,14 +131,12 @@
       "email": "✉️ Email:",
       "contactPage": "🌐 Contact Page:",
       "clickVisit": "Click to Visit",
-      "responseTime": "⏰ All messages will be replied within",
-      "hours": "48 hours",
-      "withinReply": ""
+      "responseTime": "⏰ All messages will be replied within 48 hours"
     }
   },
 
   "footer": {
     "tagline": "Let's progress together on the musical journey!",
-    "copyright": "Copyright © 2025. All rights reserved."
+    "copyright": "Copyright © 2025. All rights reserved. Igor Chen - icstudio.club"
   }
 }
