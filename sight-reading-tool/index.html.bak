@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="IC 视奏工具 - 专业级视奏训练软件，完全自定义练习内容！支持旋律/音程/和弦生成器，适用吉他、钢琴等多种乐器。精确控制调号、拍号、Articulations。仅需 ¥68，无限生成练习，比任何视奏书都实惠！7天无理由退款，立即免费试用！">
+  <meta name="keywords" content="视奏练习,五线谱学习,音乐教育工具,乐谱生成器,读谱训练,视奏软件,吉他视奏,钢琴视奏,旋律生成器,音程练习,和弦识别,吉他和声配置,Drop2和弦,Shell Voicing,Articulations控制,调号练习,拍号训练,自定义乐谱,专业视奏训练,IC Studio,在线视奏工具,视奏练习软件,音乐视奏app,五线谱视奏,即兴练习工具">
+  <meta name="author" content="IC Studio - Igor Chen">
+  <meta name="publish_date" property="og:publish_date" content="2024-08-01T00:00:00+08:00">
+  <meta name="copyright" content="IC Studio © 2024-2025">
+  <meta name="rating" content="general">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#667eea">
+  <title>IC 视奏工具 - 专业级视奏训练 | 完全自定义的音乐练习工具</title>
+  
+  <!-- Icon -->    
+   
+  <link rel="icon" type="image/png" href="/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/ICLOGO.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="/ICLOGO.png">
+  <meta name="msapplication-TileImage" content="/ICLOGO.png">
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Umami Analytics -->
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script> 
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://icstudio.club/sight-reading-tool/">
+  <meta property="og:title" content="IC 视奏工具 - 专业级视奏训练 | IC Studio">
+  <meta property="og:description" content="专业级视奏旋律生成器，完全自定义练习内容，支持吉他、钢琴等多种乐器。提供旋律、音程、和弦三大生成器，精确控制音符时值、调号、拍号和 Articulations。一次购买，无限生成练习，比任何视奏书都实惠！">
+  <meta property="og:image" content="https://icstudio.club/images/sight-reading-tool.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="IC Studio">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:locale:alternate" content="en_US">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://icstudio.club/sight-reading-tool/">
+  <meta name="twitter:title" content="IC 视奏工具 - 专业级视奏训练">
+  <meta name="twitter:description" content="专业级视奏旋律生成器，完全自定义练习内容，支持多种乐器。一次购买，无限生成练习内容！">
+  <meta name="twitter:image" content="https://icstudio.club/images/sight-reading-tool.png">
+
+  <!-- Canonical & Alternate Language Links -->
+  <link rel="canonical" href="https://icstudio.club/sight-reading-tool/">
+  <link rel="alternate" hreflang="zh-CN" href="https://icstudio.club/sight-reading-tool/">
+  <link rel="alternate" hreflang="en" href="https://icstudio.club/sight-reading-tool/">
+  <link rel="alternate" hreflang="x-default" href="https://icstudio.club/sight-reading-tool/">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+  <!-- Performance Optimization -->
+  <link rel="preconnect" href="https://imgcache.qq.com">
+  <link rel="preconnect" href="https://icstudio3.gumroad.com">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+
+  <!-- Critical CSS Preload -->
+  <link rel="preload" href="/css/style.css" as="style">
+  <link rel="preload" href="style.css" as="style">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- 语言切换器样式 -->
+  <style>
+    .lang-switcher {
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      background: #f4f4f5;
+      border-radius: 12px;
+      padding: 4px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .lang-switcher:hover {
+      background: #e4e4e7;
+    }
+
+    .lang-option {
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #71717a;
+      background: transparent;
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .lang-option::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      opacity: 0;
+      transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 8px;
+    }
+
+    .lang-option span {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* 默认显示完整版本 */
+    .lang-option .lang-full {
+      display: inline;
+    }
+
+    .lang-option .lang-short {
+      display: none;
+    }
+
+    .lang-option:hover:not(.active) {
+      color: #27272a;
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .lang-option.active {
+      color: white;
+      font-weight: 600;
+    }
+
+    .lang-option.active::before {
+      opacity: 1;
+    }
+
+    /* 移动端优化 */
+    @media (max-width: 768px) {
+      .lang-switcher {
+        padding: 3px;
+        border-radius: 10px;
+      }
+
+      .lang-option {
+        padding: 6px 12px;
+        font-size: 13px;
+        border-radius: 8px;
+        min-width: 36px;
+        text-align: center;
+      }
+
+      /* 移动端显示简短版本 */
+      .lang-option .lang-full {
+        display: none;
+      }
+
+      .lang-option .lang-short {
+        display: inline;
+      }
+
+      /* 移动端隐藏搜索按钮 */
+      .toggle-button[onclick="toggleSearch()"] {
+        display: none !important;
+      }
+    }
+  </style>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "IC 视奏工具",
+        "applicationCategory": "MusicApplication",
+        "operatingSystem": ["Windows", "macOS", "Linux", "Web Browser"],
+        "offers": {
+          "@type": "Offer",
+          "price": "68.00",
+          "priceCurrency": "CNY",
+          "availability": "https://schema.org/InStock",
+          "url": "https://icstudio.club/sight-reading-tool/"
+        },
+        "description": "专业级视奏旋律生成器，完全自定义练习内容，支持吉他、钢琴等多种乐器。提供旋律、音程、和弦三大生成器。",
+        "featureList": [
+          "完全自定义生成",
+          "支持吉他专属和声配置",
+          "Articulations 控制",
+          "适用多个乐器",
+          "随机生成或遵循调性",
+          "无限练习内容生成"
+        ],
+        "screenshot": "https://icstudio.club/images/sight-reading-tool.png",
+        "publisher": {
+          "@type": "Organization",
+          "name": "IC Studio",
+          "url": "https://icstudio.club"
+        }
+      },
+      {
+        "@type": "Product",
+        "name": "IC 视奏工具",
+        "image": "https://icstudio.club/images/sight-reading-tool.png",
+        "description": "专业级视奏旋律生成器，助力音乐学习者快速提升读谱技能",
+        "brand": {
+          "@type": "Brand",
+          "name": "IC Studio"
+        },
+        "offers": {
+          "@type": "Offer",
+          "url": "https://icstudio.club/sight-reading-tool/",
+          "priceCurrency": "CNY",
+          "price": "68.00",
+          "availability": "https://schema.org/InStock",
+          "priceValidUntil": "2026-12-31",
+          "hasMerchantReturnPolicy": {
+            "@type": "MerchantReturnPolicy",
+            "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+            "merchantReturnDays": 7
+          }
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.8",
+          "reviewCount": "120"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "忘记访问码了怎么办？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "如果您忘记了访问码，可以通过您的订单号找回。订单号或者商家订单号可在支付宝或者微信的账单记录里找到。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "访问码不能正常工作？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "如果在输入验证码之后工具还是处于试用版本的话，只要多刷新一下页面就好了。如果问题依然存在，请联系我们的客服支持。"
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "如何退款？",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "我们提供 7天无理由退款政策。购买后7天内可申请退款，超过7天不支持退款。"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "Organization",
+        "name": "IC Studio",
+        "url": "https://icstudio.club",
+        "logo": "https://icstudio.club/images/ICSTUDIOWEBSITE.png",
+        "sameAs": [
+          "https://www.youtube.com/@ICStudio86",
+          "https://space.bilibili.com/376362605"
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "email": "service@icstudio.club",
+          "contactType": "Customer Service",
+          "availableLanguage": ["zh-CN", "en"]
+        }
+      },
+      {
+        "@type": "WebSite",
+        "name": "IC Studio",
+        "url": "https://icstudio.club",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://icstudio.club/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "首页",
+            "item": "https://icstudio.club/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "IC 视奏工具",
+            "item": "https://icstudio.club/sight-reading-tool/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <!-- ==================== Header ==================== -->
+  <header class="py-6 border-b">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col">
+      <div class="flex items-center">
+        <div class="flex items-center">
+          <button class="flex items-center space-x-2 rounded-full border py-1 pr-[5px] pl-3 group bg-zinc-100 hover:bg-zinc-200 toggle-button" onclick="toggleMenu()">
+            <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"></path>
+            </svg>
+            <span class="bg-blue-500 fill-white rounded-full p-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="group-hover:animate-spin bi bi-egg-fried fill-white" viewBox="0 0 16 16">
+                <ellipse cx="8" cy="8" rx="6.8" ry="6.8" stroke="#FFFFFF" fill="none" stroke-width="2"></ellipse>
+                <path d="M7.5 8.3c.47.03 1.48-.05 2.15-.01.3.01.47.12.54.14.71.31 1.17 1.19.93 1.96-.09.3-.34.72-.68.94-.4.26-.98.27-1.86.27-.35-.01-.52.08-1.09-.12-1.27-.44-1.79-1.28-1.91-2.31-.08-.65.11-1.28.44-1.81 1.15-1.66 2.78-1.1 4.56-1.23.63-.08.96-.4 1.11-.78.14-.35.13-.72.12-1.05-.02-.9-.43-1.39-1.23-1.49-.13-.02-.43.02-.43.02-.09.06-.22-.03-.59.33-.23.23-.35.37-.43.64-.06.2-.03 3.1-.03 3.2-.01.3-.03 3.58-.01 3.78.05.36-.04 1.01.01 1.62.1.81-.03 1.53-1 1.59-.52.03-.8-.4-.88-.76-.01-.06-.02-.12-.02-.18"
+                  transform="translate(0.8, 1) scale(0.8)"
+                  stroke="#FFFFFF" fill="none" stroke-width="0.96"></path>
+              </svg>
+            </span>
+          </button>
+          <div class="relative rounded-full py-1.5 px-6 bg-zinc-100 hover:bg-zinc-200 text-xl font-bold uppercase mx-2">
+            <h2><a class="before:content-[''] before:z-10 before:top-0 before:right-0 before:left-0 before:bottom-0 before:absolute before:pointer-events-auto" href="/">IC Studio</a></h2>
+          </div>
+        </div>
+        <div class="flex items-center ml-auto space-x-2">
+          <!-- 语言切换器 -->
+          <div class="lang-switcher" role="navigation" aria-label="语言切换">
+            <button class="lang-option active" data-lang="zh-CN" onclick="window.i18n && window.i18n.switchLanguage('zh-CN')" aria-label="切换到中文">
+              <span class="lang-full">中文</span>
+              <span class="lang-short">中</span>
+            </button>
+            <button class="lang-option" data-lang="en" onclick="window.i18n && window.i18n.switchLanguage('en')" aria-label="Switch to English">
+              <span class="lang-full">EN</span>
+              <span class="lang-short">EN</span>
+            </button>
+          </div>
+
+          <button class="flex items-center rounded-full p-3 bg-zinc-100 hover:bg-zinc-200 toggle-button" onclick="toggleSearch()">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path id="search-icon" class="transition-all ease-linear" d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
+              <path id="close-icon" class="transition-all ease-linear hidden" d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav id="menu-bar" class="mt-3 hidden">
+        <ul class="flex items-center flex-nowrap whitespace-nowrap overflow-x-auto space-x-4">
+          <li class="my-2">
+            <a href="/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">主页</a>
+          </li>
+          <li class="my-2">
+            <a href="/blog/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">Blog</a>
+          </li>
+          <li class="my-2">
+            <a href="/tools/melody-generator.html" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200 border-zinc-400">视奏工具</a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Search Bar -->
+      <div id="search-bar" class="mt-3 hidden">
+        <div class="relative">
+          <input type="text" placeholder="搜索..." class="w-full px-4 py-2 border rounded-full bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== 主要内容区域 ==================== -->
+  <main id="main-content">
+
+  <!-- ==================== Hero 区域 ==================== -->
+  <section class="hero">
+    <!-- 背景 -->
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+
+    <!-- 几何装饰 -->
+    <div class="hero-decoration"></div>
+    <div class="hero-decoration-2"></div>
+
+    <!-- 内容 -->
+    <div class="hero-content">
+      <h1 class="hero-title">
+        <span data-i18n="hero.titleLine1">提升你的</span>
+        <span class="hero-gradient-text" data-i18n="hero.titleHighlight">视奏能力</span>
+        <br><span data-i18n="hero.titleLine2">从这里开始</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        <span data-i18n="hero.subtitle">专为音乐人打造的专业级视奏训练工具</span>
+        <br>
+        <span class="hero-highlight" data-i18n="hero.featureHighlight">完全自定义</span> <span data-i18n="hero.featureText">的练习体验</span>
+      </p>
+
+      <div class="hero-buttons">
+        <a href="#payment-section" class="btn btn-primary" data-i18n="hero.btnPurchase">立即购买</a>
+        <a href="/tools/melody-generator.html" target="_blank" class="btn btn-outline" data-i18n="hero.btnTry">立即试用</a>
+      </div>
+
+      <div class="hero-pill" data-i18n="hero.pill">IC 视奏工具</div>
+    </div>
+  </section>
+
+  <!-- ==================== Product Showcase 区域 ==================== -->
+  <section class="product-showcase">
+    <!-- 几何装饰元素 -->
+    <div class="geo-shape geo-circle-1"></div>
+    <div class="geo-shape geo-square-1"></div>
+
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="products.title">三大核心工具</h2>
+        <p class="section-subtitle" data-i18n="products.subtitle">
+          针对不同训练需求，提供专业的视奏练习方案
+        </p>
+      </div>
+
+      <div class="product-grid">
+        <!-- 旋律视奏生成器 -->
+        <div class="product-card product-card-blue" style="cursor: pointer;" onclick="window.open('/tools/melody-generator.html', '_blank')">
+          <div class="product-card-inner">
+            <div class="product-text">
+              <h3 data-i18n="products.melody.title">旋律视奏生成器</h3>
+              <p data-i18n="products.melody.description">
+                自由选择音符时值，精确控制 articulations（断奏、连音、重音等），甚至可以设定它们出现的频率。完全按你的需求打造练习内容。
+              </p>
+            </div>
+            <div class="product-image">
+              <img src="/images/product-melody.png"
+                   alt="IC 旋律视奏生成器 - 自定义音符时值和 Articulations 练习工具"
+                   width="600"
+                   height="400"
+                   loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- 音程视奏生成器 -->
+        <div class="product-card product-card-green" style="cursor: pointer;" onclick="window.open('/tools/interval-generator.html', '_blank')">
+          <div class="product-card-inner">
+            <div class="product-text" style="order: 2;">
+              <h3 data-i18n="products.interval.title">音程视奏生成器</h3>
+              <p data-i18n="products.interval.description">
+                针对性训练特定音程，自由选择想要练习的音程类型。从大二度到完全八度，每个音程都能精准掌握。
+              </p>
+            </div>
+            <div class="product-image" style="order: 1;">
+              <img src="/images/product-interval.png"
+                   alt="IC 音程视奏生成器 - 专项训练音程识别和读谱能力"
+                   width="600"
+                   height="400"
+                   loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- 和弦视奏生成器 -->
+        <div class="product-card product-card-amber" style="cursor: pointer;" onclick="window.open('/tools/chord-generator.html', '_blank')">
+          <div class="product-card-inner">
+            <div class="product-text">
+              <h3 data-i18n="products.chord.title">和弦视奏生成器</h3>
+              <p data-i18n="products.chord.description">
+                支持多种和弦类型：大三和弦、小三和弦、减三和弦、sus 等。提供吉他专属和声配置：Drop2、Drop3、Shell Voicing、Close Voicing。
+              </p>
+            </div>
+            <div class="product-image">
+              <img src="/images/product-chord.png"
+                   alt="IC 和弦视奏生成器 - 支持 Drop2、Drop3、Shell Voicing 等吉他专属和声"
+                   width="600"
+                   height="400"
+                   loading="lazy">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Features 区域 ==================== -->
+  <section id="features" class="features">
+    <!-- 几何装饰元素 -->
+    <div class="geo-shape geo-features-1"></div>
+    <div class="geo-shape geo-features-2"></div>
+    <div class="geo-shape geo-features-3"></div>
+
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span data-i18n="features.title">强大的</span>
+          <span class="text-gradient" data-i18n="features.titleHighlight">功能特性</span>
+        </h2>
+        <p class="section-subtitle" data-i18n="features.subtitle">
+          专业级功能，助你达到新的音乐高度
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon feature-icon-purple">⚙️</div>
+          <h3 class="feature-title" data-i18n="features.customize.title">完全自定义生成</h3>
+          <p class="feature-description" data-i18n="features.customize.description">
+            自由选择调号、拍号、音符时值、自定义频率，打造完全符合你需求的练习内容。
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon feature-icon-blue">🎵</div>
+          <h3 class="feature-title" data-i18n="features.guitarVoicing.title">支持吉他专属和声</h3>
+          <p class="feature-description" data-i18n="features.guitarVoicing.description">
+            提供吉他专属和声配置，包括 Drop2、Drop3、Shell Voicing、Close Voicing 等。
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon feature-icon-green">🎛️</div>
+          <h3 class="feature-title" data-i18n="features.articulations.title">Articulations 控制</h3>
+          <p class="feature-description" data-i18n="features.articulations.description">
+            精确控制断奏、连音、重音等演奏技巧，甚至可以设定它们的出现频率。
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon feature-icon-amber">🎸</div>
+          <h3 class="feature-title" data-i18n="features.multiInstrument.title">适用多个乐器</h3>
+          <p class="feature-description" data-i18n="features.multiInstrument.description">
+            适用于吉他、钢琴、小提琴、贝斯等各种乐器，满足不同演奏者的需求。
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon feature-icon-pink">🎲</div>
+          <h3 class="feature-title" data-i18n="features.randomOrTonal.title">随机生成/遵循调性</h3>
+          <p class="feature-description" data-i18n="features.randomOrTonal.description">
+            可以选择完全随机生成音符，或遵循指定调性生成旋律，灵活满足练习需求。
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon feature-icon-cyan">💰</div>
+          <h3 class="feature-title" data-i18n="features.affordable.title">无数条练习，比任何一本视奏书都便宜</h3>
+          <p class="feature-description" data-i18n="features.affordable.description">
+            一次购买，无限生成练习内容，性价比远超传统视奏教材。
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Payment & CTA 区域 ==================== -->
+  <section id="payment-section" class="payment-section">
+    <div class="payment-bg-1"></div>
+    <div class="payment-bg-blob-1"></div>
+    <div class="payment-bg-blob-2"></div>
+
+    <div class="payment-container">
+      <div class="payment-wrapper">
+        <div class="payment-header">
+          <h2 class="payment-title">
+            <span data-i18n="payment.title">开始你的</span>
+            <span class="text-gradient" data-i18n="payment.titleHighlight">视奏提升</span>
+            <span data-i18n="payment.titleSuffix">之旅</span>
+          </h2>
+          <div class="payment-price">
+            ⚡ <strong data-i18n="payment.price">68.00¥</strong> —— <span data-i18n="payment.priceText.1">支持网页版以及电脑软件</span>
+          </div>
+        </div>
+
+        <div class="payment-grid">
+          <!-- 左侧：支付选项 -->
+          <div class="payment-card">
+            <h3 data-i18n="payment.cardTitle">解锁视奏工具</h3>
+            <p data-i18n="payment.refundPolicy">支持 7 天无理由退款</p>
+
+            <a href="/tools/melody-generator.html" target="_blank" class="btn btn-outline" style="display: block; margin-bottom: 1.25rem; text-align: center; font-size: 0.9375rem; padding: 0.875rem;" data-i18n="payment.btnFreeTrial">
+              免费试用
+            </a>
+
+            <div class="payment-buttons">
+              <button id="zpay-btn" onclick="window.createZPayment()" class="payment-button payment-button-alipay" data-i18n="payment.btnAlipay">
+                支付宝支付
+              </button>
+              <button id="wxpay-btn" onclick="window.createWxPayment()" class="payment-button payment-button-wechat" data-i18n="payment.btnWechat">
+                微信支付
+              </button>
+            </div>
+
+            <div class="access-code-section">
+              <h4 data-i18n="payment.accessCodeTitle">🔑 已有访问码？立即使用</h4>
+              <div class="access-code-input-group">
+                <input
+                  type="text"
+                  id="access-code-input"
+                  class="access-code-input"
+                  placeholder="Enter your access code"
+                  data-i18n-placeholder="payment.accessCodePlaceholder"
+                  maxlength="12"
+                  oninput="handleInputChange()"
+                  onkeyup="handleInputChange()"
+                >
+                <button
+                  id="verify-btn"
+                  class="access-code-button"
+                  onclick="handleVerifyClick()"
+                  data-i18n="payment.btnVerify"
+                >
+                  验证
+                </button>
+              </div>
+              <div id="verify-result" class="verify-result"></div>
+            </div>
+          </div>
+
+          <!-- 右侧：Gumroad -->
+          <div class="gumroad-wrapper">
+            <iframe
+              src="https://icstudio3.gumroad.com/l/sight-reading-tools"
+              frameborder="0"
+              width="100%"
+              height="100%"
+              style="border: 0; min-height: 500px;">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FAQ 区域 ==================== -->
+  <section class="faq-section">
+    <!-- 几何装饰元素 -->
+    <div class="geo-shape geo-faq-1"></div>
+    <div class="geo-shape geo-faq-2"></div>
+    <div class="geo-shape geo-faq-3"></div>
+
+    <div class="faq-container">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span data-i18n="faq.title">❓ 常见问题</span> <span class="text-gradient" data-i18n="faq.titleHighlight">FAQ</span>
+        </h2>
+      </div>
+
+      <!-- FAQ 1: 忘记访问码 -->
+    <div class="faq-item" style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-left-color: #ff9800;">
+      <h3 class="faq-title" style="color: #e65100; font-size: 1.25rem;" data-i18n="faq.forgotCode.title">🔑 忘记访问码了怎么办？</h3>
+      <div class="faq-content">
+        <p style="color: #5d4037; margin-bottom: 1.25rem;" data-i18n="faq.forgotCode.description">
+          如果您忘记了访问码，可以通过您的订单号找回：
+        </p>
+        <div style="text-align: center; margin: 1.5rem 0;">
+          <button id="recover-access-code-btn" class="faq-button faq-button-blue" data-i18n="faq.forgotCode.btnRecover">
+            🔍 通过订单号找回访问码
+          </button>
+        </div>
+        <div style="background: rgba(255, 255, 255, 0.7); padding: 1rem; border-radius: 0.5rem; font-size: 0.9375rem; color: #5d4037;">
+          <p style="margin-bottom: 0.5rem;"><strong data-i18n="faq.forgotCode.noteTitle">💡 说明：</strong></p>
+          <ul style="margin: 0; padding-left: 1.5rem; list-style-type: disc;">
+            <li data-i18n="faq.forgotCode.note1" data-i18n-html>订单号或者商家订单号可在支付宝或者微信的<strong>账单记录</strong>里找到。</li>
+            <li data-i18n="faq.forgotCode.note2" data-i18n-html><strong>商家订单号</strong>格式如 <code style="background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;">IC17575395673154298</code></li>
+            <li data-i18n="faq.forgotCode.note3" data-i18n-html><strong>订单号</strong>格式如 <code style="background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;">2025097832001480241441480505</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ 2: 访问码不能工作 -->
+    <div class="faq-item" style="background: linear-gradient(135deg, #efe7f2 0%, #f3e5f5 100%); border-left-color: #9c27b0;">
+      <h3 class="faq-title" style="color: #6a1b9a;" data-i18n="faq.codeNotWorking.title">⚙️ 访问码不能正常工作？</h3>
+      <p class="faq-content" style="color: #4a148c;" data-i18n="faq.codeNotWorking.description">
+        如果在输入验证码之后工具还是处于试用版本的话，只要多刷新一下页面就好了。如果问题依然存在，请联系我们的客服支持。
+      </p>
+    </div>
+
+    <!-- FAQ 3: 如何退款 -->
+    <div class="faq-item" style="background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%); border-left-color: #4caf50;">
+      <h3 class="faq-title" style="color: #2e7d32; font-size: 1.25rem;" data-i18n="faq.refund.title">💰 如何退款？</h3>
+      <div class="faq-content">
+        <p style="color: #1b5e20; margin-bottom: 1rem;" data-i18n="faq.refund.description">
+          我们理解您可能会遇到各种情况，因此提供 <strong>7天无理由退款政策</strong>：
+        </p>
+        <div style="background: rgba(255, 255, 255, 0.7); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem; color: #1b5e20;">
+          <p style="margin-bottom: 0.5rem;"><strong data-i18n="faq.refund.conditionsTitle">📋 退款条件：</strong></p>
+          <ul style="margin: 0; padding-left: 1.5rem; list-style-type: disc;">
+            <li data-i18n="faq.refund.condition1">购买后7天内可申请退款</li>
+            <li data-i18n="faq.refund.condition2">超过7天不支持退款</li>
+          </ul>
+        </div>
+        <p style="font-weight: 600; color: #2e7d32; margin-bottom: 1rem;" data-i18n="faq.refund.onlineRefund">在线退款：</p>
+        <div style="text-align: center;">
+          <button id="refund-btn" class="faq-button faq-button-red" data-i18n="faq.refund.btnRefund">
+            申请在线退款
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ 4: 联系方式 -->
+    <div class="faq-item" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-left-color: #2196f3;">
+      <h3 class="faq-title" style="color: #0d47a1; font-size: 1.25rem;" data-i18n="faq.contact.title">📬 有其他问题？欢迎联系我！</h3>
+      <div class="faq-content">
+        <p style="color: #1565c0; margin-bottom: 1rem;" data-i18n="faq.contact.description">
+          如果您在使用过程中遇到以下任何问题，欢迎通过下面的联系方式联系我，我会尽快为您解决：
+        </p>
+        <ul style="color: #1565c0; margin-bottom: 1.25rem; padding-left: 1.5rem; list-style-type: disc;">
+          <li data-i18n="faq.contact.issue1">使用工具时有遇到 bug</li>
+          <li data-i18n="faq.contact.issue2">找回访问码不能正常工作</li>
+          <li data-i18n="faq.contact.issue3">退款按钮不能正常工作</li>
+          <li data-i18n="faq.contact.issue4">任何其他关于产品的咨询</li>
+        </ul>
+        <div style="background: rgba(255, 255, 255, 0.7); padding: 1.25rem; border-radius: 0.5rem;">
+          <p style="font-weight: 600; color: #0d47a1; margin-bottom: 0.75rem;" data-i18n="faq.contact.contactInfoTitle">📧 联系方式：</p>
+          <ul style="color: #1565c0; margin: 0; padding-left: 1.5rem; list-style-type: none;">
+            <li style="margin-bottom: 0.5rem;"><span data-i18n="faq.contact.email">✉️ 邮箱：</span><strong>service@icstudio.club</strong></li>
+            <li style="margin-bottom: 0.5rem;"><span data-i18n="faq.contact.contactPage">🌐 联系页面：</span><a href="/contact/" style="color: #1976d2; font-weight: 600; text-decoration: underline;" data-i18n="faq.contact.clickVisit">点此访问</a></li>
+            <li><span data-i18n="faq.contact.responseTime">⏰ 所有信息尽量在最多 48 小时内回复</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  </main>
+  <!-- ==================== 主要内容区域结束 ==================== -->
+
+  <!-- ==================== Footer ==================== -->
+  <footer class="bg-zinc-100 py-10 md:py-14">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+      <div class="flex flex-wrap space-y-6 mb-4">
+        <div class="w-full md:w-3/5 flex flex-col space-y-4 md:pr-8 lg:pr-10">
+          <a class="flex items-center group" href="https://icstudio.club/">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="mr-2 group-hover:animate-spin" viewBox="0 0 24 24">
+              <path d="M13.75 2C13.75 1.58579 13.4142 1.25 13 1.25C12.5858 1.25 12.25 1.58579 12.25 2V14.5359C11.4003 13.7384 10.2572 13.25 9 13.25C6.37665 13.25 4.25 15.3766 4.25 18C4.25 20.6234 6.37665 22.75 9 22.75C11.6234 22.75 13.75 20.6234 13.75 18V6.243C14.9875 7.77225 16.8795 8.75 19 8.75C19.4142 8.75 19.75 8.41421 19.75 8C19.75 7.58579 19.4142 7.25 19 7.25C16.1005 7.25 13.75 4.8995 13.75 2Z"/>
+            </svg>
+            <span class="text-2xl font-semibold uppercase">IC STUDIO</span>
+          </a>
+          <p class="font-semibold" data-i18n="footer.tagline">
+            一起在音乐的道路上前进吧！
+          </p>
+        </div>
+        <div class="self-center flex flex-col w-full md:w-2/5">
+          <ul id="social-media" class="flex items-center space-x-4">
+            <li>
+              <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2" href="https://www.youtube.com/@ICStudio86#" target="_blank" rel="noopener noreferrer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.498 6.186a2.91 2.91 0 0 0-2.049-2.048C19.653 3.5 12 3.5 12 3.5s-7.653 0-9.449.638A2.91 2.91 0 0 0 .502 6.186C0 8.01 0 12 0 12s0 3.99.502 5.814a2.91 2.91 0 0 0 2.049 2.048C4.347 20.5 12 20.5 12 20.5s7.653 0 9.449-.638a2.91 2.91 0 0 0 2.049-2.048C24 15.99 24 12 24 12s0-3.99-.502-5.814ZM9.75 15.568V8.432L15.568 12Z"/>
+                </svg>
+              </a>
+            </li>
+            <li>
+              <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2" href="https://space.bilibili.com/376362605" target="_blank" rel="noopener noreferrer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 1024 1024">
+                  <path d="M800 192h-72.3l59.9-128.7c4.6-10-0.2-21.7-10.2-26.3-10-4.6-21.7 0.2-26.3 10.2L683.8 192H340.2L272.9 47.2c-4.6-10-16.3-14.8-26.3-10.2s-14.8 16.3-10.2 26.3L296.3 192H224c-70.7 0-128 57.3-128 128v448c0 70.7 57.3 128 128 128h576c70.7 0 128-57.3 128-128V320c0-70.7-57.3-128-128-128zM896 768c0 53-43 96-96 96H224c-53 0-96-43-96-96V320c0-53 43-96 96-96h576c53 0 96 43 96 96v448zM384 640c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32zm256 0c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32z"/>
+                </svg>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t pt-4 flex justify-center items-center">
+        <p class="text-sm text-center" data-i18n="footer.copyright"> Copyright © 2025. All rights reserved. <a href="https://icstudio.club" target="_blank" rel="noopener">Igor Chen - icstudio.club</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== JavaScript 脚本 ==================== -->
+  <!-- CloudBase SDK - 保持同步加载（关键依赖）-->
+  <script src="https://imgcache.qq.com/qcloud/cloudbase-js-sdk/1.5.0/cloudbase.full.js"></script>
+
+  <!-- 支付系统脚本 - 延迟加载优化 -->
+  <script defer src="/js/payment-success-handler.js?v=20250909"></script>
+  <script defer src="/js/advanced-trial-protection.js?v=20250920"></script>
+  <script defer src="/js/trial-limiter.js?v=20250909"></script>
+  <script defer src="/js/cloudbase-api.js?v=20250909"></script>
+  <script defer src="/js/payment-state-manager.js?v=20250909"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script defer src="/js/new-refund-handler.js?v=2.0.0"></script>
+  <script defer src="/js/zpay-simple.js?v=1.0.9"></script>
+  <script defer src="/js/alipay-lookup.js?v=1.0.1"></script>
+
+  <!-- 内联 JavaScript 函数 -->
+  <script>
+    // ========== 访问码验证相关函数 ==========
+    function handleInputChange() {
+      const input = document.getElementById('access-code-input');
+      const btn = document.getElementById('verify-btn');
+
+      if (!input || !btn) return;
+
+      const code = input.value.trim();
+      const isValid = code.length >= 11 && code.length <= 12 && /^[A-Z0-9]+$/.test(code);
+
+      btn.dataset.valid = isValid;
+      btn.classList.toggle('active', isValid);
+      btn.style.cursor = isValid ? 'pointer' : 'not-allowed';
+    }
+
+    async function handleVerifyClick() {
+      const button = document.getElementById('verify-btn');
+      const input = document.getElementById('access-code-input');
+      const resultDiv = document.getElementById('verify-result');
+
+      if (!button || !input || !resultDiv) return;
+
+      const isValid = button.dataset.valid === 'true';
+
+      if (!isValid) {
+        resultDiv.innerHTML = '<span style="color: #e74c3c;">❌ 请输入有效的11-12位访问码</span>';
+        return;
+      }
+
+      const code = input.value.trim().toUpperCase();
+
+      button.disabled = true;
+      button.style.opacity = '0.5';
+      resultDiv.innerHTML = '<span style="color: #3498db;">🔄 正在验证访问码...</span>';
+
+      try {
+        if (!window.paymentManager) {
+          resultDiv.innerHTML = '<span style="color: #f39c12;">⏳ 正在加载验证系统...</span>';
+          let attempts = 0;
+          while (!window.paymentManager && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+          }
+          if (!window.paymentManager) {
+            throw new Error('验证系统加载超时，请刷新页面重试');
+          }
+        }
+
+        console.log('🔍 使用 PaymentStateManager 验证访问码:', code);
+        resultDiv.innerHTML = '<span style="color: #3498db;">🔄 正在服务器验证...</span>';
+
+        const result = await window.paymentManager.verifyAccessCode(code, true);
+
+        if (result.success) {
+          console.log('✅ 访问码验证成功:', result.data);
+          localStorage.setItem('ic_full_version', 'true');
+          localStorage.setItem('ic_verified_from_access_page', 'true');
+          localStorage.setItem('ic_verified_timestamp', Date.now().toString());
+
+          resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 访问码验证成功！</span>';
+          button.disabled = false;
+          button.style.opacity = '1';
+
+          setTimeout(() => {
+            // 优先调用完整弹窗函数
+            if (typeof window.showUnifiedPaymentSuccess === 'function') {
+              console.log('🎉 显示完整验证成功弹窗');
+              window.showUnifiedPaymentSuccess(code, 'manual-verify', result.data);
+            } else {
+              console.log('⚠️ 完整弹窗函数不可用，使用降级方案');
+              showPaymentSuccessPopup(code, result.data);
+            }
+          }, 800);
+        } else {
+          console.log('❌ 访问码验证失败:', result.error);
+          resultDiv.innerHTML = `<span style="color: #e74c3c;">❌ ${result.error}</span>`;
+          button.disabled = false;
+          button.style.opacity = '1';
+        }
+      } catch (error) {
+        console.error('验证访问码失败:', error);
+        resultDiv.innerHTML = `<span style="color: #e74c3c;">❌ ${error.message || '验证失败，请稍后重试'}</span>`;
+        button.disabled = false;
+        button.style.opacity = '1';
+      }
+    }
+
+    // ========== 支付成功弹窗 ==========
+    function showPaymentSuccessPopup(accessCode, orderData) {
+      const popup = document.createElement('div');
+      popup.id = 'success-popup';
+      popup.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;" id="modal-overlay">
+          <div style="background: white; padding: 40px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); max-height: 80vh; overflow-y: auto;">
+            <div style="margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px;">✓</div>
+              <h2 style="color: #333; margin-bottom: 10px;">🎉 访问验证成功！</h2>
+              <p style="color: #666; font-size: 16px;">您的访问码已验证，现在可以使用完整版功能</p>
+            </div>
+            <div style="margin-bottom: 30px;">
+              <button onclick="goToSightReadingTool()" style="padding: 15px 30px; background: linear-gradient(135deg, #1a8cff 0%, #0066cc 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                开始使用
+              </button>
+              <button onclick="closeSuccessPopup()" style="margin-left: 15px; padding: 15px 30px; background: #f8f9fa; color: #333; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                稍后使用
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(popup);
+    }
+
+    function closeSuccessPopup() {
+      const popup = document.getElementById('success-popup');
+      if (popup) popup.remove();
+    }
+
+    function goToSightReadingTool() {
+      localStorage.setItem('ic_full_version', 'true');
+      localStorage.setItem('ic_verified_from_access_page', 'true');
+      localStorage.setItem('ic_verified_timestamp', Date.now().toString());
+      closeSuccessPopup();
+      window.open('/tools/melody-generator.html', '_blank');
+    }
+
+    // ========== 页面加载完成 ==========
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('✅ IC Studio 视奏工具页面已加载');
+      handleInputChange();
+    });
+
+    // ========== Header 菜单和搜索功能 ==========
+    function toggleMenu() {
+      const menuBar = document.getElementById('menu-bar');
+      const searchBar = document.getElementById('search-bar');
+
+      if (menuBar.classList.contains('hidden')) {
+        menuBar.classList.remove('hidden');
+        // 如果搜索栏打开，关闭它
+        if (!searchBar.classList.contains('hidden')) {
+          searchBar.classList.add('hidden');
+          toggleSearchIcon(false);
+        }
+      } else {
+        menuBar.classList.add('hidden');
+      }
+    }
+
+    function toggleSearch() {
+      const searchBar = document.getElementById('search-bar');
+      const menuBar = document.getElementById('menu-bar');
+      const searchIcon = document.getElementById('search-icon');
+      const closeIcon = document.getElementById('close-icon');
+
+      if (searchBar.classList.contains('hidden')) {
+        searchBar.classList.remove('hidden');
+        searchIcon.classList.add('hidden');
+        closeIcon.classList.remove('hidden');
+        // 如果菜单打开，关闭它
+        if (!menuBar.classList.contains('hidden')) {
+          menuBar.classList.add('hidden');
+        }
+        // 聚焦到搜索输入框
+        setTimeout(() => {
+          const searchInput = searchBar.querySelector('input');
+          if (searchInput) searchInput.focus();
+        }, 100);
+      } else {
+        searchBar.classList.add('hidden');
+        searchIcon.classList.remove('hidden');
+        closeIcon.classList.add('hidden');
+      }
+    }
+
+    function toggleSearchIcon(isOpen) {
+      const searchIcon = document.getElementById('search-icon');
+      const closeIcon = document.getElementById('close-icon');
+
+      if (isOpen) {
+        searchIcon.classList.add('hidden');
+        closeIcon.classList.remove('hidden');
+      } else {
+        searchIcon.classList.remove('hidden');
+        closeIcon.classList.add('hidden');
+      }
+    }
+  </script>
+
+  <!-- 国际化系统 - 延迟加载 -->
+  <script defer src="/sight-reading-tool/js/i18n.js"></script>
+
+</body>
+</html>

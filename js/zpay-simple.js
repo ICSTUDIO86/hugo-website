@@ -1,5 +1,5 @@
 /**
- * Z-Pay 简化页面跳转支付实现
+ * Z-Pay 简化页面跳转支付实现 - 多产品支持版本
  * 流程：前端 → 云函数签名 → 表单提交 → 页面跳转支付 → 回调处理
  */
 
@@ -10,6 +10,42 @@
   const API_ENDPOINTS = {
     createPayment: 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/createPayment',
     checkOrder: 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/checkOrder'
+  };
+
+  // 产品配置映射
+  const PRODUCT_CONFIG = {
+    'all': {
+      name: 'IC Studio 视奏工具三合一',
+      displayName: '三合一套餐',
+      price: '68.00',
+      features: ['melody', 'interval', 'chord'],
+      icon: '✅',
+      description: '包含全部三个工具'
+    },
+    'melody': {
+      name: 'IC Studio 旋律视奏工具',
+      displayName: '旋律视奏',
+      price: '38.00',
+      features: ['melody'],
+      icon: '🎵',
+      description: '单独旋律视奏功能'
+    },
+    'interval': {
+      name: 'IC Studio 音程视奏工具',
+      displayName: '音程视奏',
+      price: '38.00',
+      features: ['interval'],
+      icon: '🎼',
+      description: '单独音程视奏功能'
+    },
+    'chord': {
+      name: 'IC Studio 和弦视奏工具',
+      displayName: '和弦视奏',
+      price: '38.00',
+      features: ['chord'],
+      icon: '🎹',
+      description: '单独和弦视奏功能'
+    }
   };
 
   // 如果你还没有部署云函数，请先完成以下步骤：
@@ -825,9 +861,19 @@
   };
 
   // 主支付函数 - 支付宝支付
-  window.createZPayment = async function() {
+  window.createZPayment = async function(productType = 'all') {
     console.log('[zpay-simple] 开始支付宝支付流程');
-    console.log('[zpay-simple] createZPayment函数被调用');
+    console.log('[zpay-simple] 产品类型:', productType);
+
+    // 获取产品配置
+    const config = PRODUCT_CONFIG[productType];
+    if (!config) {
+      console.error('[zpay-simple] 无效的产品类型:', productType);
+      alert('无效的产品类型，请刷新页面重试');
+      return;
+    }
+
+    console.log('[zpay-simple] 产品配置:', config);
 
     showLoading('正在创建支付宝订单');
 
@@ -839,9 +885,12 @@
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          name: 'IC Studio 视奏工具授权',
-          money: '68.00',
-          type: 'alipay'
+          name: config.name,
+          money: config.price,
+          type: 'alipay',
+          productType: productType,
+          productDisplayName: config.displayName,
+          features: config.features
         })
       });
 
@@ -867,9 +916,19 @@
   };
 
   // 微信支付函数
-  window.createWxPayment = async function() {
+  window.createWxPayment = async function(productType = 'all') {
     console.log('[zpay-simple] 开始微信支付流程');
-    console.log('[zpay-simple] createWxPayment函数被调用');
+    console.log('[zpay-simple] 产品类型:', productType);
+
+    // 获取产品配置
+    const config = PRODUCT_CONFIG[productType];
+    if (!config) {
+      console.error('[zpay-simple] 无效的产品类型:', productType);
+      alert('无效的产品类型，请刷新页面重试');
+      return;
+    }
+
+    console.log('[zpay-simple] 产品配置:', config);
 
     showLoading('正在创建微信支付订单');
 
@@ -881,9 +940,12 @@
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          name: 'IC Studio 视奏工具授权',
-          money: '68.00',
-          type: 'wxpay'
+          name: config.name,
+          money: config.price,
+          type: 'wxpay',
+          productType: productType,
+          productDisplayName: config.displayName,
+          features: config.features
         })
       });
 

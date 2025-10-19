@@ -570,10 +570,35 @@
             <span data-i18n="payment.titleSuffix">之旅</span>
           </h2>
           <div class="payment-price">
-            ⚡ <strong data-i18n="payment.price">68.00¥</strong> —— <span data-i18n="payment.priceText.1">支持网页版以及电脑软件</span>
+            ⚡ <strong data-i18n="payment.price">¥68.00</strong> —— <span data-i18n="payment.priceText.1">支持网页版以及电脑软件</span>
           </div>
         </div>
 
+
+        <!-- ==================== Card-Style Product Selector ==================== -->
+        <div class="product-selector-container">
+          <div class="product-tabs">
+            <!-- 三合一套餐 -->
+            <button class="product-tab active" data-product="all" onclick="switchProductTab('all')">
+              <span class="product-name">三合一套餐</span>
+            </button>
+
+            <!-- 旋律视奏 -->
+            <button class="product-tab" data-product="melody" onclick="switchProductTab('melody')">
+              <span class="product-name">旋律视奏</span>
+            </button>
+
+            <!-- 音程视奏 -->
+            <button class="product-tab" data-product="interval" onclick="switchProductTab('interval')">
+              <span class="product-name">音程视奏</span>
+            </button>
+
+            <!-- 和弦视奏 -->
+            <button class="product-tab" data-product="chord" onclick="switchProductTab('chord')">
+              <span class="product-name">和弦视奏</span>
+            </button>
+          </div>
+        </div>
         <div class="payment-grid">
           <!-- 左侧：支付选项 -->
           <div class="payment-card">
@@ -585,10 +610,10 @@
             </a>
 
             <div class="payment-buttons">
-              <button id="zpay-btn" onclick="window.createZPayment()" class="payment-button payment-button-alipay" data-i18n="payment.btnAlipay">
+              <button id="zpay-btn" onclick="window.createZPayment(window.currentProductType || 'all')" class="payment-button payment-button-alipay" data-i18n="payment.btnAlipay">
                 支付宝支付
               </button>
-              <button id="wxpay-btn" onclick="window.createWxPayment()" class="payment-button payment-button-wechat" data-i18n="payment.btnWechat">
+              <button id="wxpay-btn" onclick="window.createWxPayment(window.currentProductType || 'all')" class="payment-button payment-button-wechat" data-i18n="payment.btnWechat">
                 微信支付
               </button>
             </div>
@@ -847,6 +872,19 @@
           localStorage.setItem('ic_verified_from_access_page', 'true');
           localStorage.setItem('ic_verified_timestamp', Date.now().toString());
 
+          // 🆕 保存产品类型信息
+          if (result.data) {
+            localStorage.setItem('ic-product-data', JSON.stringify({
+              productType: result.data.productType || 'all',
+              productName: result.data.productName,
+              productDisplayName: result.data.productDisplayName,
+              features: result.data.features || ['melody', 'interval', 'chord'],
+              accessCode: code,
+              savedAt: Date.now()
+            }));
+            console.log('✅ 产品信息已保存:', result.data.productType, result.data.productDisplayName);
+          }
+
           resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 访问码验证成功！</span>';
           button.disabled = false;
           button.style.opacity = '1';
@@ -911,7 +949,21 @@
       localStorage.setItem('ic_verified_from_access_page', 'true');
       localStorage.setItem('ic_verified_timestamp', Date.now().toString());
       closeSuccessPopup();
-      window.open('/tools/melody-generator.html', '_blank');
+
+      // 🆕 根据产品类型智能跳转
+      const productData = JSON.parse(localStorage.getItem('ic-product-data') || '{}');
+      const productType = productData.productType || 'all';
+
+      const toolPages = {
+        'melody': '/tools/melody-generator.html',
+        'interval': '/tools/interval-generator.html',
+        'chord': '/tools/chord-generator.html',
+        'all': '/tools/melody-generator.html'  // 三合一默认跳转到旋律
+      };
+
+      const targetPage = toolPages[productType] || toolPages['all'];
+      console.log(`🔗 跳转到: ${targetPage} (产品类型: ${productType})`);
+      window.open(targetPage, '_blank');
     }
 
     // ========== 页面加载完成 ==========
@@ -980,5 +1032,104 @@
   <!-- 国际化系统 - 延迟加载 -->
   <script defer src="/sight-reading-tool/js/i18n.js"></script>
 
+
+  <!-- ==================== Product Tab Switching JavaScript ==================== -->
+  <script>
+  (function() {
+    'use strict';
+
+    // 产品配置
+    const PRODUCT_CONFIG = {
+      'all': {
+        icon: '✅',
+        title: '三合一套餐',
+        subtitle: '最超值选择',
+        price: '¥68.00',
+        description: '一次购买，解锁全部三个视奏工具，性价比最高！无限生成旋律、音程、和弦练习，助您全面提升视奏能力。',
+        features: [
+          { icon: '🎵', text: '旋律视奏' },
+          { icon: '🎼', text: '音程视奏' },
+          { icon: '🎹', text: '和弦视奏' }
+        ],
+        featureList: ['旋律视奏', '音程视奏', '和弦视奏']
+      },
+      'melody': {
+        icon: '🎵',
+        title: '旋律视奏',
+        subtitle: '专注旋律训练',
+        price: '¥38.00',
+        description: '专业的旋律视奏训练工具，无限生成自定义难度的旋律练习，让您快速提升读谱能力。',
+        features: [
+          { icon: '✓', text: '无限生成练习' },
+          { icon: '✓', text: '自定义难度' }
+        ],
+        featureList: ['无限生成练习', '自定义难度']
+      },
+      'interval': {
+        icon: '🎼',
+        title: '音程视奏',
+        subtitle: '精准音程识别',
+        price: '¥38.00',
+        description: '系统化的音程识别训练，帮助您准确识别和演奏各种音程，提升音乐理论基础。',
+        features: [
+          { icon: '✓', text: '无限生成练习' },
+          { icon: '✓', text: '自定义难度' }
+        ],
+        featureList: ['无限生成练习', '自定义难度']
+      },
+      'chord': {
+        icon: '🎹',
+        title: '和弦视奏',
+        subtitle: '和声识别训练',
+        price: '¥38.00',
+        description: '全面的和弦识别练习，涵盖各种和弦类型和把位，助您轻松掌握和声理论。',
+        features: [
+          { icon: '✓', text: '无限生成练习' },
+          { icon: '✓', text: '自定义难度' }
+        ],
+        featureList: ['无限生成练习', '自定义难度']
+      }
+    };
+
+    // 全局变量：当前选择的产品类型
+    window.currentProductType = 'all';
+
+    // 切换产品 Tab
+    window.switchProductTab = function(productType) {
+      console.log('🔄 切换产品:', productType);
+
+      // 更新全局变量
+      window.currentProductType = productType;
+
+      // 更新 Tab 激活状态
+      const tabs = document.querySelectorAll('.product-tab');
+      tabs.forEach(tab => {
+        if (tab.dataset.product === productType) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+
+      // 更新页面顶部价格显示
+      const config = PRODUCT_CONFIG[productType];
+      if (config) {
+        const priceElement = document.querySelector('.payment-price strong');
+        if (priceElement) {
+          priceElement.textContent = config.price;
+          console.log('✅ 价格已更新为:', config.price);
+        }
+      }
+    };
+
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('✅ 产品选择器已初始化');
+      // 确保初始状态为三合一套餐
+      window.switchProductTab('all');
+    });
+
+  })();
+  </script>
 </body>
 </html>

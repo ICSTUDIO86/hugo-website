@@ -1,8 +1,40 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>音乐学习 on IC Studio</title><link>https://icstudio.club/tags/%E9%9F%B3%E4%B9%90%E5%AD%A6%E4%B9%A0/</link><description>Recent content in 音乐学习 on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Sun, 01 Sep 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://icstudio.club/tags/%E9%9F%B3%E4%B9%90%E5%AD%A6%E4%B9%A0/index.xml" rel="self" type="application/rss+xml"/><item><title>IC 视奏工具</title><link>https://icstudio.club/sight-reading-tool-content/</link><pubDate>Sun, 01 Sep 2024 00:00:00 +0000</pubDate><guid>https://icstudio.club/sight-reading-tool-content/</guid><description>&lt;p>····&lt;/p>
 &lt;h2 id="action-section">🎯 立即行动&lt;/h2>
-&lt;p>⚡ &lt;strong>早鸟价 48.00¥&lt;/strong>（截止于10月01日）—— 支持网页版以及电脑软件，现在购买可在未来&lt;strong>免费解锁&lt;/strong>更进阶的功能！&lt;/p>
-&lt;div style="display: flex; gap: 30px; margin: 30px auto; max-width: 1000px; align-items: flex-start; flex-wrap: wrap;">
-&lt;div style="flex: 1; min-width: 300px; padding: 25px; background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); border: 2px solid #e6edff; text-align: center;">
-&lt;h3 style="color: #4a5568; margin-bottom: 6px; font-size: 20px;">解锁视奏工具&lt;/h3>
-&lt;p style="color: #718096; font-size: 14px; margin: 0 0 20px 0;">支持 7 天无理由退款&lt;/p>
-&lt;p>&lt;a href="https://icstudio.club/tools/melody-generator.html" target="_blank" style="display: block; background: #f8f9fa; color: #667eea; padding: 12px 20px; border: 2px solid #667eea; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s ease; margin-bottom: 15px;" onmouseover="this.style.background='#667eea'; this.style.color='white';" onmouseout="this.style.background='#f8f9fa'; this.style.color='#667eea';">免费试用&lt;/a>&lt;/p></description></item></channel></rss>
+&lt;!-- 产品Tab切换区 -->
+&lt;div style="max-width: 1000px; margin: 30px auto;">
+ &lt;!-- Tab 导航 -->
+ &lt;div class="product-tabs" style="display: flex; gap: 12px; margin-bottom: 30px; overflow-x: auto; padding: 5px; flex-wrap: wrap;">
+ &lt;button class="product-tab active" data-product="all" onclick="switchProductTab('all')" style="flex: 1; min-width: 140px; padding: 16px 20px; border: 2px solid #667eea; border-radius: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.3s ease; position: relative; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+ &lt;div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+ &lt;span style="font-size: 20px;">✅&lt;/span>
+ &lt;span>三合一套餐&lt;/span>
+ &lt;span style="font-size: 12px; opacity: 0.9;">¥68&lt;/span>
+ &lt;/div>
+ &lt;div style="position: absolute; top: -8px; right: -8px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; box-shadow: 0 2px 8px rgba(245, 87, 108, 0.4);">推荐&lt;/div>
+ &lt;/button>
+ &lt;button class="product-tab" data-product="melody" onclick="switchProductTab('melody')" style="flex: 1; min-width: 140px; padding: 16px 20px; border: 2px solid #ddd; border-radius: 12px; background: white; color: #333; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.3s ease;">
+ &lt;div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+ &lt;span style="font-size: 20px;">🎵&lt;/span>
+ &lt;span>旋律视奏&lt;/span>
+ &lt;span style="font-size: 12px; color: #666;">¥38&lt;/span>
+ &lt;/div>
+ &lt;/button>
+ &lt;button class="product-tab" data-product="interval" onclick="switchProductTab('interval')" style="flex: 1; min-width: 140px; padding: 16px 20px; border: 2px solid #ddd; border-radius: 12px; background: white; color: #333; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.3s ease;">
+ &lt;div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+ &lt;span style="font-size: 20px;">🎼&lt;/span>
+ &lt;span>音程视奏&lt;/span>
+ &lt;span style="font-size: 12px; color: #666;">¥38&lt;/span>
+ &lt;/div>
+ &lt;/button>
+ &lt;button class="product-tab" data-product="chord" onclick="switchProductTab('chord')" style="flex: 1; min-width: 140px; padding: 16px 20px; border: 2px solid #ddd; border-radius: 12px; background: white; color: #333; cursor: pointer; font-weight: 600; font-size: 15px; transition: all 0.3s ease;">
+ &lt;div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+ &lt;span style="font-size: 20px;">🎹&lt;/span>
+ &lt;span>和弦视奏&lt;/span>
+ &lt;span style="font-size: 12px; color: #666;">¥38&lt;/span>
+ &lt;/div>
+ &lt;/button>
+ &lt;/div>
+ &lt;!-- 产品信息展示区 -->
+ &lt;div id="product-info" style="margin-bottom: 30px; padding: 25px; background: linear-gradient(135deg, #f5f7fa 0%, #e3f2fd 100%); border-radius: 16px; border: 2px solid #bbdefb;">
+ &lt;h3 id="product-title" style="color: #1976d2; margin-bottom: 12px; font-size: 22px;">✅ 三合一套餐 - ¥68&lt;/h3>
+ &lt;p id="product-description" style="color: #555; margin-bottom: 15px; line-height: 1.6;">包含全部三个工具：旋律视奏 + 音程视奏 + 和弦视奏，性价比最高！&lt;/p></description></item></channel></rss>
