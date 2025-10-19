@@ -10,7 +10,7 @@ class CloudbaseAPI {
       envId: 'cloud1-4g1r5ho01a0cfd85',
       region: 'ap-shanghai',
       // 直接调用云函数HTTP API，不使用SDK
-      apiBaseUrl: 'https://cloud1-4g1r5ho01a0cfd85.service.tcloudbase.com'
+      apiBaseUrl: 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com'
     };
     
     // 生产模式控制
@@ -785,7 +785,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (window.location.pathname.includes('premium-sight-reading')) {
     if (!accessResult.hasAccess && !window.location.search.includes('verified=true')) {
       alert('⚠️ 需要有效的访问码才能使用完整版功能');
-      window.location.href = '/tools/sight-reading-generator.html';
+      window.location.href = '/tools/melody-generator.html';
     }
   }
 });
