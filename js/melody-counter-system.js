@@ -1399,7 +1399,7 @@ class MelodyCounterSystem {
     this.originalGenerateMelody = window.generateMelody;
     console.log('📌 保存原始generateMelody函数:', typeof this.originalGenerateMelody);
 
-    // 创建新的包装函数 - 增强状态预检查
+    // 创建新的包装函数 - 增强状态预检查 + 乐观更新
     const self = this;
     window.generateMelody = function() {
       console.log('🎼 用户点击生成旋律按钮');
@@ -1420,6 +1420,10 @@ class MelodyCounterSystem {
         return; // 直接返回，不调用原始函数
       }
 
+      // ⚡ 乐观更新：立即更新UI显示（0ms延迟）
+      console.log('⚡ 乐观更新：立即更新计数器UI');
+      self.optimisticUpdateCounter();
+
       // ⚡ 立即调用原始函数 - 零延迟响应
       console.log('⚡ 立即响应：调用原始generateMelody');
       let result;
@@ -1431,7 +1435,7 @@ class MelodyCounterSystem {
         throw error;
       }
 
-      // 🔄 后台异步验证和计数（完全不阻塞）
+      // 🔄 后台异步验证和计数（完全不阻塞，用真实数据覆盖乐观更新）
       setTimeout(async () => {
         console.log('🔄 旋律工具：开始后台验证计数');
         const isPrivateBrowsing = await self.isLikelyPrivateBrowsing();
@@ -1479,7 +1483,7 @@ class MelodyCounterSystem {
     const originalGenerateIntervals = window.generateIntervals;
     console.log('📌 保存原始generateIntervals函数:', typeof originalGenerateIntervals);
 
-    // 创建新的包装函数 - 增强状态预检查
+    // 创建新的包装函数 - 增强状态预检查 + 乐观更新
     const self = this;
     window.generateIntervals = async function() {
       console.log('🎵 用户点击生成音程按钮');
@@ -1500,6 +1504,10 @@ class MelodyCounterSystem {
         return; // 直接返回，不调用原始函数
       }
 
+      // ⚡ 乐观更新：立即更新UI显示（0ms延迟）
+      console.log('⚡ 乐观更新：立即更新计数器UI');
+      self.optimisticUpdateCounter();
+
       // ⚡ 立即调用原始函数 - 零延迟响应
       console.log('⚡ 立即响应：调用原始generateIntervals');
       let result;
@@ -1511,7 +1519,7 @@ class MelodyCounterSystem {
         throw error;
       }
 
-      // 🔄 后台异步验证和计数（完全不阻塞）
+      // 🔄 后台异步验证和计数（完全不阻塞，用真实数据覆盖乐观更新）
       setTimeout(async () => {
         console.log('🔄 音程工具：开始后台验证计数');
         const isPrivateBrowsing = await self.isLikelyPrivateBrowsing();
@@ -1559,7 +1567,7 @@ class MelodyCounterSystem {
     const originalGeneratePianoChords = window.generatePianoChords;
     console.log('📌 保存原始generatePianoChords函数:', typeof originalGeneratePianoChords);
 
-    // 创建新的包装函数 - 增强状态预检查
+    // 创建新的包装函数 - 增强状态预检查 + 乐观更新
     const self = this;
     window.generatePianoChords = function() {
       console.log('🎹 用户点击生成和弦按钮');
@@ -1580,6 +1588,10 @@ class MelodyCounterSystem {
         return; // 直接返回，不调用原始函数
       }
 
+      // ⚡ 乐观更新：立即更新UI显示（0ms延迟）
+      console.log('⚡ 乐观更新：立即更新计数器UI');
+      self.optimisticUpdateCounter();
+
       // ⚡ 立即调用原始函数 - 零延迟响应
       console.log('⚡ 立即响应：调用原始generatePianoChords');
       let result;
@@ -1591,7 +1603,7 @@ class MelodyCounterSystem {
         throw error;
       }
 
-      // 🔄 后台异步验证和计数（完全不阻塞）
+      // 🔄 后台异步验证和计数（完全不阻塞，用真实数据覆盖乐观更新）
       setTimeout(async () => {
         console.log('🔄 和弦工具：开始后台验证计数');
         const isPrivateBrowsing = await self.isLikelyPrivateBrowsing();
@@ -1639,7 +1651,7 @@ class MelodyCounterSystem {
     const originalGenerateChords = window.generateChords;
     console.log('📌 保存原始generateChords函数（吉他模式）:', typeof originalGenerateChords);
 
-    // 创建新的包装函数 - 增强状态预检查
+    // 创建新的包装函数 - 增强状态预检查 + 乐观更新
     const self = this;
     window.generateChords = function() {
       console.log('🎸 用户点击生成和弦按钮（吉他模式）');
@@ -1660,6 +1672,10 @@ class MelodyCounterSystem {
         return; // 直接返回，不调用原始函数
       }
 
+      // ⚡ 乐观更新：立即更新UI显示（0ms延迟）
+      console.log('⚡ 乐观更新：立即更新计数器UI');
+      self.optimisticUpdateCounter();
+
       // ⚡ 立即调用原始函数 - 零延迟响应
       console.log('⚡ 立即响应：调用原始generateChords（吉他模式）');
       let result;
@@ -1671,7 +1687,7 @@ class MelodyCounterSystem {
         throw error;
       }
 
-      // 🔄 后台异步验证和计数（完全不阻塞）
+      // 🔄 后台异步验证和计数（完全不阻塞，用真实数据覆盖乐观更新）
       setTimeout(async () => {
         console.log('🔄 和弦工具（吉他模式）：开始后台验证计数');
         const isPrivateBrowsing = await self.isLikelyPrivateBrowsing();
@@ -1696,6 +1712,56 @@ class MelodyCounterSystem {
     return wrapSuccess;
   }
 
+  // ========================================
+  // 🚀 乐观更新机制 - 立即响应UI更新
+  // ========================================
+
+  // 乐观更新计数器（立即UI响应，无延迟）
+  optimisticUpdateCounter() {
+    try {
+      // 如果没有当前状态，使用默认值
+      if (!this.currentStatus) {
+        this.currentStatus = {
+          used: 0,
+          total: 20,
+          remaining: 20,
+          allowed: true,
+          expired: false
+        };
+      }
+
+      // 计算乐观更新后的状态
+      const optimisticUsed = (this.currentStatus.used || 0) + 1;
+      const optimisticRemaining = Math.max(0, (this.currentStatus.total || 20) - optimisticUsed);
+      const optimisticExpired = optimisticRemaining === 0;
+
+      const optimisticStatus = {
+        ...this.currentStatus,
+        used: optimisticUsed,
+        remaining: optimisticRemaining,
+        expired: optimisticExpired,
+        allowed: !optimisticExpired,
+        _isOptimistic: true  // 标记为乐观更新
+      };
+
+      console.log('⚡ 乐观更新: 立即更新UI', {
+        used: optimisticUsed,
+        remaining: optimisticRemaining,
+        expired: optimisticExpired
+      });
+
+      // 立即更新UI
+      this.showCounterStatus(optimisticStatus);
+      this.updateGenerateButton(optimisticStatus);
+
+      // 暂时更新缓存状态（将被服务器真实数据覆盖）
+      this.currentStatus = optimisticStatus;
+
+    } catch (error) {
+      console.error('❌ 乐观更新失败:', error);
+    }
+  }
+
   // 后台验证处理（完全异步，不阻塞用户体验）
   async handleBackgroundValidation(isPrivateBrowsing = false) {
     try {
@@ -1706,7 +1772,7 @@ class MelodyCounterSystem {
         const newCount = this.incrementPrivateBrowsingUsage();
         console.log('📊 无痕模式计数:', newCount);
 
-        this.showCounterStatus({
+        const privateStatus = {
           success: true,
           allowed: newCount <= 3,
           expired: newCount > 3,
@@ -1715,7 +1781,11 @@ class MelodyCounterSystem {
           remaining: Math.max(0, 3 - newCount),
           message: newCount > 3 ? '无痕浏览试用已用完' : `无痕模式剩余 ${Math.max(0, 3 - newCount)} 条旋律`,
           isPrivateMode: true
-        });
+        };
+
+        // 用真实数据覆盖乐观更新
+        this.showCounterStatus(privateStatus);
+        this.currentStatus = privateStatus;
       } else {
         // 正常模式：服务端验证
         const result = await this.requestMelodyGeneration('increment');
@@ -1725,9 +1795,10 @@ class MelodyCounterSystem {
           remaining: result.remaining
         });
 
-        // 更新显示
+        // 用真实服务器数据覆盖乐观更新
         this.showCounterStatus(result);
         this.updateGenerateButton(result);
+        this.currentStatus = result;
 
         // 处理限制提醒
         if (result.remaining === 0 && !result.hasFullAccess) {
@@ -1848,6 +1919,60 @@ class MelodyCounterSystem {
       }
     } catch (error) {
       console.warn('⚠️ 设备指纹预加载失败:', error);
+    }
+  }
+
+  // 预加载用户状态（立即启动异步请求，完成后更新缓存）
+  async preloadUserStatus() {
+    try {
+      console.log('⚡ 预加载用户状态中...');
+
+      // 检测无痕模式
+      const isPrivateBrowsing = await this.isLikelyPrivateBrowsing();
+
+      let status;
+      if (isPrivateBrowsing) {
+        // 无痕模式：使用本地计数
+        const privateUsage = this.getPrivateBrowsingUsage();
+        status = {
+          success: true,
+          allowed: privateUsage < 3,
+          expired: privateUsage >= 3,
+          used: privateUsage,
+          total: 3,
+          remaining: Math.max(0, 3 - privateUsage),
+          message: privateUsage >= 3 ? '无痕浏览试用已用完' : `无痕模式剩余 ${Math.max(0, 3 - privateUsage)} 条旋律`,
+          isPrivateMode: true
+        };
+      } else {
+        // 正常模式：请求服务端状态
+        status = await this.requestMelodyGeneration('check');
+      }
+
+      console.log('✅ 用户状态预加载完成:', {
+        used: status.used,
+        remaining: status.remaining,
+        expired: status.expired
+      });
+
+      // 立即更新缓存状态和UI（覆盖默认的"加载中"状态）
+      this.currentStatus = status;
+      this.showCounterStatus(status);
+      this.updateGenerateButton(status);
+
+      // 如果已过期，显示购买提示
+      if (status.expired && !status.hasFullAccess) {
+        this.showPurchasePrompt();
+      }
+
+      // 启动心跳检测（非完整版用户）
+      if (!status.hasFullAccess) {
+        this.startHeartbeat();
+      }
+
+    } catch (error) {
+      console.error('❌ 用户状态预加载失败:', error);
+      // 失败时保持默认状态，不影响用户使用
     }
   }
 
@@ -2010,6 +2135,10 @@ class MelodyCounterSystem {
     console.log('🚀 初始化20条旋律计数系统...');
 
     try {
+      // ⚡ 立即预加载设备指纹（提前生成，后续请求直接使用缓存）
+      console.log('⚡ 预加载设备指纹...');
+      this.preloadDeviceFingerprint();
+
       // 🔥 立即同步检查：完整版用户（最高优先级，必须立即执行）
       if (this.hasValidLocalAccessCode()) {
         console.log('🎫 init: 完整版用户，立即设置状态');
@@ -2037,7 +2166,11 @@ class MelodyCounterSystem {
         // 非完整版用户：立即显示默认状态，防止延迟期间绕过限制
         console.log('🔄 非完整版用户，立即显示默认试用状态');
 
-        // 设置默认状态（假设有试用次数，实际状态将由后台更新）
+        // ⚡ 立即启动状态预加载（并行执行，不等待）
+        console.log('⚡ 启动状态预加载（异步）...');
+        this.preloadUserStatus();
+
+        // 设置默认状态（假设有试用次数，实际状态将由预加载更新）
         this.currentStatus = {
           success: true,
           allowed: true,
@@ -2091,13 +2224,7 @@ class MelodyCounterSystem {
 
       this.initialized = true; // 标记已初始化
 
-      // 🔄 异步更新实际状态（不阻塞，但UI已经显示）
-      // 使用Promise立即执行而不是setTimeout，减少延迟
-      Promise.resolve().then(() => {
-        this.backgroundInitialization();
-      });
-
-      console.log('✅ 计数系统立即初始化完成（状态将在后台更新）');
+      console.log('✅ 计数系统立即初始化完成（状态预加载已启动）');
       return true;
 
     } catch (error) {
