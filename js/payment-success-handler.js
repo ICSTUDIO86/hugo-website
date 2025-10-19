@@ -80,7 +80,7 @@
 
             try {
                 console.log('🔍 正在获取订单详细信息...');
-                const response = await fetch('https://cloud1-4g1r5ho01a0cfd85.service.tcloudbase.com/checkOrder', {
+                const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/verify-access-code', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

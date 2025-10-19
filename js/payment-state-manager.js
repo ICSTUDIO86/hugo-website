@@ -11,7 +11,7 @@ class PaymentStateManager {
             premiumAccess: 'ic-premium-access'
         };
         
-        this.apiUrl = 'https://cloud1-4g1r5ho01a0cfd85.service.tcloudbase.com/checkOrder';
+        this.apiUrl = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/verify-access-code';
         this.debugMode = localStorage.getItem('ic-debug-mode') === 'true';
         
         this.log('PaymentStateManager 初始化完成');

@@ -1171,37 +1171,6 @@
 
         // 监听header中BPM输入框的变化
         document.addEventListener('DOMContentLoaded', function() {
-            // 🆕 产品类型访问控制
-            (function initAccessControl() {
-              const productData = JSON.parse(localStorage.getItem('ic-product-data') || '{}');
-              const productType = productData.productType || 'all';
-              const features = productData.features || [];
-
-              const currentTool = 'melody'; // 当前工具：旋律视奏
-
-              console.log(`🔒 访问控制检查 - 当前工具: ${currentTool}, 产品类型: ${productType}`);
-
-              // 如果不是三合一用户，检查权限
-              if (productType !== 'all') {
-                // 检查是否有当前工具的访问权限
-                if (!features.includes(currentTool)) {
-                  alert(`⚠️ 您没有权限访问旋律视奏工具\n\n您购买的是：${productData.productDisplayName || '未知产品'}\n\n如需使用其他工具，请购买对应产品或三合一套餐。`);
-                  window.location.href = '/sight-reading-tool/';
-                  return;
-                }
-
-                // 隐藏功能切换器（单个产品用户不需要切换）
-                const functionSelector = document.querySelector('.function-selector');
-                if (functionSelector) {
-                  functionSelector.style.display = 'none';
-                  console.log('🔒 功能切换器已隐藏（单个产品用户）');
-                }
-              } else {
-                // 三合一用户，显示完整功能切换器
-                console.log('✅ 三合一用户，保持完整功能切换器');
-              }
-            })();
-
             const headerSpeedInput = document.getElementById('headerMetronomeBpm');
             
             if (headerSpeedInput) {
@@ -3682,89 +3651,5 @@
         console.log('✅ 旋律视奏工具已加载（使用统一的 melody-counter-system.js）');
     </script>
 
-
-
-    <!-- ========== 产品权限控制系统 ========== -->
-    <script>
-    (function() {
-        'use strict';
-
-        const FEATURE_CONFIG = {
-            'melody': { name: '旋律视奏', icon: '🎵', url: 'melody-generator.html' },
-            'interval': { name: '音程视奏', icon: '🎼', url: 'interval-generator.html' },
-            'chord': { name: '和弦视奏', icon: '🎹', url: 'chord-generator.html' }
-        };
-
-        // 检查用户是否有权限访问某个功能
-        function hasFeatureAccess(featureName) {
-            // 1. 检查是否有完整版标记（向后兼容）
-            if (localStorage.getItem('ic_full_version') === 'true') {
-                return true;
-            }
-
-            // 2. 检查访问码数据
-            const accessCodeData = localStorage.getItem('ic_access_code_data');
-            if (!accessCodeData) {
-                return false;
-            }
-
-            try {
-                const data = JSON.parse(accessCodeData);
-
-                // 检查 features 数组
-                if (data.features && Array.isArray(data.features)) {
-                    return data.features.includes(featureName);
-                }
-
-                // 向后兼容：如果有 productType = 'all'，允许所有功能
-                if (data.productType === 'all') {
-                    return true;
-                }
-
-            } catch (e) {
-                console.error('解析访问码数据失败:', e);
-                return false;
-            }
-
-            return false;
-        }
-
-        // 显示升级解锁对话框
-        function showUpgradeDialog(featureName) {
-            const feature = FEATURE_CONFIG[featureName];
-            if (!feature) return;
-
-            const dialog = document.createElement('div');
-            dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;';
-
-            dialog.innerHTML = '<div style="background: white; padding: 40px; border-radius: 16px; max-width: 500px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);"><div style="font-size: 64px; margin-bottom: 20px;">' + feature.icon + '</div><h2 style="color: #333; margin-bottom: 15px;">解锁 ' + feature.name + ' 功能</h2><p style="color: #666; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">您当前没有 ' + feature.name + ' 功能的访问权限。<br>请购买单独功能或三合一套餐以解锁。</p><div style="display: flex; gap: 15px; justify-content: center;"><button onclick="this.closest(\'div\').parentElement.remove()" style="padding: 15px 30px; background: #f8f9fa; color: #333; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px;">返回</button><button onclick="window.location.href=\'/sight-reading-tool-page\'" style="padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">🛒 立即购买</button></div></div>';
-
-            document.body.appendChild(dialog);
-        }
-
-        // 覆盖原有的 switchFunction
-        const originalSwitchFunction = window.switchFunction;
-        if (originalSwitchFunction) {
-            window.switchFunction = function(mode) {
-                if (!hasFeatureAccess(mode)) {
-                    showUpgradeDialog(mode);
-                    return;
-                }
-                originalSwitchFunction(mode);
-            };
-            console.log('✅ 产品权限控制已启用');
-        }
-
-        // 页面加载时检查当前页面权限
-        document.addEventListener('DOMContentLoaded', function() {
-            const currentFeature = 'melody';
-            if (!hasFeatureAccess(currentFeature)) {
-                showUpgradeDialog(currentFeature);
-            }
-        });
-
-    })();
-    console.log('✅ 旋律视奏工具权限控制已加载');
-    </script>
 
 </body></html>

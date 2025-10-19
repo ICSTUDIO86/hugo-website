@@ -135,66 +135,33 @@ async function performAlipayLookup() {
     resultDiv.innerHTML = '<div style="color: #3498db; padding: 15px; background: #f0f9ff; border-radius: 8px; text-align: center; font-size: 14px;">🔄 正在查找相关记录...</div>';
     
     try {
-        // 🆕 调用新的 find-by-order 云函数
-        let response, result;
-
+        // 调用CloudBase函数
+        const requestBody = {};
         if (isMerchantOrder) {
-            // 商家订单号使用 find-by-order 云函数
-            console.log('🔍 使用商家订单号查询:', orderNumber);
-            response = await fetch(`https://cloud1-4g1r5ho01a0cfd85.service.tcloudbase.com/find-by-order?out_trade_no=${encodeURIComponent(orderNumber)}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-            result = await response.json();
-            console.log('🔍 find-by-order 查找结果:', result);
+            requestBody.order_no = orderNumber;
         } else {
-            // 支付宝交易号仍使用原有的代理云函数
-            console.log('🔍 使用支付宝交易号查询:', orderNumber);
-            response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findAccessCodeProxy', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ zpay_trade_no: orderNumber })
-            });
-            result = await response.json();
-            console.log('🔍 findAccessCodeProxy 查找结果:', result);
+            requestBody.zpay_trade_no = orderNumber;
         }
-
-        // 🆕 统一处理两种云函数的返回格式
-        let actualResult, orderInfo, accessCode, productType, productDisplayName;
-
-        if (isMerchantOrder && result.success && result.data) {
-            // find-by-order 返回格式
-            actualResult = { success: true };
-            accessCode = result.data.access_code || result.data.code;
-            productType = result.data.productType || 'all';
-            productDisplayName = result.data.productDisplayName || result.data.product_name;
-
-            // 构造统一的 orderInfo 格式
-            orderInfo = {
-                product_name: result.data.product_name,
-                amount: result.data.amount,
-                payment_time: result.data.created_at,
-                created_time: result.data.created_at,
-                merchant_order_no: result.data.order_info?.out_trade_no || 'N/A',
-                alipay_trade_no: result.data.order_info?.zpay_trade_no || null
-            };
-        } else if (!isMerchantOrder && result.success && result.result) {
-            // findAccessCodeProxy 返回格式（原有逻辑）
-            actualResult = result;
-            orderInfo = result.result.order_info;
-            accessCode = result.result.access_code;
-            productType = result.result.product_type || 'all';
-            productDisplayName = result.result.product_display_name || '三合一套餐';
-        } else {
-            actualResult = { success: false };
-        }
-
-        if (actualResult.success && orderInfo && accessCode) {
+        
+        // 调用代理云函数（HTTP方式）
+        const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findAccessCodeProxy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        const result = await response.json();
+        console.log('🔍 查找结果:', result);
+        
+        // 处理代理函数返回格式
+        let actualResult = result;
+        
+        if (actualResult.success && actualResult.result) {
             // 显示找到的访问码
+            const orderInfo = actualResult.result.order_info;
+            const accessCode = actualResult.result.access_code;
             
             const resultHtml = `
                 <div style="background: #f0fff4; border: 1px solid #9ae6b4; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
@@ -209,9 +176,6 @@ async function performAlipayLookup() {
                     </div>
                     <div style="margin-bottom: 5px;">
                         <strong>产品：</strong>${orderInfo.product_name}
-                        <span style="margin-left: 8px; padding: 4px 10px; background: ${getProductBadgeColor(productType)}; color: white; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            ${getProductIcon(productType)} ${productDisplayName}
-                        </span>
                     </div>
                     <div style="margin-bottom: 5px;">
                         <strong>金额：</strong>¥${orderInfo.amount}
@@ -226,23 +190,19 @@ async function performAlipayLookup() {
                 </div>
             `;
             
-            const usageTip = (actualResult.result && actualResult.result.usage_tip)
-                ? actualResult.result.usage_tip
-                : '请妥善保管您的访问码，访问码可用于登录完整版视奏工具';
-
             resultDiv.innerHTML = `
                 <div style="color: #22c55e; padding: 15px; background: #f0fff4; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 600;">
                     🎉 访问码找回成功
                 </div>
                 ${resultHtml}
                 <div style="margin-top: 15px; padding: 15px; background: #e6fffa; border-radius: 8px; border: 1px solid #81e6d9; text-align: center;">
-                    <p style="margin: 0; color: #2d3748; font-size: 14px;">${usageTip}</p>
+                    <p style="margin: 0; color: #2d3748; font-size: 14px;">${actualResult.result.usage_tip}</p>
                 </div>
             `;
             
         } else {
             // 未找到记录
-            const errorMessage = result.error || actualResult.error || '未找到相关记录';
+            const errorMessage = actualResult.error || '未找到相关记录';
             resultDiv.innerHTML = `
                 <div style="color: #f59e0b; padding: 20px; background: #fffbeb; border: 1px solid #fbbf24; border-radius: 8px; text-align: center;">
                     <div style="margin-bottom: 15px; font-size: 48px;">😔</div>
@@ -329,25 +289,3 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 暴露到全局，便于手动调用
 window.showOrderLookupDialog = showAlipayLookupDialog;
-
-// 产品类型徽章颜色
-function getProductBadgeColor(productType) {
-    const colors = {
-        'all': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        'melody': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-        'interval': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-        'chord': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
-    };
-    return colors[productType] || colors['all'];
-}
-
-// 产品类型图标
-function getProductIcon(productType) {
-    const icons = {
-        'all': '✅',
-        'melody': '🎵',
-        'interval': '🎼',
-        'chord': '🎹'
-    };
-    return icons[productType] || '🎵';
-}
