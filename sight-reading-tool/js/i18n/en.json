@@ -3,7 +3,7 @@
     "titleLine1": "Improve Your",
     "titleHighlight": "Sight Reading",
     "titleLine2": "Start Here",
-    "subtitle": "Professional sight reading training tools designed for musicians",
+    "subtitle": "Professional sight reading tools designed for musicians",
     "featureHighlight": "Fully Customizable",
     "featureText": "Practice Experience",
     "btnPurchase": "Buy Now",
@@ -39,19 +39,19 @@
     "customize": {
       "icon": "⚙️",
       "title": "Fully Customizable Generation",
-      "description": "Freely choose key signatures, time signatures, note values, and custom frequencies to create practice content that perfectly fits your needs."
+      "description": "Freely choose key signatures, time signatures, note values, and note-frequency."
     },
 
     "guitarVoicing": {
       "icon": "🎵",
-      "title": "Guitar-Specific Voicings",
-      "description": "Provides guitar-specific voicing configurations including Drop2, Drop3, Shell Voicing, Close Voicing, and more."
+      "title": "Guitar friendly",
+      "description": "Provides guitar-specific voicing and articulations."
     },
 
     "articulations": {
-      "icon": "🎛️",
-      "title": "Articulation Control",
-      "description": "Precisely control playing techniques like staccato, legato, accents, and even set their frequency of occurrence."
+    "icon": "💻",
+    "title": "Multi-Device Support",
+    "description": "Optimized interfaces for desktop, iPad, and mobile. The software version currently supports desktop only, while mobile users can install it as a PWA."
     },
 
     "multiInstrument": {
@@ -62,14 +62,14 @@
 
     "randomOrTonal": {
       "icon": "🎲",
-      "title": "Random/Tonal Generation",
-      "description": "Choose between completely random note generation or melodies following specified tonalities to flexibly meet practice needs."
+      "title": "Smart Generation / Musical Coherence",
+      "description": "Notes are randomly generated yet musically coherent, making every exercise both challenging and realistic."
     },
 
     "affordable": {
       "icon": "💰",
-      "title": "Unlimited Practice, More Affordable Than Any Sight Reading Book",
-      "description": "One purchase, infinite practice content generation, far better value than traditional sight reading materials."
+      "title": "One-Time Purchase",
+      "description": "Pay once, generate unlimited practice materials—far more cost-effective than traditional sight-reading books."
     }
   },
 

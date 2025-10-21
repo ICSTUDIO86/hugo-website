@@ -1,51 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Spread Triads on IC Studio</title><link>https://icstudio.club/tags/spread-triads/</link><description>Recent content in Spread Triads on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Sat, 11 Oct 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://icstudio.club/tags/spread-triads/index.xml" rel="self" type="application/rss+xml"/><item><title>什么是 Spread Triads？</title><link>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-spread-triads-secret-zh/</link><pubDate>Sat, 11 Oct 2025 00:00:00 +0000</pubDate><guid>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-spread-triads-secret-zh/</guid><description>&lt;h2 id="spread-triads-vs-其他三和弦">Spread Triads vs 其他三和弦&lt;/h2>
-&lt;p>在开始了解什么是 Spread Triads 之前，我们先听一下它跟我们平常弹的三和弦有什么区别：&lt;/p>
-&lt;figure style="text-align: center; margin: 20px auto; width: 100%;">
- &lt;div style="display: flex; justify-content: center;">
- &lt;audio controls preload="auto" style="max-width: 100%; display: inline-block !important; margin: 0 auto;">
- &lt;source src="https://icstudio.club/audio/Spread-Triads-1.mp3" type="audio/mpeg">
- &lt;source src="https://icstudio.club/audio/Spread-Triads-1.mp3" type="audio/mp3">
- &lt;source src="https://icstudio.club/audio/Spread-Triads-1.mp3" type="audio/wav">
- 您的浏览器不支持音频播放。
- &lt;/audio>
- &lt;/div>
- 
- &lt;figcaption style="margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;">
- 前三品三和弦
- &lt;/figcaption>
- 
-&lt;/figure>
- 
-&lt;figure style="text-align: center; margin: 20px auto; width: 100%;">
- &lt;div style="display: flex; justify-content: center;">
- &lt;audio controls preload="auto" style="max-width: 100%; display: inline-block !important; margin: 0 auto;">
- &lt;source src="https://icstudio.club/audio/Spread-Triads-2.mp3" type="audio/mpeg">
- &lt;source src="https://icstudio.club/audio/Spread-Triads-2.mp3" type="audio/mp3">
- &lt;source src="https://icstudio.club/audio/Spread-Triads-2.mp3" type="audio/wav">
- 您的浏览器不支持音频播放。
- &lt;/audio>
- &lt;/div>
- 
- &lt;figcaption style="margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;">
- 紧密三音配置的三和弦
- &lt;/figcaption>
- 
-&lt;/figure>
- 
-&lt;figure style="text-align: center; margin: 20px auto; width: 100%;">
- &lt;div style="display: flex; justify-content: center;">
- &lt;audio controls preload="auto" style="max-width: 100%; display: inline-block !important; margin: 0 auto;">
- &lt;source src="https://icstudio.club/audio/Spread-Triads-3.mp3" type="audio/mpeg">
- &lt;source src="https://icstudio.club/audio/Spread-Triads-3.mp3" type="audio/mp3">
- &lt;source src="https://icstudio.club/audio/Spread-Triads-3.mp3" type="audio/wav">
- 您的浏览器不支持音频播放。
- &lt;/audio>
- &lt;/div>
- 
- &lt;figcaption style="margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;">
- Spread Triads
- &lt;/figcaption>
- 
-&lt;/figure>
- 
-&lt;p>从听感上看，普通三和弦在前三弦的按法更&lt;strong>厚实、集中&lt;/strong>，三音配置（Close Voicing）更&lt;strong>轻盈、单薄&lt;/strong>；而 Spread Triads 介于两者之间：它保留了&lt;strong>清澈与空间感&lt;/strong>，同时通过低音的支撑带来更稳、更饱满的底色。这使它在伴奏与编配里既“通透”，又不“单薄”。你可以对照上面的三段音频示例，先用耳朵建立直觉差异。&lt;/p></description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Spread Triads on IC Studio</title>
+    <link>http://localhost:1313/tags/spread-triads/</link>
+    <description>Recent content in Spread Triads on IC Studio</description>
+    <generator>Hugo</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sat, 11 Oct 2025 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/spread-triads/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>什么是 Spread Triads？</title>
+      <link>http://localhost:1313/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-spread-triads-secret-zh/</link>
+      <pubDate>Sat, 11 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-spread-triads-secret-zh/</guid>
+      <description>&lt;h2 id=&#34;spread-triads-vs-其他三和弦&#34;&gt;Spread Triads vs 其他三和弦&lt;/h2&gt;&#xA;&lt;p&gt;在开始了解什么是 Spread Triads 之前，我们先听一下它跟我们平常弹的三和弦有什么区别：&lt;/p&gt;&#xA;&lt;figure style=&#34;text-align: center; margin: 20px auto; width: 100%;&#34;&gt;&#xA;  &lt;div style=&#34;display: flex; justify-content: center;&#34;&gt;&#xA;    &lt;audio controls preload=&#34;auto&#34; style=&#34;max-width: 100%; display: inline-block !important; margin: 0 auto;&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-1.mp3&#34; type=&#34;audio/mpeg&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-1.mp3&#34; type=&#34;audio/mp3&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-1.mp3&#34; type=&#34;audio/wav&#34;&gt;&#xA;      您的浏览器不支持音频播放。&#xA;    &lt;/audio&gt;&#xA;  &lt;/div&gt;&#xA;  &#xA;  &lt;figcaption style=&#34;margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;&#34;&gt;&#xA;    前三品三和弦&#xA;  &lt;/figcaption&gt;&#xA;  &#xA;&lt;/figure&gt;&#xA;  &#xA;&lt;figure style=&#34;text-align: center; margin: 20px auto; width: 100%;&#34;&gt;&#xA;  &lt;div style=&#34;display: flex; justify-content: center;&#34;&gt;&#xA;    &lt;audio controls preload=&#34;auto&#34; style=&#34;max-width: 100%; display: inline-block !important; margin: 0 auto;&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-2.mp3&#34; type=&#34;audio/mpeg&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-2.mp3&#34; type=&#34;audio/mp3&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-2.mp3&#34; type=&#34;audio/wav&#34;&gt;&#xA;      您的浏览器不支持音频播放。&#xA;    &lt;/audio&gt;&#xA;  &lt;/div&gt;&#xA;  &#xA;  &lt;figcaption style=&#34;margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;&#34;&gt;&#xA;    紧密三音配置的三和弦&#xA;  &lt;/figcaption&gt;&#xA;  &#xA;&lt;/figure&gt;&#xA;  &#xA;&lt;figure style=&#34;text-align: center; margin: 20px auto; width: 100%;&#34;&gt;&#xA;  &lt;div style=&#34;display: flex; justify-content: center;&#34;&gt;&#xA;    &lt;audio controls preload=&#34;auto&#34; style=&#34;max-width: 100%; display: inline-block !important; margin: 0 auto;&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-3.mp3&#34; type=&#34;audio/mpeg&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-3.mp3&#34; type=&#34;audio/mp3&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-3.mp3&#34; type=&#34;audio/wav&#34;&gt;&#xA;      您的浏览器不支持音频播放。&#xA;    &lt;/audio&gt;&#xA;  &lt;/div&gt;&#xA;  &#xA;  &lt;figcaption style=&#34;margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;&#34;&gt;&#xA;    Spread Triads&#xA;  &lt;/figcaption&gt;&#xA;  &#xA;&lt;/figure&gt;&#xA;  &#xA;&lt;p&gt;从听感上看，普通三和弦在前三弦的按法更&lt;strong&gt;厚实、集中&lt;/strong&gt;，三音配置（Close Voicing）更&lt;strong&gt;轻盈、单薄&lt;/strong&gt;；而 Spread Triads 介于两者之间：它保留了&lt;strong&gt;清澈与空间感&lt;/strong&gt;，同时通过低音的支撑带来更稳、更饱满的底色。这使它在伴奏与编配里既“通透”，又不“单薄”。你可以对照上面的三段音频示例，先用耳朵建立直觉差异。&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

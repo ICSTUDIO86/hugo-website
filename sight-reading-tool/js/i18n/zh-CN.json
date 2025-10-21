@@ -4,8 +4,7 @@
     "titleHighlight": "视奏能力",
     "titleLine2": "从这里开始",
     "subtitle": "专为音乐人打造的专业级视奏训练工具",
-    "featureHighlight": "完全自定义",
-    "featureText": "的练习体验",
+    "featureHighlight": "真正读懂音乐",
     "btnPurchase": "立即购买",
     "btnTry": "立即试用",
     "pill": "IC 视奏工具"
@@ -42,34 +41,28 @@
       "description": "自由选择调号、拍号、音符时值、自定义频率，打造完全符合你需求的练习内容。"
     },
 
-    "guitarVoicing": {
-      "icon": "🎵",
-      "title": "支持吉他专属和声",
-      "description": "提供吉他专属和声配置，包括 Drop2、Drop3、Shell Voicing、Close Voicing 等。"
-    },
-
     "articulations": {
-      "icon": "🎛️",
-      "title": "Articulations 控制",
-      "description": "精确控制断奏、连音、重音等演奏技巧，甚至可以设定它们的出现频率。"
+      "icon": "💻",
+      "title": "多设备适配",
+      "description": "为电脑、iPad 与手机专门设计界面。软件版目前只支持电脑端，移动端可通过 PWA 安装使用。"
     },
 
     "multiInstrument": {
-      "icon": "🎸",
+      "icon": "🎵",
       "title": "适用多个乐器",
       "description": "适用于吉他、钢琴、小提琴、贝斯等各种乐器，满足不同演奏者的需求。"
     },
 
     "randomOrTonal": {
       "icon": "🎲",
-      "title": "随机生成/遵循调性",
-      "description": "可以选择完全随机生成音符，或遵循指定调性生成旋律，灵活满足练习需求。"
+      "title": "智能生成/遵循音乐性",
+      "description": "音符虽为随机生成，却遵循音乐逻辑，确保练习既具挑战又贴近真实演奏场景。"
     },
 
     "affordable": {
       "icon": "💰",
-      "title": "无数条练习，比任何一本视奏书都便宜",
-      "description": "一次购买，无限生成练习内容，性价比远超传统视奏教材。"
+      "title": "买断机制",
+      "description": "一次性购买，无限生成练习内容，性价比远超传统视奏教材。"
     }
   },
 
