@@ -1,19 +1,8 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>音乐教育软件 on IC Studio</title>
-    <link>http://localhost:1313/tags/%E9%9F%B3%E4%B9%90%E6%95%99%E8%82%B2%E8%BD%AF%E4%BB%B6/</link>
-    <description>Recent content in 音乐教育软件 on IC Studio</description>
-    <generator>Hugo</generator>
-    <language>zh-cn</language>
-    <lastBuildDate>Sun, 01 Sep 2024 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/%E9%9F%B3%E4%B9%90%E6%95%99%E8%82%B2%E8%BD%AF%E4%BB%B6/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>IC 视奏工具</title>
-      <link>http://localhost:1313/sight-reading-tool-content/</link>
-      <pubDate>Sun, 01 Sep 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/sight-reading-tool-content/</guid>
-      <description>&lt;p&gt;····&lt;/p&gt;&#xA;&lt;h2 id=&#34;action-section&#34;&gt;🎯 立即行动&lt;/h2&gt;&#xA;&lt;p&gt;⚡ &lt;strong&gt;早鸟价 48.00¥&lt;/strong&gt;（截止于10月01日）—— 支持网页版以及电脑软件，现在购买可在未来&lt;strong&gt;免费解锁&lt;/strong&gt;更进阶的功能！&lt;/p&gt;&#xA;&lt;div style=&#34;display: flex; gap: 30px; margin: 30px auto; max-width: 1000px; align-items: flex-start; flex-wrap: wrap;&#34;&gt;&#xA;&lt;div style=&#34;flex: 1; min-width: 300px; padding: 25px; background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); border: 2px solid #e6edff; text-align: center;&#34;&gt;&#xA;&lt;h3 style=&#34;color: #4a5568; margin-bottom: 6px; font-size: 20px;&#34;&gt;解锁视奏工具&lt;/h3&gt;&#xA;&lt;p style=&#34;color: #718096; font-size: 14px; margin: 0 0 20px 0;&#34;&gt;支持 7 天无理由退款&lt;/p&gt;&#xA;&lt;p&gt;&lt;a href=&#34;http://localhost:1313/tools/melody-generator.html&#34; target=&#34;_blank&#34; style=&#34;display: block; background: #f8f9fa; color: #667eea; padding: 12px 20px; border: 2px solid #667eea; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s ease; margin-bottom: 15px;&#34; onmouseover=&#34;this.style.background=&#39;#667eea&#39;; this.style.color=&#39;white&#39;;&#34; onmouseout=&#34;this.style.background=&#39;#f8f9fa&#39;; this.style.color=&#39;#667eea&#39;;&#34;&gt;免费试用&lt;/a&gt;&lt;/p&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>音乐教育软件 on IC Studio</title><link>https://icstudio.club/tags/%E9%9F%B3%E4%B9%90%E6%95%99%E8%82%B2%E8%BD%AF%E4%BB%B6/</link><description>Recent content in 音乐教育软件 on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Sun, 01 Sep 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://icstudio.club/tags/%E9%9F%B3%E4%B9%90%E6%95%99%E8%82%B2%E8%BD%AF%E4%BB%B6/index.xml" rel="self" type="application/rss+xml"/><item><title>IC 视奏工具</title><link>https://icstudio.club/sight-reading-tool-content/</link><pubDate>Sun, 01 Sep 2024 00:00:00 +0000</pubDate><guid>https://icstudio.club/sight-reading-tool-content/</guid><description>&lt;p>····&lt;/p>
+&lt;h2 id="action-section">🎯 立即行动&lt;/h2>
+&lt;p>⚡ &lt;strong>早鸟价 48.00¥&lt;/strong>（截止于10月01日）—— 支持网页版以及电脑软件，现在购买可在未来&lt;strong>免费解锁&lt;/strong>更进阶的功能！&lt;/p>
+&lt;div style="display: flex; gap: 30px; margin: 30px auto; max-width: 1000px; align-items: flex-start; flex-wrap: wrap;">
+&lt;div style="flex: 1; min-width: 300px; padding: 25px; background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); border: 2px solid #e6edff; text-align: center;">
+&lt;h3 style="color: #4a5568; margin-bottom: 6px; font-size: 20px;">解锁视奏工具&lt;/h3>
+&lt;p style="color: #718096; font-size: 14px; margin: 0 0 20px 0;">支持 7 天无理由退款&lt;/p>
+&lt;p>&lt;a href="https://icstudio.club/tools/melody-generator.html" target="_blank" style="display: block; background: #f8f9fa; color: #667eea; padding: 12px 20px; border: 2px solid #667eea; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s ease; margin-bottom: 15px;" onmouseover="this.style.background='#667eea'; this.style.color='white';" onmouseout="this.style.background='#f8f9fa'; this.style.color='#667eea';">免费试用&lt;/a>&lt;/p></description></item></channel></rss>
