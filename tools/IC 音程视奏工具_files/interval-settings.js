@@ -76,17 +76,19 @@ class IntervalSettings {
         // 🎼 智能音域绑定：使用谱号对应的音域设置
         const smartRange = this.getSmartRangeForClef(clef);
 
+        // 先确定拍号，再基于该拍号收集节奏，避免“拍号与节奏优化不一致”的随机问题
+        const ts = this.getTimeSignature();
         const settings = {
             intervalTypes: this.getSelectedIntervalTypes(),
             keySignature: this.getKeySignature(),
-            timeSignature: this.getTimeSignature(),
+            timeSignature: ts,
             tempo: this.getTempo(),
             measureCount: this.getMeasureCount(),
             practiceMode: this.getPracticeMode(),
             clef: clef,
             rangeMin: smartRange.min,
             rangeMax: smartRange.max,
-            rhythms: this.getSelectedRhythms() // 添加节奏设置
+            rhythms: this.getSelectedRhythms(ts) // 基于已选拍号获取节奏
         };
 
         console.log('📋 当前设置:', settings);
@@ -475,7 +477,7 @@ class IntervalSettings {
      * 获取选中的节奏类型
      * @returns {Array} 选中的节奏类型数组
      */
-    getSelectedRhythms() {
+    getSelectedRhythms(currentTs = null) {
         const selectedRhythms = [];
 
         // 获取所有选中的节奏复选框
@@ -490,15 +492,17 @@ class IntervalSettings {
 
         // 6/8 默认优化：仅四分+八分（移除二分与附点类型），若缺少八分则补充
         try {
-            const ts = this.getTimeSignature ? this.getTimeSignature() : null;
+            // 使用调用方已经选定的拍号，避免再次随机选择造成不一致
+            const ts = currentTs || (this.getTimeSignature ? this.getTimeSignature() : null);
             const is68 = ts && ts.beats === 6 && ts.beatType === 8;
             if (is68) {
                 // 过滤不适合6/8默认的类型
-                let filtered = selectedRhythms.filter(r => r.value !== 'half' && r.value !== 'half.' /*&& r.value !== 'quarter.'*/);
-                const hasQuarter = filtered.some(r => r.value === 'quarter');
+                let filtered = selectedRhythms.filter(r => r.value !== 'half' && r.value !== 'half.');
+                // 6/8 优先拍是附点四分（quarter.），确保存在
+                const hasDottedQuarter = filtered.some(r => r.value === 'quarter.');
                 const hasEighth = filtered.some(r => r.value === 'eighth');
+                if (!hasDottedQuarter) filtered.push({ value: 'quarter.', displayName: this.getRhythmDisplayName('quarter.') });
                 if (!hasEighth) filtered.push({ value: 'eighth', displayName: this.getRhythmDisplayName('eighth') });
-                if (!hasQuarter) filtered.push({ value: 'quarter', displayName: this.getRhythmDisplayName('quarter') });
                 console.log('🎼 6/8默认节奏优化:', filtered.map(r => r.value));
                 return filtered;
             }
@@ -576,7 +580,7 @@ class IntervalSettings {
      */
     getClefDefaultRange(clef) {
         const fallback = {
-            'treble': { min: 55, max: 81 },  // G3-A5
+            'treble': { min: 60, max: 81 },  // C4-A5
             'alto': { min: 50, max: 71 },    // D3-B4
             'bass': { min: 40, max: 64 }     // E2-E4
         };
@@ -647,14 +651,14 @@ class IntervalSettings {
                 alto: { customRange: null, hasCustomRange: false },
                 bass: { customRange: null, hasCustomRange: false }
             },
-            // 作为“默认音域”的持久映射（会话内更新，作为新的默认）
+            // 作为"默认音域"的持久映射（会话内更新，作为新的默认）
             defaultRanges: {
-                treble: { min: 55, max: 81 }, // G3–A5
+                treble: { min: 60, max: 81 }, // C4–A5
                 alto: { min: 50, max: 71 },   // D3–B4
                 bass: { min: 40, max: 64 }    // E2–E4
             },
             customRange: { min: 60, max: 72 }, // 向后兼容的全局设置
-            version: '5.0'
+            version: '5.1'  // 升级版本以重置默认音域为 C4-A5
         };
     }
 
@@ -721,18 +725,16 @@ class IntervalSettings {
     }
 
     /**
-     * 🆕 保存用户设置（仅会话级别，不持久化）
+     * 🆕 保存用户设置到 localStorage（持久化）
      */
     saveUserSettings() {
-        // 🎯 仅在当前会话中保存，页面刷新后会重置为默认音域
-        console.log('💾 用户音域设置已保存到会话内存');
-        console.log('📋 当前音域设置:', JSON.stringify(this.userSettings, null, 2));
-
-        // 可选：保存到localStorage用于调试，但不影响页面加载时的默认行为
+        // 保存到 localStorage，刷新后保留用户设置
         try {
-            localStorage.setItem('intervalUserSettings_debug', JSON.stringify(this.userSettings));
+            localStorage.setItem('intervalUserSettings', JSON.stringify(this.userSettings));
+            console.log('💾 用户音域设置已保存到 localStorage');
+            console.log('📋 当前音域设置:', JSON.stringify(this.userSettings, null, 2));
         } catch (error) {
-            console.warn('⚠️ 调试信息保存失败:', error);
+            console.warn('⚠️ 设置保存失败:', error);
         }
     }
 

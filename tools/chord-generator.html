@@ -19,19 +19,18 @@
     <!-- 删除SpessaSynth - 改用更简单的Web Audio API方案 -->
 
     <link rel="stylesheet" href="./IC 和弦视奏工具_files/apple-ui-styles-chord.css">
+    <script src="assets/js/sample-player.js?v=6"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        try {
+          if (!window.__icSamplePlayer && window.ICSamplePlayer) {
+            window.__icSamplePlayer = new ICSamplePlayer({ rootPath: 'assets/samples/piano-ogg-full' });
+            window.__icSamplePlayer.load();
+          }
+        } catch(e) { console.warn('采样器初始化失败:', e); }
+      });
+    </script>
     <link rel="stylesheet" href="./IC 和弦视奏工具_files/chord-responsive-styles.css">
-
-    <!-- Icon -->    
-
-    <link rel="icon" type="image/png" href="/ICLOGO.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/ICLOGO.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/ICLOGO.png">
-    <link rel="icon" type="image/png" sizes="64x64" href="/ICLOGO.png">
-    <meta name="msapplication-TileImage" content="/ICLOGO.png">
-    <meta name="theme-color" content="#ffffff">
-
-    <!-- Umami Analytics -->
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script> 
 
 </head>
 <body>
@@ -71,7 +70,7 @@
                             <div class="settings-section">
                                 <div class="settings-section-title" data-i18n="settings.theme">主题</div>
                                 <div class="theme-options">
-                                    <div class="theme-option" onclick="setTheme('light&')">
+                                    <div class="theme-option" onclick="setTheme('light')">
                                         <span class="theme-icon">☀️</span>
                                         <span data-i18n="settings.lightMode">浅色模式</span>
                                     </div>
@@ -129,9 +128,9 @@
                         <div class="instrument-mode-toggle" style="display: flex; align-items: center; gap: 10px;">
                             <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
                                 <input type="checkbox" id="instrumentModeToggle" onchange="toggleInstrumentMode()" style="opacity: 0; width: 0; height: 0;">
-                                <span class="slider" style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#ccc;transition:0.4s;border-radius:34px;">
-                                    <span class="slider-button" style="position:absolute;height:26px;width:26px;left:4px;bottom:4px;background-color:white;transition:0.4s;border-radius:50%;transform:translateX(0px);"></span>
-                                </span>     
+                                <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
+                                    <span class="slider-button" style="position: absolute; content: '' ; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
+                                </span>
                             </label>
                             <span id="instrumentModeLabel" data-i18n="controls.guitarMode" style="font-size: 14px; color: var(--text-color);">吉他和声</span>
                         </div>
@@ -336,6 +335,7 @@
                         <button class="melody-visibility-btn" id="melodyVisibilityBtn" onclick="toggleMelodyVisibility()" title="隐藏/显示和弦">
                             👀
                         </button>
+                        
                     </div>
                     <div class="button-group" style="display: none;">
                         <button class="btn-secondary" onclick="openRhythmSettings()" data-i18n="controls.rhythm">节奏设置</button>
@@ -1023,10 +1023,10 @@
         function switchFunction(mode) {
             if (mode === 'melody') {
                 // 导航到旋律视奏页面
-                window.location.href = '/tools/melody.html';
+                window.location.href = 'melody-generator.html';
             } else if (mode === 'interval') {
                 // 导航到音程视奏页面
-                window.location.href = '/tools/interval-generator.html';
+                window.location.href = 'interval-generator.html';
             } else if (mode === 'chord') {
                 // 已经在和弦视奏页面
                 closeFunctionSelector();
@@ -1165,7 +1165,7 @@
     <!-- 🌐 国际化（i18n）系统 - 多语言支持 (2025-10-04) -->
     <script src="./IC 和弦视奏工具_files/i18n.js"></script>
 
-    <script src="./IC 和弦视奏工具_files/chord-sight-reading.js?v=20251010"></script>
+    <script src="./IC 和弦视奏工具_files/chord-sight-reading.js"></script>
 
     <!-- 钢琴独立生成系统 -->
     <script src="./IC 和弦视奏工具_files/piano-settings-manager.js"></script>
@@ -1262,13 +1262,7 @@
         // 注意：使用 chord-sight-reading.js 中定义的 translations 变量
 
         // 语言切换相关变量
-        let currentLanguage = localStorage.getItem('preferredLanguage') || 'zh-CN';
-
-        // 如果首次访问，保存默认语言到 localStorage
-        if (!localStorage.getItem('preferredLanguage')) {
-            localStorage.setItem('preferredLanguage', 'zh-CN');
-            console.log('🌐 首次访问，已设置默认语言为中文');
-        }
+        let currentLanguage = localStorage.getItem('preferredLanguage') || 'en';
 
         // 翻译函数
         function applyTranslations() {
@@ -1596,7 +1590,7 @@
             const interval = 60000 / metronomeTempo; // 计算间隔时间（毫秒）
 
             isMetronomeRunning = true;
-            btn.textContent = '⏸️';
+            btn.textContent = '🎵';
             btn.title = '停止节拍器';
 
             // 立即播放第一声
@@ -2628,8 +2622,8 @@
                             // 🎹 钢琴模式：使用PianoNoteCountEngine
                             console.log('🎹 钢琴模式：使用音数生成引擎');
 
-                            if (typeof window.generatePianoChords === 'function') {
-                                window.generatePianoChords();
+                            if (typeof generatePianoChords === 'function') {
+                                generatePianoChords();
                                 console.log('✅ 钢琴和弦生成完成');
                             } else {
                                 console.error('❌ generatePianoChords 函数不可用');
@@ -4109,94 +4103,9 @@
 
         console.log('⌨️ 和弦视奏工具快捷键已启用: P=播放 ←→=导航 Space=生成 H=隐藏 C=节拍器');
 
-        /* ========== 旧的试用限制管理系统 (已禁用，现使用统一的 melody-counter-system.js) ==========
-        // ========== 试用限制管理系统 ==========
-        const TrialManager = {
-            maxTrialUses: 20, // 免费试用最大次数
-
-            // 检查是否为完整版用户
-            isFullVersion() {
-                return localStorage.getItem('ic_full_version') === 'true';
-            },
-
-            // 获取当前试用次数
-            getTrialCount() {
-                const count = localStorage.getItem('ic_trial_count');
-                return count ? parseInt(count) : 0;
-            },
-
-            // 增加试用次数
-            incrementTrialCount() {
-                const currentCount = this.getTrialCount();
-                const newCount = currentCount + 1;
-                localStorage.setItem('ic_trial_count', newCount.toString());
-                return newCount;
-            },
-
-            // 获取剩余试用次数
-            getRemainingTrials() {
-                return Math.max(0, this.maxTrialUses - this.getTrialCount());
-            },
-
-            // 检查是否可以继续使用
-            canUse() {
-                return this.isFullVersion() || this.getRemainingTrials() > 0;
-            },
-
-            // 更新试用信息显示
-            updateTrialDisplay() {
-                const trialInfo = document.getElementById('trialInfo');
-                const trialCounter = document.getElementById('trialCounter');
-
-                if (this.isFullVersion()) {
-                    // 完整版用户：隐藏所有试用相关显示
-                    if (trialInfo) {
-                        trialInfo.style.display = 'none';
-                    }
-                    if (trialCounter) {
-                        trialCounter.style.display = 'none';
-                    }
-                } else {
-                    // 试用版用户：隐藏header中的提示，只在按钮旁显示简单数字
-                    if (trialInfo) {
-                        trialInfo.style.display = 'none';
-                    }
-                    if (trialCounter) {
-                        const remaining = this.getRemainingTrials();
-                        if (remaining > 0) {
-                            trialCounter.innerHTML = `${remaining}`;
-                            trialCounter.style.display = 'inline-block';
-                        } else {
-                            trialCounter.innerHTML = '0';
-                            trialCounter.style.display = 'inline-block';
-                        }
-                    }
-                }
-            },
-
-            // 显示试用限制警告
-            showTrialLimitWarning() {
-                // 静默处理：试用次数用完后不显示任何提示，直接返回 false
-                return false;
-            },
-
-            // 验证访问码
-            validateAccessCode(code) {
-                // 这里可以设置多个有效的访问码
-                const validCodes = [
-                    'IC2025FULL',
-                    'ICSTUDIO2025',
-                    'SIGHT2025',
-                    'CHORD2025'
-                ];
-                return validCodes.includes(code.toUpperCase());
-            }
-        };
-        ========== 旧的试用限制管理系统结束 ========== */
-
     </script>
 
-    <!-- 试用限制系统脚本 -->
+    <!-- 🛡️ 试用保护系统脚本 -->
     <script src="/js/trial-limiter.js?v=20250909"></script>
     <script src="/js/advanced-trial-protection.js?v=20250920"></script>
     <script src="/js/melody-counter-system.js?v=20250920"></script>

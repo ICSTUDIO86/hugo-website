@@ -12343,7 +12343,6 @@ function directPlayTest() {
     const beatDuration = 60.0 / actualBPM;
 
     const now = audioContext.currentTime;
-    let chordStartTime = now + 0.1; // 默认稍微延迟开始
     let chordDuration = beatDuration * 4; // 每个和弦播放4拍，基于页面BPM设定
     let needsCountIn = false;
 
@@ -12463,17 +12462,35 @@ function directPlayTest() {
         }
     }
 
-    // 🎵 节拍器同步功能
-    if (metronomeIsPlaying && !needsCountIn) {
-        console.log('🎵 检测到节拍器开启，启用节拍器同步模式');
-        console.log(`🎵 节拍器同步使用BPM: ${actualBPM}, 每拍时长: ${beatDuration.toFixed(3)}秒`);
-        console.log(`🎵 每个和弦播放时长: ${chordDuration.toFixed(3)}秒 (4拍)`);
+    // 🔧 智能播放时间：节拍器开启时对齐网格，关闭时立即响应
+    let chordStartTime;
 
-        // 确保和弦开始时机与节拍对齐
-        const timeSinceLastBeat = (audioContext.currentTime * 1000) % (beatDuration * 1000);
-        const timeToNextBeat = (beatDuration * 1000) - timeSinceLastBeat;
-        chordStartTime = now + (timeToNextBeat / 1000) + 0.05; // 轻微提前确保对齐
-        console.log(`🎵 对齐到下一个节拍点，延迟: ${(timeToNextBeat / 1000).toFixed(3)}秒`);
+    if (!needsCountIn) {
+        const currentNow = audioContext.currentTime;
+
+        if (typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning) {
+            // 🎵 节拍器开启 - 对齐全局网格确保同步
+            const currentBeatNumber = Math.floor(currentNow / beatDuration);
+            let nextBeatNumber = currentBeatNumber + 1;
+            chordStartTime = nextBeatNumber * beatDuration;
+
+            // 安全检查：确保 chordStartTime 至少在未来 50ms
+            const minLookahead = 0.05;
+            if (chordStartTime < currentNow + minLookahead) {
+                nextBeatNumber++;
+                chordStartTime = nextBeatNumber * beatDuration;
+                console.log(`⚠️ 时间太近，跳到下一拍 (第${nextBeatNumber}拍)`);
+            }
+
+            console.log(`🎵 节拍器开启 - 同步到全局网格: BPM=${actualBPM}, 当前=${currentNow.toFixed(3)}s, 播放=${chordStartTime.toFixed(3)}s (第${nextBeatNumber}拍)`);
+        } else {
+            // 🚀 节拍器关闭 - 立即播放，响应迅速
+            chordStartTime = currentNow + 0.1;
+            console.log(`🚀 节拍器未开启 - 立即播放: BPM=${actualBPM}, 当前=${currentNow.toFixed(3)}s, 播放=${chordStartTime.toFixed(3)}s`);
+        }
+    } else {
+        // needsCountIn 情况下的开始时间由 count-in 逻辑处理
+        chordStartTime = now + 0.1 + (beatDuration * 4); // 设置在count-in之后
     }
 
     let totalNotesPlayed = 0;

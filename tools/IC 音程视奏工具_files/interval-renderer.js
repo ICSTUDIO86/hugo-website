@@ -80,6 +80,22 @@ class IntervalRenderer {
             console.log('🖼️ 渲染乐谱');
             this.osmd.render();
 
+            // 🔒 立即检查并应用隐藏状态（避免闪现）
+            if (typeof isIntervalHidden !== 'undefined' && isIntervalHidden) {
+                console.log('🔒 检测到隐藏模式，立即隐藏 SVG（避免闪现）');
+                const scoreDiv = document.getElementById('score');
+                if (scoreDiv) {
+                    const svgElements = scoreDiv.querySelectorAll('svg');
+                    svgElements.forEach(svg => {
+                        svg.classList.add('melody-hidden');
+                        svg.style.opacity = '0';
+                        svg.style.filter = 'blur(10px)';
+                        svg.style.transition = 'none';
+                    });
+                    console.log('🔒 ✅ SVG 已立即隐藏');
+                }
+            }
+
             // 应用自适应布局
             this.applyResponsiveLayout();
 
@@ -958,6 +974,19 @@ async function renderScore(melodyData) {
         // 渲染
         osmd.render();
         console.log('✅ OSMD渲染完成');
+
+        // 🔒 立即检查并应用隐藏状态（避免闪现）
+        if (typeof isIntervalHidden !== 'undefined' && isIntervalHidden) {
+            console.log('🔒 检测到隐藏模式，立即隐藏 SVG（避免闪现）');
+            const svgElements = scoreDiv.querySelectorAll('svg');
+            svgElements.forEach(svg => {
+                svg.classList.add('melody-hidden');
+                svg.style.opacity = '0';
+                svg.style.filter = 'blur(10px)';
+                svg.style.transition = 'none';
+            });
+            console.log('🔒 ✅ SVG 已立即隐藏');
+        }
 
         // 检查实际渲染结果
         setTimeout(() => {

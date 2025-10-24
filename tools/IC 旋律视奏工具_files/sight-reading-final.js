@@ -233,10 +233,10 @@ let userSettings = {
         }
     },
     // 保持向后兼容的全局音域（已弃用，仅供旧代码参考）
-    customRange: { min: 60, max: 72 }, // 默认C5-C6 (在新扩展范围内)
+    customRange: { min: 60, max: 79 }, // 默认C5-C6 (在新扩展范围内)
     hasCustomRange: false, // 标记用户是否手动设置了音域（已弃用）
     allowedRhythms: ['half', 'quarter', 'eighth'], // 默认允许的节奏（二分音符、四分音符、八分音符）
-    allowDottedNotes: false, // 是否允许附点音符
+    allowDottedNotes: true, // 是否允许附点音符
     accidentalRate: 0, // 临时记号概率 (0-100%)
     maxJump: 12, // 最大音程跳动 (半音数)
     
@@ -13004,7 +13004,26 @@ async function renderScore(melodyData) {
         // 渲染
         osmd.render();
         console.log('✅ OSMD渲染完成');
-        
+
+        // 🔒 立即检查并应用隐藏状态（避免闪现）
+        if (typeof isMelodyHidden !== 'undefined' && isMelodyHidden) {
+            console.log('🔒 检测到隐藏模式，立即隐藏容器和SVG（避免闪现）');
+
+            // 隐藏容器
+            scoreDiv.style.opacity = '0';
+            scoreDiv.style.filter = 'blur(10px)';
+
+            // 隐藏SVG元素
+            const svgElements = scoreDiv.querySelectorAll('svg');
+            svgElements.forEach(svg => {
+                svg.classList.add('melody-hidden');
+                svg.style.opacity = '0';
+                svg.style.filter = 'blur(10px)';
+                svg.style.transition = 'none';
+            });
+            console.log('🔒 ✅ 容器和SVG已立即隐藏');
+        }
+
         // 检查实际渲染结果
         setTimeout(() => {
             const svg = scoreDiv.querySelector('svg');
@@ -15398,7 +15417,7 @@ async function generateMelody() {
         // 验证关键设置
         if (!userSettings.customRange || userSettings.customRange.min >= userSettings.customRange.max) {
             console.error('❌ 音域设置无效，重新设置为默认值');
-            userSettings.customRange = { min: 60, max: 72 }; // C5-C6，在A2-A6范围内
+            userSettings.customRange = { min: 60, max: 79 }; // C5-C6，在A2-A6范围内
         }
         
         // 验证音域在支持范围内 (A2=45 到 A6=93)
@@ -16579,7 +16598,7 @@ function updateAccidentalRate() {
  */
 function getRangeForClef(clef) {
     const defaultRanges = {
-        treble: { min: 60, max: 72 },  // C4-C5 (高音谱号 - 保持原有默认值)
+        treble: { min: 60, max: 79 },  // C4-G5 (高音谱号 - 保持原有默认值)
         alto: { min: 50, max: 71 },    // D3-B4 (中音谱号)
         bass: { min: 40, max: 64 }     // E2-E4 (低音谱号)
     };
@@ -17061,10 +17080,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!userSettings || typeof userSettings !== 'object') {
         console.warn('⚠️ userSettings未正确初始化，重新设置');
         userSettings = {
-            customRange: { min: 60, max: 72 }, // C5-C6，在A2-A6范围内
+            customRange: { min: 60, max: 79 }, // C5-C6，在A2-A6范围内
             hasCustomRange: false, // 标记用户是否手动设置了音域
             allowedRhythms: ['half', 'quarter', 'eighth'],
-            allowDottedNotes: false,
+            allowDottedNotes: true,
             accidentalRate: 0,
             maxJump: 12,
             // 🔥 关键修复：确保articulations配置被保留
@@ -18217,7 +18236,7 @@ window.deepDebugAccidentals = function() {
 
         const generator = new IntelligentMelodyGenerator(1, testCase.keySignature, '4/4', 'treble', 12345);
         generator.rules = {
-            range: { min: 60, max: 72 },
+            range: { min: 60, max: 79 },
             accidentalRate: 1.0,
             maxJump: 12
         };
@@ -18650,7 +18669,7 @@ window.realTimeAccidentalTest = function() {
 
         const generator = new IntelligentMelodyGenerator(1, keySignature, '4/4', 'treble', Date.now());
         generator.rules = {
-            range: { min: 60, max: 72 },
+            range: { min: 60, max: 79 },
             accidentalRate: 1.0,  // 100%概率确保生成
             maxJump: 12
         };
@@ -18709,7 +18728,7 @@ window.test68AccidentalGeneration = function() {
 
         if (pathName === '主路径') {
             // 测试主6/8拍生成路径的临时记号函数
-            const userRange = { min: 60, max: 72 };
+            const userRange = { min: 60, max: 79 };
             const random = { nextFloat: () => Math.random() };
             const accidentalRate = 1.0;
 
@@ -19069,7 +19088,7 @@ window.testSimplifiedAccidentalLogic = function() {
     console.log('===================================================');
 
     // 简化版本：只检查音域，不检查同音异名冲突
-    function simplifiedAddAccidental(midi, keySignature, range = { min: 60, max: 72 }) {
+    function simplifiedAddAccidental(midi, keySignature, range = { min: 60, max: 79 }) {
         console.log(`\n📍 简化逻辑测试: MIDI ${midi} 在 ${keySignature}大调`);
 
         const accidentalChoices = [];
@@ -19181,7 +19200,7 @@ window.fixEnharmonicLogic = function() {
     // 创建修复版本的临时记号函数
     console.log('\n🛠️ 创建修复版本的addAccidental函数...');
 
-    window.addAccidentalFixed = function(midi, keySignature, range = { min: 60, max: 72 }) {
+    window.addAccidentalFixed = function(midi, keySignature, range = { min: 60, max: 79 }) {
         const accidentalChoices = [];
 
         // 只检查音域，不检查同音异名冲突
@@ -19393,7 +19412,7 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
     // allowUpbeat setting removed
     
     // 确保用户设置有效
-    const safeUserRange = userRange || { min: 60, max: 72 };
+    const safeUserRange = userRange || { min: 60, max: 79 };
     // 🔥 6/8拍音程跨度最高优先权：严格遵循最小勾选音程作为最大跨度
     const safeMaxJump = maxJump || 12; // 来自主函数的最小勾选音程
     const safeScale = scale || [0, 2, 4, 5, 7, 9, 11];
@@ -23401,7 +23420,7 @@ function testAccidentalGeneration() {
     console.log('🧪 开始测试临时记号生成逻辑...');
 
     // 创建测试用的生成器
-    const testRange = { min: 60, max: 72 }; // C4-C5
+    const testRange = { min: 60, max: 79 }; // C4-C5
     const testRules = {
         range: testRange,
         accidentalRate: 1.0, // 100%概率生成临时记号

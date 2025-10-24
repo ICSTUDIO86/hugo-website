@@ -16,26 +16,24 @@
     <!-- 删除SpessaSynth - 改用更简单的Web Audio API方案 -->
 
     <link rel="stylesheet" href="./IC 旋律视奏工具_files/apple-ui-styles.css">
-
-    <!-- Icon -->    
-
-    <link rel="icon" type="image/png" href="/ICLOGO.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/ICLOGO.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/ICLOGO.png">
-    <link rel="icon" type="image/png" sizes="64x64" href="/ICLOGO.png">
-    <meta name="msapplication-TileImage" content="/ICLOGO.png">
-    <meta name="theme-color" content="#ffffff">
-
-    <!-- Umami Analytics -->
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>     
-    
+    <script src="assets/js/sample-player.js?v=6"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        try {
+          if (!window.__icSamplePlayer && window.ICSamplePlayer) {
+            window.__icSamplePlayer = new ICSamplePlayer({ rootPath: 'assets/samples/piano-ogg-full' });
+            window.__icSamplePlayer.load();
+          }
+        } catch(e) { console.warn('采样器初始化失败:', e); }
+      });
+    </script>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <div class="header-content">
                 <div class="header-text">
-                    <h1 data-i18n="app.title">IC Studio - 视奏旋律生成器</h1>
+                    <h1 data-i18n="app.title">IC Studio - 旋律视奏生成器</h1>
                     <p data-i18n="app.subtitle">专业级乐谱渲染与音乐理论工具</p>
                 </div>
                 <div class="header-controls">
@@ -191,11 +189,11 @@
                         <option value="67">G4</option>
                         <option value="69">A4</option>
                         <option value="71">B4</option>
-                        <option value="72" selected="">C5</option>
+                        <option value="72">C5</option>
                         <option value="74">D5</option>
                         <option value="76">E5</option>
                         <option value="77">F5</option>
-                        <option value="79">G5</option>
+                        <option value="79" selected="">G5</option>
                         <option value="81">A5</option>
                         <option value="82">B5</option>
                         <option value="83">C6</option>
@@ -231,12 +229,13 @@
                         <button class="btn-secondary" onclick="previousMelody()" data-i18n="controls.previous">上一条</button>
                         <button class="btn-secondary" onclick="nextMelody()" data-i18n="controls.next">下一条</button>
                     </div>
-                    <div class="button-group">
-                        <button class="btn-secondary" id="playMelodyBtn" onclick="directPlayTest()" data-i18n="controls.play">播放</button>
-                        <button class="melody-visibility-btn" id="melodyVisibilityBtn" onclick="toggleMelodyVisibility()" title="隐藏/显示旋律">
-                            👀
-                        </button>
-                    </div>
+                        <div class="button-group">
+                            <button class="btn-secondary" id="playMelodyBtn" onclick="directPlayTest()" data-i18n="controls.play">播放</button>
+                            <button class="melody-visibility-btn" id="melodyVisibilityBtn" onclick="toggleMelodyVisibility()" title="隐藏/显示旋律">
+                                👀
+                            </button>
+                            
+                        </div>
                     <div class="button-group">
                         <button class="btn-secondary" onclick="openRhythmSettings()" data-i18n="controls.rhythm">节奏设置</button>
                         <button class="btn-secondary" onclick="openArticulationSettings()" data-i18n="controls.articulation">演奏技巧</button>
@@ -336,7 +335,7 @@
                     <h4 style="margin-bottom: 15px;" data-i18n="rhythm.dottedOptions">附点音符选项</h4>
                     <div style="background: var(--info-bg); padding: 15px; border-radius: 8px;">
                         <label class="checkbox-item" style="margin-bottom: 10px;">
-                            <input type="checkbox" id="allowDottedNotes" value="dotted" checked="">
+                            <input type="checkbox" id="allowDottedNotes" value="dotted" checked>
                             <span data-i18n="rhythm.allowDotted">允许附点音符 (根据已选节奏自动生成附点版本)</span>
                         </label>
                         <p style="font-size: 0.85rem; color: var(--secondary-text); margin: 0; line-height: 1.4;">
@@ -865,12 +864,6 @@
     <script src="./IC 旋律视奏工具_files/minor-alterations.js"></script>
     <script src="./IC 旋律视奏工具_files/emergency-fix.js"></script>
 
-    <!-- 🛡️ 试用保护系统脚本 -->
-    <script src="/js/trial-limiter.js?v=20250909"></script>
-    <script src="/js/advanced-trial-protection.js?v=20250920"></script>
-    <script src="/js/melody-counter-system.js?v=20250920"></script>
-    <script src="/js/integrated-trial-manager.js?v=20250920"></script>
-
     <!-- 增强的全选切换功能 -->
     <!-- <script src="enhanced-select-all.js"></script> -->
     
@@ -1030,11 +1023,25 @@
         let isMetronomeRunning = false;
         let metronomeTempo = 60; // 默认60 BPM
 
-        // 初始化Web Audio API
+        // 🔧 精确同步：记录节拍器启动时间和当前节拍
+        let metronomeStartTime = null;
+        let metronomeCurrentBeat = 0;
+        let metronomeSchedulerInterval = null;
+
+        // 🔧 关键修复：使用与旋律播放相同的 AudioContext
+        // 这样可以确保节拍器和旋律使用同一个时钟，实现完美同步
         function initializeMetronomeAudio() {
             try {
-                metronomeAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-                console.log('🎵 节拍器音频初始化成功');
+                // 优先使用旋律播放的 AudioContext
+                if (window.melodyAudioCtx) {
+                    metronomeAudioContext = window.melodyAudioCtx;
+                    console.log('🎵 节拍器使用旋律的 AudioContext（共享时钟）');
+                } else {
+                    metronomeAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    // 反向共享：让旋律也使用这个 AudioContext
+                    window.melodyAudioCtx = metronomeAudioContext;
+                    console.log('🎵 节拍器创建新 AudioContext（共享给旋律）');
+                }
                 return true;
             } catch (error) {
                 console.error('❌ Web Audio API 不支持:', error);
@@ -1042,8 +1049,8 @@
             }
         }
 
-        // 播放节拍器声音
-        function playMetronomeSound() {
+        // 播放节拍器声音 - 支持精确调度
+        function playMetronomeSound(time) {
             if (!metronomeAudioContext) {
                 if (!initializeMetronomeAudio()) return;
             }
@@ -1054,6 +1061,9 @@
                     metronomeAudioContext.resume();
                 }
 
+                // 🔧 使用传入的精确时间，如果没有则使用当前时间
+                const scheduleTime = time !== undefined ? time : metronomeAudioContext.currentTime;
+
                 const oscillator = metronomeAudioContext.createOscillator();
                 const gainNode = metronomeAudioContext.createGain();
 
@@ -1062,25 +1072,27 @@
 
                 // 使用方波和自然音高 (参考NiceChord节拍器)
                 oscillator.type = 'square';
-                oscillator.frequency.setValueAtTime(523.25, metronomeAudioContext.currentTime); // C5音高
+                oscillator.frequency.setValueAtTime(523.25, scheduleTime); // C5音高
 
                 // 设置自然的音量包络 (更好的release time)
-                gainNode.gain.setValueAtTime(0.25, metronomeAudioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, metronomeAudioContext.currentTime + 0.05);
+                gainNode.gain.setValueAtTime(0.25, scheduleTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, scheduleTime + 0.05);
 
-                oscillator.start(metronomeAudioContext.currentTime);
-                oscillator.stop(metronomeAudioContext.currentTime + 0.05);
+                oscillator.start(scheduleTime);
+                oscillator.stop(scheduleTime + 0.05);
 
-                // 视觉反馈 - 更新header指示器
-                const headerIndicator = document.getElementById('headerBeatIndicator');
-                
-                if (headerIndicator) {
-                    headerIndicator.classList.add('beat');
-                    setTimeout(() => {
-                        headerIndicator.classList.remove('beat');
-                    }, 150);
+                // 视觉反馈 - 更新header指示器（只在立即播放时）
+                if (time === undefined || scheduleTime <= metronomeAudioContext.currentTime + 0.05) {
+                    const headerIndicator = document.getElementById('headerBeatIndicator');
+
+                    if (headerIndicator) {
+                        headerIndicator.classList.add('beat');
+                        setTimeout(() => {
+                            headerIndicator.classList.remove('beat');
+                        }, 150);
+                    }
                 }
-                
+
             } catch (error) {
                 console.error('❌ 节拍器声音播放失败:', error);
             }
@@ -1103,30 +1115,81 @@
             console.log(`🎵 节拍器速度设置为: ${metronomeTempo} BPM`);
         }
 
-        // 启动节拍器
+        // 🔧 精确节拍器调度器 - 使用 Web Audio API 时钟
+        function scheduleMetronomeBeat() {
+            if (!metronomeAudioContext) {
+                if (!initializeMetronomeAudio()) return;
+            }
+
+            const beatDuration = 60.0 / metronomeTempo; // 每拍的秒数
+            const lookahead = 0.1; // 提前 100ms 调度
+            const scheduleAheadTime = 0.2; // 调度未来 200ms 的节拍
+
+            while (metronomeStartTime + metronomeCurrentBeat * beatDuration <
+                   metronomeAudioContext.currentTime + scheduleAheadTime) {
+
+                const beatTime = metronomeStartTime + metronomeCurrentBeat * beatDuration;
+
+                // 调度这一拍
+                playMetronomeSound(beatTime);
+
+                metronomeCurrentBeat++;
+            }
+        }
+
+        // 启动节拍器 - 使用精确 Web Audio API 调度
         function startMetronome() {
             const headerInput = document.getElementById('headerMetronomeBpm');
             const tempo = parseInt(headerInput ? headerInput.value : metronomeTempo) || 60;
-            setMetronomeTempo(tempo);
-            
+            metronomeTempo = tempo;
+
+            // 同步更新header输入框
+            if (headerInput) headerInput.value = metronomeTempo;
+
             if (isMetronomeRunning) return;
-            
-            const interval = 60000 / metronomeTempo; // 计算间隔时间（毫秒）
-            
+
+            if (!metronomeAudioContext) {
+                if (!initializeMetronomeAudio()) return;
+            }
+
+            // 恢复音频上下文
+            if (metronomeAudioContext.state === 'suspended') {
+                metronomeAudioContext.resume();
+            }
+
             isMetronomeRunning = true;
-            
-            // 立即播放第一拍
-            playMetronomeSound();
-            
-            // 设置定时器
-            metronomeInterval = setInterval(() => {
-                playMetronomeSound();
-            }, interval);
-            
+
+            // 🔧 关键修复：使用 AudioContext 时间 0 作为全局节拍网格的起点
+            // 这样所有音乐和节拍器都在同一个网格上
+            metronomeStartTime = 0; // 全局网格起点
+
+            const beatDuration = 60.0 / metronomeTempo;
+            const now = metronomeAudioContext.currentTime;
+
+            // 计算当前应该在第几拍（从时间 0 开始）
+            const currentBeatNumber = Math.floor(now / beatDuration);
+            const nextBeatNumber = currentBeatNumber + 1;
+            const nextBeatTime = nextBeatNumber * beatDuration;
+
+            // 确保下一拍至少在未来 50ms，否则跳过
+            const minLookahead = 0.05;
+            if (nextBeatTime < now + minLookahead) {
+                metronomeCurrentBeat = nextBeatNumber + 1;
+            } else {
+                metronomeCurrentBeat = nextBeatNumber;
+            }
+
+            console.log(`🎵 节拍器对齐全局网格: ${metronomeTempo} BPM, 当前=${now.toFixed(3)}s, 从第${metronomeCurrentBeat}拍开始 (时间=${(metronomeCurrentBeat * beatDuration).toFixed(3)}s)`);
+
+            // 立即调度第一批节拍
+            scheduleMetronomeBeat();
+
+            // 🔧 使用更频繁的定时器来检查和调度（25ms），而不是用它来播放声音
+            // 这样可以确保节拍总是提前调度好
+            metronomeSchedulerInterval = setInterval(scheduleMetronomeBeat, 25);
+
             // 更新UI
             updateMetronomeUI();
-            
-            console.log(`🎵 节拍器已启动: ${metronomeTempo} BPM`);
         }
 
         // 停止节拍器
@@ -1135,11 +1198,22 @@
                 clearInterval(metronomeInterval);
                 metronomeInterval = null;
             }
-            
+
+            // 🔧 清除调度器定时器
+            if (metronomeSchedulerInterval) {
+                clearInterval(metronomeSchedulerInterval);
+                metronomeSchedulerInterval = null;
+            }
+
             isMetronomeRunning = false;
+
+            // 重置节拍计数
+            metronomeStartTime = null;
+            metronomeCurrentBeat = 0;
+
             updateMetronomeUI();
-            
-            console.log('🎵 节拍器已停止');
+
+            console.log('🔇 节拍器已停止');
         }
 
         // 切换节拍器开关
@@ -1159,7 +1233,7 @@
             if (headerToggleBtn) {
                 if (isMetronomeRunning) {
                     headerToggleBtn.classList.add('active');
-                    headerToggleBtn.textContent = '⏸️';
+                    headerToggleBtn.textContent = '🎵';
                     headerToggleBtn.title = '停止节拍器';
                 } else {
                     headerToggleBtn.classList.remove('active');
@@ -1814,20 +1888,46 @@
                     languageBtn.textContent = languageLabels[currentLanguage];
                 }
             } else {
-                // 如果没有保存的语言偏好，使用默认的中文，并保存到 localStorage
+                // 如果没有保存的语言偏好，使用默认的中文，显示默认的 🌐 文/A
                 currentLanguage = 'zh-CN';
-                localStorage.setItem('preferredLanguage', 'zh-CN');
                 const languageBtn = document.getElementById('languageBtn');
                 if (languageBtn) {
                     languageBtn.textContent = '🌐 文/A';
                 }
-                console.log('🌐 首次访问，已设置默认语言为中文');
             }
 
             // 应用翻译
             applyTranslations();
 
             console.log(`🌐 旋律工具初始化语言: ${currentLanguage}`);
+
+            // ============ 附点音符设置保存/恢复 ============
+            const allowDottedNotesCheckbox = document.getElementById('allowDottedNotes');
+            if (allowDottedNotesCheckbox) {
+                // 版本控制：强制新用户和升级用户使用新默认值
+                const settingsVersion = localStorage.getItem('melodySettingsVersion');
+                const currentVersion = '2.0'; // 版本 2.0：附点音符默认勾选
+
+                if (settingsVersion !== currentVersion) {
+                    // 版本升级或首次访问，使用新的默认值
+                    allowDottedNotesCheckbox.checked = true;
+                    localStorage.setItem('allowDottedNotes', 'true');
+                    localStorage.setItem('melodySettingsVersion', currentVersion);
+                    console.log(`🔄 设置版本升级到 ${currentVersion}，使用新默认值`);
+                } else {
+                    // 恢复保存的状态
+                    const savedDottedState = localStorage.getItem('allowDottedNotes');
+                    allowDottedNotesCheckbox.checked = (savedDottedState === 'true');
+                }
+
+                // 监听变化并保存
+                allowDottedNotesCheckbox.addEventListener('change', function() {
+                    localStorage.setItem('allowDottedNotes', this.checked);
+                    console.log(`💾 附点音符设置已保存: ${this.checked}`);
+                });
+
+                console.log(`✅ 附点音符设置初始化: ${allowDottedNotesCheckbox.checked}`);
+            }
 
             // ============ 跨工具同步监听机制 ============
             // 监听其他工具对localStorage的修改
@@ -2103,8 +2203,15 @@
                                 if (sound.oscillator) {
                                     sound.oscillator.stop();
                                 }
+                                if (sound.source) {
+                                    sound.source.stop();
+                                }
+                                if (sound.element) {
+                                    sound.element.pause();
+                                    sound.element.src = '';
+                                }
                             } catch (e) {
-                                // 振荡器可能已经停止，忽略错误
+                                // 节点可能已经停止，忽略错误
                             }
                         });
                         window.melodyScheduledSounds = [];
@@ -2118,9 +2225,75 @@
                 // 清除空谱子提示信息
                 clearEmptyScoreMessage();
 
+                // 🔒 预隐藏容器（参考音程视奏工具的实现）
+                if (typeof isMelodyHidden !== 'undefined' && isMelodyHidden) {
+                    const scoreEl = document.getElementById('score');
+                    if (scoreEl) {
+                        scoreEl.style.opacity = '0';
+                        scoreEl.style.filter = 'blur(10px)';
+                        console.log('🔒 渲染前预隐藏容器（避免闪现）');
+                    }
+                }
+
                 const result = originalGenerateMelody.apply(this, args);
                 hideTitleAndInstrumentElements();
+                // 🔒 隐藏状态现在在 renderScore 中立即应用，无需延迟
                 return result;
+            };
+        }
+
+        // 包装 previousMelody 和 nextMelody，添加停止播放逻辑
+        const originalPreviousMelody = window.previousMelody;
+        if (originalPreviousMelody) {
+            window.previousMelody = function(...args) {
+                // 切换时自动停止播放
+                if (window.isPlayingMelody) {
+                    window.isPlayingMelody = false;
+                    if (window.melodyScheduledSounds) {
+                        window.melodyScheduledSounds.forEach(sound => {
+                            try {
+                                if (sound.oscillator) sound.oscillator.stop();
+                                if (sound.source) sound.source.stop();
+                                if (sound.element) {
+                                    sound.element.pause();
+                                    sound.element.src = '';
+                                }
+                            } catch (e) {}
+                        });
+                        window.melodyScheduledSounds = [];
+                    }
+                    if (typeof updatePlayButton === 'function') {
+                        updatePlayButton();
+                    }
+                }
+                return originalPreviousMelody.apply(this, args);
+            };
+        }
+
+        const originalNextMelody = window.nextMelody;
+        if (originalNextMelody) {
+            window.nextMelody = function(...args) {
+                // 切换时自动停止播放
+                if (window.isPlayingMelody) {
+                    window.isPlayingMelody = false;
+                    if (window.melodyScheduledSounds) {
+                        window.melodyScheduledSounds.forEach(sound => {
+                            try {
+                                if (sound.oscillator) sound.oscillator.stop();
+                                if (sound.source) sound.source.stop();
+                                if (sound.element) {
+                                    sound.element.pause();
+                                    sound.element.src = '';
+                                }
+                            } catch (e) {}
+                        });
+                        window.melodyScheduledSounds = [];
+                    }
+                    if (typeof updatePlayButton === 'function') {
+                        updatePlayButton();
+                    }
+                }
+                return originalNextMelody.apply(this, args);
             };
         }
         
@@ -2151,6 +2324,7 @@
 
         window.isPlayingMelody = false;
         window.melodyAudioCtx = null;
+        window.melodyMetronomeSyncTimeout = null; // 节拍器同步的 setTimeout ID
 
         function directPlayTest() {
             console.log('🎵 直接播放被调用');
@@ -2158,15 +2332,33 @@
             if (window.isPlayingMelody) {
                 // 停止播放
                 window.isPlayingMelody = false;
+
+                // 🔧 清除节拍器同步的 setTimeout（如果存在）
+                if (window.melodyMetronomeSyncTimeout) {
+                    clearTimeout(window.melodyMetronomeSyncTimeout);
+                    window.melodyMetronomeSyncTimeout = null;
+                    console.log('⏹️ 已清除节拍器同步定时器');
+                }
+
                 // 停止所有调度的播放
                 if (window.melodyScheduledSounds) {
                     window.melodyScheduledSounds.forEach(sound => {
                         try {
+                            // 处理振荡器节点（合成器回退）
                             if (sound.oscillator) {
                                 sound.oscillator.stop();
                             }
+                            // 处理采样器的 BufferSource 节点
+                            if (sound.source) {
+                                sound.source.stop();
+                            }
+                            // 处理 HTMLAudioElement（file:// 协议下的回退）
+                            if (sound.element) {
+                                sound.element.pause();
+                                sound.element.src = '';
+                            }
                         } catch (e) {
-                            // 振荡器可能已经停止，忽略错误
+                            // 节点可能已经停止，忽略错误
                         }
                     });
                     window.melodyScheduledSounds = [];
@@ -2187,6 +2379,11 @@
                 if (window.melodyAudioCtx.state === 'suspended') {
                     window.melodyAudioCtx.resume().then(() => {
                         console.log('🔄 AudioContext已恢复');
+                        // 🔧 修复：检查是否在resume期间用户点击了停止
+                        if (!window.isPlayingMelody) {
+                            console.log('⏹️ Resume完成前用户已停止，取消播放');
+                            return;
+                        }
                         startMelodyPlayback();
                     });
                 } else {
@@ -2218,6 +2415,11 @@
 
             if (!melodyData) {
                 console.log('⚠️ 没有旋律数据，播放测试音符');
+                // 初始化采样器（懒加载）
+                if (!window.__icSamplePlayer && window.ICSamplePlayer) {
+                    window.__icSamplePlayer = new ICSamplePlayer({ rootPath: 'assets/samples/piano-ogg' });
+                    window.__icSamplePlayer.load();
+                }
                 playTestNote();
                 return;
             }
@@ -2229,8 +2431,42 @@
                 console.log('🎼 隐藏模式激活，启动count-in + 节拍器');
                 playCountInThenMelody(melodyData);
             } else {
-                console.log('🎶 普通模式，直接播放旋律');
-                playFullMelody(melodyData);
+                // 🔧 智能播放时间：节拍器开启时对齐网格，关闭时立即响应
+
+                // 获取当前速度
+                let tempo = 60;
+                if (typeof getCurrentTempo === 'function') {
+                    tempo = getCurrentTempo();
+                } else if (typeof metronomeTempo !== 'undefined') {
+                    tempo = metronomeTempo;
+                }
+
+                const beatDuration = 60.0 / tempo;
+                const now = window.melodyAudioCtx.currentTime;
+                let startTime;
+
+                if (typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning) {
+                    // 🎵 节拍器开启 - 对齐全局网格确保同步
+                    const currentBeatNumber = Math.floor(now / beatDuration);
+                    let nextBeatNumber = currentBeatNumber + 1;
+                    startTime = nextBeatNumber * beatDuration;
+
+                    // 安全检查：确保 startTime 至少在未来 50ms
+                    const minLookahead = 0.05;
+                    if (startTime < now + minLookahead) {
+                        nextBeatNumber++;
+                        startTime = nextBeatNumber * beatDuration;
+                        console.log(`⚠️ 时间太近，跳到下一拍 (第${nextBeatNumber}拍)`);
+                    }
+
+                    console.log(`🎵 节拍器开启 - 同步到全局网格: BPM=${tempo}, 当前=${now.toFixed(3)}s, 播放=${startTime.toFixed(3)}s (第${nextBeatNumber}拍)`);
+                } else {
+                    // 🚀 节拍器关闭 - 立即播放，响应迅速
+                    startTime = now + 0.1;
+                    console.log(`🚀 节拍器未开启 - 立即播放: BPM=${tempo}, 当前=${now.toFixed(3)}s, 播放=${startTime.toFixed(3)}s`);
+                }
+
+                playFullMelody(melodyData, startTime);
             }
         }
 
@@ -2292,9 +2528,9 @@
             const playBtn = document.getElementById('playMelodyBtn');
             if (playBtn) {
                 if (window.isPlayingMelody) {
-                    playBtn.innerHTML = '⏸️ 停止';
+                    playBtn.innerHTML = '停止';
                 } else {
-                    playBtn.innerHTML = '▶️ 播放';
+                    playBtn.innerHTML = '播放';
                 }
                 console.log('🔄 按钮状态已更新:', window.isPlayingMelody ? '播放中' : '已停止');
             }
@@ -2308,8 +2544,13 @@
             const scoreElement = document.getElementById('score');
 
             if (isMelodyHidden) {
-                // 隐藏旋律
+                // 隐藏旋律（同步隐藏容器与SVG，避免渲染前后状态不一致）
                 if (scoreElement) {
+                    // 隐藏容器
+                    scoreElement.style.opacity = '0';
+                    scoreElement.style.filter = 'blur(10px)';
+
+                    // 隐藏SVG元素
                     const svgElements = scoreElement.querySelectorAll('svg');
                     svgElements.forEach(svg => {
                         svg.classList.add('melody-hidden');
@@ -2322,10 +2563,15 @@
                     visibilityBtn.title = '显示旋律';
                     visibilityBtn.classList.add('hidden-state');
                 }
-                console.log('👂 旋律已隐藏');
+                console.log('👂 旋律已隐藏（容器+SVG）');
             } else {
-                // 显示旋律
+                // 显示旋律（清除容器与SVG上的隐藏样式，确保可见）
                 if (scoreElement) {
+                    // 显示容器
+                    scoreElement.style.opacity = '1';
+                    scoreElement.style.filter = 'none';
+
+                    // 显示SVG元素
                     const svgElements = scoreElement.querySelectorAll('svg');
                     svgElements.forEach(svg => {
                         svg.classList.remove('melody-hidden');
@@ -2350,30 +2596,80 @@
         // 音符时值转秒数的辅助函数
         function durationToSeconds(duration, tempo = 60) {
             const beatsPerSecond = tempo / 60;
+
+            // 支持两种附点格式：
+            // 1. 点后缀格式: 'quarter.' (来自 sight-reading-final.js 的某些路径)
+            // 2. 破折号前缀格式: 'dotted-quarter' (来自 MusicXML 解析)
+            let normalizedDuration = duration;
+            if (duration && duration.endsWith('.')) {
+                const baseDuration = duration.slice(0, -1);  // 移除点号
+                normalizedDuration = `dotted-${baseDuration}`;
+            }
+
             const durationMap = {
                 'whole': 4,
                 'half': 2,
                 'quarter': 1,
                 'eighth': 0.5,
                 '16th': 0.25,
-                'dotted-half': 3,
-                'dotted-quarter': 1.5,
-                'dotted-eighth': 0.75
+                '32nd': 0.125,
+                'dotted-whole': 6,          // 附点全音符 = 6拍
+                'dotted-half': 3,           // 附点二分音符 = 3拍
+                'dotted-quarter': 1.5,      // 附点四分音符 = 1.5拍
+                'dotted-eighth': 0.75,      // 附点八分音符 = 0.75拍
+                'dotted-16th': 0.375        // 附点十六分音符 = 0.375拍
             };
-            const beats = durationMap[duration] || 1;
+            const beats = durationMap[normalizedDuration] || 1;
             return beats / beatsPerSecond;
         }
 
 
-        // 安排单个音符播放 - 钢琴音色版本
+        // 安排单个音符播放：优先使用采样器，失败回退到合成器
         function scheduleNotePlay(frequency, startTime, duration) {
             try {
-                // 创建钢琴音色的复合音符
+                if (window.__icSamplePlayer && window.__icSamplePlayer.ready && window.melodyAudioCtx) {
+                    const midi = Math.round(69 + 12 * Math.log2(frequency / 440));
+                    const playResult = window.__icSamplePlayer.scheduleAtExternalContext(
+                        window.melodyAudioCtx, startTime, midi, duration, 0.85
+                    );
+                    // 保存返回值以便停止时使用
+                    if (playResult && window.melodyScheduledSounds) {
+                        window.melodyScheduledSounds.push(playResult);
+                    }
+                    return;
+                }
+            } catch (e) {
+                console.warn('采样器播放失败，回退振荡器:', e);
+            }
+            try {
                 const pianoSound = createPianoNote(frequency, startTime, duration);
-
-                // 记录所有组件以便停止时清理
                 window.melodyScheduledSounds.push(...pianoSound.components);
+            } catch (error) {
+                console.error('❌ 音符播放安排失败:', error);
+            }
+        }
 
+        // 优化版本：直接使用 MIDI 编号，避免频率↔MIDI 的冗余转换
+        function scheduleNotePlayDirect(midi, startTime, duration) {
+            try {
+                if (window.__icSamplePlayer && window.__icSamplePlayer.ready && window.melodyAudioCtx) {
+                    const playResult = window.__icSamplePlayer.scheduleAtExternalContext(
+                        window.melodyAudioCtx, startTime, midi, duration, 0.85
+                    );
+                    // 保存返回值以便停止时使用
+                    if (playResult && window.melodyScheduledSounds) {
+                        window.melodyScheduledSounds.push(playResult);
+                    }
+                    return;
+                }
+            } catch (e) {
+                console.warn('采样器播放失败，回退振荡器:', e);
+            }
+            // 回退到合成器
+            try {
+                const frequency = 440 * Math.pow(2, (midi - 69) / 12);
+                const pianoSound = createPianoNote(frequency, startTime, duration);
+                window.melodyScheduledSounds.push(...pianoSound.components);
             } catch (error) {
                 console.error('❌ 音符播放安排失败:', error);
             }
@@ -2563,17 +2859,18 @@
                 // 🔍 调试：输出原始MusicXML以分析附点问题
                 console.log('📋 原始MusicXML内容:', musicXML);
 
-                // 🔍 检查MusicXML中的 <dot> 元素
+                // 🔍 检查MusicXML中的 <dot> 元素（调试用）
                 const dotCount = (musicXML.match(/<dot/g) || []).length;
                 console.log(`🔍 检测到 ${dotCount} 个 <dot> 元素`);
 
-                // 🔧 修复：如果检测到多余的附点，进行清理
-                if (dotCount > 0) {
-                    console.log(`⚠️ 发现 ${dotCount} 个附点元素，开始清理多余附点...`);
-                    musicXML = cleanupExcessiveDots(musicXML);
-                    const cleanedDotCount = (musicXML.match(/<dot/g) || []).length;
-                    console.log(`✅ 清理完成，剩余 ${cleanedDotCount} 个附点元素`);
-                }
+                // ⚠️ 已禁用：之前这里会错误地删除所有附点元素
+                // 当用户启用附点音符功能时，这些<dot>元素是合法且必需的
+                // if (dotCount > 0) {
+                //     console.log(`⚠️ 发现 ${dotCount} 个附点元素，开始清理多余附点...`);
+                //     musicXML = cleanupExcessiveDots(musicXML);
+                //     const cleanedDotCount = (musicXML.match(/<dot/g) || []).length;
+                //     console.log(`✅ 清理完成，剩余 ${cleanedDotCount} 个附点元素`);
+                // }
 
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(musicXML, 'text/xml');
@@ -2796,8 +3093,8 @@
 
                 if (event.type === 'note' && event.midi && !event.isTiedContinuation) {
                     // 播放音符（跳过连线的延续部分）
-                    const frequency = midiToFrequency(event.midi);
-                    scheduleNotePlay(frequency, eventStartTime, eventDuration);
+                    // 优化：直接使用 MIDI，避免 MIDI→频率→MIDI 的冗余转换
+                    scheduleNotePlayDirect(event.midi, eventStartTime, eventDuration);
                     console.log(`🎹 安排播放: MIDI ${event.midi} @ ${eventStartTime.toFixed(2)}s, 时长 ${eventDuration.toFixed(2)}s`);
                 } else if (event.type === 'rest') {
                     // 休止符 - 只计时，不播放
@@ -2945,17 +3242,27 @@
 
         // 将拍数转换为最接近的duration字符串
         function beatsToClosestDuration(beats) {
-            // 基础音符时值对应的拍数（不包含附点）
+            // 完整的音符时值映射（包含附点音符）
             const durationMap = [
                 { beats: 4, duration: 'whole' },
+                { beats: 3, duration: 'dotted-half' },      // 附点二分音符
                 { beats: 2, duration: 'half' },
+                { beats: 1.5, duration: 'dotted-quarter' }, // 附点四分音符
                 { beats: 1, duration: 'quarter' },
+                { beats: 0.75, duration: 'dotted-eighth' }, // 附点八分音符
                 { beats: 0.5, duration: 'eighth' },
                 { beats: 0.25, duration: '16th' },
                 { beats: 0.125, duration: '32nd' }
             ];
 
-            // 找到最接近的时值
+            // 精确匹配优先（容差0.01拍）
+            for (const { beats: targetBeats, duration } of durationMap) {
+                if (Math.abs(beats - targetBeats) < 0.01) {
+                    return duration;
+                }
+            }
+
+            // 无精确匹配时，找最接近的
             let closestDuration = 'quarter';
             let minDifference = Infinity;
 
@@ -2965,15 +3272,6 @@
                     minDifference = difference;
                     closestDuration = duration;
                 }
-            }
-
-            // 如果没有精确匹配，使用简单的映射
-            if (minDifference > 0.01) {
-                if (beats >= 4) return 'whole';
-                if (beats >= 2) return 'half';
-                if (beats >= 1) return 'quarter';
-                if (beats >= 0.5) return 'eighth';
-                return '16th';
             }
 
             return closestDuration;
@@ -3085,18 +3383,11 @@
 
             // count-in完成后的处理
             const countInEndTime = now + countInBeats * beatDuration;
-            console.log(`🎵 Count-in将在${countInEndTime.toFixed(2)}s结束，然后开始旋律播放`);
+            console.log(`🎵 Count-in将在${countInEndTime.toFixed(3)}s结束，然后精确开始旋律播放`);
 
-            // 在count-in结束后开始播放旋律（不需要停止页面节拍器，因为没有启动过）
-            setTimeout(() => {
-                if (window.isPlayingMelody) {
-                    console.log('🎼 Count-in结束，开始旋律播放');
-                    // 由于没有启动页面节拍器，这里不需要停止操作
-
-                    // 开始播放旋律
-                    playFullMelody(melodyData, countInEndTime);
-                }
-            }, countInBeats * beatDuration * 1000);
+            // 🔧 关键修复：不使用setTimeout，立即调用播放函数，传入count-in结束的精确时间
+            // Web Audio API 会精确地在count-in结束时开始播放旋律
+            playFullMelody(melodyData, countInEndTime);
         }
 
         // 🎹 临时样本生成器 - 测试用
@@ -3514,142 +3805,12 @@
         });
 
         console.log('⌨️ 旋律视奏工具快捷键已启用: P=播放 ←→=导航 Space=生成 H=隐藏 C=节拍器');
-
-        /* ========== 旧的试用限制管理系统 (已禁用，现使用统一的 melody-counter-system.js) ==========
-        // ========== 试用限制管理系统 ==========
-        const TrialManager = {
-            maxTrialUses: 20, // 免费试用最大次数
-
-            // 检查是否为完整版用户
-            isFullVersion() {
-                return localStorage.getItem('ic_full_version') === 'true';
-            },
-
-            // 获取当前试用次数
-            getTrialCount() {
-                const count = localStorage.getItem('ic_trial_count');
-                return count ? parseInt(count) : 0;
-            },
-
-            // 增加试用次数
-            incrementTrialCount() {
-                const currentCount = this.getTrialCount();
-                const newCount = currentCount + 1;
-                localStorage.setItem('ic_trial_count', newCount.toString());
-                return newCount;
-            },
-
-            // 获取剩余试用次数
-            getRemainingTrials() {
-                return Math.max(0, this.maxTrialUses - this.getTrialCount());
-            },
-
-            // 检查是否可以继续使用
-            canUse() {
-                return this.isFullVersion() || this.getRemainingTrials() > 0;
-            },
-
-            // 更新试用信息显示
-            updateTrialDisplay() {
-                const trialInfo = document.getElementById('trialInfo');
-                const trialCounter = document.getElementById('trialCounter');
-
-                if (this.isFullVersion()) {
-                    // 完整版用户：隐藏所有试用相关显示
-                    if (trialInfo) {
-                        trialInfo.style.display = 'none';
-                    }
-                    if (trialCounter) {
-                        trialCounter.style.display = 'none';
-                    }
-                } else {
-                    // 试用版用户：隐藏header中的提示，只在按钮旁显示简单数字
-                    if (trialInfo) {
-                        trialInfo.style.display = 'none';
-                    }
-                    if (trialCounter) {
-                        const remaining = this.getRemainingTrials();
-                        if (remaining > 0) {
-                            trialCounter.innerHTML = `${remaining}`;
-                            trialCounter.style.display = 'inline-block';
-                        } else {
-                            trialCounter.innerHTML = '0';
-                            trialCounter.style.display = 'inline-block';
-                        }
-                    }
-                }
-            },
-
-            // 显示试用限制警告
-            showTrialLimitWarning() {
-                // 静默处理：试用次数用完后不显示任何提示，直接返回 false
-                return false;
-            },
-
-            // 验证访问码
-            validateAccessCode(code) {
-                // 这里可以设置多个有效的访问码
-                const validCodes = [
-                    'IC2025FULL',
-                    'ICSTUDIO2025',
-                    'SIGHT2025',
-                    'MELODY2025'
-                ];
-                return validCodes.includes(code.toUpperCase());
-            }
-        };
-        ========== 旧的试用限制管理系统结束 ========== */
-
-        /* ========== 旧的 TrialManager 包装和初始化代码 (已禁用) ==========
-        // 包装 generateMelody 函数以添加试用限制
-        const originalGenerateMelody = window.generateMelody;
-        if (originalGenerateMelody) {
-            window.generateMelody = function(...args) {
-                // 检查试用限制
-                if (!TrialManager.canUse()) {
-                    const unlocked = TrialManager.showTrialLimitWarning();
-                    if (!unlocked) {
-                        return; // 如果没有解锁成功，则停止执行
-                    }
-                }
-
-                // 非完整版用户增加试用计数
-                if (!TrialManager.isFullVersion()) {
-                    TrialManager.incrementTrialCount();
-                    TrialManager.updateTrialDisplay();
-                }
-
-                return originalGenerateMelody.apply(this, args);
-            };
-        }
-
-        // 页面加载完成后初始化试用信息
-        document.addEventListener('DOMContentLoaded', () => {
-            // 检查是否从访问码页面跳转过来
-            const verifiedFromAccessPage = localStorage.getItem('ic_verified_from_access_page');
-            const verifiedTimestamp = localStorage.getItem('ic_verified_timestamp');
-
-            if (verifiedFromAccessPage === 'true' && verifiedTimestamp) {
-                const timeDiff = Date.now() - parseInt(verifiedTimestamp);
-                // 如果是5分钟内从访问码页面跳转过来的，确保完整版状态
-                if (timeDiff < 5 * 60 * 1000) {
-                    console.log('🎯 检测到从访问码页面跳转，确保完整版状态');
-                    localStorage.setItem('ic_full_version', 'true');
-                    // 清除跳转标记
-                    localStorage.removeItem('ic_verified_from_access_page');
-                    localStorage.removeItem('ic_verified_timestamp');
-                }
-            }
-
-            // 初始化试用信息显示
-            TrialManager.updateTrialDisplay();
-        });
-
-        console.log('✅ 旋律视奏工具试用限制系统已加载');
-        ========== 旧的 TrialManager 包装和初始化代码结束 ========== */
-
-        console.log('✅ 旋律视奏工具已加载（使用统一的 melody-counter-system.js）');
     </script>
 
+    <!-- 🛡️ 试用保护系统脚本 -->
+    <script src="/js/trial-limiter.js?v=20250909"></script>
+    <script src="/js/advanced-trial-protection.js?v=20250920"></script>
+    <script src="/js/melody-counter-system.js?v=20250920"></script>
+    <script src="/js/integrated-trial-manager.js?v=20250920"></script>
 
 </body></html>

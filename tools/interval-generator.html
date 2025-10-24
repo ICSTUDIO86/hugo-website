@@ -25,18 +25,17 @@
     <script src="./IC 音程视奏工具_files/interval-generator-v4-integration.js"></script>
     
     <link rel="stylesheet" href="./IC 音程视奏工具_files/apple-ui-styles-green.css">
-    
-    <!-- Icon -->    
-
-    <link rel="icon" type="image/png" href="/ICLOGO.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/ICLOGO.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/ICLOGO.png">
-    <link rel="icon" type="image/png" sizes="64x64" href="/ICLOGO.png">
-    <meta name="msapplication-TileImage" content="/ICLOGO.png">
-    <meta name="theme-color" content="#ffffff">
-
-    <!-- Umami Analytics -->
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script> 
+    <script src="assets/js/sample-player.js?v=6"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        try {
+          if (!window.__icSamplePlayer && window.ICSamplePlayer) {
+            window.__icSamplePlayer = new ICSamplePlayer({ rootPath: 'assets/samples/piano-ogg-full' });
+            window.__icSamplePlayer.load();
+          }
+        } catch(e) { console.warn('采样器初始化失败:', e); }
+      });
+    </script>
 </head>
 <body>
     <div class="container">
@@ -244,6 +243,7 @@
                         <button class="melody-visibility-btn" id="intervalVisibilityBtn" onclick="toggleIntervalVisibility()" title="隐藏/显示音程">
                             👀
                         </button>
+                        
                     </div>
                     <div class="button-group">
                         <button class="btn-secondary" onclick="openRhythmSettings()" data-i18n="controls.rhythm">节奏设置</button>
@@ -627,7 +627,7 @@
                     <div class="checkbox-grid">
                         <label class="checkbox-item">
                             <input type="checkbox" id="key-C" value="C" checked="">
-                            <span data-i18n="key.C-major">C 大调</span>
+                            <span data-i18n="key.C-major">C 大调 (0#)</span>
                         </label>
                         <label class="checkbox-item">
                             <input type="checkbox" id="key-G" value="G">
@@ -688,7 +688,7 @@
                     <div class="checkbox-grid">
                         <label class="checkbox-item">
                             <input type="checkbox" id="key-Am" value="Am">
-                            <span data-i18n="key.a-minor">A 小调</span>
+                            <span data-i18n="key.a-minor">A 小调 (0#)</span>
                         </label>
                         <label class="checkbox-item">
                             <input type="checkbox" id="key-Em" value="Em">
@@ -1039,14 +1039,14 @@
         function switchFunction(mode) {
             if (mode === 'melody') {
                 // 导航到旋律视奏页面
-                window.location.href = '/tools/melody-generator.html';
+                window.location.href = 'melody-generator.html';
             } else if (mode === 'interval') {
                 // 已经在音程视奏页面
                 closeFunctionSelector();
                 console.log('已在音程视奏模式');
             } else if (mode === 'chord') {
                 // 导航到和弦视奏页面
-                window.location.href = '/tools/chord-generator.html';
+                window.location.href = 'chord-generator.html';
             }
         }
         
@@ -1066,10 +1066,24 @@
         let isMetronomeRunning = false;
         let metronomeTempo = 60; // 默认60 BPM
 
-        // 初始化Web Audio API
+        // 🔧 精确同步：记录节拍器启动时间和当前节拍
+        let metronomeStartTime = null;
+        let metronomeCurrentBeat = 0;
+        let metronomeSchedulerInterval = null;
+
+        // 🔧 关键修复：使用与音程播放相同的 AudioContext
         function initializeMetronomeAudio() {
             try {
-                metronomeAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                // 优先使用音程播放的 AudioContext
+                if (window.intervalAudioCtx) {
+                    metronomeAudioContext = window.intervalAudioCtx;
+                    console.log('🎵 节拍器使用音程的 AudioContext（共享时钟）');
+                } else {
+                    metronomeAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    // 反向共享：让音程也使用这个 AudioContext
+                    window.intervalAudioCtx = metronomeAudioContext;
+                    console.log('🎵 节拍器创建新 AudioContext（共享给音程）');
+                }
                 return true;
             } catch (error) {
                 console.error('❌ Web Audio API 不支持:', error);
@@ -1077,8 +1091,8 @@
             }
         }
 
-        // 播放节拍器声音
-        function playMetronomeSound() {
+        // 播放节拍器声音 - 支持精确调度
+        function playMetronomeSound(time) {
             if (!metronomeAudioContext) {
                 if (!initializeMetronomeAudio()) return;
             }
@@ -1089,33 +1103,38 @@
                     metronomeAudioContext.resume();
                 }
 
+                // 🔧 使用传入的精确时间，如果没有则使用当前时间
+                const scheduleTime = time !== undefined ? time : metronomeAudioContext.currentTime;
+
                 const oscillator = metronomeAudioContext.createOscillator();
                 const gainNode = metronomeAudioContext.createGain();
-                
+
                 oscillator.connect(gainNode);
                 gainNode.connect(metronomeAudioContext.destination);
 
                 // 使用方波和自然音高 (参考NiceChord节拍器)
                 oscillator.type = 'square';
-                oscillator.frequency.setValueAtTime(523.25, metronomeAudioContext.currentTime); // C5音高
+                oscillator.frequency.setValueAtTime(523.25, scheduleTime); // C5音高
 
                 // 设置自然的音量包络 (更好的release time)
-                gainNode.gain.setValueAtTime(0.25, metronomeAudioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, metronomeAudioContext.currentTime + 0.05);
+                gainNode.gain.setValueAtTime(0.25, scheduleTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, scheduleTime + 0.05);
 
-                oscillator.start(metronomeAudioContext.currentTime);
-                oscillator.stop(metronomeAudioContext.currentTime + 0.05);
+                oscillator.start(scheduleTime);
+                oscillator.stop(scheduleTime + 0.05);
 
-                // 视觉反馈 - 更新header指示器
-                const headerIndicator = document.getElementById('headerBeatIndicator');
-                
-                if (headerIndicator) {
-                    headerIndicator.classList.add('beat');
-                    setTimeout(() => {
-                        headerIndicator.classList.remove('beat');
-                    }, 150);
+                // 视觉反馈 - 更新header指示器（只在立即播放时）
+                if (time === undefined || scheduleTime <= metronomeAudioContext.currentTime + 0.05) {
+                    const headerIndicator = document.getElementById('headerBeatIndicator');
+
+                    if (headerIndicator) {
+                        headerIndicator.classList.add('beat');
+                        setTimeout(() => {
+                            headerIndicator.classList.remove('beat');
+                        }, 150);
+                    }
                 }
-                
+
             } catch (error) {
                 console.error('❌ 节拍器声音播放失败:', error);
             }
@@ -1124,57 +1143,90 @@
         // 设置节拍器速度
         function setMetronomeTempo(bpm) {
             metronomeTempo = Math.max(1, Math.min(999, bpm));
-            
+
             // 同步更新header输入框
             const headerInput = document.getElementById('headerMetronomeBpm');
             if (headerInput) headerInput.value = metronomeTempo;
-            
+
             // 如果节拍器正在运行，重新启动以应用新速度
             if (isMetronomeRunning) {
                 stopMetronome();
                 startMetronome();
             }
-            
         }
 
-        // 启动节拍器
+        // 🔧 精确节拍器调度器 - 使用 Web Audio API 时钟
+        function scheduleMetronomeBeat() {
+            if (!metronomeAudioContext) {
+                if (!initializeMetronomeAudio()) return;
+            }
+
+            const beatDuration = 60.0 / metronomeTempo; // 每拍的秒数
+            const scheduleAheadTime = 0.2; // 调度未来 200ms 的节拍
+
+            while (metronomeStartTime + metronomeCurrentBeat * beatDuration <
+                   metronomeAudioContext.currentTime + scheduleAheadTime) {
+
+                const beatTime = metronomeStartTime + metronomeCurrentBeat * beatDuration;
+
+                // 调度这一拍
+                playMetronomeSound(beatTime);
+
+                metronomeCurrentBeat++;
+            }
+        }
+
+        // 启动节拍器 - 使用精确 Web Audio API 调度
         function startMetronome() {
             const headerInput = document.getElementById('headerMetronomeBpm');
             const tempo = parseInt(headerInput ? headerInput.value : metronomeTempo) || 60;
-            setMetronomeTempo(tempo);
+            metronomeTempo = tempo;
+
+            // 同步更新header输入框
+            if (headerInput) headerInput.value = metronomeTempo;
 
             if (isMetronomeRunning) return;
 
-            const interval = 60000 / metronomeTempo; // 计算间隔时间（毫秒）
+            if (!metronomeAudioContext) {
+                if (!initializeMetronomeAudio()) return;
+            }
+
+            // 恢复音频上下文
+            if (metronomeAudioContext.state === 'suspended') {
+                metronomeAudioContext.resume();
+            }
 
             isMetronomeRunning = true;
 
-            // 🎵 新功能：检查是否需要与播放内容同步
-            if (window.isPlayingInterval && window.intervalPlaybackStartTime) {
-                synchronizeMetronomeWithPlayback(interval);
+            // 🔧 关键修复：使用 AudioContext 时间 0 作为全局节拍网格的起点
+            metronomeStartTime = 0; // 全局网格起点
+
+            const beatDuration = 60.0 / metronomeTempo;
+            const now = metronomeAudioContext.currentTime;
+
+            // 计算当前应该在第几拍（从时间 0 开始）
+            const currentBeatNumber = Math.floor(now / beatDuration);
+            const nextBeatNumber = currentBeatNumber + 1;
+            const nextBeatTime = nextBeatNumber * beatDuration;
+
+            // 确保下一拍至少在未来 50ms，否则跳过
+            const minLookahead = 0.05;
+            if (nextBeatTime < now + minLookahead) {
+                metronomeCurrentBeat = nextBeatNumber + 1;
             } else {
-                // 传统模式：立即启动节拍器
-                startMetronomeNormal(interval);
+                metronomeCurrentBeat = nextBeatNumber;
             }
+
+            console.log(`🎵 节拍器对齐全局网格: ${metronomeTempo} BPM, 当前=${now.toFixed(3)}s, 从第${metronomeCurrentBeat}拍开始 (时间=${(metronomeCurrentBeat * beatDuration).toFixed(3)}s)`);
+
+            // 立即调度第一批节拍
+            scheduleMetronomeBeat();
+
+            // 🔧 使用更频繁的定时器来检查和调度（25ms），而不是用它来播放声音
+            metronomeSchedulerInterval = setInterval(scheduleMetronomeBeat, 25);
 
             // 更新UI
             updateMetronomeUI();
-
-        }
-
-        // 普通节拍器启动（原始逻辑）
-        function startMetronomeNormal(interval) {
-            // 🎵 记录节拍器启动时间，用于同步计算
-            window.metronomeStartTime = performance.now();
-
-            // 立即播放第一拍
-            playMetronomeSound();
-
-            // 设置定时器
-            metronomeInterval = setInterval(() => {
-                playMetronomeSound();
-            }, interval);
-
         }
 
         // 与播放内容同步的节拍器启动
@@ -1233,10 +1285,22 @@
                 clearInterval(metronomeInterval);
                 metronomeInterval = null;
             }
-            
+
+            // 🔧 清除调度器定时器
+            if (metronomeSchedulerInterval) {
+                clearInterval(metronomeSchedulerInterval);
+                metronomeSchedulerInterval = null;
+            }
+
             isMetronomeRunning = false;
+
+            // 重置节拍计数
+            metronomeStartTime = null;
+            metronomeCurrentBeat = 0;
+
             updateMetronomeUI();
-            
+
+            console.log('🔇 节拍器已停止');
         }
 
         // 切换节拍器开关
@@ -1256,7 +1320,7 @@
             if (headerToggleBtn) {
                 if (isMetronomeRunning) {
                     headerToggleBtn.classList.add('active');
-                    headerToggleBtn.textContent = '⏸️';
+                    headerToggleBtn.textContent = '🎵';
                     headerToggleBtn.title = '停止节拍器';
                 } else {
                     headerToggleBtn.classList.remove('active');
@@ -1692,33 +1756,33 @@
                 'settings.tempo': '速度 (BPM)',
                 'settings.startMetronome': '开始节拍器',
                 'settings.stopMetronome': '停止节拍器',
-                // 调号
-                'key.C-major': 'C 大调',
-                'key.G-major': 'G 大调',
-                'key.D-major': 'D 大调',
-                'key.A-major': 'A 大调',
-                'key.E-major': 'E 大调',
-                'key.B-major': 'B 大调',
-                'key.Fs-major': 'F# 大调',
-                'key.F-major': 'F 大调',
-                'key.Bb-major': 'Bb 大调',
-                'key.Eb-major': 'Eb 大调',
-                'key.Ab-major': 'Ab 大调',
-                'key.Db-major': 'Db 大调',
-                'key.Gb-major': 'Gb 大调',
-                'key.a-minor': 'A 小调',
-                'key.e-minor': 'E 小调',
-                'key.b-minor': 'B 小调',
-                'key.fs-minor': 'F# 小调',
-                'key.cs-minor': 'C# 小调',
-                'key.gs-minor': 'G# 小调',
-                'key.ds-minor': 'D# 小调',
-                'key.d-minor': 'D 小调',
-                'key.g-minor': 'G 小调',
-                'key.c-minor': 'C 小调',
-                'key.f-minor': 'F 小调',
-                'key.bb-minor': 'Bb 小调',
-                'key.eb-minor': 'Eb 小调',
+                // 调号（含升降号数量）
+                'key.C-major': 'C 大调 (0#)',
+                'key.G-major': 'G 大调 (1#)',
+                'key.D-major': 'D 大调 (2#)',
+                'key.A-major': 'A 大调 (3#)',
+                'key.E-major': 'E 大调 (4#)',
+                'key.B-major': 'B 大调 (5#)',
+                'key.Fs-major': 'F# 大调 (6#)',
+                'key.F-major': 'F 大调 (1b)',
+                'key.Bb-major': 'Bb 大调 (2b)',
+                'key.Eb-major': 'Eb 大调 (3b)',
+                'key.Ab-major': 'Ab 大调 (4b)',
+                'key.Db-major': 'Db 大调 (5b)',
+                'key.Gb-major': 'Gb 大调 (6b)',
+                'key.a-minor': 'A 小调 (0#)',
+                'key.e-minor': 'E 小调 (1#)',
+                'key.b-minor': 'B 小调 (2#)',
+                'key.fs-minor': 'F# 小调 (3#)',
+                'key.cs-minor': 'C# 小调 (4#)',
+                'key.gs-minor': 'G# 小调 (5#)',
+                'key.ds-minor': 'D# 小调 (6#)',
+                'key.d-minor': 'D 小调 (1b)',
+                'key.g-minor': 'G 小调 (2b)',
+                'key.c-minor': 'C 小调 (3b)',
+                'key.f-minor': 'F 小调 (4b)',
+                'key.bb-minor': 'Bb 小调 (5b)',
+                'key.eb-minor': 'Eb 小调 (6b)',
                 // 节奏类型
                 'rhythm.whole': '全音符',
                 'rhythm.dottedHalf': '附点二分音符',
@@ -1821,33 +1885,33 @@
                 'settings.tempo': '速度 (BPM)',
                 'settings.startMetronome': '開始節拍器',
                 'settings.stopMetronome': '停止節拍器',
-                // 調號
-                'key.C-major': 'C 大調',
-                'key.G-major': 'G 大調',
-                'key.D-major': 'D 大調',
-                'key.A-major': 'A 大調',
-                'key.E-major': 'E 大調',
-                'key.B-major': 'B 大調',
-                'key.Fs-major': 'F# 大調',
-                'key.F-major': 'F 大調',
-                'key.Bb-major': 'Bb 大調',
-                'key.Eb-major': 'Eb 大調',
-                'key.Ab-major': 'Ab 大調',
-                'key.Db-major': 'Db 大調',
-                'key.Gb-major': 'Gb 大調',
-                'key.a-minor': 'A 小調',
-                'key.e-minor': 'E 小調',
-                'key.b-minor': 'B 小調',
-                'key.fs-minor': 'F# 小調',
-                'key.cs-minor': 'C# 小調',
-                'key.gs-minor': 'G# 小調',
-                'key.ds-minor': 'D# 小調',
-                'key.d-minor': 'D 小調',
-                'key.g-minor': 'G 小調',
-                'key.c-minor': 'C 小調',
-                'key.f-minor': 'F 小調',
-                'key.bb-minor': 'Bb 小調',
-                'key.eb-minor': 'Eb 小調',
+                // 調號（含升降號數量）
+                'key.C-major': 'C 大調 (0#)',
+                'key.G-major': 'G 大調 (1#)',
+                'key.D-major': 'D 大調 (2#)',
+                'key.A-major': 'A 大調 (3#)',
+                'key.E-major': 'E 大調 (4#)',
+                'key.B-major': 'B 大調 (5#)',
+                'key.Fs-major': 'F# 大調 (6#)',
+                'key.F-major': 'F 大調 (1b)',
+                'key.Bb-major': 'Bb 大調 (2b)',
+                'key.Eb-major': 'Eb 大調 (3b)',
+                'key.Ab-major': 'Ab 大調 (4b)',
+                'key.Db-major': 'Db 大調 (5b)',
+                'key.Gb-major': 'Gb 大調 (6b)',
+                'key.a-minor': 'A 小調 (0#)',
+                'key.e-minor': 'E 小調 (1#)',
+                'key.b-minor': 'B 小調 (2#)',
+                'key.fs-minor': 'F# 小調 (3#)',
+                'key.cs-minor': 'C# 小調 (4#)',
+                'key.gs-minor': 'G# 小調 (5#)',
+                'key.ds-minor': 'D# 小調 (6#)',
+                'key.d-minor': 'D 小調 (1b)',
+                'key.g-minor': 'G 小調 (2b)',
+                'key.c-minor': 'C 小調 (3b)',
+                'key.f-minor': 'F 小調 (4b)',
+                'key.bb-minor': 'Bb 小調 (5b)',
+                'key.eb-minor': 'Eb 小調 (6b)',
                 // 節奏類型
                 'rhythm.whole': '全音符',
                 'rhythm.dottedHalf': '附點二分音符',
@@ -1939,7 +2003,7 @@
                 'controls.next': 'Next',
                 'controls.rhythm': 'Rhythm Settings',
                 'controls.articulation': 'Articulations',
-                'controls.play': '▶️ Play',
+                'controls.play': 'Play',
                 'score.emptyInterval': 'Click Generate Intervals to Start Practice',
                 'settings.title': 'Settings',
                 'settings.theme': 'Theme',
@@ -1950,33 +2014,33 @@
                 'settings.tempo': 'Tempo (BPM)',
                 'settings.startMetronome': 'Start Metronome',
                 'settings.stopMetronome': 'Stop Metronome',
-                // Key signatures
-                'key.C-major': 'C Major',
-                'key.G-major': 'G Major',
-                'key.D-major': 'D Major',
-                'key.A-major': 'A Major',
-                'key.E-major': 'E Major',
-                'key.B-major': 'B Major',
-                'key.Fs-major': 'F# Major',
-                'key.F-major': 'F Major',
-                'key.Bb-major': 'B♭ Major',
-                'key.Eb-major': 'E♭ Major',
-                'key.Ab-major': 'A♭ Major',
-                'key.Db-major': 'D♭ Major',
-                'key.Gb-major': 'G♭ Major',
-                'key.a-minor': 'A Minor',
-                'key.e-minor': 'E Minor',
-                'key.b-minor': 'B Minor',
-                'key.fs-minor': 'F# Minor',
-                'key.cs-minor': 'C# Minor',
-                'key.gs-minor': 'G# Minor',
-                'key.ds-minor': 'D# Minor',
-                'key.d-minor': 'D Minor',
-                'key.g-minor': 'G Minor',
-                'key.c-minor': 'C Minor',
-                'key.f-minor': 'F Minor',
-                'key.bb-minor': 'B♭ Minor',
-                'key.eb-minor': 'E♭ Minor',
+                // Key signatures (with accidental counts)
+                'key.C-major': 'C Major (0#)',
+                'key.G-major': 'G Major (1#)',
+                'key.D-major': 'D Major (2#)',
+                'key.A-major': 'A Major (3#)',
+                'key.E-major': 'E Major (4#)',
+                'key.B-major': 'B Major (5#)',
+                'key.Fs-major': 'F# Major (6#)',
+                'key.F-major': 'F Major (1b)',
+                'key.Bb-major': 'B♭ Major (2b)',
+                'key.Eb-major': 'E♭ Major (3b)',
+                'key.Ab-major': 'A♭ Major (4b)',
+                'key.Db-major': 'D♭ Major (5b)',
+                'key.Gb-major': 'G♭ Major (6b)',
+                'key.a-minor': 'A Minor (0#)',
+                'key.e-minor': 'E Minor (1#)',
+                'key.b-minor': 'B Minor (2#)',
+                'key.fs-minor': 'F# Minor (3#)',
+                'key.cs-minor': 'C# Minor (4#)',
+                'key.gs-minor': 'G# Minor (5#)',
+                'key.ds-minor': 'D# Minor (6#)',
+                'key.d-minor': 'D Minor (1b)',
+                'key.g-minor': 'G Minor (2b)',
+                'key.c-minor': 'C Minor (3b)',
+                'key.f-minor': 'F Minor (4b)',
+                'key.bb-minor': 'B♭ Minor (5b)',
+                'key.eb-minor': 'E♭ Minor (6b)',
                 // Rhythm types
                 'rhythm.whole': 'Whole Note',
                 'rhythm.dottedHalf': 'Dotted Half Note',
@@ -2127,14 +2191,11 @@
                     languageBtn.textContent = languageLabels[currentLanguage];
                 }
             } else {
-                // 如果没有保存的语言偏好，使用默认的中文，并保存到 localStorage
-                currentLanguage = 'zh-CN';
-                localStorage.setItem('preferredLanguage', 'zh-CN');
+                // 如果没有保存的语言偏好，显示默认的 🌐 文/A
                 const languageBtn = document.getElementById('languageBtn');
                 if (languageBtn) {
                     languageBtn.textContent = '🌐 文/A';
                 }
-                console.log('🌐 首次访问，已设置默认语言为中文');
             }
 
             // 应用翻译
@@ -2490,6 +2551,18 @@
                 if (rhythmQuadrupletLabel) rhythmQuadrupletLabel.style.display = 'flex';
                 if (freqDupletItem) freqDupletItem.style.display = 'block';
                 if (freqQuadrupletItem) freqQuadrupletItem.style.display = 'block';
+
+                // 🆕 当包含6/8时，默认勾选八分音符与附点四分音符，确保复合拍核心节奏就绪
+                const eighthCheckbox = document.getElementById('rhythm-eighth');
+                const dottedQuarterCheckbox = document.getElementById('rhythm-dotted-quarter');
+                if (eighthCheckbox && !eighthCheckbox.checked) {
+                    eighthCheckbox.checked = true;
+                    console.log('✅ 6/8已被勾选（与简单拍并存）→ 自动勾选：八分音符');
+                }
+                if (dottedQuarterCheckbox && !dottedQuarterCheckbox.checked) {
+                    dottedQuarterCheckbox.checked = true;
+                    console.log('✅ 6/8已被勾选（与简单拍并存）→ 自动勾选：附点四分音符');
+                }
 
             } else if (has68TimeSignature) {
 
@@ -3087,7 +3160,7 @@
 
             // 音域记忆系统 - 参考和弦视奏工具设置
             window.clefRangeMemory = {
-                'treble': { min: 55, max: 81 },  // G3-A5（新的高音谱号默认音域）
+                'treble': { min: 60, max: 81 },  // C4-A5（高音谱号默认音域）
                 'bass': { min: 40, max: 64 },    // E2-E4 (与和弦视奏工具一致)
                 'alto': { min: 48, max: 67 }     // C3-G4 (中音谱号合理音域，不影响和弦工具)
             };
@@ -3991,15 +4064,93 @@
         const originalGenerateIntervals = window.generateIntervals;
         if (originalGenerateIntervals) {
             window.generateIntervals = function(...args) {
+                // 🎵 自动停止当前播放
+                if (typeof window.isPlayingInterval !== 'undefined' && window.isPlayingInterval) {
+                    window.isPlayingInterval = false;
+                    if (window.intervalScheduledSounds) {
+                        window.intervalScheduledSounds.forEach(sound => {
+                            try {
+                                if (sound.oscillator) sound.oscillator.stop();
+                                if (sound.source) sound.source.stop();
+                                if (sound.element) {
+                                    sound.element.pause();
+                                    sound.element.src = '';
+                                }
+                            } catch (e) {}
+                        });
+                        window.intervalScheduledSounds = [];
+                    }
+                    // 更新播放按钮状态
+                    const playBtn = document.getElementById('playIntervalBtn');
+                    if (playBtn) {
+                        playBtn.innerHTML = '播放';
+                    }
+                }
+
                 // 清除空谱子提示信息
                 clearEmptyScoreMessage();
-                
+
                 const result = originalGenerateIntervals.apply(this, args);
                 hideTitleAndInstrumentElements();
                 return result;
             };
         }
-        
+
+        // 包装 previousInterval 和 nextInterval，添加停止播放逻辑
+        const originalPreviousInterval = window.previousInterval;
+        if (originalPreviousInterval) {
+            window.previousInterval = function(...args) {
+                if (typeof window.isPlayingInterval !== 'undefined' && window.isPlayingInterval) {
+                    window.isPlayingInterval = false;
+                    if (window.intervalScheduledSounds) {
+                        window.intervalScheduledSounds.forEach(sound => {
+                            try {
+                                if (sound.oscillator) sound.oscillator.stop();
+                                if (sound.source) sound.source.stop();
+                                if (sound.element) {
+                                    sound.element.pause();
+                                    sound.element.src = '';
+                                }
+                            } catch (e) {}
+                        });
+                        window.intervalScheduledSounds = [];
+                    }
+                    const playBtn = document.getElementById('playIntervalBtn');
+                    if (playBtn) {
+                        playBtn.innerHTML = '播放';
+                    }
+                }
+                return originalPreviousInterval.apply(this, args);
+            };
+        }
+
+        const originalNextInterval = window.nextInterval;
+        if (originalNextInterval) {
+            window.nextInterval = function(...args) {
+                if (typeof window.isPlayingInterval !== 'undefined' && window.isPlayingInterval) {
+                    window.isPlayingInterval = false;
+                    if (window.intervalScheduledSounds) {
+                        window.intervalScheduledSounds.forEach(sound => {
+                            try {
+                                if (sound.oscillator) sound.oscillator.stop();
+                                if (sound.source) sound.source.stop();
+                                if (sound.element) {
+                                    sound.element.pause();
+                                    sound.element.src = '';
+                                }
+                            } catch (e) {}
+                        });
+                        window.intervalScheduledSounds = [];
+                    }
+                    const playBtn = document.getElementById('playIntervalBtn');
+                    if (playBtn) {
+                        playBtn.innerHTML = '播放';
+                    }
+                }
+                return originalNextInterval.apply(this, args);
+            };
+        }
+
         // 页面加载完成后也执行一次
         document.addEventListener('DOMContentLoaded', () => {
             hideTitleAndInstrumentElements();
@@ -4102,6 +4253,7 @@
         window.intervalPlaybackStartTime = null; // 播放开始的实际时间（Performance.now()）
         window.intervalPlaybackTempo = 60; // 当前播放的tempo
         window.intervalPlaybackTimeSignature = { beats: 4, beatType: 4 }; // 当前播放的拍号
+        window.intervalMetronomeSyncTimeout = null; // 节拍器同步的 setTimeout ID
 
         function directPlayTest() {
 
@@ -4124,15 +4276,32 @@
                 window.intervalPlaybackTempo = 60;
                 window.intervalPlaybackTimeSignature = { beats: 4, beatType: 4 };
 
+                // 🔧 清除节拍器同步的 setTimeout（如果存在）
+                if (window.intervalMetronomeSyncTimeout) {
+                    clearTimeout(window.intervalMetronomeSyncTimeout);
+                    window.intervalMetronomeSyncTimeout = null;
+                    console.log('⏹️ 已清除节拍器同步定时器');
+                }
+
                 // 停止所有调度的播放
                 if (window.intervalScheduledSounds) {
                     window.intervalScheduledSounds.forEach(sound => {
                         try {
+                            // 处理振荡器节点（合成器回退）
                             if (sound.oscillator) {
                                 sound.oscillator.stop();
                             }
+                            // 处理采样器的 BufferSource 节点
+                            if (sound.source) {
+                                sound.source.stop();
+                            }
+                            // 处理 HTMLAudioElement（file:// 协议下的回退）
+                            if (sound.element) {
+                                sound.element.pause();
+                                sound.element.src = '';
+                            }
                         } catch (e) {
-                            // 振荡器可能已经停止，忽略错误
+                            // 节点可能已经停止，忽略错误
                         }
                     });
                     window.intervalScheduledSounds = [];
@@ -4243,29 +4412,64 @@
 
             updatePlayButton();
 
-            // 🎵 检查节拍器状态并实现同步播放
-            if (isMetronomeRunning) {
-
-                if (isIntervalHidden) {
+            // 🎵 检查隐藏模式（隐藏模式需要count-in）
+            if (isIntervalHidden) {
+                if (isMetronomeRunning) {
                     handleHiddenModeWithMetronome(window.currentIntervalProgression);
                 } else {
-                    playIntervalProgressionWithMetronomeSync(window.currentIntervalProgression);
-                }
-            } else {
-                // 没有节拍器时的原始逻辑
-                if (isIntervalHidden) {
                     playCountIn(window.currentIntervalProgression);
-                } else {
-                    playIntervalProgression(window.currentIntervalProgression);
                 }
+                return;
             }
+
+            // 🔧 智能播放时间：节拍器开启时对齐网格，关闭时立即响应
+
+            // 确保 AudioContext 已初始化
+            if (!window.intervalAudioCtx) {
+                window.intervalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            // 获取当前速度
+            let tempo = 60;
+            if (typeof getCurrentTempo === 'function') {
+                tempo = getCurrentTempo();
+            } else if (typeof metronomeTempo !== 'undefined') {
+                tempo = metronomeTempo;
+            }
+
+            const beatDuration = 60.0 / tempo;
+            const now = window.intervalAudioCtx.currentTime;
+            let startTime;
+
+            if (typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning) {
+                // 🎵 节拍器开启 - 对齐全局网格确保同步
+                const currentBeatNumber = Math.floor(now / beatDuration);
+                let nextBeatNumber = currentBeatNumber + 1;
+                startTime = nextBeatNumber * beatDuration;
+
+                // 安全检查：确保 startTime 至少在未来 50ms
+                const minLookahead = 0.05;
+                if (startTime < now + minLookahead) {
+                    nextBeatNumber++;
+                    startTime = nextBeatNumber * beatDuration;
+                    console.log(`⚠️ 时间太近，跳到下一拍 (第${nextBeatNumber}拍)`);
+                }
+
+                console.log(`🎵 节拍器开启 - 同步到全局网格: BPM=${tempo}, 当前=${now.toFixed(3)}s, 播放=${startTime.toFixed(3)}s (第${nextBeatNumber}拍)`);
+            } else {
+                // 🚀 节拍器关闭 - 立即播放，响应迅速
+                startTime = now + 0.1;
+                console.log(`🚀 节拍器未开启 - 立即播放: BPM=${tempo}, 当前=${now.toFixed(3)}s, 播放=${startTime.toFixed(3)}s`);
+            }
+
+            playIntervalProgression(window.currentIntervalProgression, startTime);
         }
 
         function updatePlayButton() {
             const playBtn = document.getElementById('playIntervalBtn');
             if (playBtn) {
                 if (window.isPlayingInterval) {
-                    playBtn.innerHTML = '⏹️ 停止';
+                    playBtn.innerHTML = '停止';
                     playBtn.classList.add('playing');
                 } else {
                     playBtn.innerHTML = '播放';
@@ -4291,32 +4495,10 @@
         }
 
         /**
-         * 🎵 普通模式 + 节拍器：直接同步播放
-         * @param {Object} progression - 音程进行数据
+         * 🗑️ 已弃用：旧的同步逻辑（使用modulo方式）
+         * 现在使用全局节拍网格，所有播放总是对齐，不需要这个函数
          */
-        function playIntervalProgressionWithMetronomeSync(progression) {
-
-            // 计算当前节拍器的位置，使播放在下一个强拍开始
-            const currentTime = performance.now();
-            const interval = 60000 / metronomeTempo; // 每拍毫秒数
-            const timeSignature = progression.timeSignature || { beats: 4, beatType: 4 };
-            const measureDuration = interval * timeSignature.beats; // 每小节毫秒数
-
-            // 计算到下一个小节开始的延迟时间
-            const timeSinceMetronomeStart = currentTime - (window.metronomeStartTime || currentTime);
-            const currentPositionInMeasure = timeSinceMetronomeStart % measureDuration;
-            const delayToNextMeasure = measureDuration - currentPositionInMeasure;
-
-            console.log(`   - 每拍间隔: ${interval.toFixed(2)}ms`);
-            console.log(`   - 每小节时长: ${measureDuration.toFixed(2)}ms`);
-            console.log(`   - 当前小节位置: ${currentPositionInMeasure.toFixed(2)}ms`);
-            console.log(`   - 延迟到下一小节: ${delayToNextMeasure.toFixed(2)}ms`);
-
-            // 在下一个小节开始时播放
-            setTimeout(() => {
-                playIntervalProgression(progression);
-            }, delayToNextMeasure);
-        }
+        // function playIntervalProgressionWithMetronomeSync(progression) { ... }
 
         /**
          * 🎭🎵 播放count-in并在结束后重新启动节拍器
@@ -4413,6 +4595,14 @@
             // 以AudioContext时间为基准，避免setTimeout漂移
             const baseTime = window.intervalAudioCtx.currentTime + 0.1;
             let currentTime = baseTime;
+
+            // 初始化采样器（若可用）
+            try {
+                if (!window.__icSamplePlayer && window.ICSamplePlayer) {
+                    window.__icSamplePlayer = new ICSamplePlayer({ rootPath: 'assets/samples/piano-ogg' });
+                    window.__icSamplePlayer.load();
+                }
+            } catch (_) {}
 
             // 播放每一拍的click声
             for (let beat = 1; beat <= countInBeats; beat++) {
@@ -4595,32 +4785,31 @@
                 const frequency = pitchToFrequency(pitch);
                 if (frequency) {
                     try {
-                        const oscillator = window.intervalAudioCtx.createOscillator();
-                        const gainNode = window.intervalAudioCtx.createGain();
-
-                        oscillator.connect(gainNode);
-                        gainNode.connect(window.intervalAudioCtx.destination);
-
-                        oscillator.frequency.setValueAtTime(frequency, startTime);
-                        oscillator.type = 'sine';
-
-                        // 🎯 修复：改进音量包络，避免点击声
-                        const volume = 0.15; // 降低音量避免刺耳
-                        gainNode.gain.setValueAtTime(0, startTime);
-                        gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.02); // 更快的起始
-                        gainNode.gain.setValueAtTime(volume * 0.8, startTime + duration - 0.05); // 保持音量
-                        gainNode.gain.linearRampToValueAtTime(0, startTime + duration); // 平滑结束
-
-                        oscillator.start(startTime);
-                        oscillator.stop(startTime + duration);
-
-                        // 保存到调度列表用于停止
-                        if (!window.intervalScheduledSounds) {
-                            window.intervalScheduledSounds = [];
+                        if (window.__icSamplePlayer && window.__icSamplePlayer.ready) {
+                            const midi = Math.round(69 + 12 * Math.log2(frequency / 440));
+                            const playResult = window.__icSamplePlayer.scheduleAtExternalContext(window.intervalAudioCtx, startTime, midi, duration, 0.8);
+                            // 保存返回值以便停止时使用
+                            if (playResult) {
+                                if (!window.intervalScheduledSounds) window.intervalScheduledSounds = [];
+                                window.intervalScheduledSounds.push(playResult);
+                            }
+                        } else {
+                            const oscillator = window.intervalAudioCtx.createOscillator();
+                            const gainNode = window.intervalAudioCtx.createGain();
+                            oscillator.connect(gainNode);
+                            gainNode.connect(window.intervalAudioCtx.destination);
+                            oscillator.frequency.setValueAtTime(frequency, startTime);
+                            oscillator.type = 'sine';
+                            const volume = 0.15;
+                            gainNode.gain.setValueAtTime(0, startTime);
+                            gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.02);
+                            gainNode.gain.setValueAtTime(volume * 0.8, startTime + duration - 0.05);
+                            gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
+                            oscillator.start(startTime);
+                            oscillator.stop(startTime + duration);
+                            if (!window.intervalScheduledSounds) window.intervalScheduledSounds = [];
+                            window.intervalScheduledSounds.push({ oscillator, gainNode });
                         }
-                        window.intervalScheduledSounds.push({ oscillator, gainNode });
-
-
                     } catch (error) {
                         console.error(`❌ 播放音符 ${pitch} 失败:`, error);
                     }
@@ -4949,147 +5138,12 @@
         });
 
         console.log('⌨️ 音程视奏工具快捷键已启用: P=播放 ←→=导航 Space=生成 H=隐藏 C=节拍器');
-
-        /* ========== 旧的试用限制管理系统 (已禁用，现使用统一的 melody-counter-system.js) ==========
-        // ========== 试用限制管理系统 ==========
-        const TrialManager = {
-            maxTrialUses: 20, // 免费试用最大次数
-
-            // 检查是否为完整版用户
-            isFullVersion() {
-                return localStorage.getItem('ic_full_version') === 'true';
-            },
-
-            // 获取当前试用次数
-            getTrialCount() {
-                const count = localStorage.getItem('ic_trial_count');
-                return count ? parseInt(count) : 0;
-            },
-
-            // 增加试用次数
-            incrementTrialCount() {
-                const currentCount = this.getTrialCount();
-                const newCount = currentCount + 1;
-                localStorage.setItem('ic_trial_count', newCount.toString());
-                return newCount;
-            },
-
-            // 获取剩余试用次数
-            getRemainingTrials() {
-                return Math.max(0, this.maxTrialUses - this.getTrialCount());
-            },
-
-            // 检查是否可以继续使用
-            canUse() {
-                return this.isFullVersion() || this.getRemainingTrials() > 0;
-            },
-
-            // 更新试用信息显示
-            updateTrialDisplay() {
-                const trialInfo = document.getElementById('trialInfo');
-                const trialCounter = document.getElementById('trialCounter');
-
-                if (this.isFullVersion()) {
-                    // 完整版用户：隐藏所有试用相关显示
-                    if (trialInfo) {
-                        trialInfo.style.display = 'none';
-                    }
-                    if (trialCounter) {
-                        trialCounter.style.display = 'none';
-                    }
-                } else {
-                    // 试用版用户：隐藏header中的提示，只在按钮旁显示简单数字
-                    if (trialInfo) {
-                        trialInfo.style.display = 'none';
-                    }
-                    if (trialCounter) {
-                        const remaining = this.getRemainingTrials();
-                        if (remaining > 0) {
-                            trialCounter.innerHTML = `${remaining}`;
-                            trialCounter.style.display = 'inline-block';
-                        } else {
-                            trialCounter.innerHTML = '0';
-                            trialCounter.style.display = 'inline-block';
-                        }
-                    }
-                }
-            },
-
-            // 显示试用限制警告
-            showTrialLimitWarning() {
-                // 静默处理：试用次数用完后不显示任何提示，直接返回 false
-                return false;
-            },
-
-            // 验证访问码
-            validateAccessCode(code) {
-                // 这里可以设置多个有效的访问码
-                const validCodes = [
-                    'IC2025FULL',
-                    'ICSTUDIO2025',
-                    'SIGHT2025',
-                    'INTERVAL2025'
-                ];
-                return validCodes.includes(code.toUpperCase());
-            }
-        };
-
-        // 包装 generateIntervals 函数以添加试用限制
-        const originalGenerateIntervals = window.generateIntervals;
-        if (originalGenerateIntervals) {
-            window.generateIntervals = async function(...args) {
-                // 检查试用限制
-                if (!TrialManager.canUse()) {
-                    const unlocked = TrialManager.showTrialLimitWarning();
-                    if (!unlocked) {
-                        return; // 如果没有解锁成功，则停止执行
-                    }
-                }
-
-                // 非完整版用户增加试用计数
-                if (!TrialManager.isFullVersion()) {
-                    TrialManager.incrementTrialCount();
-                    TrialManager.updateTrialDisplay();
-                }
-
-                return await originalGenerateIntervals.apply(this, args);
-            };
-        }
-
-        // 页面加载完成后初始化试用信息
-        document.addEventListener('DOMContentLoaded', () => {
-            // 检查是否从访问码页面跳转过来
-            const verifiedFromAccessPage = localStorage.getItem('ic_verified_from_access_page');
-            const verifiedTimestamp = localStorage.getItem('ic_verified_timestamp');
-
-            if (verifiedFromAccessPage === 'true' && verifiedTimestamp) {
-                const timeDiff = Date.now() - parseInt(verifiedTimestamp);
-                // 如果是5分钟内从访问码页面跳转过来的，确保完整版状态
-                if (timeDiff < 5 * 60 * 1000) {
-                    console.log('🎯 检测到从访问码页面跳转，确保完整版状态');
-                    localStorage.setItem('ic_full_version', 'true');
-                    // 清除跳转标记
-                    localStorage.removeItem('ic_verified_from_access_page');
-                    localStorage.removeItem('ic_verified_timestamp');
-                }
-            }
-
-            // 初始化试用信息显示
-            TrialManager.updateTrialDisplay();
-        });
-
-        console.log('✅ 音程视奏工具试用限制系统已加载');
-        ========== 旧的试用限制管理系统结束 ========== */
     </script>
 
-    <!-- 试用限制系统脚本 -->
+    <!-- 🛡️ 试用保护系统脚本 -->
     <script src="/js/trial-limiter.js?v=20250909"></script>
     <script src="/js/advanced-trial-protection.js?v=20250920"></script>
     <script src="/js/melody-counter-system.js?v=20250920"></script>
     <script src="/js/integrated-trial-manager.js?v=20250920"></script>
-
-
-
-
 
 </body></html>

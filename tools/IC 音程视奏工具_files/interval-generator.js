@@ -1123,90 +1123,10 @@ class IntervalGenerator {
         this.tripletIdCounter = 0;
         console.log('🛡️ 三连音ID计数器已重置，避免bracket重叠');
 
-        // 🎯 获取高级设置：临时记号概率和节奏频率权重
-        this.accidentalRate = this.getAccidentalRate();
-
-        // 🔧 修复：优先使用已设置的频率，否则从DOM读取
-        if (!this.rhythmFrequencies || Object.keys(this.rhythmFrequencies).length === 0) {
-            this.rhythmFrequencies = this.getRhythmFrequencies();
-            console.log(`🎼 从DOM读取节奏频率权重:`, this.rhythmFrequencies);
-        } else {
-            console.log(`🎼 使用已设置的节奏频率权重:`, this.rhythmFrequencies);
-        }
-
-        console.log(`🎼 高级设置已加载 - 临时记号概率: ${this.accidentalRate}%, 节奏频率权重:`, this.rhythmFrequencies);
-
-        // 🔥 激进修复：检查是否只选择全音符，如果是则使用专用生成器
-        const hasOnlyWholeNoteInFreq = this.rhythmFrequencies &&
-            Object.keys(this.rhythmFrequencies).length === 1 &&
-            this.rhythmFrequencies['whole'] > 0;
-
-        const hasOnlyWholeNoteInRhythms = settings.rhythms &&
-            settings.rhythms.length === 1 &&
-            settings.rhythms[0].value === 'whole';
-
-        if (hasOnlyWholeNoteInFreq || hasOnlyWholeNoteInRhythms) {
-            console.log('🔥 检测到用户只选择全音符，启用专用生成器绕过所有复杂逻辑');
-            console.log('🔥 触发条件: 频率设置=', hasOnlyWholeNoteInFreq, '节奏参数=', hasOnlyWholeNoteInRhythms);
-            return this.generateWholeNoteOnlyProgression(settings);
-        }
-
-        // 🔥 检查是否只选择二分音符，启用专用简化生成器
-        const hasOnlyHalfNoteInFreq = this.rhythmFrequencies &&
-            Object.keys(this.rhythmFrequencies).length === 1 &&
-            this.rhythmFrequencies['half'] > 0;
-
-        const hasOnlyHalfNoteInRhythms = settings.rhythms &&
-            settings.rhythms.length === 1 &&
-            settings.rhythms[0].value === 'half';
-
-        this.halfNoteOnlyMode = hasOnlyHalfNoteInFreq || hasOnlyHalfNoteInRhythms;
-
-        // 🔍 临时禁用二分音符专用生成器，测试常规生成器的表现
-        if (false && this.halfNoteOnlyMode) {
-            console.log('🔥🔥🔥 检测到用户只选择二分音符，启用专用简化生成器 🔥🔥🔥');
-            console.log('🔥 触发条件: 频率设置=', hasOnlyHalfNoteInFreq, '节奏参数=', hasOnlyHalfNoteInRhythms);
-            console.log('🔥 设置详情:', JSON.stringify(settings, null, 2));
-
-            // 🔍 特别检查二度音程
-            const hasSecondInterval = settings.intervalTypes?.some(interval =>
-                interval.semitones === 1 || interval.semitones === 2
-            );
-            if (hasSecondInterval) {
-                console.log('🔍 ⚠️ 检测到二度音程！正在启动专用生成器...');
-                console.log('🔍 二度音程列表:', settings.intervalTypes.filter(interval =>
-                    interval.semitones === 1 || interval.semitones === 2
-                ).map(i => `${i.displayName}(${i.semitones}半音)`));
-            }
-
-            console.log('🔥 强制启动极简二分音符生成器...');
-
-            // 删除可能干扰的频率设置
-            delete this.rhythmFrequencies;
-
-            return this.generateSimpleHalfNoteProgression(settings);
-        }
-
-        // 🔍 检查是否为二分音符，但走常规生成器
-        if (this.halfNoteOnlyMode) {
-            console.log('🔍🔍🔍 检测到用户只选择二分音符，但强制走常规生成器来调试 🔍🔍🔍');
-            console.log('🔍 触发条件: 频率设置=', hasOnlyHalfNoteInFreq, '节奏参数=', hasOnlyHalfNoteInRhythms);
-            console.log('🔍 让我们看看常规生成器如何处理二分音符...');
-
-            // 删除可能干扰的频率设置，确保使用用户选择
-            delete this.rhythmFrequencies;
-        }
-
-        // 验证设置（如果IntervalSettings可用）
-        if (typeof IntervalSettings !== 'undefined') {
-            const validation = new IntervalSettings().validateSettings(settings);
-            if (!validation.isValid) {
-                console.error('❌ 设置无效:', validation.errors);
-                throw new Error('设置无效: ' + validation.errors.join(', '));
-            }
-        } else {
-            console.log('⚠️ 跳过设置验证（IntervalSettings不可用）');
-        }
+        // 🔒 【关键修复 2025-10-19】白名单必须在所有代码路径之前初始化
+        // 问题：专用生成器（全音符/二分音符）在白名单初始化之前就返回了
+        // 导致：generateIntervalPairWithProgression中的白名单过滤失效，生成了用户未选择的音程
+        // 解决：将白名单初始化移到最前面，确保所有代码路径都能使用
 
         const {
             intervalTypes,
@@ -1217,26 +1137,6 @@ class IntervalGenerator {
             practiceMode,
             rhythms
         } = settings;
-
-        // 获取小节数（兼容新旧版本）
-        const measures = measureCount || settings.measures || 4;
-
-        // 设置实例变量供其他方法使用
-        this.intervalTypes = intervalTypes;
-        this.keySignature = keySignature;
-        this.timeSignature = timeSignature;
-        this.tempo = tempo;
-        this.measureCount = measures;
-        this.practiceMode = practiceMode;
-        if (typeof window !== 'undefined' && window.IC_INTERVAL_OPTS) {
-            Object.assign(this._opts, window.IC_INTERVAL_OPTS);
-        }
-        this._firstSpecies = (typeof window !== 'undefined' && window.IC_FIRST_SPECIES === true) || (practiceMode === 'first-species');
-
-        // 🎸 检测"全选音程"场景，启用吉他化权重与配比
-        this._guitarMode = this.isAllIntervalTypesSelected(intervalTypes);
-        // 重置全局音程统计（用于二度配额/比例控制）
-        this._intervalStats = { total: 0, seconds: 0, thirds: 0, fourths: 0, fifths: 0, sixths: 0, octaves: 0 };
 
         // 🔒 白名单初始化修复 (2025-10-10): 使用验证器的标准，不信任传入的intervalTypes
         // 致命问题：intervalTypes可能被污染，包含用户未勾选的音程（如二度）
@@ -1271,6 +1171,109 @@ class IntervalGenerator {
         } else {
             console.log(`✅ [白名单] 未包含二度音程，系统将严格拒绝生成任何2半音以下的音程`);
         }
+
+        // 🎯 获取高级设置：临时记号概率和节奏频率权重
+        this.accidentalRate = this.getAccidentalRate();
+
+        // 🔧 总是从UI读取最新频率，确保滑块调整立即生效（与旋律工具行为一致）
+        this.rhythmFrequencies = this.getRhythmFrequencies();
+        console.log(`🎼 从DOM读取节奏频率权重:`, this.rhythmFrequencies);
+
+        console.log(`🎼 高级设置已加载 - 临时记号概率: ${this.accidentalRate}%, 节奏频率权重:`, this.rhythmFrequencies);
+
+        // 🔥 激进修复：检查是否只选择全音符，如果是则使用专用生成器
+        const hasOnlyWholeNoteInFreq = this.rhythmFrequencies &&
+            Object.keys(this.rhythmFrequencies).length === 1 &&
+            this.rhythmFrequencies['whole'] > 0;
+
+        const hasOnlyWholeNoteInRhythms = settings.rhythms &&
+            settings.rhythms.length === 1 &&
+            settings.rhythms[0].value === 'whole';
+
+        if (hasOnlyWholeNoteInFreq || hasOnlyWholeNoteInRhythms) {
+            console.log('🔥 检测到用户只选择全音符，启用专用生成器绕过所有复杂逻辑');
+            console.log('🔥 触发条件: 频率设置=', hasOnlyWholeNoteInFreq, '节奏参数=', hasOnlyWholeNoteInRhythms);
+            console.log('🔒 白名单已初始化，专用生成器将遵守白名单限制');
+            return this.generateWholeNoteOnlyProgression(settings);
+        }
+
+        // 🔥 检查是否只选择二分音符，启用专用简化生成器
+        const hasOnlyHalfNoteInFreq = this.rhythmFrequencies &&
+            Object.keys(this.rhythmFrequencies).length === 1 &&
+            this.rhythmFrequencies['half'] > 0;
+
+        const hasOnlyHalfNoteInRhythms = settings.rhythms &&
+            settings.rhythms.length === 1 &&
+            settings.rhythms[0].value === 'half';
+
+        this.halfNoteOnlyMode = hasOnlyHalfNoteInFreq || hasOnlyHalfNoteInRhythms;
+
+        // 🔍 临时禁用二分音符专用生成器，测试常规生成器的表现
+        if (false && this.halfNoteOnlyMode) {
+            console.log('🔥🔥🔥 检测到用户只选择二分音符，启用专用简化生成器 🔥🔥🔥');
+            console.log('🔥 触发条件: 频率设置=', hasOnlyHalfNoteInFreq, '节奏参数=', hasOnlyHalfNoteInRhythms);
+            console.log('🔥 设置详情:', JSON.stringify(settings, null, 2));
+
+            // 🔍 特别检查二度音程
+            const hasSecondInterval = settings.intervalTypes?.some(interval =>
+                interval.semitones === 1 || interval.semitones === 2
+            );
+            if (hasSecondInterval) {
+                console.log('🔍 ⚠️ 检测到二度音程！正在启动专用生成器...');
+                console.log('🔍 二度音程列表:', settings.intervalTypes.filter(interval =>
+                    interval.semitones === 1 || interval.semitones === 2
+                ).map(i => `${i.displayName}(${i.semitones}半音)`));
+            }
+
+            console.log('🔥 强制启动极简二分音符生成器...');
+            console.log('🔒 白名单已初始化，专用生成器将遵守白名单限制');
+
+            // 删除可能干扰的频率设置
+            delete this.rhythmFrequencies;
+
+            return this.generateSimpleHalfNoteProgression(settings);
+        }
+
+        // 🔍 检查是否为二分音符，但走常规生成器
+        if (this.halfNoteOnlyMode) {
+            console.log('🔍🔍🔍 检测到用户只选择二分音符，但强制走常规生成器来调试 🔍🔍🔍');
+            console.log('🔍 触发条件: 频率设置=', hasOnlyHalfNoteInFreq, '节奏参数=', hasOnlyHalfNoteInRhythms);
+            console.log('🔍 让我们看看常规生成器如何处理二分音符...');
+
+            // 删除可能干扰的频率设置，确保使用用户选择
+            delete this.rhythmFrequencies;
+        }
+
+        // 验证设置（如果IntervalSettings可用）
+        if (typeof IntervalSettings !== 'undefined') {
+            const validation = new IntervalSettings().validateSettings(settings);
+            if (!validation.isValid) {
+                console.error('❌ 设置无效:', validation.errors);
+                throw new Error('设置无效: ' + validation.errors.join(', '));
+            }
+        } else {
+            console.log('⚠️ 跳过设置验证（IntervalSettings不可用）');
+        }
+
+        // 获取小节数（兼容新旧版本）
+        const measures = measureCount || settings.measures || 4;
+
+        // 设置实例变量供其他方法使用
+        this.intervalTypes = intervalTypes;
+        this.keySignature = keySignature;
+        this.timeSignature = timeSignature;
+        this.tempo = tempo;
+        this.measureCount = measures;
+        this.practiceMode = practiceMode;
+        if (typeof window !== 'undefined' && window.IC_INTERVAL_OPTS) {
+            Object.assign(this._opts, window.IC_INTERVAL_OPTS);
+        }
+        this._firstSpecies = (typeof window !== 'undefined' && window.IC_FIRST_SPECIES === true) || (practiceMode === 'first-species');
+
+        // 🎸 检测"全选音程"场景，启用吉他化权重与配比
+        this._guitarMode = this.isAllIntervalTypesSelected(intervalTypes);
+        // 重置全局音程统计（用于二度配额/比例控制）
+        this._intervalStats = { total: 0, seconds: 0, thirds: 0, fourths: 0, fifths: 0, sixths: 0, octaves: 0 };
         // 重置防重复与最近类型追踪
         this._lastIntervalTypeName = null;
         this._consecutiveSameInterval = 0;
@@ -1319,6 +1322,17 @@ class IntervalGenerator {
         // 获取允许的音程类型列表（不再使用半音数）
         console.log('✅ 允许的音程类型:', intervalTypes.map(t => t.displayName));
         console.log('🎵 允许的节奏类型:', processedRhythms.map(r => r.displayName).join(', '));
+
+        // 🎵 统一使用增强生成器 (2025-10-20)
+        // 修复根因：简化生成器使用直接MIDI计算，导致调外音和缺乏级进感
+        // 解决方案：所有音程类型（1种、2种、3种或更多）都使用增强生成器
+        // 增强生成器优势：调内音保证 + CF级进逻辑 + 白名单过滤 + 200次重试
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log(`🎯 检测到用户选择了 ${intervalTypes.length} 种音程类型`);
+        console.log('🎵 使用增强生成器（调内音+级进感+白名单）');
+        console.log('═══════════════════════════════════════');
+        console.log('');
 
         // 选择一个调号（如果是数组则随机选择）
         const selectedKey = Array.isArray(keySignature)
@@ -1755,6 +1769,13 @@ class IntervalGenerator {
         }
         console.log('✅ Beam组计算完成');
 
+        // 🎯 应用“临时记号”全局概率到已生成进行（显示更明显，且不改变音程类型）
+        try {
+            this.applyRandomAccidentalsToProgression(progression);
+        } catch (e) {
+            console.warn('⚠️ 应用临时记号时出错，已跳过:', e?.message || e);
+        }
+
         // 🔥 重置二分音符专用模式标记
         if (this.halfNoteOnlyMode) {
             console.log('🔥 重置二分音符专用模式标记');
@@ -1788,6 +1809,74 @@ class IntervalGenerator {
             throw new Error(`${errorMessage}: ${error.message}`);
         }
     }
+
+    /**
+     * 🎯 对整段进行按概率应用“临时记号”，以提高可见度
+     * 策略：对同一时刻的上下两音进行成对整体偏移 ±1 半音，保持音程不变
+     * 安全：不越界、不跨越当前音域
+     */
+    applyRandomAccidentalsToProgression(progression) {
+        const rate = typeof this.accidentalRate === 'number' ? this.accidentalRate : 0;
+        if (!rate || rate <= 0) return;
+
+        const rangeMin = this.rangeMin || 60;
+        const rangeMax = this.rangeMax || 84;
+
+        const useKey = this.currentKeySignature || 'C';
+
+        for (const measure of progression.measures || []) {
+            const lower = measure.lowerVoice || [];
+            const upper = measure.upperVoice || [];
+            const pairs = Math.min(lower.length, upper.length);
+
+            for (let i = 0; i < pairs; i++) {
+                const ln = lower[i];
+                const un = upper[i];
+                if (!ln || !un || ln.type !== 'note' || un.type !== 'note') continue;
+
+                // 以百分比概率应用一次
+                if (Math.random() * 100 > rate) continue;
+
+                // 选择偏移方向 ±1 半音
+                const offset = Math.random() < 0.5 ? 1 : -1;
+                const newLower = (ln.midi ?? this.calculateMidiDirect?.(ln.pitch) ?? this.noteToMidi(ln.pitch)) + offset;
+                const newUpper = (un.midi ?? this.calculateMidiDirect?.(un.pitch) ?? this.noteToMidi(un.pitch)) + offset;
+
+                // 越界保护
+                if (newLower < rangeMin || newUpper > rangeMax) continue;
+
+                // 应用偏移并重拼写
+                ln.midi = newLower;
+                un.midi = newUpper;
+                try {
+                    if (typeof this.midiToNoteWithKey === 'function' && useKey) {
+                        ln.pitch = this.midiToNoteWithKey(ln.midi, useKey);
+                        un.pitch = this.midiToNoteWithKey(un.midi, useKey);
+                    } else {
+                        ln.pitch = this.midiToNote(ln.midi);
+                        un.pitch = this.midiToNote(un.midi);
+                    }
+                } catch (_) {
+                    // 回退：若拼写异常，撤销偏移
+                    ln.midi -= offset; un.midi -= offset;
+                }
+            }
+        }
+    }
+
+    /**
+     * 🔒 [已废弃] 简化音程生成器 (2025-10-19 → 2025-10-20废弃)
+     *
+     * 废弃原因：
+     * - 使用直接MIDI计算，导致生成调外音（不从音阶中选择音符）
+     * - 只对二度音程有级进逻辑，其他音程完全随机，缺乏一致性
+     * - 增强生成器已经具备所有优势：调内音保证、CF级进逻辑、白名单过滤、200次重试
+     *
+     * 替代方案：所有音程类型统一使用增强生成器（`generateIntervalPairWithProgression`）
+     *
+     * 此函数保留用于代码历史参考，但已不再被调用。
+     */
+    // generateSimpleIntervalProgression(settings) { ... } // 已删除
 
     /**
      * 预处理节奏组合，解决潜在冲突
@@ -4272,7 +4361,8 @@ class IntervalGenerator {
             'quarter.': 'dotted-quarter',
             'half.': 'dotted-half',
             'eighth.': 'dotted-eighth',
-            '16th': 'sixteenth'
+            // 与UI键名保持一致，十六分音符使用 '16th'
+            '16th': '16th'
         };
         const frequencyKey = mapping[rhythmType] || rhythmType;
 
@@ -6218,6 +6308,15 @@ class IntervalGenerator {
                         const actualSemitones = upperMidi - lowerMidi;
 
                         if (actualSemitones === intervalType.semitones) {
+                            // 🎯 新增 (2025-10-20): 检查是否为调内音，严格遵守调号约束
+                            const lowerIsInScale = this.isScaleNote(lowerMidi, scale);
+                            const upperIsInScale = this.isScaleNote(upperMidi, scale);
+
+                            if (!lowerIsInScale || !upperIsInScale) {
+                                console.log(`❌ 主和弦配对含调外音，跳过: ${lowerPitch}(调内:${lowerIsInScale}) - ${upperPitch}(调内:${upperIsInScale})`);
+                                continue; // 尝试下一个八度组合
+                            }
+
                             console.log(`✅ 成功生成主和弦音程: ${lowerPitch} - ${upperPitch} (${intervalType.displayName})`);
                             console.log(`🎯 主和弦强制逻辑成功，确保最后音程为主和弦`);
 
@@ -6254,25 +6353,49 @@ class IntervalGenerator {
             throw new Error('无法生成主和弦音程，所有配对都失败');
         }
 
-        const maxAttempts = 50;
+        // 🚀 性能优化 (2025-10-20): 降低重试次数，因为新算法第一次就成功
+        const isSimpleScenario = allowedIntervalTypes.length <= 3;
+        const maxAttempts = isSimpleScenario ? 10 : 50; // 简单场景10次，复杂场景50次
         let attempts = 0;
+
+        // 🔒 检测大跨度音程模式 (2025-10-19)
+        const minSemitones = Math.min(...allowedIntervalTypes.map(t => t.semitones));
+        const isLargeIntervalMode = minSemitones >= 7; // 最小音程≥完全五度
+
+        if (isLargeIntervalMode) {
+            console.log(`🎯 [大跨度模式] 检测到最小音程为${minSemitones}半音（≥完全五度）`);
+            console.log(`🎯 [大跨度模式] 将放宽级进和拍位限制，提高生成成功率`);
+        }
+
+        if (isSimpleScenario) {
+            console.log(`🚀 [快速模式] 检测到简单场景（≤3种音程），使用确定性算法`);
+        }
 
         while (attempts < maxAttempts) {
             attempts++;
 
             try {
-                // 🔍 [深度调试] 音程类型选择前状态检查
-                console.log(`🔍 [调试] 第${attempts}次尝试 - 入口allowedIntervalTypes:`,
-                    allowedIntervalTypes.map(t => `${t.name}(${t.semitones}半音)`).join(', '));
-                console.log(`🔍 [调试] 白名单Set:`,
-                    this._allowedSemitonesSet ? Array.from(this._allowedSemitonesSet).sort((a,b)=>a-b) : 'undefined');
+                // 🚀 性能优化 (2025-10-20): 移除每次尝试的调试日志，减少输出
+                // console.log(`🔍 [调试] 第${attempts}次尝试...`);
+                if (attempts > 1) {
+                    console.log(`🔄 重试第${attempts}次...`);
+                }
 
-                // 🎯 重拍优先策略：在重拍位置优先选择target interval
-                const intervalType = this.selectIntervalWithBeatPriority(
-                    allowedIntervalTypes,
-                    currentPosition,
-                    timeSignature
-                );
+                // 🎯 音程选择策略
+                // 🚀 简单场景优化 (2025-10-20): 直接随机选择，跳过级进/跳进过滤
+                let intervalType;
+                if (isSimpleScenario) {
+                    // 简单场景：直接从可选音程中随机选择（避免过滤导致无可用音程）
+                    intervalType = allowedIntervalTypes[Math.floor(Math.random() * allowedIntervalTypes.length)];
+                    console.log(`🎲 [简单场景] 直接随机选择: ${intervalType.displayName}`);
+                } else {
+                    // 复杂场景：使用重拍优先策略
+                    intervalType = this.selectIntervalWithBeatPriority(
+                        allowedIntervalTypes,
+                        currentPosition,
+                        timeSignature
+                    );
+                }
                 const intervalDegree = this.intervalDegrees[intervalType.name];
 
                 // 🔍 [深度调试] 选中的音程类型
@@ -6289,8 +6412,14 @@ class IntervalGenerator {
 
                 let lowerMidi;
                 let lowerScaleIndex;
+                let lowerNote;
+                let upperMidi;
+                let upperNote;
 
-                // 🎯 修复：基于MIDI音高的统一线条感逻辑（和simplified generator一致）
+                // 🚀 性能优化 (2025-10-20): 确定性算法 - 先确定MIDI，再智能匹配音名
+                const baseScale = this.getBaseScale(scale);
+
+                // ========== 步骤1: 确定下声部MIDI值（调内音 + 级进） ==========
                 if (previousInterval && previousInterval.lowerMidi !== undefined) {
                     // 有上一个音程：基于MIDI音高进行CF风格级进
                     let moveDirection;
@@ -6304,7 +6433,6 @@ class IntervalGenerator {
                         moveDirection = -this._cfPrevMoveDir;
                         this._cfForceOppositeNext = false;
                     } else {
-                        // 朝向顶点/回落的方向偏置
                         if (preferUp) moveDirection = Math.random() < 0.85 ? 1 : -1;
                         else moveDirection = Math.random() < 0.85 ? -1 : 1;
                     }
@@ -6316,223 +6444,156 @@ class IntervalGenerator {
                     if (r < 0.80) stepSemitones = (Math.random() < 0.5 ? 1 : 2);
                     else if (r < 0.95) stepSemitones = (Math.random() < 0.5 ? 3 : 4);
                     else stepSemitones = onStrong ? (Math.floor(Math.random()*3)+5) : (Math.random() < 0.5 ? 1 : 2);
-                    console.log(`🎵 CF步进: ${stepSemitones}半音, 方向=${moveDirection>0?'上':'下'} 强拍=${onStrong}`);
 
                     const targetMidi = previousInterval.lowerMidi + (moveDirection * stepSemitones);
 
-                    // 找到距离目标音高最近的调内音符
-                    let bestMidi = targetMidi;
-                    let bestDistance = Infinity;
-                    let bestScaleIndex = 0;
+                    // 🚀 使用新工具函数：找到最近的调内音（传入previousMidi防重复）
+                    const closestNote = this.findClosestScaleNote(
+                        targetMidi,
+                        scale,
+                        rangeMin,
+                        rangeMax,
+                        previousInterval.lowerMidi  // 🔒 防止选择相同音符
+                    );
+                    lowerMidi = closestNote.midi;
+                    lowerScaleIndex = closestNote.scaleIndex;
+                    lowerNote = closestNote.note;
 
-                    // 🔧 修复 (2025-10-10): 小调使用7音基础音阶，避免F↔F#或G↔G#跳跃产生意外二度
-                    const baseScale = this.getBaseScale(scale);
-
-                    for (let octave = 3; octave <= 5; octave++) {
-                        for (let i = 0; i < baseScale.notes.length; i++) {
-                            const notePitch = `${baseScale.notes[i]}${octave}`;
-                            let noteMidi;
-                            try {
-                                // 🎯 这里用calculateMidiDirect是正确的，因为notePitch已经是调内音符
-                                noteMidi = this.calculateMidiDirect ? this.calculateMidiDirect(notePitch) : 60;
-                            } catch (error) {
-                                continue;
-                            }
-
-                            const distance = Math.abs(noteMidi - targetMidi);
-                            if (distance < bestDistance) {
-                                bestDistance = distance;
-                                bestMidi = noteMidi;
-                                bestScaleIndex = i;
-                            }
-                        }
+                    if (attempts === 1) {
+                        console.log(`🎵 CF级进: MIDI${previousInterval.lowerMidi} → ${lowerMidi} (${lowerMidi - previousInterval.lowerMidi > 0 ? '+' : ''}${lowerMidi - previousInterval.lowerMidi}半音) = ${closestNote.pitch}`);
                     }
 
-                    lowerMidi = bestMidi;
-                    lowerScaleIndex = bestScaleIndex;
-
-                    console.log(`🎵 MIDI级进连接: 从MIDI${previousInterval.lowerMidi} 级进到 MIDI${lowerMidi} (${lowerMidi - previousInterval.lowerMidi > 0 ? '+' : ''}${lowerMidi - previousInterval.lowerMidi}半音)`);
                     this._cfPrevMoveDir = Math.sign(lowerMidi - previousInterval.lowerMidi) || this._cfPrevMoveDir || 1;
-                    if (Math.abs(lowerMidi - previousInterval.lowerMidi) >= 5) this._cfForceOppositeNext = true; // 大跳后强制反向
+                    if (Math.abs(lowerMidi - previousInterval.lowerMidi) >= 5) this._cfForceOppositeNext = true;
                     if (!this._cfApexReached && this._cfApexMidiTarget && lowerMidi >= this._cfApexMidiTarget) {
                         this._cfApexReached = true;
-                        console.log(`🔺 CF顶点到达: MIDI${lowerMidi}`);
                     }
 
                 } else {
-                    // 🎵 修复：使用7音基础音阶进行索引计算（小调）
-                    const baseScale = this.getBaseScale(scale);
-
                     // 第一个音程：随机选择调内音符作为起始点
-                    lowerScaleIndex = Math.floor(Math.random() * baseScale.notes.length);
-                    const lowerNote = baseScale.notes[lowerScaleIndex];
+                    // 🔧 修复 (2025-10-20): 使用整个音域范围（删除/ 2）
+                    const targetMidi = rangeMin + Math.floor(Math.random() * (rangeMax - rangeMin));
+                    const closestNote = this.findClosestScaleNote(
+                        targetMidi,
+                        scale,
+                        rangeMin,
+                        rangeMax,
+                        null  // 第一个音符无需防重复
+                    );
+                    lowerMidi = closestNote.midi;
+                    lowerScaleIndex = closestNote.scaleIndex;
+                    lowerNote = closestNote.note;
 
-                    // 随机选择八度（在合理音域内）
-                    const randomOctave = 4 + Math.floor(Math.random() * 2); // 4或5八度
-                    const lowerPitch = `${lowerNote}${randomOctave}`;
-
-                    try {
-                        lowerMidi = this.calculateMidiDirect ? this.calculateMidiDirect(lowerPitch) : 60;
-                    } catch (error) {
-                        lowerMidi = 60;
+                    if (attempts === 1) {
+                        console.log(`🎵 起始音: ${closestNote.pitch} (MIDI${lowerMidi})`);
                     }
-
-                    console.log(`🎵 随机起始音程: ${lowerNote} (音阶位置${lowerScaleIndex}) → MIDI${lowerMidi}`);
                 }
 
-                // 🛡️ 安全检查：确保lowerMidi和lowerScaleIndex都有效
-                if (lowerMidi === undefined || lowerScaleIndex === undefined) {
-                    console.warn(`❌ 音符选择失败，使用回退值`);
-                    lowerMidi = 60; // C4
-                    lowerScaleIndex = 0; // 第一个音阶音符
-                }
-
-                // 🎵 使用7音基础音阶进行索引计算（小调和大调统一）
-                const baseScale = this.getBaseScale(scale);
-                const lowerNote = baseScale.notes[lowerScaleIndex];
-
-                // 🔧 根本修复 (2025-10-10): 上方音也从7音baseScale选择
-                // 和声/旋律小调的变化音（F#, G#等）由智能变化音系统负责，不在这里处理
-                const expectedDegree = this.intervalDegrees[intervalType.name];
-                const upperScaleIndex = (lowerScaleIndex + expectedDegree - 1) % baseScale.notes.length;
-                const upperNote = baseScale.notes[upperScaleIndex];
-
-                console.log(`🎵 尝试生成: ${lowerNote} (位置${lowerScaleIndex}) -> ${upperNote} (位置${upperScaleIndex}) ${intervalType.displayName} [度数=${expectedDegree}]`);
-
-                // 🎯 修复：基于已计算的MIDI音高确定八度
-                let targetLowerOctave = Math.floor(lowerMidi / 12) - 1; // MIDI转八度 (C4=60, octave=4)
-
-                // 确保八度在合理范围内 (3-5)
-                if (targetLowerOctave < 3) targetLowerOctave = 3;
-                if (targetLowerOctave > 5) targetLowerOctave = 5;
-
-                // 寻找合适的八度组合，但优先使用我们计算的MIDI音高对应的八度
-                const suitableOctaves = this.findSuitableOctavesForInterval(
-                    lowerNote, upperNote, lowerScaleIndex, upperScaleIndex, rangeMin, rangeMax, previousInterval
+                // ========== 步骤2: 🎯 新算法 (2025-10-20) 先验证后选择 ==========
+                // 找到所有符合"调内音+精确半音数"的候选
+                const validCandidates = this.findValidCandidates(
+                    lowerMidi,
+                    allowedIntervalTypes,
+                    scale,
+                    rangeMin,
+                    rangeMax,
+                    previousInterval ? previousInterval.lowerMidi : null
                 );
 
-                // 🎯 如果MIDI计算的八度在可选范围内，优先使用它
-                const midiBasedOctave = suitableOctaves.find(opt => opt.lowerOctave === targetLowerOctave);
-                if (midiBasedOctave) {
-                    // 将MIDI计算的八度选项放在首位
-                    const index = suitableOctaves.indexOf(midiBasedOctave);
-                    suitableOctaves.splice(index, 1);
-                    suitableOctaves.unshift(midiBasedOctave);
-                    console.log(`🎯 优先使用MIDI计算的八度: ${targetLowerOctave}`);
+                // 无候选 → 重试（重新选择起始音）
+                if (validCandidates.length === 0) {
+                    if (attempts === 1) {
+                        console.log(`❌ 从${lowerNote}${Math.floor(lowerMidi / 12) - 1}(MIDI${lowerMidi})无可用音程组合，重新选择起始音`);
+                    }
+                    continue; // 触发外层while重试
                 }
 
-                if (suitableOctaves.length === 0) {
-                    console.log(`❌ 无法在音域范围内找到合适的八度: ${lowerNote}-${upperNote}`);
+                // 🎵 根据级进规则智能选择
+                const cfState = {
+                    consecutiveSameDir: this._cfConsecutiveSameDir || 0,
+                    prevMoveDir: this._cfPrevMoveDir || 0
+                };
+                const selected = this.selectByProgression(validCandidates, previousInterval, cfState);
+
+                // 应用选择结果
+                upperMidi = selected.targetMidi;
+                upperNote = selected.targetNote;
+                const upperPitch = selected.targetPitch;
+                intervalType = selected.intervalType; // 更新为实际选中的音程类型
+
+                // 🔄 更新方向追踪（用于级进策略）
+                if (previousInterval && previousInterval.lowerMidi !== undefined) {
+                    const currentDir = Math.sign(upperMidi - lowerMidi);
+                    if (currentDir === this._cfPrevMoveDir) {
+                        this._cfConsecutiveSameDir = (this._cfConsecutiveSameDir || 0) + 1;
+                    } else {
+                        this._cfConsecutiveSameDir = 0;
+                    }
+                    this._cfPrevMoveDir = currentDir;
+                }
+
+                if (attempts === 1) {
+                    console.log(`🎯 [新算法] 找到${validCandidates.length}个候选，选中: ${intervalType.displayName} ${lowerNote}${Math.floor(lowerMidi / 12) - 1}(${lowerMidi}) → ${upperPitch}(${upperMidi}) = ${selected.semitones}半音 ✅`);
+                }
+
+                // ========== 步骤4: 构建音符信息（跳过复杂的八度验证） ==========
+                // 🚀 性能优化 (2025-10-20): 由于已经直接用MIDI计算，跳过八度查找和验证循环
+                const lowerOctave = Math.floor(lowerMidi / 12) - 1;
+                const upperOctave = Math.floor(upperMidi / 12) - 1;
+
+                const finalLowerPitch = `${lowerNote}${lowerOctave}`;
+                const finalUpperPitch = upperPitch;
+                let finalLowerMidi = lowerMidi;
+                let finalUpperMidi = upperMidi;
+
+                // 验证实际半音距离
+                const actualSemitones = finalUpperMidi - finalLowerMidi;
+
+                // 🔒 白名单严格检查
+                if (this._allowedSemitonesSet && !this._allowedSemitonesSet.has(actualSemitones)) {
+                    if (attempts === 1) {
+                        console.warn(`❌ [白名单] ${actualSemitones}半音不在白名单 [${Array.from(this._allowedSemitonesSet).sort((a,b)=>a-b)}]`);
+                    }
                     continue;
                 }
 
-                // 验证这确实是正确的音程类型（基于音符名称）
-                if (!this.verifyInterval(lowerNote, upperNote, intervalType, scale)) {
-                    console.log(`❌ 音程验证失败: ${lowerNote}-${upperNote} 不符合 ${intervalType.displayName}`);
-                    console.log(`🔍 验证失败上下文: 尝试${attempts}/${maxAttempts}, 调性[${scale.notes.join(' ')}]`);
-                    continue;
-                }
+                // 🎼 First Species检查（仅复杂场景）
+                if (!isSimpleScenario && this._firstSpecies && previousInterval &&
+                    previousInterval.lowerMidi !== undefined && previousInterval.upperMidi !== undefined) {
+                    const prevInt = Math.abs(previousInterval.upperMidi - previousInterval.lowerMidi);
+                    const newInt = Math.abs(finalUpperMidi - finalLowerMidi);
+                    const prevPerfect = (prevInt === 7 || prevInt === 12 || prevInt === 0);
+                    const newPerfect = (newInt === 7 || newInt === 12 || newInt === 0);
+                    const lowerDir = Math.sign(finalLowerMidi - previousInterval.lowerMidi);
+                    const upperDir = Math.sign(finalUpperMidi - previousInterval.upperMidi);
+                    const similarMotion = (lowerDir !== 0 && upperDir !== 0 && lowerDir === upperDir);
+                    const upperLeap = Math.abs(finalUpperMidi - previousInterval.upperMidi) > 2;
 
-                // 🔥 关键修复：遍历所有八度组合，找到既在音域内又符合音程类型的组合
-                let validOctave = null;
-                console.log(`🔍 检查${suitableOctaves.length}个八度组合是否符合音程类型要求`);
-
-                for (const octaveOption of suitableOctaves) {
-                    // 🎼 应用临时记号（如果设置了临时记号概率）
-                    const lowerPitchWithAccidental = this.applyAccidental(lowerNote + octaveOption.lowerOctave);
-                    const upperPitchWithAccidental = this.applyAccidental(upperNote + octaveOption.upperOctave);
-
-                    const testLowerPitch = lowerPitchWithAccidental;
-                    const testUpperPitch = upperPitchWithAccidental;
-                    const testLowerMidi = this.noteToMidi(testLowerPitch);
-                    const testUpperMidi = this.noteToMidi(testUpperPitch);
-
-                    // 验证八度调整后的实际音程类型是否符合期望
-                    const actualSemitones = testUpperMidi - testLowerMidi;
-                    const expectedSemitones = intervalType.semitones;
-
-                    console.log(`🎼 测试八度组合: ${testLowerPitch}(${testLowerMidi}) -> ${testUpperPitch}(${testUpperMidi})`);
-                    console.log(`🔍 半音距离: 实际=${actualSemitones}，期望=${expectedSemitones} (${intervalType.displayName})`);
-
-                    // 🔥 严格验证音域限制（临时记号可能改变MIDI值）
-                    if (testLowerMidi < rangeMin || testLowerMidi > rangeMax || testUpperMidi < rangeMin || testUpperMidi > rangeMax) {
-                        console.log(`❌ 音域验证失败: ${testLowerPitch}(${testLowerMidi}) 或 ${testUpperPitch}(${testUpperMidi}) 超出范围 ${rangeMin}-${rangeMax}`);
+                    if (prevPerfect && newPerfect && similarMotion) {
+                        if (attempts === 1) console.log('❌ First Species: 平行5/8');
                         continue;
                     }
-
-                    // 🎼 First Species 额外约束：避免平行5度/8度；避免“隐藏5/8”（类似向直进）
-                    if (this._firstSpecies && previousInterval && previousInterval.lowerMidi !== undefined && previousInterval.upperMidi !== undefined) {
-                        const prevInt = Math.abs(previousInterval.upperMidi - previousInterval.lowerMidi);
-                        const newInt = Math.abs(testUpperMidi - testLowerMidi);
-                        const prevPerfect = (prevInt === 7 || prevInt === 12 || prevInt === 0);
-                        const newPerfect = (newInt === 7 || newInt === 12 || newInt === 0);
-                        const lowerDir = Math.sign(testLowerMidi - previousInterval.lowerMidi);
-                        const upperDir = Math.sign(testUpperMidi - previousInterval.upperMidi);
-                        const similarMotion = (lowerDir !== 0 && upperDir !== 0 && lowerDir === upperDir);
-                        const upperLeap = Math.abs(testUpperMidi - previousInterval.upperMidi) > 2;
-
-                        // 平行完全协和：禁止
-                        if (prevPerfect && newPerfect && similarMotion) {
-                            console.log('❌ First Species: 平行5/8被禁止');
-                            continue;
-                        }
-                        // 隐藏5/8：类似向直进到完全协和且上声部跳进（>全音）时禁止
-                        if (!prevPerfect && newPerfect && similarMotion && upperLeap) {
-                            console.log('❌ First Species: 隐藏5/8被禁止');
-                            continue;
-                        }
+                    if (!prevPerfect && newPerfect && similarMotion && upperLeap) {
+                        if (attempts === 1) console.log('❌ First Species: 隐藏5/8');
+                        continue;
                     }
+                }
 
-                    if (actualSemitones === expectedSemitones) {
-                        // 🔒 白名单严格检查：即使半音距离匹配，也要确保在用户允许的范围内
-                        // 根本修复 (2025-10-10): 防止生成用户未勾选的音程类型
-                        if (this._allowedSemitonesSet && !this._allowedSemitonesSet.has(actualSemitones)) {
-                            console.warn(`❌ [白名单拒绝] ${actualSemitones}半音不在允许列表中 [${Array.from(this._allowedSemitonesSet).sort((a,b)=>a-b).join(', ')}]`);
-                            console.warn(`  音程: ${testLowerPitch} → ${testUpperPitch}`);
-                            console.warn(`  音程类型: ${intervalType.displayName} (期望${expectedSemitones}半音)`);
-                            continue; // 跳过这个八度组合，尝试下一个
-                        }
-
-                        console.log(`✅ 找到符合音域和音程类型要求的八度组合`);
-                        validOctave = {
-                            ...octaveOption,
-                            lowerPitch: testLowerPitch,
-                            upperPitch: testUpperPitch,
-                            lowerMidi: testLowerMidi,
-                            upperMidi: testUpperMidi
-                        };
-                        // 统计用途：记录已选择的音程类别（用于配额/比例控制）
-                        if (intervalType && intervalType.name) {
-                            this._recordIntervalUse(intervalType.name);
-                            // 连续二度统计更新
-                            if (intervalType.name === 'major2nd' || intervalType.name === 'minor2nd') {
-                                this._consecutiveSeconds = (this._consecutiveSeconds || 0) + 1;
-                            } else {
-                                this._consecutiveSeconds = 0;
-                            }
-                            // 🔁 更新连续相同音程计数（用于防重复）
-                            if (this._lastIntervalTypeName === intervalType.name) {
-                                this._consecutiveSameInterval = (this._consecutiveSameInterval || 0) + 1;
-                            } else {
-                                this._consecutiveSameInterval = 1;
-                            }
-                            this._lastIntervalTypeName = intervalType.name;
-                        }
-                        break;
+                // 🔁 统计更新
+                if (intervalType && intervalType.name) {
+                    this._recordIntervalUse(intervalType.name);
+                    if (intervalType.name === 'major2nd' || intervalType.name === 'minor2nd') {
+                        this._consecutiveSeconds = (this._consecutiveSeconds || 0) + 1;
                     } else {
-                        console.log(`❌ 八度调整导致音程类型改变: ${actualSemitones}半音 != ${expectedSemitones}半音`);
+                        this._consecutiveSeconds = 0;
                     }
+                    if (this._lastIntervalTypeName === intervalType.name) {
+                        this._consecutiveSameInterval = (this._consecutiveSameInterval || 0) + 1;
+                    } else {
+                        this._consecutiveSameInterval = 1;
+                    }
+                    this._lastIntervalTypeName = intervalType.name;
                 }
-
-                if (!validOctave) {
-                    console.log(`❌ 所有八度组合都会导致音程类型改变，无法生成${intervalType.displayName}`);
-                    continue; // 尝试下一个音程配对
-                }
-
-                let finalLowerPitch = validOctave.lowerPitch;
-                let finalUpperPitch = validOctave.upperPitch;
-                let finalLowerMidi = validOctave.lowerMidi;
-                let finalUpperMidi = validOctave.upperMidi;
 
                 // 🔧 音程视奏工具：禁用智能变化音系统（2025-10-10）
                 // 原因：智能变化音可能改变音程距离（如D#→E#后，小三度变小二度）
@@ -6648,6 +6709,32 @@ class IntervalGenerator {
 
                 console.log(`✅ [最终验证通过] 拼写后半音数正确: ${actualFinalSemitones}半音`);
 
+                // 🎯 页面“临时记号”设置：成对整体偏移±1半音，保持音程不变
+                // 注：仅在两音符同时不越界时应用
+                if (this.accidentalRate > 0 && Math.random() * 100 <= this.accidentalRate) {
+                    const offset = Math.random() < 0.5 ? 1 : -1;
+                    const shiftedLower = finalLowerMidi + offset;
+                    const shiftedUpper = finalUpperMidi + offset;
+                    if (shiftedLower >= rangeMin && shiftedUpper <= rangeMax) {
+                        finalLowerMidi = shiftedLower;
+                        finalUpperMidi = shiftedUpper;
+                        try {
+                            if (typeof this.midiToNoteWithKey === 'function' && this.currentKeySignature) {
+                                finalLowerPitch = this.midiToNoteWithKey(finalLowerMidi, this.currentKeySignature);
+                                finalUpperPitch = this.midiToNoteWithKey(finalUpperMidi, this.currentKeySignature);
+                            } else {
+                                finalLowerPitch = this.midiToNote(finalLowerMidi);
+                                finalUpperPitch = this.midiToNote(finalUpperMidi);
+                            }
+                            console.log(`🎼 应用临时记号(成对偏移${offset > 0 ? '+' : ''}${offset}半音): ${finalLowerPitch} - ${finalUpperPitch}`);
+                        } catch (_) {
+                            // 若拼写失败则回退
+                            finalLowerMidi -= offset;
+                            finalUpperMidi -= offset;
+                        }
+                    }
+                }
+
                 return {
                     lower: {
                         pitch: finalLowerPitch,
@@ -6676,9 +6763,19 @@ class IntervalGenerator {
             }
         }
 
-        // 如果所有尝试都失败，返回一个默认的音程
-        console.warn('⚠️ 无法生成满足条件的音程，使用默认值');
-        return this.getDefaultInterval();
+        // 🔒 修复 (2025-10-19): 所有尝试失败后，使用修复后的getDefaultInterval
+        console.error(`❌ 所有${maxAttempts}次尝试都失败了`);
+        console.error('🔒 使用修复后的getDefaultInterval（从白名单选择）');
+
+        try {
+            const defaultInterval = this.getDefaultInterval(); // 现在会从白名单选择
+            console.log('✅ getDefaultInterval成功，返回白名单中的随机音程');
+            return defaultInterval;
+        } catch (error) {
+            console.error('❌ 连getDefaultInterval都失败了:', error.message);
+            console.error('💡 可能原因：音域太小或设置冲突');
+            throw new Error(`无法生成音程：${error.message}`);
+        }
     }
 
     /**
@@ -6904,6 +7001,17 @@ class IntervalGenerator {
     selectIntervalWithProgressionRules(allowedIntervalTypes, currentPosition, timeSignature) {
         const isStrongBeat = timeSignature ? this.isStrongBeat(currentPosition, timeSignature) : false;
         console.log(`🎵 音程进行规则: 位置${currentPosition.toFixed(2)}, ${isStrongBeat ? '重拍' : '弱拍'}`);
+
+        // 🔒 检测大跨度音程模式 (2025-10-19)
+        const minSemitones = Math.min(...allowedIntervalTypes.map(t => t.semitones));
+        const isLargeIntervalMode = minSemitones >= 7; // 最小音程≥完全五度
+
+        if (isLargeIntervalMode) {
+            console.log(`🎯 [大跨度模式激活] 最小音程${minSemitones}半音，弱拍也允许大音程`);
+            // 大跨度模式：直接返回，不限制拍位
+            // 原因：八度等大跨度音程不适合级进规则
+            return this.selectIntervalByProgressionWeight(allowedIntervalTypes, 'leap');
+        }
 
         // 分类音程类型
         let stepwiseIntervals = allowedIntervalTypes.filter(interval => this.isStepwiseInterval(interval));
@@ -7325,34 +7433,92 @@ class IntervalGenerator {
      * 获取默认音程
      * @returns {Object} 默认音程对
      */
+    /**
+     * 🔒 获取默认音程 (2025-10-19完全重写)
+     *
+     * 旧版问题：固定返回三度音程，完全忽略用户选择
+     * 新版原则：必须从白名单中随机选择，严格遵守用户选择
+     *
+     * @returns {Object} 默认音程对象
+     */
     getDefaultInterval() {
-        // 使用当前调内的随机音程作为默认值
-        // 🔧 根本修复 (2025-10-10): 使用7音baseScale而非9音fullScale
-        // 原因：9音小调数组包含F/F#, G/G#等相邻半音，索引+2可能选到相邻音产生二度
-        // 例：Bb小调9音['Bb','C','Db','Eb','F','Gb','G','Ab','A'], F(4)+2=G(6) → 2半音（大二度）
-        const scale = this.getBaseScale(this.currentScale || this.scales['C']);
+        // 严格遵守白名单与调内生成，避免调外与意外临时记号
+        if (!this._allowedSemitonesSet || this._allowedSemitonesSet.size === 0) {
+            throw new Error('白名单未初始化，无法生成默认音程');
+        }
 
-        // 随机选择调内音符
-        const lowerIndex = Math.floor(Math.random() * scale.notes.length);
-        const upperIndex = (lowerIndex + 2) % scale.notes.length; // 三度音程
+        const allowedSemitones = Array.from(this._allowedSemitonesSet);
+        const semitones = allowedSemitones[Math.floor(Math.random() * allowedSemitones.length)];
 
-        const defaultLower = `${scale.notes[lowerIndex]}5`;
-        const defaultUpper = `${scale.notes[upperIndex]}5`;
+        const rangeMin = this.rangeMin || 60; // C4
+        const rangeMax = this.rangeMax || 84; // C6
+
+        // 使用当前调/音阶，若缺失则回退到C大调
+        const key = this.currentKeySignature || 'C';
+        const scale = this.currentScale || this.scales[key] || this.scales['C'];
+
+        // 在音域内枚举“调内下声部”候选，并筛选能得到“调内上声部”的组合
+        const candidates = [];
+        const baseScale = this.getBaseScale(scale);
+
+        // 估算可覆盖的八度范围
+        const minOct = Math.max(2, Math.floor((rangeMin - 12) / 12));
+        const maxOct = Math.min(7, Math.floor((rangeMax - 12) / 12) + 1);
+
+        for (let oct = minOct; oct <= maxOct; oct++) {
+            for (const noteName of baseScale.notes) {
+                const pitch = `${noteName}${oct}`;
+                let lowerMidi;
+                try {
+                    lowerMidi = (typeof this.calculateMidiDirect === 'function')
+                        ? this.calculateMidiDirect(pitch)
+                        : this.noteToMidi(pitch);
+                } catch (_) { continue; }
+
+                if (lowerMidi < rangeMin || lowerMidi > rangeMax) continue;
+
+                // 两个方向尝试：上行/下行
+                for (const dir of [+1, -1]) {
+                    const upperMidi = lowerMidi + dir * semitones;
+                    if (upperMidi < rangeMin || upperMidi > rangeMax) continue;
+                    // 双端都必须为调内音
+                    if (!this.isScaleNote(lowerMidi, scale)) continue;
+                    if (!this.isScaleNote(upperMidi, scale)) continue;
+                    candidates.push({ lowerMidi, upperMidi });
+                }
+            }
+        }
+
+        if (candidates.length === 0) {
+            // 极端情形：音域过窄或设置冲突。回退到“就近调内起点”+验证通过的组合
+            // 尝试以范围中点为起点，寻找最近的调内音并匹配
+            const mid = Math.floor((rangeMin + rangeMax) / 2);
+            const closest = this.findClosestScaleNote(mid, scale, rangeMin, rangeMax, null);
+            if (closest && typeof closest.midi === 'number') {
+                for (const dir of [+1, -1]) {
+                    const upperMidi = closest.midi + dir * semitones;
+                    if (upperMidi >= rangeMin && upperMidi <= rangeMax && this.isScaleNote(upperMidi, scale)) {
+                        const lowerPitch = this.midiToNote(closest.midi);
+                        const upperPitch = this.midiToNote(upperMidi);
+                        return {
+                            lower: { pitch: lowerPitch, midi: closest.midi, duration: 'quarter', type: 'note' },
+                            upper: { pitch: upperPitch, midi: upperMidi, duration: 'quarter', type: 'note' },
+                            intervalType: `${semitones}半音音程（白名单）`
+                        };
+                    }
+                }
+            }
+            throw new Error('无法在当前音域与设置下生成调内默认音程');
+        }
+
+        const pick = candidates[Math.floor(Math.random() * candidates.length)];
+        const lowerPitch = this.midiToNote(pick.lowerMidi);
+        const upperPitch = this.midiToNote(pick.upperMidi);
 
         return {
-            lower: {
-                pitch: defaultLower,
-                midi: this.noteToMidi(defaultLower),
-                duration: 'quarter',
-                type: 'note'
-            },
-            upper: {
-                pitch: defaultUpper,
-                midi: this.noteToMidi(defaultUpper),
-                duration: 'quarter',
-                type: 'note'
-            },
-            intervalType: '调内三度音程（随机）'
+            lower: { pitch: lowerPitch, midi: pick.lowerMidi, duration: 'quarter', type: 'note' },
+            upper: { pitch: upperPitch, midi: pick.upperMidi, duration: 'quarter', type: 'note' },
+            intervalType: `${semitones}半音音程（白名单）`
         };
     }
 
@@ -7467,6 +7633,17 @@ class IntervalGenerator {
                 lowerVoice: []
             };
 
+            // 🔒 添加重试机制 (2025-10-19): 多次尝试生成匹配的音程
+            let attemptCount = 0;
+            const maxAttempts = 20; // 最多重试20次
+            let success = false;
+
+            while (attemptCount < maxAttempts && !success) {
+                attemptCount++;
+                if (attemptCount > 1) {
+                    console.log(`🔄 第${m + 1}小节重试第${attemptCount}次...`);
+                }
+
             // 🔥 基于调性的音程生成
             try {
                 // 选择一个音程类型（带防重复）
@@ -7522,12 +7699,43 @@ class IntervalGenerator {
                     throw new Error('无法找到合适的八度');
                 }
 
-                // 选择最佳八度组合（优先平滑连接）
-                const selectedOctave = suitableOctaves[0];
-                const lowerPitch = `${lowerNote}${selectedOctave.lowerOctave}`;
-                const upperPitch = `${upperNote}${selectedOctave.upperOctave}`;
+                // 🔒 关键修复 (2025-10-19): 验证实际半音数是否匹配用户选择
+                // 遍历所有八度组合，找到第一个半音数匹配的
+                let validOctave = null;
+                for (const octave of suitableOctaves) {
+                    const testLowerPitch = `${lowerNote}${octave.lowerOctave}`;
+                    const testUpperPitch = `${upperNote}${octave.upperOctave}`;
+                    const testLowerMidi = this.noteToMidi(testLowerPitch);
+                    const testUpperMidi = this.noteToMidi(testUpperPitch);
+                    const actualSemitones = testUpperMidi - testLowerMidi;
+
+                    console.log(`🔍 验证八度组合: ${testLowerPitch}(${testLowerMidi}) - ${testUpperPitch}(${testUpperMidi}) = ${actualSemitones}半音, 期望${selectedIntervalType.semitones}半音`);
+
+                    if (actualSemitones === selectedIntervalType.semitones) {
+                        validOctave = octave;
+                        console.log(`✅ 找到匹配的八度组合！`);
+                        break;
+                    }
+                }
+
+                if (!validOctave) {
+                    console.error(`❌ 所有八度组合都无法生成 ${selectedIntervalType.displayName}(${selectedIntervalType.semitones}半音)`);
+                    throw new Error(`无法生成匹配的音程：${selectedIntervalType.displayName}`);
+                }
+
+                const lowerPitch = `${lowerNote}${validOctave.lowerOctave}`;
+                const upperPitch = `${upperNote}${validOctave.upperOctave}`;
                 const lowerMidi = this.noteToMidi(lowerPitch);
                 const upperMidi = this.noteToMidi(upperPitch);
+
+                // 最终验证
+                const finalSemitones = upperMidi - lowerMidi;
+                if (finalSemitones !== selectedIntervalType.semitones) {
+                    console.error(`❌ 最终验证失败: ${lowerPitch}-${upperPitch} = ${finalSemitones}半音，期望${selectedIntervalType.semitones}半音`);
+                    throw new Error(`音程验证失败`);
+                }
+
+                console.log(`✅✅✅ 音程验证通过: ${lowerPitch}(${lowerMidi}) - ${upperPitch}(${upperMidi}) = ${finalSemitones}半音`);
 
                 // 创建音程对
                 const intervalPair = {
@@ -7577,39 +7785,35 @@ class IntervalGenerator {
 
                 console.log(`🔥 第${m + 1}小节生成成功: ${intervalPair.intervalType} (${intervalPair.lower.pitch}-${intervalPair.upper.pitch})`);
 
+                // 🔒 标记成功，退出重试循环
+                success = true;
+
             } catch (generateError) {
-                console.log(`🔥 第${m + 1}小节生成失败，使用调内安全默认:`, generateError.message);
+                console.warn(`🔄 第${m + 1}小节尝试${attemptCount}失败:`, generateError.message);
 
-                // 使用调内的安全默认音程（主音到三音）
-                // 🔧 使用baseScale确保一致性（虽然前7个音相同，但保持架构统一）
-                const safeBaseScale = this.getBaseScale(scale);
-                const safeLowerNote = safeBaseScale.notes[0]; // 主音
-                const safeUpperNote = safeBaseScale.notes[2]; // 三音
-                const safeLowerPitch = `${safeLowerNote}4`;
-                const safeUpperPitch = `${safeUpperNote}4`;
+                // 🔒 继续重试（如果还没达到最大次数）
+                if (attemptCount < maxAttempts) {
+                    continue; // 重试
+                } else {
+                    // 达到最大重试次数，必须抛出错误
+                    console.error(`❌ 第${m + 1}小节在${maxAttempts}次尝试后仍失败`);
+                    console.error(`🔒 用户选择的音程: [${intervalTypes.map(t => t.displayName).join(', ')}]`);
+                    console.error(`💡 建议：增加音域范围或选择更多音程类型`);
+                    throw new Error(`无法生成用户选择的音程类型，已重试${maxAttempts}次`);
+                }
+            }
 
-                const safeLower = {
-                    pitch: safeLowerPitch,
-                    midi: this.noteToMidi(safeLowerPitch),
-                    duration: measureDuration,
-                    value: 'whole',
-                    displayName: '全音符（调内默认）',
-                    type: 'note',
-                };
+            } // end while
 
-                const safeUpper = {
-                    pitch: safeUpperPitch,
-                    midi: this.noteToMidi(safeUpperPitch),
-                    duration: measureDuration,
-                    value: 'whole',
-                    displayName: '全音符（调内默认）',
-                    type: 'note',
-                };
+            // 🔒 验证小节是否成功生成
+            if (!success) {
+                console.error(`❌ 第${m + 1}小节生成失败（重试循环异常退出）`);
+                throw new Error(`小节${m + 1}生成失败`);
+            }
 
-                measure.lowerVoice.push(safeLower);
-                measure.upperVoice.push(safeUpper);
-
-                // 重置级进连接信息
+            // 🔒 删除旧的fallback重置逻辑
+            if (false) {
+                // 旧代码保留用于参考
                 previousInterval = {
                     lowerScaleIndex: 0, // 主音位置
                     prevScaleIndex: previousInterval ? previousInterval.lowerScaleIndex : undefined,
@@ -7620,20 +7824,11 @@ class IntervalGenerator {
                 console.log(`🔥 第${m + 1}小节使用调内安全默认: ${safeLowerPitch}-${safeUpperPitch}`);
             }
 
-            // 最终检查：确保小节不为空
+            // 🔒 关键修复 (2025-10-19): 不使用getDefaultInterval fallback
+            // 如果小节仍为空，说明重试机制失败，应该抛出错误而不是使用默认值
             if (!measure.lowerVoice || measure.lowerVoice.length === 0) {
-                console.error(`🔥 第${m + 1}小节仍为空，强制添加全音符`);
-
-                const forceInterval = this.getDefaultInterval();
-                forceInterval.lower.duration = measureDuration;
-                forceInterval.upper.duration = measureDuration;
-                forceInterval.lower.value = 'whole';
-                forceInterval.upper.value = 'whole';
-                forceInterval.lower.displayName = '强制全音符';
-                forceInterval.upper.displayName = '强制全音符';
-
-                measure.lowerVoice = [forceInterval.lower];
-                measure.upperVoice = [forceInterval.upper];
+                console.error(`❌ 第${m + 1}小节为空！这不应该发生（重试机制应该已处理）`);
+                throw new Error(`小节${m + 1}为空，生成失败`);
             }
 
             progression.measures.push(measure);
@@ -7869,27 +8064,22 @@ class IntervalGenerator {
 
             console.log(`🔍 下声部音符: MIDI${lowerMidi} → ${lowerPitch}`);
 
-            // 🎯 关键修复：确保上声部也是调内音符
+            // 🔒 关键修复 (2025-10-19): 不使用调内音符逼近，而是直接计算精确的半音数
+            // 问题：midiToScaleNote 会返回最接近的调内音符，导致半音数不匹配
+            // 解决：直接使用 lowerMidi + intervalType.semitones 计算准确的上声部
             const targetUpperMidi = lowerMidi + intervalType.semitones;
+            const upperMidi = targetUpperMidi; // 不再调整到调内音符
 
-            // 找到最接近目标MIDI值的调内音符作为上声部
             let upperPitch;
-            let upperMidi;
-
-            if (this.currentScale) {
-                upperPitch = this.midiToScaleNote(targetUpperMidi, this.currentScale);
-                upperMidi = this.calculateMidiDirect(upperPitch);
-                console.log(`🎼 上声部调内音符: 目标MIDI${targetUpperMidi} → 调内音符${upperPitch}(MIDI${upperMidi})`);
-            } else {
-                // 后备方案
-                upperMidi = targetUpperMidi;
-                try {
-                    upperPitch = this.midiToNote ? this.midiToNote(upperMidi) : this.getScaleFallbackNote(upperMidi);
-                } catch (error) {
-                    upperPitch = this.getScaleFallbackNote(upperMidi);
-                    console.warn('🔥 上声部MIDI转换失败，使用调内后备音符', error);
-                }
+            try {
+                upperPitch = this.midiToNote ? this.midiToNote(upperMidi) : this.getScaleFallbackNote(upperMidi);
+            } catch (error) {
+                upperPitch = this.getScaleFallbackNote(upperMidi);
+                console.warn('🔥 上声部MIDI转换失败，使用后备音符', error);
             }
+
+            console.log(`🎼 上声部精确音程: 目标MIDI${targetUpperMidi} → ${upperPitch}(MIDI${upperMidi})`);
+            console.log(`🔒 强制使用精确半音数，不调整到调内音符`);
 
             // 🔍 特别检查二度音程的音域问题
             const isSecondInterval = intervalType.semitones <= 2;
@@ -7913,11 +8103,12 @@ class IntervalGenerator {
             console.log(`   实际音程: ${upperMidi - lowerMidi}个半音`);
             console.log(`   期望音程: ${intervalType.semitones}个半音 (${intervalType.displayName})`);
 
-            // 🔍 验证音程是否精确匹配
+            // 🔒 关键修复 (2025-10-19): 验证音程是否精确匹配，不匹配则抛出异常
             const actualInterval = upperMidi - lowerMidi;
             if (actualInterval !== intervalType.semitones) {
                 console.error(`🔥 ❌ 音程计算错误！期望${intervalType.semitones}半音，实际${actualInterval}半音`);
-                console.error(`🔥 这说明音程计算逻辑有问题！`);
+                console.error(`🔥 这说明音程计算逻辑有问题！将抛出异常并重试`);
+                throw new Error(`音程验证失败：期望${intervalType.semitones}半音，实际${actualInterval}半音`);
             } else {
                 console.log(`🔥 ✅ 音程匹配正确：${actualInterval}半音 = ${intervalType.displayName}`);
             }
@@ -11611,7 +11802,26 @@ class IntervalGenerator {
             weightDetails.push(`结构权重: ${(structureWeight * 100).toFixed(1)}%`);
 
             // 6. 组合所有权重
-            totalPatternWeight = nonLinearFrequencyWeight * educationalWeight * diversityWeight * musicalityWeight * structureWeight;
+            // 强化频率影响力：将原频率权重提高幂次，并叠加原始频率的直接影响
+            // 这样滑块变化对结果的影响更直观
+            let strongFrequencyWeight = nonLinearFrequencyWeight;
+            try {
+                // 原始百分比的几何积（标准化）
+                let rawProduct = 1.0;
+                for (const requiredType of pattern.requiredFrequencies) {
+                    const raw = Math.max(0, Math.min(100, frequencies[requiredType] || 0)) / 100;
+                    // 避免0导致全部清零，设下限
+                    rawProduct *= Math.max(0.05, raw);
+                }
+                // 对频率加权进行增强（指数放大低频与高频的差异）
+                const freqImpactPow = 2.2;
+                strongFrequencyWeight = Math.pow(nonLinearFrequencyWeight, freqImpactPow) * Math.pow(rawProduct, 1.5);
+            } catch (e) {
+                // 回退使用原有非线性频率权重
+                strongFrequencyWeight = nonLinearFrequencyWeight;
+            }
+
+            totalPatternWeight = strongFrequencyWeight * educationalWeight * diversityWeight * musicalityWeight * structureWeight;
 
             weightedPatterns.push({
                 pattern: pattern,
@@ -13239,6 +13449,328 @@ class IntervalGenerator {
         }
         // 大调或其他：直接返回
         return scale;
+    }
+
+    /**
+     * 🚀 性能优化 (2025-10-20): 找到距离目标MIDI值最近的调内音
+     * 🔧 修复 (2025-10-20): 添加随机性和防重复机制
+     *
+     * @param {number} targetMidi - 目标MIDI值
+     * @param {Object} scale - 音阶对象
+     * @param {number} rangeMin - 最小音域MIDI值
+     * @param {number} rangeMax - 最大音域MIDI值
+     * @param {number|null} previousMidi - 上一个MIDI值（用于防重复）
+     * @returns {Object} { midi, note, octave, scaleIndex } 最接近的调内音信息
+     */
+    findClosestScaleNote(targetMidi, scale, rangeMin, rangeMax, previousMidi = null) {
+        const baseScale = this.getBaseScale(scale);
+        let bestMidi = targetMidi;
+        let bestDistance = Infinity;
+        let bestNote = null;
+        let bestOctave = null;
+        let bestScaleIndex = 0;
+
+        // 🎲 收集所有相同最小距离的候选音符（用于随机选择）
+        let candidates = [];
+
+        // 搜索八度范围（3-6八度覆盖大部分音域）
+        for (let octave = 3; octave <= 6; octave++) {
+            for (let i = 0; i < baseScale.notes.length; i++) {
+                const noteName = baseScale.notes[i];
+                const notePitch = `${noteName}${octave}`;
+
+                let noteMidi;
+                try {
+                    noteMidi = this.calculateMidiDirect ? this.calculateMidiDirect(notePitch) : this.noteToMidi(notePitch);
+                } catch (error) {
+                    continue;
+                }
+
+                // 必须在音域范围内
+                if (noteMidi < rangeMin || noteMidi > rangeMax) {
+                    continue;
+                }
+
+                let distance = Math.abs(noteMidi - targetMidi);
+
+                // 🔒 防重复：如果是上一个音符，大幅增加距离权重
+                if (previousMidi !== null && noteMidi === previousMidi) {
+                    distance += 50; // 降低选中概率
+                }
+
+                // 🎲 收集相同距离的候选音符
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    candidates = [{
+                        midi: noteMidi,
+                        note: noteName,
+                        octave: octave,
+                        scaleIndex: i
+                    }];
+                } else if (distance === bestDistance) {
+                    candidates.push({
+                        midi: noteMidi,
+                        note: noteName,
+                        octave: octave,
+                        scaleIndex: i
+                    });
+                }
+            }
+        }
+
+        // 🎲 随机性：从所有相同距离的候选音符中随机选择一个
+        if (candidates.length > 0) {
+            const selected = candidates[Math.floor(Math.random() * candidates.length)];
+            bestMidi = selected.midi;
+            bestNote = selected.note;
+            bestOctave = selected.octave;
+            bestScaleIndex = selected.scaleIndex;
+        }
+
+        return {
+            midi: bestMidi,
+            note: bestNote,
+            octave: bestOctave,
+            scaleIndex: bestScaleIndex,
+            pitch: bestNote ? `${bestNote}${bestOctave}` : null
+        };
+    }
+
+    /**
+     * 🚀 性能优化 (2025-10-20): 智能将MIDI值转换为调内音符名称
+     * 优先使用调内音，必要时使用临时记号
+     *
+     * @param {number} midi - MIDI值
+     * @param {Object} scale - 音阶对象
+     * @param {string} keySignature - 调号
+     * @returns {string} 音符名称（如 "C4", "F#4", "Bb3"）
+     */
+    midiToScaleNote(midi, scale, keySignature) {
+        const baseScale = this.getBaseScale(scale);
+        const octave = Math.floor(midi / 12) - 1;
+
+        // 先尝试找到精确匹配的调内音
+        for (let i = 0; i < baseScale.notes.length; i++) {
+            const noteName = baseScale.notes[i];
+            const testPitch = `${noteName}${octave}`;
+            try {
+                const testMidi = this.calculateMidiDirect ? this.calculateMidiDirect(testPitch) : this.noteToMidi(testPitch);
+                if (testMidi === midi) {
+                    return testPitch; // ✅ 精确匹配调内音
+                }
+            } catch (error) {
+                continue;
+            }
+        }
+
+        // 没有精确匹配，使用底层MIDI转换（避免递归）
+        // 🔧 修复 (2025-10-20): 不能调用midiToNote，会导致无限递归
+        // return this.midiToNote(midi);  // ❌ midiToNote会调用midiToScaleNote → 递归！
+
+        // 使用midiToNoteWithKey（如果可用）
+        if (typeof this.midiToNoteWithKey === 'function' && keySignature) {
+            return this.midiToNoteWithKey(midi, keySignature);
+        }
+
+        // 回退：基础MIDI转换（不会递归）
+        const noteOctave = Math.floor((midi - 12) / 12);
+        const noteValue = (midi - 12) % 12;
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        return `${noteNames[noteValue]}${noteOctave}`;
+    }
+
+    /**
+     * 🎯 新增 (2025-10-20): 检查MIDI值是否对应调内音
+     * 用于严格遵守调号约束
+     *
+     * @param {number} midi - MIDI值
+     * @param {Object} scale - 音阶对象
+     * @returns {boolean} 是否为调内音
+     */
+    isScaleNote(midi, scale) {
+        const baseScale = this.getBaseScale(scale);
+
+        // 遍历所有可能的八度（3-6覆盖大部分音域）
+        for (let octave = 2; octave <= 7; octave++) {
+            for (let i = 0; i < baseScale.notes.length; i++) {
+                const noteName = baseScale.notes[i];
+                const notePitch = `${noteName}${octave}`;
+
+                try {
+                    const noteMidi = this.calculateMidiDirect ?
+                        this.calculateMidiDirect(notePitch) :
+                        this.noteToMidi(notePitch);
+
+                    if (noteMidi === midi) {
+                        return true; // ✅ 找到精确匹配的调内音
+                    }
+                } catch (error) {
+                    continue;
+                }
+            }
+        }
+
+        return false; // ❌ 不是调内音
+    }
+
+    /**
+     * 🎯 新增 (2025-10-20): 从MIDI值获取调内音符信息
+     * 前置条件：已确认该MIDI值对应调内音
+     *
+     * @param {number} midi - MIDI值
+     * @param {Object} scale - 音阶对象
+     * @returns {Object} { note, pitch, octave } 音符信息
+     */
+    getScaleNoteFromMidi(midi, scale) {
+        const baseScale = this.getBaseScale(scale);
+
+        // 遍历所有可能的八度
+        for (let octave = 2; octave <= 7; octave++) {
+            for (let i = 0; i < baseScale.notes.length; i++) {
+                const noteName = baseScale.notes[i];
+                const notePitch = `${noteName}${octave}`;
+
+                try {
+                    const noteMidi = this.calculateMidiDirect ?
+                        this.calculateMidiDirect(notePitch) :
+                        this.noteToMidi(notePitch);
+
+                    if (noteMidi === midi) {
+                        return {
+                            note: noteName,
+                            pitch: notePitch,
+                            octave: octave
+                        };
+                    }
+                } catch (error) {
+                    continue;
+                }
+            }
+        }
+
+        // 回退：如果找不到（不应该发生），返回基础转换
+        console.warn(`⚠️ getScaleNoteFromMidi: MIDI${midi}不在调内，回退到基础转换`);
+        const noteOctave = Math.floor((midi - 12) / 12);
+        const noteValue = (midi - 12) % 12;
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        return {
+            note: noteNames[noteValue],
+            pitch: `${noteNames[noteValue]}${noteOctave}`,
+            octave: noteOctave
+        };
+    }
+
+    /**
+     * 🎯 新增 (2025-10-20): 找到所有符合"调内音+精确半音数"的候选音程
+     * 核心算法：先验证后选择
+     *
+     * @param {number} currentMidi - 当前音符的MIDI值
+     * @param {Array} allowedIntervalTypes - 允许的音程类型数组
+     * @param {Object} scale - 音阶对象
+     * @param {number} rangeMin - 最小音域MIDI值
+     * @param {number} rangeMax - 最大音域MIDI值
+     * @param {number|null} previousMidi - 上一个音符的MIDI值（用于避免重复）
+     * @returns {Array} 候选数组 [{ intervalType, targetMidi, targetNote, targetPitch, direction, semitones }]
+     */
+    findValidCandidates(currentMidi, allowedIntervalTypes, scale, rangeMin, rangeMax, previousMidi = null) {
+        const candidates = [];
+
+        // 遍历所有允许的音程类型
+        for (const intervalType of allowedIntervalTypes) {
+            // 尝试向上和向下两个方向
+            for (const direction of [+1, -1]) {
+                const targetMidi = currentMidi + (direction * intervalType.semitones);
+
+                // 检查1: 音域范围
+                if (targetMidi < rangeMin || targetMidi > rangeMax) {
+                    continue;
+                }
+
+                // 检查2: 是否调内音
+                if (!this.isScaleNote(targetMidi, scale)) {
+                    continue;
+                }
+
+                // 检查3: 避免重复（不能与上一个音符相同）
+                if (previousMidi !== null && targetMidi === previousMidi) {
+                    continue;
+                }
+
+                // ✅ 通过所有检查，获取音符信息并加入候选
+                const noteInfo = this.getScaleNoteFromMidi(targetMidi, scale);
+                candidates.push({
+                    intervalType: intervalType,
+                    targetMidi: targetMidi,
+                    targetNote: noteInfo.note,
+                    targetPitch: noteInfo.pitch,
+                    direction: direction,
+                    semitones: intervalType.semitones
+                });
+            }
+        }
+
+        return candidates;
+    }
+
+    /**
+     * 🎯 新增 (2025-10-20): 根据级进规则选择最佳候选
+     * 级进策略：小音程优先 + 方向变化 + CF规则 + 随机性
+     *
+     * @param {Array} candidates - 候选数组
+     * @param {Object} previousInterval - 上一个音程信息（包含 lowerMidi）
+     * @param {Object} cfState - CF状态对象（包含方向追踪等）
+     * @returns {Object} 选中的候选
+     */
+    selectByProgression(candidates, previousInterval, cfState) {
+        if (candidates.length === 0) {
+            throw new Error('selectByProgression: 无候选可选');
+        }
+
+        if (candidates.length === 1) {
+            return candidates[0];
+        }
+
+        // 🎯 策略1: 小音程优先（按半音数排序）
+        candidates.sort((a, b) => a.semitones - b.semitones);
+
+        // 🎯 策略2: 方向变化（如果连续3次同向，强制反向）
+        if (cfState && cfState.consecutiveSameDir >= 3 && previousInterval) {
+            const lastDir = cfState.prevMoveDir;
+            const reversedCandidates = candidates.filter(c => {
+                const currentDir = Math.sign(c.targetMidi - previousInterval.lowerMidi);
+                return currentDir !== lastDir;
+            });
+
+            if (reversedCandidates.length > 0) {
+                candidates = reversedCandidates;
+                console.log(`🔄 [方向变化] 连续${cfState.consecutiveSameDir}次同向，强制反向`);
+            }
+        }
+
+        // 🎯 策略3: CF规则权重（80%小步≤2, 15%中步3-4, 5%大步≥5）
+        const rand = Math.random();
+        let selectedGroup;
+
+        if (rand < 0.80) {
+            // 80% 选择小步（≤2半音）
+            selectedGroup = candidates.filter(c => c.semitones <= 2);
+        } else if (rand < 0.95) {
+            // 15% 选择中步（3-4半音）
+            selectedGroup = candidates.filter(c => c.semitones >= 3 && c.semitones <= 4);
+        } else {
+            // 5% 选择大步（≥5半音）
+            selectedGroup = candidates.filter(c => c.semitones >= 5);
+        }
+
+        // 如果选择的组为空，回退到所有候选
+        if (selectedGroup.length === 0) {
+            selectedGroup = candidates;
+        }
+
+        // 🎯 策略4: 从选择的组中随机选择（避免过于机械）
+        const selected = selectedGroup[Math.floor(Math.random() * selectedGroup.length)];
+
+        return selected;
     }
 
     /**
@@ -15454,9 +15986,21 @@ class IntervalGenerator {
             return true;
         }
 
-        // 🔥 核心检查3：组已满3个音符
-        // 6/8拍每个附点四分音符拍包含3个八分音符，不能超过
-        if (currentGroup.length >= 3) {
+        // 🔥 核心检查3：组内音符数量上限
+        // 默认：每组最多3个八分音符；
+        // 特例：四连音(quadruplet)在同一大拍内允许4个音符连杆。
+        let maxGroupSize = 3;
+        try {
+            const firstInGroup = allNotes[currentGroup[0]];
+            const isQuadrupletGroup = (firstInGroup && ((firstInGroup.tupletGroup && firstInGroup.tupletKind === 'quadruplet') || firstInGroup.value === 'quadruplet'));
+            const nextNote = allNotes[allNotes.length ? currentGroup[currentGroup.length - 1] + 1 : 0];
+            const nextIsQuad = nextNote && ((nextNote.tupletGroup && nextNote.tupletKind === 'quadruplet') || nextNote.value === 'quadruplet');
+            if (isQuadrupletGroup || nextIsQuad) {
+                maxGroupSize = 4;
+            }
+        } catch(_) {}
+
+        if (currentGroup.length >= maxGroupSize) {
             console.log(`    🚫 6/8拍规则：组已满3个八分音符（一个附点四分音符拍），强制开始新组`);
             return true;
         }
@@ -16542,74 +17086,49 @@ class IntervalGenerator {
      * @returns {Array} beam组数组
      */
     generateBeamsFor3_4_Melody(notes) {
-        this._log('beaming', `🎵 3/4拍beam生成 - 严格拍点分组`);
-
+        // 严格：每个四分拍内独立beaming，绝不跨拍
+        const EPSILON = 1e-6;
         const beamGroups = [];
-        let currentPosition = 0;
 
-        // 按拍分组
-        const beatGroups = [[], [], []];
+        // 使用已计算好的 note.position（相对小节0-3），避免累计误差
+        const beats = [[], [], []];
 
         for (let i = 0; i < notes.length; i++) {
-            const note = notes[i];
-            const noteStart = currentPosition;
-            const noteEnd = currentPosition + this.getElementDuration(note);
+            const n = notes[i];
+            if (n.type !== 'note') continue; // 休止符不会参与分组
+            if (!this.canNoteBeBeamed_Melody(n)) continue; // 非beamable跳过（不会加入任何组）
 
-            const measurePosition = noteStart % 3;
-            const measureEnd = noteEnd % 3;
-
-            // 检查是否跨越拍点边界
-            let crossesBeat = false;
-            if (measurePosition < 1 && measureEnd > 1) crossesBeat = true;
-            if (measurePosition < 2 && measureEnd > 2) crossesBeat = true;
-
-            if (!crossesBeat) {
-                let beatIndex = -1;
-                if (measurePosition >= 0 && measurePosition < 1) beatIndex = 0;
-                else if (measurePosition >= 1 && measurePosition < 2) beatIndex = 1;
-                else if (measurePosition >= 2 && measurePosition < 3) beatIndex = 2;
-
-                if (beatIndex >= 0) {
-                    beatGroups[beatIndex].push(i);
-                }
-            }
-
-            currentPosition += this.getElementDuration(note);
+            const pos = (typeof n.position === 'number') ? n.position : 0;
+            const beatIndex = Math.min(2, Math.max(0, Math.floor(pos + EPSILON))); // 0,1,2
+            beats[beatIndex].push(i);
         }
 
-        // 为每个拍内的音符生成beam组
-        for (let beatIndex = 0; beatIndex < 3; beatIndex++) {
-            const beatNotes = beatGroups[beatIndex];
-            if (beatNotes.length >= 2) {
-                let currentGroup = [];
+        // 在每个拍内，把连续的beamable音符合成组
+        for (let b = 0; b < 3; b++) {
+            const idxs = beats[b];
+            if (!idxs || idxs.length < 2) continue;
 
-                for (const noteIndex of beatNotes) {
-                    const note = notes[noteIndex];
-                    if (note.type === 'note' && this.canNoteBeBeamed_Melody(note)) {
-                        currentGroup.push(noteIndex);
-                    } else {
-                        if (currentGroup.length >= 2) {
-                            beamGroups.push({
-                                start: currentGroup[0],
-                                end: currentGroup[currentGroup.length - 1],
-                                notes: [...currentGroup]
-                            });
-                        }
-                        currentGroup = [];
+            let current = [idxs[0]];
+            for (let k = 1; k < idxs.length; k++) {
+                const prevIdx = idxs[k - 1];
+                const currIdx = idxs[k];
+
+                // 只要中间没有不可beam元素，就视为可连续分组
+                // 因为我们已经只收集了canNoteBeBeamed的音符，所以这里直接连续
+                if (currIdx === prevIdx + 1) {
+                    current.push(currIdx);
+                } else {
+                    if (current.length >= 2) {
+                        beamGroups.push({ start: current[0], end: current[current.length - 1], notes: [...current] });
                     }
+                    current = [currIdx];
                 }
-
-                if (currentGroup.length >= 2) {
-                    beamGroups.push({
-                        start: currentGroup[0],
-                        end: currentGroup[currentGroup.length - 1],
-                        notes: [...currentGroup]
-                    });
-                }
+            }
+            if (current.length >= 2) {
+                beamGroups.push({ start: current[0], end: current[current.length - 1], notes: [...current] });
             }
         }
 
-        console.log(`✅ 3/4拍beam生成完成: ${beamGroups.length}个组`);
         return beamGroups;
     }
 
