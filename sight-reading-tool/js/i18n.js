@@ -9,7 +9,21 @@
 
 class I18n {
   constructor() {
-    this.currentLang = localStorage.getItem('ic-sight-reading-lang') || 'zh-CN';
+    // 1. 首先检查 localStorage 是否有用户选择
+    const savedLang = localStorage.getItem('ic-sight-reading-lang');
+
+    // 2. 如果没有保存的选择，自动检测浏览器语言
+    if (!savedLang) {
+      const browserLang = navigator.language || navigator.userLanguage;
+      // 检测是否为中文环境（支持 zh, zh-CN, zh-TW, zh-HK）
+      const isChinese = browserLang && browserLang.toLowerCase().startsWith('zh');
+      this.currentLang = isChinese ? 'zh-CN' : 'en';
+      console.log(`🌍 浏览器语言检测: ${browserLang} → ${this.currentLang}`);
+    } else {
+      this.currentLang = savedLang;
+      console.log(`💾 使用保存的语言: ${savedLang}`);
+    }
+
     this.translations = {};
     this.loadedLanguages = new Set();
   }
