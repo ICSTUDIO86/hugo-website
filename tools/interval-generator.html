@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Primary SEO Meta Tags -->
-    <title>Free Interval Training Tool | IC 音程视奏训练工具 - Ear Training & Pitch Recognition</title>
+    <title>Interval Training Tool | IC 音程视奏训练工具 - Ear Training & Pitch Recognition</title>
     <meta name="description" content="Professional interval training and ear training tool online. Practice interval recognition with customizable range, harmonic/melodic intervals, all interval types (m2-M13). Features real-time piano audio playback, standard music notation. Free 20 trials. Perfect for musicians developing relative pitch, ear training, and sight reading intervals. | 专业音程训练与听力训练工具，支持自定义音域、和声/旋律音程、所有音程类型（小二度-大十三度），实时钢琴音频。">
     <meta name="keywords" content="interval training, ear training, interval recognition, pitch training, music ear training, interval exercises, harmonic intervals, melodic intervals, relative pitch, perfect pitch training, music theory intervals, sight reading intervals, interval identification, aural training, music theory tool, free ear training, online interval trainer, interval practice, 音程训练, 听力训练, 音程识别, 相对音感, 音程练习, 和声音程, 旋律音程">
     <meta name="author" content="Igor Chen - IC Studio">
@@ -15,7 +15,7 @@
     <!-- Open Graph / Facebook / WeChat -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://icstudio.club/tools/interval-generator.html">
-    <meta property="og:title" content="Free Interval Training Tool | IC 音程视奏训练工具">
+    <meta property="og:title" content="Interval Training Tool | IC 音程视奏训练工具">
     <meta property="og:description" content="Professional interval training & ear training tool. Practice interval recognition with customizable settings. Piano audio playback, standard notation. Free 20 trials. | 专业音程与听力训练工具，自定义设置，实时音频。">
     <meta property="og:image" content="https://icstudio.club/images/ICLOGO.png">
     <meta property="og:image:alt" content="IC Studio Interval Training Tool Interface">
@@ -26,7 +26,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://icstudio.club/tools/interval-generator.html">
-    <meta name="twitter:title" content="Free Interval Training & Ear Training Tool | IC Studio">
+    <meta name="twitter:title" content="Interval Training & Ear Training Tool | IC Studio">
     <meta name="twitter:description" content="Professional interval training tool. Practice interval recognition with customizable settings. Piano audio. Free 20 trials.">
     <meta name="twitter:image" content="https://icstudio.club/images/ICLOGO.png">
 
@@ -2278,18 +2278,24 @@
                 if (languageBtn) {
                     languageBtn.textContent = languageLabels[currentLanguage];
                 }
+                console.log(`💾 使用保存的语言: ${savedLanguage}`);
             } else {
-                // 如果没有保存的语言偏好，显示默认的 🌐 文/A
+                // 如果没有保存的语言偏好，自动检测浏览器语言
+                const browserLang = navigator.language || navigator.userLanguage;
+                // 检测是否为中文环境（支持 zh, zh-CN, zh-TW, zh-HK）
+                const isChinese = browserLang && browserLang.toLowerCase().startsWith('zh');
+                currentLanguage = isChinese ? 'zh-CN' : 'en';
                 const languageBtn = document.getElementById('languageBtn');
                 if (languageBtn) {
                     languageBtn.textContent = '🌐 文/A';
                 }
+                console.log(`🌍 浏览器语言检测: ${browserLang} → ${currentLanguage}`);
             }
 
             // 应用翻译
             applyTranslations();
 
-            console.log(`🌐 初始化语言: ${currentLanguage}`);
+            console.log(`🌐 音程工具初始化语言: ${currentLanguage}`);
 
             // ============ 跨工具同步监听机制 ============
             // 监听其他工具对localStorage的修改

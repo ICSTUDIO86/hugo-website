@@ -432,9 +432,24 @@ const I18n = {
      * 页面加载时自动应用保存的语言偏好
      */
     init() {
-        const savedLang = localStorage.getItem('preferredLanguage') || 'zh-CN';
-        this.applyLanguage(savedLang);
-        console.log('🌐 I18n系统初始化完成，当前语言:', savedLang);
+        // 1. 首先检查 localStorage 是否有用户选择
+        const savedLang = localStorage.getItem('preferredLanguage');
+
+        let currentLang;
+        // 2. 如果没有保存的选择，自动检测浏览器语言
+        if (!savedLang) {
+            const browserLang = navigator.language || navigator.userLanguage;
+            // 检测是否为中文环境（支持 zh, zh-CN, zh-TW, zh-HK）
+            const isChinese = browserLang && browserLang.toLowerCase().startsWith('zh');
+            currentLang = isChinese ? 'zh-CN' : 'en';
+            console.log(`🌍 浏览器语言检测: ${browserLang} → ${currentLang}`);
+        } else {
+            currentLang = savedLang;
+            console.log(`💾 使用保存的语言: ${savedLang}`);
+        }
+
+        this.applyLanguage(currentLang);
+        console.log('🌐 I18n系统初始化完成，当前语言:', currentLang);
     },
 
     /**

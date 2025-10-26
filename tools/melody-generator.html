@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Primary SEO Meta Tags -->
-    <title>Free Melody Sight Reading Generator | IC 旋律视奏生成器 - Professional Music Practice Tool</title>
+    <title>Melody Sight Reading Generator | IC 旋律视奏生成器 - Professional Music Practice Tool</title>
     <meta name="description" content="Professional online sight reading tool for melody practice. Generate random melodies with customizable range, time signatures, rhythms, and keys. Features real-time piano audio playback, standard music notation. Free 20 trials. Perfect for piano, guitar, violin students improving sight reading skills. | 专业在线视奏训练工具，随机生成旋律练习，支持自定义音域、拍号、节奏、调号，实时钢琴音频播放。">
     <meta name="keywords" content="sight reading, melody generator, sight reading tool, music practice, staff notation, sight reading exercises, melodic dictation, rhythm practice, ear training, music theory tool, piano sight reading, guitar sight reading, violin practice, free sight reading, online music tool, music notation generator, sight reading factory alternative, 视奏工具, 旋律生成器, 五线谱练习, 视奏训练, 乐谱生成, 音乐理论, 节奏练习, 听力训练">
     <meta name="author" content="Igor Chen - IC Studio">
@@ -15,7 +15,7 @@
     <!-- Open Graph / Facebook / WeChat -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://icstudio.club/tools/melody-generator.html">
-    <meta property="og:title" content="Free Melody Sight Reading Generator | IC 旋律视奏生成器">
+    <meta property="og:title" content="Melody Sight Reading Generator | IC 旋律视奏生成器">
     <meta property="og:description" content="Professional online sight reading tool. Generate random melodies with customizable settings. Features piano audio playback, standard notation. Free 20 trials. | 专业视奏训练工具，随机旋律生成，实时音频播放。">
     <meta property="og:image" content="https://icstudio.club/images/ICLOGO.png">
     <meta property="og:image:alt" content="IC Studio Melody Sight Reading Generator Interface">
@@ -26,7 +26,7 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://icstudio.club/tools/melody-generator.html">
-    <meta name="twitter:title" content="Free Melody Sight Reading Generator | IC Studio">
+    <meta name="twitter:title" content="Melody Sight Reading Generator | IC Studio">
     <meta name="twitter:description" content="Professional sight reading tool for melody practice. Customizable range, rhythms, keys. Piano audio playback. Free 20 trials.">
     <meta name="twitter:image" content="https://icstudio.club/images/ICLOGO.png">
 
@@ -1974,13 +1974,18 @@
                 if (languageBtn) {
                     languageBtn.textContent = languageLabels[currentLanguage];
                 }
+                console.log(`💾 使用保存的语言: ${savedLanguage}`);
             } else {
-                // 如果没有保存的语言偏好，使用默认的中文，显示默认的 🌐 文/A
-                currentLanguage = 'zh-CN';
+                // 如果没有保存的语言偏好，自动检测浏览器语言
+                const browserLang = navigator.language || navigator.userLanguage;
+                // 检测是否为中文环境（支持 zh, zh-CN, zh-TW, zh-HK）
+                const isChinese = browserLang && browserLang.toLowerCase().startsWith('zh');
+                currentLanguage = isChinese ? 'zh-CN' : 'en';
                 const languageBtn = document.getElementById('languageBtn');
                 if (languageBtn) {
                     languageBtn.textContent = '🌐 文/A';
                 }
+                console.log(`🌍 浏览器语言检测: ${browserLang} → ${currentLanguage}`);
             }
 
             // 应用翻译
