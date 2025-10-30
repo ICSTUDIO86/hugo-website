@@ -15679,6 +15679,13 @@ function closeRhythmSettingsWithSave() {
             if (selectedRhythms.includes('eighth') && selectedRhythms.includes('16th')) {
                 finalRhythms.push('eighth.');
             }
+        } else {
+            // 🔒 关闭总开关时，确保不保存任何附点时值
+            const before = [...finalRhythms];
+            finalRhythms = finalRhythms.filter(r => !(r.includes('.') || r.startsWith('dotted-')));
+            if (before.length !== finalRhythms.length) {
+                console.log(`🧹 关闭总开关：保存前移除附点时值 [${before.join(', ')}] -> [${finalRhythms.join(', ')}]`);
+            }
         }
         
         const frequencies = {};
@@ -15747,6 +15754,13 @@ function saveRhythmSettings() {
         // 附点八分音符 = 八分音符 + 十六分音符（需要勾选十六分音符）
         if (selectedRhythms.includes('eighth') && selectedRhythms.includes('16th')) {
             finalRhythms.push('eighth.');
+        }
+    } else if (!allowDottedNotes) {
+        // 🔒 关闭总开关时，确保不保存任何附点时值
+        const before = [...finalRhythms];
+        finalRhythms = finalRhythms.filter(r => !(r.includes('.') || r.startsWith('dotted-')));
+        if (before.length !== finalRhythms.length) {
+            console.log(`🧹 关闭总开关：保存前移除附点时值 [${before.join(', ')}] -> [${finalRhythms.join(', ')}]`);
         }
     }
     
@@ -16709,7 +16723,7 @@ function updateRhythmSettingsRealTime() {
     console.log('🎵 实时更新节奏设置');
     
     // 收集当前选中的基本节奏类型
-    const selectedRhythms = [];
+    let selectedRhythms = [];
 
     // 🔍 检查基本节奏复选框（不包括具体的附点音符选项）
     const basicRhythmIds = [
@@ -16730,17 +16744,28 @@ function updateRhythmSettingsRealTime() {
     });
 
     // 收集具体的附点音符（主要用于6/8拍）
+    // 仅当总开关启用时才允许读取具体附点选项
+    // 🎯 如果总开关关闭，则清除这些具体附点复选框的勾选状态，避免被误保存
+    const allowDottedNotesCheckbox = document.getElementById('allowDottedNotes');
+    const shouldAddDottedNotes = allowDottedNotesCheckbox && allowDottedNotesCheckbox.checked;
     specificDottedIds.forEach(id => {
         const checkbox = document.getElementById(id);
-        if (checkbox && checkbox.checked && checkbox.style.display !== 'none') {
-            selectedRhythms.push(checkbox.value);
-            console.log(`✅ 具体附点音符已选中: ${checkbox.value} (来自 ${id})`);
+        if (!checkbox) return;
+        if (shouldAddDottedNotes) {
+            if (checkbox.checked && checkbox.style.display !== 'none') {
+                selectedRhythms.push(checkbox.value);
+                console.log(`✅ 具体附点音符已选中: ${checkbox.value} (来自 ${id})`);
+            }
+        } else {
+            // 关闭总开关时，强制取消具体附点复选框
+            if (checkbox.checked) {
+                checkbox.checked = false;
+                console.log(`🔧 关闭总开关：取消勾选具体附点 ${id}`);
+            }
         }
     });
 
-    // 🎵 检查通用的"附点音符"开关
-    const allowDottedNotesCheckbox = document.getElementById('allowDottedNotes');
-    const shouldAddDottedNotes = allowDottedNotesCheckbox && allowDottedNotesCheckbox.checked;
+    // 🎵 检查通用的"附点音符"开关（已在上方读取）
 
     console.log(`📝 基本节奏选择: [${selectedRhythms.join(', ')}]`);
     console.log(`🎵 附点音符开关: ${shouldAddDottedNotes ? '开启' : '关闭'}`);
@@ -16794,6 +16819,15 @@ function updateRhythmSettingsRealTime() {
         selectedRhythms.push(...dottedToAdd);
     }
 
+    // 当总开关关闭时，移除任何附点时值（包含两种表示法）
+    if (!shouldAddDottedNotes) {
+        const before = [...selectedRhythms];
+        selectedRhythms = selectedRhythms.filter(r => !(r.includes('.') || r.startsWith('dotted-')));
+        if (before.length !== selectedRhythms.length) {
+            console.log(`🧹 已移除附点时值（因总开关关闭）：从 [${before.join(', ')}] -> [${selectedRhythms.join(', ')}]`);
+        }
+    }
+
     if (selectedRhythms.length === 0) {
         console.log('⚠️ 未选择任何节奏，将生成空旋律');
     }
@@ -16803,13 +16837,12 @@ function updateRhythmSettingsRealTime() {
     // 保存到用户设置
     userSettings.allowedRhythms = selectedRhythms;
     
-    // 保持兼容性：检查是否选择了附点音符
-    const hasDottedNotes = selectedRhythms.some(rhythm => 
-        rhythm === 'dotted-half' || rhythm === 'dotted-quarter' || 
-        rhythm.includes('.')
-    );
-    userSettings.allowDottedNotes = hasDottedNotes;
+    // 以用户开关为唯一真源，禁止被反向“推开”
+    userSettings.allowDottedNotes = shouldAddDottedNotes;
     
+    const hasDottedNotes = selectedRhythms.some(rhythm =>
+        rhythm === 'dotted-half' || rhythm === 'dotted-quarter' || rhythm.includes('.')
+    );
     console.log(`🎵 节奏设置更新完成:`);
     console.log(`  - 选中的节奏: [${selectedRhythms.join(', ')}]`);
     console.log(`  - 包含附点音符: ${hasDottedNotes}`);
@@ -23019,6 +23052,8 @@ function updateRhythmOptionsForTimeSignature(timeSignature) {
     if (timeSignature === '6/8') {
         // 6/8拍：自动替换节奏选项
         console.log('🎵 切换到6/8拍，自动调整节奏选项...');
+        const allowDottedNotesCheckbox = document.getElementById('allowDottedNotes');
+        const allowDotted = allowDottedNotesCheckbox && allowDottedNotesCheckbox.checked;
         
         // 全音符 → 附点二分音符的替换
         if (wholeLabel && wholeCheckbox && dottedHalfLabel && dottedHalfCheckbox) {
@@ -23028,8 +23063,13 @@ function updateRhythmOptionsForTimeSignature(timeSignature) {
             
             if (wasWholeChecked) {
                 wholeCheckbox.checked = false;
-                dottedHalfCheckbox.checked = true;
-                console.log('✅ 6/8拍替换：全音符 → 附点二分音符');
+                if (allowDotted) {
+                    dottedHalfCheckbox.checked = true;
+                    console.log('✅ 6/8拍替换：全音符 → 附点二分音符');
+                } else {
+                    dottedHalfCheckbox.checked = false;
+                    console.log('🚫 6/8拍替换被阻止（附点总开关关闭）：全音符不替换为附点二分');
+                }
             }
         }
         
@@ -23041,8 +23081,13 @@ function updateRhythmOptionsForTimeSignature(timeSignature) {
             
             if (wasHalfChecked) {
                 halfCheckbox.checked = false;
-                dottedQuarterCheckbox.checked = true;
-                console.log('✅ 6/8拍替换：二分音符 → 附点四分音符');
+                if (allowDotted) {
+                    dottedQuarterCheckbox.checked = true;
+                    console.log('✅ 6/8拍替换：二分音符 → 附点四分音符');
+                } else {
+                    dottedQuarterCheckbox.checked = false;
+                    console.log('🚫 6/8拍替换被阻止（附点总开关关闭）：二分音符不替换为附点四分');
+                }
             }
         }
         
@@ -24397,4 +24442,3 @@ function shouldGenerate68Articulation(articulationType, randomGenerator = null) 
     
     return shouldGenerate;
 }
-
