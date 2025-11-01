@@ -37,7 +37,15 @@
 &lt;div style="flex: 1; min-width: 300px; padding: 25px; background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); border: 2px solid #e6edff; text-align: center;">
 &lt;h3 style="color: #4a5568; margin-bottom: 6px; font-size: 20px;">解锁视奏工具&lt;/h3>
 &lt;p style="color: #718096; font-size: 14px; margin: 0 0 20px 0;">支持 7 天无理由退款&lt;/p>
-&lt;p>&lt;a href="https://icstudio.club/tools/melody-generator.html" target="_blank" style="display: block; background: #f8f9fa; color: #667eea; padding: 12px 20px; border: 2px solid #667eea; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s ease; margin-bottom: 15px;" onmouseover="this.style.background='#667eea'; this.style.color='white';" onmouseout="this.style.background='#f8f9fa'; this.style.color='#667eea';">免费试用&lt;/a>&lt;/p></description></item><item><title>IC Membership</title><link>https://icstudio.club/membership/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://icstudio.club/membership/</guid><description>&lt;h2 id="加入会员-">加入会员 🎵&lt;/h2>
+&lt;p>&lt;a href="https://icstudio.club/tools/melody-generator.html" target="_blank" style="display: block; background: #f8f9fa; color: #667eea; padding: 12px 20px; border: 2px solid #667eea; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; transition: all 0.3s ease; margin-bottom: 15px;" onmouseover="this.style.background='#667eea'; this.style.color='white';" onmouseout="this.style.background='#f8f9fa'; this.style.color='#667eea';">免费试用&lt;/a>&lt;/p></description></item><item><title>纯律格</title><link>https://icstudio.club/harmonic-lattice-navigator/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://icstudio.club/harmonic-lattice-navigator/</guid><description>&lt;!-- 保留站点 Header/Footer，通过 iframe 内嵌静态页面 -->
+&lt;div style="position:relative; width:100%; min-height:80vh;">
+ &lt;iframe
+ src="https://icstudio.club/just-intonation/harmonic_lattice_dualmode.html"
+ style="border:0; width:100%; height:85vh; border-radius:12px; background:#fff;"
+ loading="lazy"
+ referrerpolicy="no-referrer"
+ >&lt;/iframe>
+&lt;/div></description></item><item><title>IC Membership</title><link>https://icstudio.club/membership/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://icstudio.club/membership/</guid><description>&lt;h2 id="加入会员-">加入会员 🎵&lt;/h2>
 &lt;p>感谢你对 IC Studio 的支持！为了提供更优质、更有深度的内容，我们对频道更新频率做出了调整。现在，IC Studio 的发布频率变为&lt;strong>每月三个视频&lt;/strong>，其中一个会被设置为会员视频。每月的专属会员视频将带来独特的内容，只对会员开放观看。&lt;/p>
 &lt;p>会员专属内容将包括但不限于：&lt;/p>
 &lt;ul>

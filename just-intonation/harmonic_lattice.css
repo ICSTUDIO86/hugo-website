@@ -1,0 +1,296 @@
+:root {
+  color-scheme: light;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  background: radial-gradient(circle at top, #f7f8ff 0%, #f2f4fb 38%, #e8edf9 100%);
+  color: #1f2a44;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1.5rem;
+}
+.app {
+  width: min(1080px, 100%);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 22px;
+  box-shadow: 0 22px 45px rgba(33, 60, 120, 0.18);
+  padding: clamp(1.4rem, 2vw + 1rem, 2.8rem);
+  backdrop-filter: blur(10px);
+  display: grid;
+  gap: clamp(1.2rem, 2vw, 1.8rem);
+}
+header h1 {
+  margin: 0;
+  font-size: clamp(1.85rem, 2vw + 1.25rem, 2.6rem);
+  text-align: center;
+  color: #233360;
+}
+header p {
+  margin: 0.5rem 0 0;
+  text-align: center;
+  color: #526084;
+  font-size: 0.95rem;
+}
+.control-panel {
+  display: grid;
+  gap: 1rem;
+  align-items: center;
+}
+.controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  justify-content: center;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 600;
+  color: #36446c;
+  font-size: 0.9rem;
+}
+input[type="number"], select {
+  width: 200px;
+  border-radius: 12px;
+  border: 1px solid rgba(80, 110, 180, 0.22);
+  background: #f4f6ff;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+input[type="number"]:focus, select:focus {
+  outline: none;
+  border-color: #5b6ef6;
+  box-shadow: 0 0 0 3px rgba(91, 110, 246, 0.25);
+  background: #fff;
+}
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.65rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: linear-gradient(135deg, #6671f6, #4f5ce8);
+  color: #fff;
+  box-shadow: 0 14px 32px rgba(90, 104, 245, 0.26);
+}
+button.secondary {
+  background: #eef1ff;
+  color: #35416a;
+  box-shadow: none;
+  border: 1px solid rgba(80, 110, 180, 0.28);
+}
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 38px rgba(90, 104, 245, 0.28);
+}
+button.secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(80, 110, 180, 0.22);
+}
+.lattice-wrapper {
+  background: linear-gradient(180deg, #f8faff 0%, #f2f5ff 55%, #eef3ff 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(120, 140, 200, 0.18);
+  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+}
+.lattice-wrapper.dragging {
+  cursor: grabbing;
+}
+svg#lattice {
+  width: 100%;
+  height: auto;
+}
+.edges line {
+  stroke: rgba(90, 111, 190, 0.28);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.node {
+  cursor: pointer;
+  transition: transform 0.18s ease;
+}
+.node:focus-visible {
+  outline: 3px solid rgba(91, 110, 246, 0.45);
+  outline-offset: 4px;
+}
+.node circle {
+  r: 34px;
+  fill: #ffffff;
+  stroke: rgba(85, 100, 178, 0.65);
+  stroke-width: 2.4px;
+  filter: drop-shadow(0 6px 12px rgba(40, 55, 120, 0.18));
+  transition: fill 0.2s ease, stroke 0.2s ease, transform 0.2s ease;
+}
+.node.base circle {
+  fill: #5f6ef6;
+  stroke: #3743c9;
+  stroke-width: 3px;
+}
+.node.base text.note {
+  fill: #fff;
+}
+.node.base text.ratio {
+  fill: #dbe0ff;
+}
+.node.selected circle {
+  fill: #dfe6ff;
+  stroke: #5b6ef6;
+  stroke-width: 3px;
+}
+.node.playing circle {
+  fill: #98a6ff;
+}
+.node text {
+  font-weight: 600;
+  pointer-events: none;
+  text-anchor: middle;
+}
+text.note {
+  font-size: 0.9rem;
+  fill: #2f3d68;
+  dominant-baseline: middle;
+}
+text.ratio {
+  font-size: 0.75rem;
+  fill: #5a6aa2;
+  dominant-baseline: middle;
+}
+.pan-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 0.75rem;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 999px;
+  padding: 0.35rem 1rem;
+  font-size: 0.82rem;
+  color: #4b5986;
+  border: 1px solid rgba(90, 110, 180, 0.18);
+  pointer-events: none;
+  box-shadow: 0 8px 18px rgba(40, 54, 120, 0.12);
+}
+.info-panel {
+  background: rgba(246, 248, 255, 0.9);
+  border: 1px solid rgba(80, 110, 180, 0.18);
+  border-radius: 16px;
+  padding: 1rem 1.2rem;
+  color: #3a4570;
+  font-size: 0.92rem;
+  display: grid;
+  gap: 0.5rem;
+}
+.info-panel h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #27335d;
+}
+#selectionReadout ul {
+  margin: 0.35rem 0 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.2rem;
+}
+#selectionReadout li::marker {
+  color: #5b6ef6;
+}
+.octave-popover {
+  position: fixed;
+  min-width: 220px;
+  max-width: 260px;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(90, 110, 200, 0.24);
+  box-shadow: 0 18px 34px rgba(38, 60, 140, 0.22);
+  color: #2f3a63;
+  z-index: 20;
+  backdrop-filter: blur(12px);
+}
+.octave-popover h3 {
+  margin: 0 0 0.35rem 0;
+  font-size: 1rem;
+  color: #1f2a4d;
+}
+.octave-popover .octave-frequency {
+  font-size: 0.88rem;
+  color: #586799;
+  margin-bottom: 0.45rem;
+}
+.octave-popover .octave-offset-row {
+  margin-bottom: 0.55rem;
+  font-size: 0.9rem;
+}
+.octave-popover .octave-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+.octave-popover button {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6671f6, #4f5ce8);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.55rem 0.4rem;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+.octave-popover button.secondary {
+  background: #eef1ff;
+  color: #36446e;
+  border: 1px solid rgba(90, 110, 200, 0.24);
+  box-shadow: none;
+}
+.octave-popover button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.octave-popover button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(90, 110, 240, 0.22);
+}
+.muted {
+  color: #7280a8;
+  font-size: 0.88rem;
+}
+.hidden {
+  display: none !important;
+}
+@media (max-width: 900px) {
+  input[type="number"], select {
+    width: 100%;
+  }
+  .controls-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  button {
+    width: 100%;
+  }
+  .pan-hint {
+    font-size: 0.78rem;
+  }
+}
