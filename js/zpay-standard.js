@@ -15,7 +15,7 @@ class ZPayStandard {
       // 商户密钥
       key: 'UoA5vDBCe51EyVzdK2Fu2udBO1SAadjN',
       // 支付金额
-      money: '68.00',
+      money: '128.00',
       // 签名方式
       signType: 'MD5'
     };
