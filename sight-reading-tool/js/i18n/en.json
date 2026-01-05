@@ -115,6 +115,11 @@
       "description": "If the tool is still in trial mode after entering the verification code, just refresh the page a few times. If the problem persists, please contact our customer support."
     },
 
+    "macDamaged": {
+      "title": "🍎 M-chip Mac Says \"App Is Damaged and Can't Be Opened\"?",
+      "description": "On Apple silicon Macs, you may see the \"App is damaged and can't be opened\" alert. Just run the following command in Terminal:"
+    },
+
     "refund": {
       "title": "💰 How to Get a Refund?",
       "description": "We understand various situations may arise, so we offer a 7-day no-questions-asked refund policy:",
