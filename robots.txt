@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://icstudio.club/sitemap.xml
+
+# 优先爬取重要页面
+Crawl-delay: 1
+
+# 允许搜索引擎访问所有内容
+# IC Studio - 音乐教育与视奏工具

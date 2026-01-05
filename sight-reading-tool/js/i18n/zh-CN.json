@@ -1,0 +1,140 @@
+{
+  "hero": {
+    "titleLine1": "提升你的",
+    "titleHighlight": "视奏能力",
+    "titleLine2": "从这里开始",
+    "subtitle": "专为音乐人打造的专业级视奏训练工具",
+    "featureHighlight": "真正读懂音乐",
+    "btnPurchase": "立即购买",
+    "btnTry": "立即试用",
+    "pill": "IC 视奏工具"
+  },
+
+  "products": {
+    "title": "四大核心工具",
+    "subtitle": "针对不同训练需求，提供专业的视奏练习方案",
+
+    "melody": {
+      "title": "旋律视奏生成器",
+      "description": "自由选择音符时值，精确控制 articulations（断奏、连音、重音等），甚至可以设定它们出现的频率。完全按你的需求打造练习内容。"
+    },
+
+    "interval": {
+      "title": "音程视奏生成器",
+      "description": "针对性训练特定音程，自由选择想要练习的音程类型。从大二度到完全八度，每个音程都能精准掌握。"
+    },
+
+    "chord": {
+      "title": "和弦视奏生成器",
+      "description": "支持多种和弦类型：大三和弦、小三和弦、减三和弦、sus 等。提供吉他专属和声配置：Drop2、Drop3、Shell Voicing、Close Voicing。"
+    },
+
+    "jianpu": {
+      "title": "简谱视奏生成器",
+      "description": "使用简谱（数字记谱法）显示旋律，保留节奏与调号控制，适合更习惯简谱的学习者。"
+    }
+  },
+
+  "features": {
+    "title": "强大的",
+    "titleHighlight": "功能特性",
+    "subtitle": "专业级功能，助你达到新的音乐高度",
+
+    "customize": {
+      "icon": "⚙️",
+      "title": "完全自定义生成",
+      "description": "自由选择调号、拍号、音符时值、自定义频率，打造完全符合你需求的练习内容。"
+    },
+
+    "articulations": {
+      "icon": "💻",
+      "title": "多设备适配",
+      "description": "为电脑、iPad 与手机专门设计界面。软件版目前只支持电脑端，移动端可通过 PWA 安装使用。"
+    },
+
+    "multiInstrument": {
+      "icon": "🎵",
+      "title": "适用多个乐器",
+      "description": "适用于吉他、钢琴、小提琴、贝斯等各种乐器，满足不同演奏者的需求。"
+    },
+
+    "randomOrTonal": {
+      "icon": "🎲",
+      "title": "智能生成/遵循音乐性",
+      "description": "音符虽为随机生成，却遵循音乐逻辑，确保练习既具挑战又贴近真实演奏场景。"
+    },
+
+    "affordable": {
+      "icon": "💰",
+      "title": "买断机制",
+      "description": "一次性购买，无限生成练习内容，性价比远超传统视奏教材。"
+    }
+  },
+
+  "payment": {
+    "title": "开始你的",
+    "titleHighlight": "视奏提升",
+    "titleSuffix": "之旅",
+    "price": "128.00¥",
+    "priceText": "支持网页版以及电脑软件",
+
+    "cardTitle": "解锁视奏工具",
+    "refundPolicy": "支持 7 天无理由退款",
+    "btnFreeTrial": "免费试用",
+    "btnAlipay": "支付宝支付",
+    "btnWechat": "微信支付",
+
+    "accessCodeTitle": "🔑 已有访问码？立即使用",
+    "accessCodePlaceholder": "输入访问码(11-12位)",
+    "btnVerify": "验证"
+  },
+
+  "faq": {
+    "title": "❓ 常见问题",
+    "titleHighlight": "FAQ",
+
+    "forgotCode": {
+      "title": "🔑 忘记访问码了怎么办？",
+      "description": "如果您忘记了访问码，可以通过您的订单号找回：",
+      "btnRecover": "🔍 通过订单号找回访问码",
+      "noteTitle": "💡 说明：",
+      "note1": "订单号或者商家订单号可在支付宝或者微信的<strong>账单记录</strong>里找到。",
+      "note2": "<strong>商家订单号</strong>格式如 <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IC17575395673154298</code>",
+      "note3": "<strong>订单号</strong>格式如 <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">2025097832001480241441480505</code>"
+    },
+
+    "codeNotWorking": {
+      "title": "⚙️ 访问码不能正常工作？",
+      "description": "如果在输入验证码之后工具还是处于试用版本的话，只要多刷新一下页面就好了。如果问题依然存在，请联系我们的客服支持。"
+    },
+
+    "refund": {
+      "title": "💰 如何退款？",
+      "description": "我们理解您可能会遇到各种情况，因此提供 7天无理由退款政策：",
+      "conditionsTitle": "📋 退款条件：",
+      "condition1": "购买后7天内可申请退款",
+      "condition2": "超过7天不支持退款",
+      "onlineRefund": "在线退款：",
+      "btnRefund": "申请在线退款"
+    },
+
+    "contact": {
+      "title": "📬 有其他问题？欢迎联系我！",
+      "description": "如果您在使用过程中遇到以下任何问题，欢迎通过下面的联系方式联系我，我会尽快为您解决：",
+      "issue1": "使用工具时有遇到 bug",
+      "issue2": "找回访问码不能正常工作",
+      "issue3": "退款按钮不能正常工作",
+      "issue4": "任何其他关于产品的咨询",
+      "contactInfoTitle": "📧 联系方式：",
+      "email": "✉️ 邮箱：",
+      "contactPage": "🌐 联系页面：",
+      "clickVisit": "点此访问",
+      "responseTime": "⏰ 所有信息尽量在最多 48 小时内回复"
+    }
+  },
+
+  "footer": {
+    "tagline": "一起在音乐的道路上前进吧！",
+    "copyright": "Copyright © 2025. All rights reserved. Igor Chen - icstudio.club"
+  }
+}

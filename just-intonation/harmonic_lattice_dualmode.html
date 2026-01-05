@@ -1,0 +1,2653 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+  <title>IC Studio · Harmonic Lattice Navigator</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <style>
+    :root {
+      color-scheme: light;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: radial-gradient(circle at top, #f7f8ff 0%, #f2f4fb 38%, #e8edf9 100%);
+      color: #1f2a44;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+    }
+    .app {
+      width: min(1180px, 100%);
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 22px;
+      box-shadow: 0 22px 45px rgba(33, 60, 120, 0.18);
+      padding: clamp(1.4rem, 2vw + 1rem, 2.8rem);
+      backdrop-filter: blur(10px);
+      display: grid;
+      gap: clamp(1.2rem, 2vw, 1.8rem);
+    }
+    header {
+      position: relative; /* 保持标题居中，不受切换开关影响 */
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 0.6rem 1rem;
+    }
+    header h1 {
+      margin: 0;
+      font-size: clamp(1.85rem, 2vw + 1.25rem, 2.6rem);
+      color: #233360;
+      flex: 1 1 100%;
+      text-align: center; /* 标题始终居中 */
+    }
+    header p {
+      margin: 0;
+      color: #526084;
+      font-size: 0.95rem;
+      flex: 1 1 100%;
+      text-align: center; /* 置中副标题 */
+      min-width: 0;
+    }
+    .mode-switcher-container {
+      position: absolute;
+      right: 0;
+      top: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .mode-switcher {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      border: 1px solid rgba(90, 110, 200, 0.3);
+      background: #eef1ff;
+      overflow: hidden;
+    }
+    .mode-switcher button {
+      border: none;
+      background: transparent;
+      padding: 0.38rem 0.8rem; /* 更短更紧凑 */
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #3f4b78;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .mode-switcher button.active {
+      background: linear-gradient(135deg, #6671f6, #4f5ce8);
+      color: #fff;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+    }
+    .control-panel {
+      display: grid;
+      gap: 1rem;
+      align-items: center;
+    }
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.1rem;
+      justify-content: center;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-weight: 600;
+      color: #36446c;
+      font-size: 0.9rem;
+    }
+    input[type="number"], select {
+      width: 200px;
+      border-radius: 12px;
+      border: 1px solid rgba(80, 110, 180, 0.22);
+      background: #f4f6ff;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.95rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    input[type="number"]:focus, select:focus {
+      outline: none;
+      border-color: #5b6ef6;
+      box-shadow: 0 0 0 3px rgba(91, 110, 246, 0.25);
+      background: #fff;
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 0.65rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: linear-gradient(135deg, #6671f6, #4f5ce8);
+      color: #fff;
+      box-shadow: 0 14px 32px rgba(90, 104, 245, 0.26);
+    }
+    button.secondary {
+      background: #eef1ff;
+      color: #35416a;
+      box-shadow: none;
+      border: 1px solid rgba(80, 110, 180, 0.28);
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 38px rgba(90, 104, 245, 0.28);
+    }
+    button.secondary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(80, 110, 180, 0.22);
+    }
+    .lattice-wrapper {
+      background: linear-gradient(180deg, #f8faff 0%, #f2f5ff 55%, #eef3ff 100%);
+      border-radius: 20px;
+      border: 1px solid rgba(120, 140, 200, 0.18);
+      padding: 1rem;
+      position: relative;
+      overflow: hidden;
+      cursor: grab;
+      touch-action: none;
+    }
+    .lattice-wrapper.dragging {
+      cursor: grabbing;
+    }
+    svg#lattice {
+      width: 100%;
+      height: auto;
+    }
+    .edges line {
+      stroke: rgba(90, 111, 190, 0.28);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+    }
+    .node {
+      cursor: pointer;
+      transition: transform 0.18s ease;
+    }
+    .node:focus-visible {
+      outline: 3px solid rgba(91, 110, 246, 0.45);
+      outline-offset: 4px;
+    }
+    .node circle {
+      r: 34px;
+      fill: #ffffff;
+      stroke: rgba(85, 100, 178, 0.65);
+      stroke-width: 2.4px;
+      filter: drop-shadow(0 6px 12px rgba(40, 55, 120, 0.18));
+      transition: fill 0.2s ease, stroke 0.2s ease, transform 0.2s ease;
+    }
+    .node.base circle {
+      fill: #5f6ef6;
+      stroke: #3743c9;
+      stroke-width: 3px;
+    }
+    .node.base text.note {
+      fill: #fff;
+    }
+    .node.base text.ratio {
+      fill: #dbe0ff;
+    }
+    .node.selected circle {
+      fill: #dfe6ff;
+      stroke: #5b6ef6;
+      stroke-width: 3px;
+    }
+    .node.playing circle {
+      fill: #98a6ff;
+    }
+    .node text {
+      font-weight: 600;
+      pointer-events: none;
+      text-anchor: middle;
+    }
+    text.note {
+      font-size: 0.9rem;
+      fill: #2f3d68;
+      dominant-baseline: middle;
+    }
+    text.ratio {
+      font-size: 0.75rem;
+      fill: #5a6aa2;
+      dominant-baseline: middle;
+    }
+    .pan-hint {
+      position: absolute;
+      left: 50%;
+      bottom: 0.75rem;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 999px;
+      padding: 0.35rem 1rem;
+      font-size: 0.82rem;
+      color: #4b5986;
+      border: 1px solid rgba(90, 110, 180, 0.18);
+      pointer-events: none;
+      box-shadow: 0 8px 18px rgba(40, 54, 120, 0.12);
+    }
+    .info-panel {
+      background: rgba(246, 248, 255, 0.9);
+      border: 1px solid rgba(80, 110, 180, 0.18);
+      border-radius: 16px;
+      padding: 1rem 1.2rem;
+      color: #3a4570;
+      font-size: 0.92rem;
+      display: grid;
+      gap: 0.5rem;
+    }
+    .info-panel h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      color: #27335d;
+    }
+    #selectionReadout ul {
+      margin: 0.35rem 0 0;
+      padding-left: 1.2rem;
+      display: grid;
+      gap: 0.2rem;
+    }
+    #selectionReadout li::marker {
+      color: #5b6ef6;
+    }
+    .muted {
+      color: #7280a8;
+      font-size: 0.88rem;
+    }
+    .hidden {
+      display: none !important;
+    }
+
+    /* NEW FEATURE === Chord Lattice Styling ================================= */
+    .chord-layer.hidden {
+      display: none;
+    }
+    .chord-node {
+      cursor: pointer;
+      transition: transform 0.18s ease;
+    }
+    .chord-node polygon {
+      stroke-width: 1px; /* 边界极细，避免可见缝隙 */
+      filter: none;     /* 去阴影，保证共边严密贴合 */
+      transition: fill 0.2s ease, stroke 0.2s ease;
+    }
+    .chord-node text {
+      font-weight: 700;
+      font-size: 0.92rem;
+      fill: #26335c;
+      pointer-events: none;
+    }
+    /* 统一配色：不区分大/小三和弦的冷暖色 */
+    .chord-node polygon {
+      fill: rgba(110, 130, 240, 0.22);
+      stroke: #5b6ef6;
+    }
+    .chord-node.selected polygon,
+    .chord-node.playing polygon {
+      fill: rgba(110, 130, 240, 0.36);
+      stroke: #4f5ce8;
+    }
+    .chord-node:hover polygon {
+      transform: translateY(-2px);
+    }
+
+    .sequence-panel {
+      background: rgba(246, 248, 255, 0.9);
+      border: 1px solid rgba(80, 110, 190, 0.2);
+      border-radius: 18px;
+      padding: 1rem 1.2rem;
+      display: grid;
+      gap: 0.8rem;
+    }
+    .sequence-panel.hidden {
+      display: none;
+    }
+    .sequence-panel h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      color: #26345c;
+    }
+    .chord-sequence-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      align-items: center;
+      min-height: 52px;
+    }
+    .chord-sequence-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.5rem 0.9rem;
+      border-radius: 14px;
+      background: rgba(236, 238, 255, 0.95);
+      border: 1px solid rgba(100, 110, 210, 0.35);
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #2f3c67;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .chord-sequence-item.playing {
+      background: linear-gradient(135deg, #6671f6, #4f5ce8);
+      color: #fff;
+      box-shadow: 0 14px 28px rgba(97, 110, 240, 0.32);
+      transform: translateY(-2px);
+    }
+    .sequence-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      align-items: center;
+    }
+    .sequence-controls button {
+      padding: 0.55rem 1.35rem;
+      border-radius: 12px;
+      font-size: 0.88rem;
+    }
+    .sequence-controls label {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.88rem;
+      color: #344068;
+    }
+    .sequence-controls input[type="number"] {
+      width: 90px;
+    }
+    .sequence-controls .spacer {
+      flex: 1;
+    }
+    .sequence-empty {
+      color: #7683a8;
+    }
+
+    .octave-popover {
+      position: fixed;
+      min-width: 220px;
+      max-width: 260px;
+      padding: 0.85rem 1rem;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(90, 110, 200, 0.24);
+      box-shadow: 0 18px 34px rgba(38, 60, 140, 0.22);
+      color: #2f3a63;
+      z-index: 20;
+      backdrop-filter: blur(12px);
+    }
+    .octave-popover h3 {
+      margin: 0 0 0.35rem 0;
+      font-size: 1rem;
+      color: #1f2a4d;
+    }
+    .octave-popover .octave-frequency {
+      font-size: 0.88rem;
+      color: #586799;
+      margin-bottom: 0.45rem;
+    }
+    .octave-popover .octave-offset-row {
+      margin-bottom: 0.55rem;
+      font-size: 0.9rem;
+    }
+    .octave-popover .octave-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: space-between;
+    }
+    .octave-popover button {
+      flex: 1;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #6671f6, #4f5ce8);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.55rem 0.4rem;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+    .octave-popover button.secondary {
+      background: #eef1ff;
+      color: #36446e;
+      border: 1px solid rgba(90, 110, 200, 0.24);
+      box-shadow: none;
+    }
+    .octave-popover button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .octave-popover button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px rgba(90, 110, 240, 0.22);
+    }
+
+    @media (max-width: 900px) {
+      input[type="number"], select {
+        width: 100%;
+      }
+      .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      button {
+        width: 100%;
+      }
+      .pan-hint {
+        font-size: 0.78rem;
+      }
+      .mode-switcher-container {
+        position: static; /* 在小屏回归文档流，避免遮挡 */
+        margin-left: auto;
+      }
+      .mode-switcher button {
+        padding: 0.4rem 0.7rem;
+      }
+      .sequence-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .sequence-controls .spacer {
+        display: none;
+      }
+      header p {
+        flex-basis: 100%;
+      }
+    }
+  </style>
+
+  <!-- Umami Analytics -->
+<script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
+
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>IC Studio · Harmonic Lattice Navigator</h1>
+      <p>探索五限纯律：切换音的谐波格与和弦谐波格，构建你的和声之旅。</p>
+      <div class="mode-switcher-container">
+        <div class="mode-switcher" id="modeSwitcher">
+          <button type="button" data-mode="tone" class="active">音格</button>
+          <button type="button" data-mode="chord">和弦格</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="control-panel">
+      <div class="controls-row">
+        <label>
+          基音 Do 频率 (Hz)
+          <input type="number" id="baseFrequencyInput" min="16" max="2000" step="0.01" value="261.63">
+        </label>
+        <label>
+          波形
+          <select id="waveformSelect">
+            <option value="sine">正弦波 (Sine)</option>
+            <option value="triangle">三角波 (Triangle)</option>
+            <option value="square">方波 (Square)</option>
+            <option value="sawtooth">锯齿波 (Sawtooth)</option>
+          </select>
+        </label>
+      </div>
+      <div class="controls-row chord-controls-only hidden">
+        <label>
+          显示和弦
+          <span>
+            <input type="checkbox" id="showMajor" checked> 大三
+            <input type="checkbox" id="showMinor" checked style="margin-left:0.75rem;"> 小三
+          </span>
+        </label>
+        <label>
+          显示密度
+          <select id="chordDensitySelect">
+            <option value="1" selected>高</option>
+            <option value="2">中</option>
+            <option value="3">低</option>
+            <option value="4">极低</option>
+          </select>
+        </label>
+      </div>
+      <div class="button-row tone-controls-only">
+        <button id="playToggleBtn" data-state="stopped">▶️</button>
+        <button class="secondary" id="playEqualBtn">12TET ▶️</button>
+        <button class="secondary" id="clearSelectionBtn">清除选择</button>
+        <button class="secondary" id="resetBaseBtn">重置基音</button>
+      </div>
+    </section>
+
+    <section class="lattice-wrapper" id="latticeWrapper">
+      <svg id="lattice" viewBox="0 0 960 640" role="presentation" aria-hidden="false"></svg>
+      <div class="pan-hint">拖动 / 滚动以浏览更远的谐波格</div>
+    </section>
+
+    <section class="info-panel" id="toneInfoPanel">
+      <h2>当前选中节点</h2>
+      <div id="selectionReadout" class="muted">未选中任何节点。</div>
+    </section>
+
+    <section class="sequence-panel hidden" id="chordSequencePanel">
+      <h2>和弦序列</h2>
+      <div class="chord-sequence-bar" id="chordSequenceBar">
+        <span class="sequence-empty" id="sequenceEmptyHint">点击上方和弦即可加入序列。</span>
+      </div>
+      <div class="sequence-controls">
+        <button type="button" class="secondary" id="undoChordBtn">⏪ 撤回</button>
+        <button type="button" class="secondary" id="clearChordsBtn">🗑️ 清空</button>
+        <div class="spacer"></div>
+        <label>
+          BPM:
+          <input type="number" id="bpmInput" min="40" max="240" value="80">
+        </label>
+        <button type="button" id="playSequenceBtn">▶️</button>
+        <button type="button" class="secondary" id="playSequenceETBtn">12TET ▶️</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      const DEFAULT_BASE = 261.63;
+      const BASE_OCTAVE = 4;
+      const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+      const SHARP_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+      const FLAT_NAMES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+      const OCTAVE_MIN = -6;
+      const OCTAVE_MAX = 6;
+      const MODES = { TONE: 'tone', CHORD: 'chord' };
+      const CHORD_PLAY_DEFAULT_DURATION = 2.0;
+      const CHORD_SEQUENCE_MAX = 64;
+
+      const latticeConfig = {
+        spacingX: 120,
+        spacingY: 110,
+        attack: 0.04,
+        release: 0.25,
+        sustainLevel: 0.75,
+        initialFifthRange: 10,
+        initialThirdRange: 8,
+        expandStep: 4,
+        expandMargin: 1.2
+      };
+
+      const svgNS = 'http://www.w3.org/2000/svg';
+
+      const state = {
+        baseFrequency: DEFAULT_BASE,
+        nodes: [],
+        nodeMap: new Map(),
+        edgeKeys: new Set(),
+        selectedIds: new Set(),
+        voices: new Map(),
+        voicesET: new Map(), // NEW FEATURE: equal-temperament voices for Tone mode
+        isPlaying: false,
+        isPlayingET: false,
+        viewTranslate: { x: 0, y: 0 },
+        viewBox: { width: 960, height: 640 },
+        audioCtx: null,
+        masterGain: null,
+        dom: {},
+        pan: { active: false, pointerId: null, lastX: 0, lastY: 0 },
+        bounds: {
+          fifthMin: 0,
+          fifthMax: 0,
+          thirdMin: 0,
+          thirdMax: 0
+        },
+        hintDismissed: false,
+        expandScheduled: false,
+        popover: {
+          nodeId: null,
+          // NEW FEATURE: support chord popover as well
+          chordId: null,
+          mode: 'tone', // 'tone' | 'chord'
+          root: null,
+          title: null,
+          info: null,
+          offsetLabel: null,
+          upBtn: null,
+          downBtn: null,
+          resetBtn: null
+        },
+        currentMode: MODES.TONE,
+        chordLayer: null,
+        chordTriangles: [],
+        chordTriangleMap: new Map(),
+        chordSequence: [],
+        chordSelection: new Set(),
+        chordPlaybackTimers: [],
+        chordPlaybackActive: false,
+        chordPlayingIndex: -1,
+        // Map<groupKey, { voices: Array<{osc,gain,ratio}>, chordId: string }>
+        chordVoices: new Map(),
+        chordPlayingCurrentId: null,
+        chordPlaybackPaused: false,
+        chordVoiceSeq: 0,
+        lastClickGroupKey: null,
+        chordFilters: {
+          showMajor: true,
+          showMinor: true,
+          densityStep: 1,
+          cullByViewport: true
+        }
+      };
+
+      // 大小三和弦使用不同配色（透明度 ~0.7）
+      const TRIAD_PATTERNS = [
+        {
+          quality: 'major',
+          labelSuffix: '',
+          descriptionLabel: 'major',
+          ratioFactors: [1, 5 / 4, 3 / 2],
+          // 所有普通和弦采用白色填充
+          fill: 'rgba(255, 255, 255, 0.95)',
+          stroke: '#5b6ef6',
+          // NEW FEATURE: primary chord (C major) 采用紫色
+          primaryFill: 'rgba(102, 113, 246, 0.95)', /* #6671f6 播放键紫 */
+          primaryStroke: '#4f5ce8',              /* 渐变另一端 */
+          selectedFill: 'rgba(250, 176, 84, 0.85)',
+          selectedStroke: '#f28a1f',
+          playingFill: 'rgba(255, 200, 120, 0.95)',
+          playingStroke: '#f06b00'
+        },
+        {
+          quality: 'minor',
+          labelSuffix: 'm',
+          descriptionLabel: 'minor',
+          ratioFactors: [1, 6 / 5, 3 / 2],
+          fill: 'rgba(255, 255, 255, 0.95)',
+          stroke: '#5b6ef6',
+          // 小三不使用主色；占位保留
+          primaryFill: 'rgba(255, 255, 255, 0.95)',
+          primaryStroke: '#5b6ef6',
+          selectedFill: 'rgba(100, 150, 250, 0.85)',
+          selectedStroke: '#2f63d9',
+          playingFill: 'rgba(150, 190, 255, 0.95)',
+          playingStroke: '#1f54c9'
+        }
+      ];
+
+      function init() {
+        bindDom();
+        configureSvgLayers();
+        initialiseView();
+        buildInitialLattice();
+        buildChordTriangles();
+        createOctavePopover();
+        attachEventHandlers();
+        updateNodeFrequencies();
+        updateSelectionReadout();
+        renderChordLattice();
+        updateModeUI();
+      }
+
+      function bindDom() {
+        state.dom.baseInput = document.getElementById('baseFrequencyInput');
+        state.dom.waveformSelect = document.getElementById('waveformSelect');
+        state.dom.playBtn = document.getElementById('playToggleBtn');
+        state.dom.clearBtn = document.getElementById('clearSelectionBtn');
+        state.dom.resetBtn = document.getElementById('resetBaseBtn');
+        state.dom.playEqualBtn = document.getElementById('playEqualBtn');
+        state.dom.selectionReadout = document.getElementById('selectionReadout');
+        state.dom.svg = document.getElementById('lattice');
+        state.dom.wrapper = document.getElementById('latticeWrapper');
+        state.dom.panHint = document.querySelector('.pan-hint');
+        state.dom.modeSwitcher = document.getElementById('modeSwitcher');
+        state.dom.chordSequencePanel = document.getElementById('chordSequencePanel');
+        state.dom.chordSequenceBar = document.getElementById('chordSequenceBar');
+        state.dom.sequenceEmptyHint = document.getElementById('sequenceEmptyHint');
+        state.dom.playSequenceBtn = document.getElementById('playSequenceBtn');
+        state.dom.playSequenceETBtn = document.getElementById('playSequenceETBtn');
+        state.dom.undoChordBtn = document.getElementById('undoChordBtn');
+        state.dom.clearChordsBtn = document.getElementById('clearChordsBtn');
+        state.dom.bpmInput = document.getElementById('bpmInput');
+        state.dom.toneInfoPanel = document.getElementById('toneInfoPanel');
+        state.dom.toneControls = document.querySelectorAll('.tone-controls-only');
+        state.dom.chordControls = document.querySelectorAll('.chord-controls-only');
+        state.dom.showMajor = document.getElementById('showMajor');
+        state.dom.showMinor = document.getElementById('showMinor');
+        state.dom.chordDensitySelect = document.getElementById('chordDensitySelect');
+      }
+
+      function createOctavePopover() {
+        const popover = document.createElement('div');
+        popover.className = 'octave-popover hidden';
+        popover.innerHTML = `
+          <h3 class="octave-title"></h3>
+          <div class="octave-frequency"></div>
+          <div class="octave-offset-row">当前八度偏移：<span class="octave-offset">0</span></div>
+          <div class="octave-actions">
+            <button type="button" data-action="down" class="secondary">降一八度</button>
+            <button type="button" data-action="reset" class="secondary">重置</button>
+            <button type="button" data-action="up">升一八度</button>
+          </div>
+        `;
+        document.body.appendChild(popover);
+
+        state.popover.root = popover;
+        state.popover.title = popover.querySelector('.octave-title');
+        state.popover.info = popover.querySelector('.octave-frequency');
+        state.popover.offsetLabel = popover.querySelector('.octave-offset');
+        state.popover.upBtn = popover.querySelector('[data-action="up"]');
+        state.popover.downBtn = popover.querySelector('[data-action="down"]');
+        state.popover.resetBtn = popover.querySelector('[data-action="reset"]');
+
+        popover.addEventListener('mousedown', (event) => {
+          event.stopPropagation();
+        });
+        popover.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const target = event.target;
+          if (!(target instanceof Element)) return;
+          const action = target.dataset.action;
+          if (!action) return;
+
+          if (state.popover.mode === 'chord') {
+            const chord = state.chordTriangleMap.get(state.popover.chordId);
+            if (!chord) return;
+            if (action === 'up') {
+              adjustChordOctave(chord, 1);
+            } else if (action === 'down') {
+              adjustChordOctave(chord, -1);
+            } else if (action === 'reset') {
+              setChordOctave(chord, 0);
+            }
+            refreshChordPopover(chord);
+          } else {
+            const node = nodeFromId(state.popover.nodeId);
+            if (!node) return;
+            if (action === 'up') {
+              adjustNodeOctave(node, 1);
+            } else if (action === 'down') {
+              adjustNodeOctave(node, -1);
+            } else if (action === 'reset') {
+              setNodeOctave(node, 0);
+            }
+            refreshPopover(node);
+          }
+        });
+
+        document.addEventListener('mousedown', (event) => {
+          if (!state.popover.root || state.popover.root.classList.contains('hidden')) return;
+          if (!state.popover.root.contains(event.target)) {
+            hideOctavePopover();
+          }
+        });
+
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') {
+            hideOctavePopover();
+          }
+        });
+      }
+
+      function configureSvgLayers() {
+        const viewport = document.createElementNS(svgNS, 'g');
+        viewport.setAttribute('class', 'viewport');
+
+        const edgesLayer = document.createElementNS(svgNS, 'g');
+        edgesLayer.setAttribute('class', 'edges');
+        const nodesLayer = document.createElementNS(svgNS, 'g');
+        nodesLayer.setAttribute('class', 'nodes');
+
+        viewport.append(edgesLayer, nodesLayer);
+        state.dom.svg.append(viewport);
+
+        state.dom.viewport = viewport;
+        state.dom.edgesLayer = edgesLayer;
+        state.dom.nodesLayer = nodesLayer;
+      }
+
+      function initialiseView() {
+        const viewBoxAttr = state.dom.svg.getAttribute('viewBox');
+        if (viewBoxAttr) {
+          const [, , w, h] = viewBoxAttr.split(/\s+/).map(Number);
+          if (!Number.isNaN(w) && !Number.isNaN(h)) {
+            state.viewBox.width = w;
+            state.viewBox.height = h;
+          }
+        }
+        state.viewTranslate.x = state.viewBox.width / 2;
+        state.viewTranslate.y = state.viewBox.height / 2;
+        updateViewTransform();
+      }
+
+      function updateViewTransform() {
+        state.dom.viewport.setAttribute('transform', `translate(${state.viewTranslate.x}, ${state.viewTranslate.y})`);
+        if (state.chordLayer) {
+          state.chordLayer.setAttribute('transform', `translate(${state.viewTranslate.x}, ${state.viewTranslate.y})`);
+        }
+      }
+
+      function buildInitialLattice() {
+        const fifthMin = -latticeConfig.initialFifthRange;
+        const fifthMax = latticeConfig.initialFifthRange;
+        const thirdMin = -latticeConfig.initialThirdRange;
+        const thirdMax = latticeConfig.initialThirdRange;
+
+        state.bounds.fifthMin = fifthMin;
+        state.bounds.fifthMax = fifthMax;
+        state.bounds.thirdMin = thirdMin;
+        state.bounds.thirdMax = thirdMax;
+
+        for (let third = thirdMin; third <= thirdMax; third += 1) {
+          for (let fifth = fifthMin; fifth <= fifthMax; fifth += 1) {
+            ensureNode(fifth, third);
+          }
+        }
+      }
+
+  function ensureNode(fifthSteps, thirdSteps) {
+    const id = `${fifthSteps}_${thirdSteps}`;
+    if (state.nodeMap.has(id)) {
+      return state.nodeMap.get(id);
+    }
+
+        const node = createNodeData(fifthSteps, thirdSteps);
+        state.nodes.push(node);
+        state.nodeMap.set(id, node);
+        renderNode(node);
+    connectNodeToNeighbors(node);
+    return node;
+  }
+
+  // NEW FEATURE: helpers for chord detection ---------------------------------
+  // (旧的基于比值模糊匹配的搜索已移除，Chord Lattice 改为基于坐标偏移计算)
+
+      function createNodeData(fifthSteps, thirdSteps) {
+        const rawRatio = multiplyRational(
+          rationalPow({ n: 3n, d: 2n }, fifthSteps),
+          rationalPow({ n: 5n, d: 4n }, thirdSteps)
+        );
+        const normalized = normalizeRationalToOctave(rawRatio);
+        const ratioValue = Number(normalized.ratio.n) / Number(normalized.ratio.d);
+        const octaveShift = normalized.octaveShift;
+        const semitoneOffset = fifthSteps * 7 + thirdSteps * 4 - octaveShift * 12;
+        const noteName = getNoteNameFromLattice(fifthSteps, thirdSteps, semitoneOffset);
+        const ratioString = rationalToString(normalized.ratio);
+        const position = computeNodePosition(fifthSteps, thirdSteps);
+
+        return {
+          id: `${fifthSteps}_${thirdSteps}`,
+          fifthSteps,
+          thirdSteps,
+          rawRatio,
+          normalizedRatio: normalized.ratio,
+          ratioValue,
+          octaveOffset: 0,
+          ratioString,
+          octaveShift,
+          semitoneOffset,
+          noteName,
+          position,
+          frequency: state.baseFrequency * ratioValue,
+          dom: {}
+        };
+      }
+
+      function computeNodePosition(fifthSteps, thirdSteps) {
+        const { spacingX, spacingY } = latticeConfig;
+        const x = fifthSteps * spacingX + thirdSteps * (spacingX / 2);
+        const y = -thirdSteps * spacingY;
+        return { x, y };
+      }
+
+  function renderNode(node) {
+    const group = document.createElementNS(svgNS, 'g');
+        const isBase = node.fifthSteps === 0 && node.thirdSteps === 0;
+        group.setAttribute('class', `node${isBase ? ' base' : ''}`);
+        group.setAttribute('transform', `translate(${node.position.x}, ${node.position.y})`);
+        group.setAttribute('tabindex', '0');
+        group.dataset.nodeId = node.id;
+
+        const circle = document.createElementNS(svgNS, 'circle');
+        circle.setAttribute('cx', '0');
+        circle.setAttribute('cy', '0');
+        circle.setAttribute('r', '34');
+
+        const noteText = document.createElementNS(svgNS, 'text');
+        noteText.setAttribute('class', 'note');
+        noteText.setAttribute('y', '-6');
+        noteText.textContent = node.noteName;
+
+        const ratioText = document.createElementNS(svgNS, 'text');
+        ratioText.setAttribute('class', 'ratio');
+        ratioText.setAttribute('y', '14');
+        ratioText.textContent = formatRatioLabel(node);
+
+        const title = document.createElementNS(svgNS, 'title');
+        title.textContent = formatTooltip(node);
+
+        group.append(circle, noteText, ratioText, title);
+        state.dom.nodesLayer.appendChild(group);
+
+        group.addEventListener('click', (event) => {
+          if (state.currentMode !== MODES.TONE) return;
+          event.stopPropagation();
+          handleNodeInteraction(event, node);
+        });
+        group.addEventListener('keydown', (event) => {
+          if (state.currentMode !== MODES.TONE) return;
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handleNodeInteraction(event, node);
+          }
+        });
+        group.addEventListener('dblclick', (event) => {
+          if (state.currentMode !== MODES.TONE) return;
+          event.preventDefault();
+          event.stopPropagation();
+      handleNodeDoubleClick(event, node);
+    });
+
+    node.dom.group = group;
+    node.dom.circle = circle;
+    node.dom.noteText = noteText;
+    node.dom.ratioText = ratioText;
+    node.dom.title = title;
+  }
+
+  // NEW FEATURE: derive major/minor triads using lattice coordinates
+  function buildChordTriangles() {
+    const previousSelectionIds = Array.from(state.chordSelection || []);
+    const previousSequenceIds = (state.chordSequence || []).map((chord) => chord.id);
+
+    const triangles = [];
+    const triangleMap = new Map();
+
+    // Helper to push a triangle if all three nodes exist
+    function addTriangle(quality, root, n2, n3, patternVisual) {
+      if (!root || !n2 || !n3) return;
+      // Unique by the three specific node ids and quality
+      const key = `${quality}:${[root.id, n2.id, n3.id].sort().join('|')}`;
+      if (triangleMap.has(key)) return;
+
+      const nodes = [root, n2, n3];
+      const labelBase = root.noteName.replace(/\d+/g, '');
+      const label = quality === 'minor' ? `${labelBase}m` : labelBase;
+      const description = `${label} = ${nodes.map((n) => `${n.noteName} (${n.ratioString})`).join(', ')}`;
+
+      const centroid = nodes.reduce((acc, node) => ({
+        x: acc.x + node.position.x,
+        y: acc.y + node.position.y
+      }), { x: 0, y: 0 });
+      centroid.x /= 3;
+      centroid.y /= 3;
+
+      const points = nodes.map((node) => `${node.position.x},${node.position.y}`).join(' ');
+
+      const chord = {
+        id: key,
+        quality,
+        label,
+        labelBase,
+        description,
+        nodes,
+        ratios: nodes.map((node) => node.ratioValue),
+        centroid,
+        points,
+        fill: patternVisual.fill,
+        stroke: patternVisual.stroke,
+        // NEW FEATURE: special visual for primary chord (filled later)
+        primaryFill: patternVisual.primaryFill,
+        primaryStroke: patternVisual.primaryStroke,
+        selectedFill: patternVisual.selectedFill,
+        selectedStroke: patternVisual.selectedStroke,
+        playingFill: patternVisual.playingFill,
+        playingStroke: patternVisual.playingStroke,
+        octave: 0,
+        isPrimary: false,
+        isSelected: false,
+        isPlaying: false
+      };
+
+      triangles.push(chord);
+      triangleMap.set(chord.id, chord);
+    }
+
+    state.nodes.forEach((rootNode) => {
+      const f = rootNode.fifthSteps;
+      const t = rootNode.thirdSteps;
+
+      // Major triad: [root, root*5/4, root*3/2] -> (f,t), (f,t+1), (f+1,t)
+      const maj2 = state.nodeMap.get(`${f}_${t + 1}`);
+      const maj3 = state.nodeMap.get(`${f + 1}_${t}`);
+      addTriangle('major', rootNode, maj2, maj3, TRIAD_PATTERNS[0]);
+
+      // Minor triad: [root, root*6/5, root*3/2] -> (f,t), (f+1,t-1), (f+1,t)
+      const min2 = state.nodeMap.get(`${f + 1}_${t - 1}`);
+      const min3 = state.nodeMap.get(`${f + 1}_${t}`);
+      addTriangle('minor', rootNode, min2, min3, TRIAD_PATTERNS[1]);
+    });
+
+    state.chordTriangles = triangles;
+    state.chordTriangleMap = triangleMap;
+    state.chordSelection = new Set(previousSelectionIds.filter((id) => triangleMap.has(id)));
+    state.chordSequence = previousSequenceIds.map((id) => triangleMap.get(id)).filter(Boolean);
+
+    // NEW FEATURE: mark primary chord (C major at center if available)
+    const rootId = '0_0';
+    const primaryKeyCandidates = [];
+    const major = triangles.filter((c) => c.quality === 'major');
+    major.forEach((ch) => {
+      const ids = ch.nodes.map((n) => n.id);
+      if (ids.includes(rootId)) {
+        // Check specific triangle around the center: (0,0),(1,0),(0,1)
+        const must = new Set([rootId, '1_0', '0_1']);
+        const setIds = new Set(ids);
+        let match = true;
+        must.forEach((v) => { if (!setIds.has(v)) match = false; });
+        if (match) primaryKeyCandidates.push(ch);
+      }
+    });
+    if (primaryKeyCandidates.length) {
+      primaryKeyCandidates[0].isPrimary = true;
+    }
+  }
+
+      function connectNodeToNeighbors(node) {
+        const neighbors = [
+          { dx: -1, dy: 0 },
+          { dx: 0, dy: -1 }
+        ];
+        for (const { dx, dy } of neighbors) {
+          const neighborId = `${node.fifthSteps + dx}_${node.thirdSteps + dy}`;
+          const neighbor = state.nodeMap.get(neighborId);
+          if (neighbor) {
+            drawEdgeBetween(node, neighbor);
+          }
+        }
+      }
+
+      function drawEdgeBetween(nodeA, nodeB) {
+        const key = [nodeA.id, nodeB.id].sort().join('|');
+        if (state.edgeKeys.has(key)) return;
+
+        const line = document.createElementNS(svgNS, 'line');
+        line.setAttribute('x1', nodeA.position.x);
+        line.setAttribute('y1', nodeA.position.y);
+        line.setAttribute('x2', nodeB.position.x);
+        line.setAttribute('y2', nodeB.position.y);
+        state.dom.edgesLayer.appendChild(line);
+
+        state.edgeKeys.add(key);
+      }
+
+      function handleNodeInteraction(event, node) {
+        const solo = event.metaKey || event.ctrlKey;
+        if (solo) {
+          state.selectedIds.clear();
+          state.selectedIds.add(node.id);
+        } else if (state.selectedIds.has(node.id)) {
+          state.selectedIds.delete(node.id);
+        } else {
+          state.selectedIds.add(node.id);
+        }
+
+        refreshSelectionClasses();
+        updateSelectionReadout();
+        if (state.isPlaying) {
+          syncVoicesWithSelection();
+        }
+      }
+
+      function refreshSelectionClasses() {
+        for (const node of state.nodes) {
+          if (state.selectedIds.has(node.id)) {
+            node.dom.group.classList.add('selected');
+          } else {
+            node.dom.group.classList.remove('selected');
+          }
+        }
+      }
+
+      function attachEventHandlers() {
+        state.dom.baseInput.addEventListener('input', () => {
+          const value = Number(state.dom.baseInput.value);
+          if (Number.isFinite(value) && value > 0) {
+            state.baseFrequency = value;
+            updateNodeFrequencies();
+            if (state.isPlaying) {
+              syncVoiceFrequencies();
+            }
+            if (state.voicesET.size) {
+              startETVoicesForSelection();
+            }
+          }
+        });
+
+        state.dom.baseInput.addEventListener('blur', () => {
+          const value = Number(state.dom.baseInput.value);
+          if (!Number.isFinite(value) || value <= 0) {
+            state.dom.baseInput.value = state.baseFrequency.toFixed(2);
+          }
+        });
+
+        state.dom.resetBtn.addEventListener('click', () => {
+          state.baseFrequency = DEFAULT_BASE;
+          state.dom.baseInput.value = DEFAULT_BASE.toFixed(2);
+          updateNodeFrequencies();
+          if (state.isPlaying) {
+            syncVoiceFrequencies();
+          }
+          if (state.voicesET.size) {
+            startETVoicesForSelection();
+          }
+        });
+
+        state.dom.waveformSelect.addEventListener('change', () => {
+          if (state.isPlaying) {
+            const waveform = state.dom.waveformSelect.value;
+            for (const voice of state.voices.values()) {
+              try {
+                voice.osc.type = waveform;
+              } catch (error) {
+                console.warn('Failed to update oscillator type', error);
+              }
+            }
+          }
+          if (state.voicesET.size) {
+            const waveform = state.dom.waveformSelect.value;
+            for (const voice of state.voicesET.values()) {
+              try { voice.osc.type = waveform; } catch {}
+            }
+          }
+        });
+
+        // (moved below) Tone play button handler is now a toggle
+
+        // NEW FEATURE: play/pause selected tones in 12-TET
+        state.dom.playEqualBtn.addEventListener('click', () => {
+          if (state.currentMode !== MODES.TONE) return;
+          if (state.isPlayingET) {
+            stopAllETVoices();
+            return;
+          }
+          if (!state.selectedIds.size) {
+            const baseNode = state.nodeMap.get('0_0');
+            if (baseNode) {
+              state.selectedIds.add(baseNode.id);
+              refreshSelectionClasses();
+              updateSelectionReadout();
+            }
+          }
+          startEqualPlayback();
+        });
+
+        // Tone play button toggles play/pause
+        state.dom.playBtn.addEventListener('click', () => {
+          if (state.currentMode !== MODES.TONE) return;
+          if (!state.isPlaying) {
+            if (!state.selectedIds.size) {
+              const baseNode = state.nodeMap.get('0_0');
+              if (baseNode) {
+                state.selectedIds.add(baseNode.id);
+                refreshSelectionClasses();
+                updateSelectionReadout();
+              }
+            }
+            startContinuousPlayback();
+          } else {
+            pausePlayback();
+          }
+        });
+
+        state.dom.clearBtn.addEventListener('click', () => {
+          if (state.currentMode !== MODES.TONE) return;
+          state.selectedIds.clear();
+          refreshSelectionClasses();
+          updateSelectionReadout();
+          if (state.isPlaying) {
+            syncVoicesWithSelection();
+          }
+          // NEW FEATURE: also stop ET playback when清除选择
+          stopAllETVoices();
+        });
+
+        state.dom.svg.addEventListener('click', (event) => {
+          if (event.target === state.dom.svg && state.currentMode === MODES.TONE) {
+            state.selectedIds.clear();
+            refreshSelectionClasses();
+            updateSelectionReadout();
+            if (state.isPlaying) {
+              syncVoicesWithSelection();
+            }
+            stopAllETVoices();
+          }
+        });
+
+        state.dom.wrapper.addEventListener('pointerdown', handlePanStart);
+        state.dom.wrapper.addEventListener('pointermove', handlePanMove);
+        state.dom.wrapper.addEventListener('pointerup', handlePanEnd);
+        state.dom.wrapper.addEventListener('pointercancel', handlePanEnd);
+        state.dom.wrapper.addEventListener('pointerleave', (event) => {
+          if (state.pan.active && event.pointerId === state.pan.pointerId) {
+            handlePanEnd(event);
+          }
+        });
+        state.dom.wrapper.addEventListener('wheel', handleWheelPan, { passive: false });
+
+        state.dom.modeSwitcher.querySelectorAll('button').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const mode = btn.dataset.mode === 'chord' ? MODES.CHORD : MODES.TONE;
+            switchMode(mode);
+          });
+        });
+
+        state.dom.playSequenceBtn.addEventListener('click', () => {
+          if (state.currentMode !== MODES.CHORD) return;
+          toggleChordSequencePlayback();
+        });
+        // NEW FEATURE: play chord sequence in 12-TET
+        state.dom.playSequenceETBtn.addEventListener('click', () => {
+          if (state.currentMode !== MODES.CHORD) return;
+          toggleChordSequenceETPlayback();
+        });
+        // removed stop button; handled by toggle on playSequenceBtn
+        state.dom.undoChordBtn.addEventListener('click', () => {
+          if (state.currentMode !== MODES.CHORD) return;
+          undoChord();
+        });
+        state.dom.clearChordsBtn.addEventListener('click', () => {
+          if (state.currentMode !== MODES.CHORD) return;
+          clearAllChords();
+        });
+
+        // Chord lattice filters
+        if (state.dom.showMajor) {
+          state.dom.showMajor.addEventListener('change', () => {
+            state.chordFilters.showMajor = !!state.dom.showMajor.checked;
+            renderChordLattice();
+          });
+        }
+        if (state.dom.showMinor) {
+          state.dom.showMinor.addEventListener('change', () => {
+            state.chordFilters.showMinor = !!state.dom.showMinor.checked;
+            renderChordLattice();
+          });
+        }
+        if (state.dom.chordDensitySelect) {
+          state.dom.chordDensitySelect.addEventListener('change', () => {
+            const step = parseInt(state.dom.chordDensitySelect.value, 10) || 2;
+            state.chordFilters.densityStep = Math.max(1, Math.min(8, step));
+            renderChordLattice();
+          });
+        }
+      }
+
+      function updateNodeFrequencies() {
+        for (const node of state.nodes) {
+          updateNodeFrequency(node);
+        }
+      }
+
+      function startContinuousPlayback() {
+        if (!state.selectedIds.size) return;
+        ensureAudioContext();
+        state.isPlaying = true;
+        updatePlayButtonState();
+        syncVoicesWithSelection();
+      }
+
+      function pausePlayback() {
+        if (!state.isPlaying && state.voices.size === 0) return;
+        state.isPlaying = false;
+        updatePlayButtonState();
+        // NEW FEATURE: use a hard-stop to avoid残留声部
+        hardStopAllToneVoices();
+      }
+
+      function updatePlayButtonState() {
+        if (state.isPlaying) {
+          state.dom.playBtn.textContent = '⏸️';
+          state.dom.playBtn.dataset.state = 'playing';
+        } else {
+          state.dom.playBtn.textContent = '▶️';
+          state.dom.playBtn.dataset.state = 'stopped';
+        }
+      }
+
+      function ensureAudioContext() {
+        if (!state.audioCtx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          state.audioCtx = new AudioCtx();
+          state.masterGain = state.audioCtx.createGain();
+          state.masterGain.gain.value = 0.4;
+          state.masterGain.connect(state.audioCtx.destination);
+        }
+        if (state.audioCtx.state === 'suspended') {
+          state.audioCtx.resume();
+        }
+        return state.audioCtx;
+      }
+
+      function syncVoicesWithSelection() {
+        if (!state.isPlaying) {
+          stopAllVoices();
+          return;
+        }
+
+        const desired = new Set(state.selectedIds);
+
+        for (const nodeId of Array.from(state.voices.keys())) {
+          if (!desired.has(nodeId)) {
+            stopVoice(nodeId);
+          }
+        }
+
+        const waveform = state.dom.waveformSelect.value;
+        for (const nodeId of desired) {
+          if (!state.voices.has(nodeId)) {
+            const node = nodeFromId(nodeId);
+            if (node) {
+              startVoice(node, waveform);
+            }
+          } else {
+            const node = nodeFromId(nodeId);
+            const voice = state.voices.get(nodeId);
+            if (node && voice) {
+              try {
+                voice.osc.frequency.setValueAtTime(node.frequency, ensureAudioContext().currentTime);
+              } catch (error) {
+                console.warn('Failed to refresh oscillator frequency', error);
+              }
+            }
+          }
+        }
+      }
+
+  function syncVoiceFrequencies() {
+        const ctx = ensureAudioContext();
+        const now = ctx.currentTime;
+        for (const [nodeId, voice] of state.voices.entries()) {
+          const node = nodeFromId(nodeId);
+          if (node) {
+            try {
+              voice.osc.frequency.setValueAtTime(node.frequency, now);
+            } catch (error) {
+              console.warn('Failed to retune oscillator', error);
+            }
+          }
+        }
+      }
+
+      function handleNodeDoubleClick(event, node) {
+        showOctavePopover(node, event.clientX, event.clientY);
+      }
+
+      function adjustNodeOctave(node, delta) {
+        const next = clamp(node.octaveOffset + delta, OCTAVE_MIN, OCTAVE_MAX);
+        if (next === node.octaveOffset) return;
+        node.octaveOffset = next;
+        updateNodeFrequency(node);
+        updateRatioLabel(node);
+        if (state.selectedIds.has(node.id)) {
+          updateSelectionReadout();
+        }
+        if (state.isPlaying && state.voices.has(node.id)) {
+          const voice = state.voices.get(node.id);
+          if (voice) {
+            try {
+              voice.osc.frequency.setValueAtTime(node.frequency, ensureAudioContext().currentTime);
+            } catch (error) {
+              console.warn('Failed to refresh oscillator frequency', error);
+            }
+          }
+        }
+        if (state.popover.nodeId === node.id) {
+          refreshPopover(node);
+        }
+      }
+
+      function setNodeOctave(node, value) {
+        const clamped = clamp(value, OCTAVE_MIN, OCTAVE_MAX);
+        if (clamped === node.octaveOffset) return;
+        node.octaveOffset = clamped;
+        updateNodeFrequency(node);
+        updateRatioLabel(node);
+        if (state.selectedIds.has(node.id)) {
+          updateSelectionReadout();
+        }
+        if (state.isPlaying && state.voices.has(node.id)) {
+          const voice = state.voices.get(node.id);
+          if (voice) {
+            try {
+              voice.osc.frequency.setValueAtTime(node.frequency, ensureAudioContext().currentTime);
+            } catch (error) {
+              console.warn('Failed to refresh oscillator frequency', error);
+            }
+          }
+        }
+        if (state.popover.nodeId === node.id) {
+          refreshPopover(node);
+        }
+      }
+
+      // NEW FEATURE: chord octave adjustment and live retune
+      function adjustChordOctave(chord, delta) {
+        setChordOctave(chord, (chord.octave || 0) + delta);
+      }
+
+      function setChordOctave(chord, value) {
+        const clamped = clamp(value, OCTAVE_MIN, OCTAVE_MAX);
+        if (clamped === (chord.octave || 0)) return;
+        chord.octave = clamped;
+        // Retune currently playing chord voices (single playback / sequence current)
+        retuneActiveChordVoices(chord);
+      }
+
+      function retuneActiveChordVoices(chord) {
+        const ctx = ensureAudioContext();
+        const now = ctx.currentTime;
+        // Retune all groups that are currently using this chord
+        for (const [, meta] of state.chordVoices.entries()) {
+          if (meta.chordId !== chord.id) continue;
+          meta.voices.forEach((v) => {
+            try {
+              const freq = state.baseFrequency * v.ratio * Math.pow(2, chord.octave || 0);
+              v.osc.frequency.setValueAtTime(freq, now);
+            } catch (error) {
+              console.warn('Chord retune error', error);
+            }
+          });
+        }
+      }
+
+      function updateNodeFrequency(node) {
+        const ratioWithOctave = node.ratioValue * Math.pow(2, node.octaveOffset);
+        node.frequency = state.baseFrequency * ratioWithOctave;
+        node.dom.title.textContent = formatTooltip(node);
+        if (state.popover.nodeId === node.id) {
+          refreshPopover(node);
+        }
+      }
+
+      function updateRatioLabel(node) {
+        if (node.dom && node.dom.ratioText) {
+          node.dom.ratioText.textContent = formatRatioLabel(node);
+        }
+        if (state.popover.nodeId === node.id) {
+          refreshPopover(node);
+        }
+      }
+
+      function startVoice(node, waveform) {
+        const ctx = ensureAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const now = ctx.currentTime;
+
+        osc.type = waveform;
+        osc.frequency.setValueAtTime(node.frequency, now);
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(latticeConfig.sustainLevel, now + latticeConfig.attack);
+
+        osc.connect(gain);
+        gain.connect(state.masterGain);
+        osc.start(now);
+
+        const voice = { nodeId: node.id, osc, gain };
+        state.voices.set(node.id, voice);
+        node.dom.group.classList.add('playing');
+
+        osc.addEventListener('ended', () => finalizeVoice(node.id), { once: true });
+      }
+
+      function stopVoice(nodeId) {
+        const voice = state.voices.get(nodeId);
+        if (!voice) return;
+        const node = nodeFromId(nodeId);
+        const ctx = ensureAudioContext();
+        const now = ctx.currentTime;
+
+        try {
+          voice.gain.gain.cancelScheduledValues(now);
+          voice.gain.gain.setValueAtTime(Math.max(voice.gain.gain.value, 0.0001), now);
+          voice.gain.gain.exponentialRampToValueAtTime(0.0001, now + latticeConfig.release);
+          voice.osc.stop(now + latticeConfig.release + 0.05);
+        } catch (error) {
+          console.warn('Failed to stop oscillator', error);
+        }
+        // Do not delete from map immediately; keep reference until 'ended'
+        if (node) {
+          node.dom.group.classList.remove('playing');
+        }
+      }
+
+      function finalizeVoice(nodeId, nodeRef) {
+        const node = nodeRef || nodeFromId(nodeId);
+        if (node) {
+          node.dom.group.classList.remove('playing');
+        }
+        state.voices.delete(nodeId);
+      }
+
+      function stopAllVoices() {
+        for (const nodeId of Array.from(state.voices.keys())) {
+          stopVoice(nodeId);
+        }
+      }
+
+      function updateSelectionReadout() {
+        if (!state.selectedIds.size) {
+          state.dom.selectionReadout.innerHTML = '<span class="muted">未选中任何节点。</span>';
+          return;
+        }
+        const items = Array.from(state.selectedIds)
+          .map((id) => state.nodeMap.get(id))
+          .filter(Boolean)
+          .map((node) => `<li>${node.noteName} · ${formatRatioLabel(node)} · ${node.frequency.toFixed(2)} Hz</li>`)
+          .join('');
+        state.dom.selectionReadout.innerHTML = `<ul>${items}</ul>`;
+      }
+
+      function handlePanStart(event) {
+        if (event.target.closest('.node') && state.currentMode === MODES.TONE) {
+          return;
+        }
+        if (event.target.closest('.chord-node') && state.currentMode === MODES.CHORD) {
+          return;
+        }
+        state.dom.wrapper.setPointerCapture(event.pointerId);
+        state.pan = {
+          active: true,
+          pointerId: event.pointerId,
+          lastX: event.clientX,
+          lastY: event.clientY
+        };
+        state.dom.wrapper.classList.add('dragging');
+        dismissPanHint();
+      }
+
+      function handlePanMove(event) {
+        if (!state.pan.active || event.pointerId !== state.pan.pointerId) return;
+        event.preventDefault();
+        const dx = event.clientX - state.pan.lastX;
+        const dy = event.clientY - state.pan.lastY;
+        state.pan.lastX = event.clientX;
+        state.pan.lastY = event.clientY;
+
+        state.viewTranslate.x += dx;
+        state.viewTranslate.y += dy;
+        updateViewTransform();
+        scheduleExpandCheck();
+      }
+
+      function handlePanEnd(event) {
+        if (!state.pan.active || event.pointerId !== state.pan.pointerId) return;
+        state.pan.active = false;
+        state.dom.wrapper.classList.remove('dragging');
+        state.dom.wrapper.releasePointerCapture(event.pointerId);
+      }
+
+      function handleWheelPan(event) {
+        event.preventDefault();
+        dismissPanHint();
+
+        const factor = event.deltaMode === WheelEvent.DOM_DELTA_PIXEL
+          ? 1
+          : event.deltaMode === WheelEvent.DOM_DELTA_LINE
+            ? 32
+            : state.viewBox.height;
+
+        state.viewTranslate.x -= event.deltaX * factor;
+        state.viewTranslate.y -= event.deltaY * factor;
+        updateViewTransform();
+        scheduleExpandCheck();
+      }
+
+      function scheduleExpandCheck() {
+        if (state.expandScheduled) return;
+        state.expandScheduled = true;
+        requestAnimationFrame(() => {
+          state.expandScheduled = false;
+          maybeExpandLattice();
+          if (state.currentMode === MODES.CHORD) {
+            // Re-render with viewport culling after panning/scrolling.
+            renderChordLattice();
+          }
+        });
+      }
+
+      function dismissPanHint() {
+        if (state.hintDismissed) return;
+        state.hintDismissed = true;
+        if (state.dom.panHint) {
+          state.dom.panHint.style.opacity = '0';
+          state.dom.panHint.style.transition = 'opacity 0.4s ease';
+          setTimeout(() => {
+            if (state.dom.panHint && state.dom.panHint.parentNode) {
+              state.dom.panHint.parentNode.removeChild(state.dom.panHint);
+            }
+          }, 500);
+        }
+      }
+
+      function maybeExpandLattice() {
+        const visible = computeVisibleBounds();
+        const margin = latticeConfig.expandMargin;
+        const step = latticeConfig.expandStep;
+
+        if (visible.minFifth <= state.bounds.fifthMin + margin) {
+          extendFifths(-step);
+        }
+        if (visible.maxFifth >= state.bounds.fifthMax - margin) {
+          extendFifths(step);
+        }
+        if (visible.minThird <= state.bounds.thirdMin + margin) {
+          extendThirds(-step);
+        }
+        if (visible.maxThird >= state.bounds.thirdMax - margin) {
+          extendThirds(step);
+        }
+      }
+
+      function extendFifths(delta) {
+    if (delta < 0) {
+      const newMin = state.bounds.fifthMin + delta;
+      for (let fifth = newMin; fifth < state.bounds.fifthMin; fifth += 1) {
+        for (let third = state.bounds.thirdMin; third <= state.bounds.thirdMax; third += 1) {
+          ensureNode(fifth, third);
+        }
+      }
+      state.bounds.fifthMin = newMin;
+    } else if (delta > 0) {
+      const newMax = state.bounds.fifthMax + delta;
+      for (let fifth = state.bounds.fifthMax + 1; fifth <= newMax; fifth += 1) {
+        for (let third = state.bounds.thirdMin; third <= state.bounds.thirdMax; third += 1) {
+          ensureNode(fifth, third);
+        }
+      }
+      state.bounds.fifthMax = newMax;
+    }
+    if (delta !== 0) {
+      buildChordTriangles();
+      renderChordLattice();
+      toggleChordSelectionHighlight();
+      updateChordSequenceDisplay();
+    }
+  }
+
+  // NEW FEATURE: 12-TET playback for Tone lattice selection ------------------
+  function computeEqualFrequency(node) {
+    const totalSemis = node.semitoneOffset + (node.octaveOffset || 0) * 12;
+    return state.baseFrequency * Math.pow(2, totalSemis / 12);
+  }
+
+  function startEqualPlayback() {
+    if (!state.selectedIds.size) return;
+    ensureAudioContext();
+    state.isPlayingET = true;
+    startETVoicesForSelection();
+    updatePlayEqualBtnState();
+  }
+
+  function startETVoicesForSelection() {
+    const waveform = state.dom.waveformSelect.value;
+    const ctx = ensureAudioContext();
+    const now = ctx.currentTime;
+    // Stop missing
+    for (const id of Array.from(state.voicesET.keys())) {
+      if (!state.selectedIds.has(id)) {
+        stopETVoice(id);
+      }
+    }
+    // Start or update
+    for (const id of state.selectedIds) {
+      const node = nodeFromId(id);
+      if (!node) continue;
+      const freq = computeEqualFrequency(node);
+      if (!state.voicesET.has(id)) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = waveform;
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(latticeConfig.sustainLevel, now + latticeConfig.attack);
+        osc.connect(gain);
+        gain.connect(state.masterGain);
+        osc.start(now);
+        state.voicesET.set(id, { osc, gain });
+        const nodeRef = nodeFromId(id);
+        if (nodeRef) nodeRef.dom.group.classList.add('playing');
+      } else {
+        const voice = state.voicesET.get(id);
+        try { voice.osc.frequency.setValueAtTime(freq, now); } catch {}
+      }
+    }
+  }
+
+  function stopETVoice(id) {
+    const voice = state.voicesET.get(id);
+    if (!voice) return;
+    const ctx = ensureAudioContext();
+    const now = ctx.currentTime;
+    try {
+      voice.gain.gain.cancelScheduledValues(now);
+      voice.gain.gain.setValueAtTime(Math.max(voice.gain.gain.value, 0.0001), now);
+      voice.gain.gain.exponentialRampToValueAtTime(0.0001, now + latticeConfig.release);
+      voice.osc.stop(now + latticeConfig.release + 0.05);
+    } catch {}
+    state.voicesET.delete(id);
+    const nodeRef = nodeFromId(id);
+    if (nodeRef) nodeRef.dom.group.classList.remove('playing');
+  }
+
+  function stopAllETVoices() {
+    for (const id of Array.from(state.voicesET.keys())) {
+      stopETVoice(id);
+    }
+    state.isPlayingET = false;
+    updatePlayEqualBtnState();
+  }
+
+  // NEW FEATURE: make sure all tone voices (JI + 12TET) stop immediately on pause
+  function hardStopAllToneVoices() {
+    const ctx = ensureAudioContext();
+    const now = ctx.currentTime;
+    // Stop JI voices
+    for (const [id, voice] of Array.from(state.voices.entries())) {
+      try {
+        voice.gain.gain.cancelScheduledValues(now);
+        voice.gain.gain.setValueAtTime(0.0001, now);
+        voice.osc.stop(now + 0.01);
+      } catch {}
+      const nodeRef = nodeFromId(id);
+      if (nodeRef) nodeRef.dom.group.classList.remove('playing');
+      state.voices.delete(id);
+    }
+    // Stop 12TET voices
+    for (const [id, voice] of Array.from(state.voicesET.entries())) {
+      try {
+        voice.gain.gain.cancelScheduledValues(now);
+        voice.gain.gain.setValueAtTime(0.0001, now);
+        voice.osc.stop(now + 0.01);
+      } catch {}
+      const nodeRef = nodeFromId(id);
+      if (nodeRef) nodeRef.dom.group.classList.remove('playing');
+      state.voicesET.delete(id);
+    }
+    state.isPlayingET = false;
+    updatePlayEqualBtnState();
+  }
+
+  function updatePlayEqualBtnState() {
+    if (!state.dom.playEqualBtn) return;
+    state.dom.playEqualBtn.textContent = state.isPlayingET ? '12TET ⏸️' : '12TET ▶️';
+  }
+
+  function extendThirds(delta) {
+    if (delta < 0) {
+      const newMin = state.bounds.thirdMin + delta;
+      for (let third = newMin; third < state.bounds.thirdMin; third += 1) {
+        for (let fifth = state.bounds.fifthMin; fifth <= state.bounds.fifthMax; fifth += 1) {
+          ensureNode(fifth, third);
+        }
+      }
+      state.bounds.thirdMin = newMin;
+    } else if (delta > 0) {
+      const newMax = state.bounds.thirdMax + delta;
+      for (let third = state.bounds.thirdMax + 1; third <= newMax; third += 1) {
+        for (let fifth = state.bounds.fifthMin; fifth <= state.bounds.fifthMax; fifth += 1) {
+          ensureNode(fifth, third);
+        }
+      }
+      state.bounds.thirdMax = newMax;
+    }
+    if (delta !== 0) {
+      buildChordTriangles();
+      renderChordLattice();
+      toggleChordSelectionHighlight();
+      updateChordSequenceDisplay();
+    }
+  }
+
+      function computeVisibleBounds() {
+        const corners = [
+          { sx: 0, sy: 0 },
+          { sx: state.viewBox.width, sy: 0 },
+          { sx: 0, sy: state.viewBox.height },
+          { sx: state.viewBox.width, sy: state.viewBox.height }
+        ];
+
+        let minFifth = Infinity;
+        let maxFifth = -Infinity;
+        let minThird = Infinity;
+        let maxThird = -Infinity;
+
+        for (const corner of corners) {
+          const latticeCoord = screenToLattice(corner.sx, corner.sy);
+          minFifth = Math.min(minFifth, latticeCoord.fifth);
+          maxFifth = Math.max(maxFifth, latticeCoord.fifth);
+          minThird = Math.min(minThird, latticeCoord.third);
+          maxThird = Math.max(maxThird, latticeCoord.third);
+        }
+
+        return { minFifth, maxFifth, minThird, maxThird };
+      }
+
+      function screenToLattice(screenX, screenY) {
+        const x = screenX - state.viewTranslate.x;
+        const y = screenY - state.viewTranslate.y;
+        const third = -y / latticeConfig.spacingY;
+        const fifth = (x - third * (latticeConfig.spacingX / 2)) / latticeConfig.spacingX;
+        return { fifth, third };
+      }
+
+      function formatTooltip(node) {
+        const freq = node.frequency.toFixed(2);
+        const octaveInfo = node.octaveOffset === 0 ? '±0' : (node.octaveOffset > 0 ? `+${node.octaveOffset}` : `${node.octaveOffset}`);
+        return `音名: ${node.noteName}\n比值: ${formatRatioLabel(node)}\n八度偏移: ${octaveInfo}\n频率: ${freq} Hz`;
+      }
+
+      function formatRatioLabel(node) {
+        if (!node) return '';
+        if (!node.octaveOffset) {
+          return node.ratioString;
+        }
+        return `${node.ratioString} ×2^${node.octaveOffset}`;
+      }
+
+      function computeNoteName(semitoneOffset) {
+        const index = ((semitoneOffset % 12) + 12) % 12;
+        const midi = 60 + semitoneOffset;
+        const octave = Math.floor(midi / 12) - 1;
+        return `${NOTE_NAMES[index]}${octave}`;
+      }
+
+      function getNoteNameFromLattice(fifthSteps, thirdSteps, semitoneOffset) {
+        let preferSharps = true;
+        if (thirdSteps < 0) {
+          preferSharps = false;
+        } else if (thirdSteps > 0) {
+          preferSharps = true;
+        } else if (fifthSteps < 0) {
+          preferSharps = false;
+        } else if (fifthSteps > 0) {
+          preferSharps = true;
+        }
+        const index = ((semitoneOffset % 12) + 12) % 12;
+        const midi = 60 + semitoneOffset;
+        const octave = Math.floor(midi / 12) - 1;
+        const name = preferSharps ? SHARP_NAMES[index] : FLAT_NAMES[index];
+        return `${name}${octave}`;
+      }
+
+      function computeNoteNameLegacy(semitoneOffset) {
+        return computeNoteName(semitoneOffset);
+      }
+
+      function nodeFromId(id) {
+        return state.nodeMap.get(id);
+      }
+
+      function gcdBigInt(a, b) {
+        let x = a < 0n ? -a : a;
+        let y = b < 0n ? -b : b;
+        while (y !== 0n) {
+          const temp = y;
+          y = x % y;
+          x = temp;
+        }
+        return x === 0n ? 1n : x;
+      }
+
+      function reduceRational(r) {
+        let n = r.n;
+        let d = r.d;
+        if (d < 0n) {
+          n = -n;
+          d = -d;
+        }
+        const divisor = gcdBigInt(n, d);
+        return { n: n / divisor, d: d / divisor };
+      }
+
+      function multiplyRational(a, b) {
+        return reduceRational({ n: a.n * b.n, d: a.d * b.d });
+      }
+
+      function rationalPow(base, exponent) {
+        if (exponent === 0) return { n: 1n, d: 1n };
+        let result = { n: 1n, d: 1n };
+        const times = Math.abs(exponent);
+        for (let i = 0; i < times; i += 1) {
+          result = multiplyRational(result, base);
+        }
+        if (exponent < 0) {
+          return { n: result.d, d: result.n };
+        }
+        return result;
+      }
+
+      function normalizeRationalToOctave(ratio) {
+        let current = reduceRational(ratio);
+        let value = Number(current.n) / Number(current.d);
+        let octaveShift = 0;
+        while (value >= 2) {
+          current = multiplyRational(current, { n: 1n, d: 2n });
+          value = Number(current.n) / Number(current.d);
+          octaveShift += 1;
+        }
+        while (value < 0.5) {
+          current = multiplyRational(current, { n: 2n, d: 1n });
+          value = Number(current.n) / Number(current.d);
+          octaveShift -= 1;
+        }
+        return { ratio: reduceRational(current), octaveShift };
+      }
+
+      function rationalToString(r) {
+        if (r.d === 1n) {
+          return r.n.toString();
+        }
+        return `${r.n}/${r.d}`;
+      }
+
+      function showOctavePopover(node, clientX, clientY) {
+        if (!state.popover.root) return;
+        state.popover.mode = 'tone';
+        state.popover.chordId = null;
+        state.popover.nodeId = node.id;
+        state.popover.title.textContent = `${node.noteName} · ${formatRatioLabel(node)}`;
+        refreshPopover(node);
+
+        const popover = state.popover.root;
+        popover.style.visibility = 'hidden';
+        popover.classList.remove('hidden');
+        popover.style.left = '0px';
+        popover.style.top = '0px';
+
+        const rect = popover.getBoundingClientRect();
+        const padding = 16;
+        const targetX = Math.min(
+          Math.max(clientX + 18, padding),
+          window.innerWidth - rect.width - padding
+        );
+        const targetY = Math.min(
+          Math.max(clientY + 18, padding),
+          window.innerHeight - rect.height - padding
+        );
+
+        popover.style.left = `${targetX}px`;
+        popover.style.top = `${targetY}px`;
+        popover.style.visibility = 'visible';
+      }
+
+      // NEW FEATURE: chord octave popover reusing the same UI
+      function showChordOctavePopover(chord, clientX, clientY) {
+        if (!state.popover.root) return;
+        state.popover.mode = 'chord';
+        state.popover.nodeId = null;
+        state.popover.chordId = chord.id;
+        const label = chord.quality === 'major' ? `${chord.labelBase} Major` : chord.label;
+        state.popover.title.textContent = label;
+        refreshChordPopover(chord);
+
+        const popover = state.popover.root;
+        popover.style.visibility = 'hidden';
+        popover.classList.remove('hidden');
+        popover.style.left = '0px';
+        popover.style.top = '0px';
+
+        const rect = popover.getBoundingClientRect();
+        const padding = 16;
+        const targetX = Math.min(
+          Math.max(clientX + 18, padding),
+          window.innerWidth - rect.width - padding
+        );
+        const targetY = Math.min(
+          Math.max(clientY + 18, padding),
+          window.innerHeight - rect.height - padding
+        );
+
+        popover.style.left = `${targetX}px`;
+        popover.style.top = `${targetY}px`;
+        popover.style.visibility = 'visible';
+      }
+
+      function hideOctavePopover() {
+        if (!state.popover.root) return;
+        state.popover.root.classList.add('hidden');
+        state.popover.nodeId = null;
+        state.popover.chordId = null;
+        state.popover.mode = 'tone';
+      }
+
+      function refreshPopover(node) {
+        if (!state.popover.root || state.popover.nodeId !== node.id) return;
+        if (state.popover.offsetLabel) {
+          state.popover.offsetLabel.textContent = node.octaveOffset > 0 ? `+${node.octaveOffset}` : `${node.octaveOffset}`;
+        }
+        if (state.popover.info) {
+          state.popover.info.textContent = `当前频率：${node.frequency.toFixed(2)} Hz`;
+        }
+        if (state.popover.upBtn) {
+          state.popover.upBtn.disabled = node.octaveOffset >= OCTAVE_MAX;
+        }
+        if (state.popover.downBtn) {
+          state.popover.downBtn.disabled = node.octaveOffset <= OCTAVE_MIN;
+        }
+        if (state.popover.resetBtn) {
+          state.popover.resetBtn.disabled = node.octaveOffset === 0;
+        }
+      }
+
+      // NEW FEATURE: refresh for chord popover
+      function refreshChordPopover(chord) {
+        if (!state.popover.root || state.popover.chordId !== chord.id) return;
+        const offset = chord.octave || 0;
+        if (state.popover.offsetLabel) {
+          state.popover.offsetLabel.textContent = offset > 0 ? `+${offset}` : `${offset}`;
+        }
+        if (state.popover.info) {
+          const root = chord.nodes[0];
+          const freq = state.baseFrequency * root.ratioValue * Math.pow(2, offset);
+          state.popover.info.textContent = `当前根音频率：${freq.toFixed(2)} Hz`;
+        }
+        if (state.popover.upBtn) {
+          state.popover.upBtn.disabled = offset >= OCTAVE_MAX;
+        }
+        if (state.popover.downBtn) {
+          state.popover.downBtn.disabled = offset <= OCTAVE_MIN;
+        }
+        if (state.popover.resetBtn) {
+          state.popover.resetBtn.disabled = offset === 0;
+        }
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+      }
+
+      function renderChordLattice() {
+        if (!state.chordLayer) {
+          const chordLayer = document.createElementNS(svgNS, 'g');
+          chordLayer.setAttribute('class', 'chord-layer hidden');
+          state.dom.svg.appendChild(chordLayer);
+          state.chordLayer = chordLayer;
+        }
+
+        while (state.chordLayer.firstChild) {
+          state.chordLayer.removeChild(state.chordLayer.firstChild);
+        }
+        const visible = computeVisibleBounds();
+        const filtered = state.chordTriangles.filter((chord) => shouldRenderChord(chord, visible));
+        filtered.forEach((chord) => {
+          const group = document.createElementNS(svgNS, 'g');
+          group.setAttribute('class', `chord-node ${chord.quality}`);
+          group.dataset.chordId = chord.id;
+
+          const polygon = document.createElementNS(svgNS, 'polygon');
+          polygon.setAttribute('points', chord.points);
+          polygon.setAttribute('fill', chord.fill);
+          polygon.setAttribute('stroke', chord.stroke);
+          polygon.setAttribute('stroke-width', '1');
+          polygon.setAttribute('stroke-linejoin', 'miter');
+          polygon.setAttribute('stroke-linecap', 'butt');
+
+          const label = document.createElementNS(svgNS, 'text');
+          label.setAttribute('x', chord.centroid.x);
+          label.setAttribute('y', chord.centroid.y);
+          label.setAttribute('text-anchor', 'middle');
+          label.setAttribute('dominant-baseline', 'middle');
+          label.setAttribute('fill', '#132046');
+          label.setAttribute('font-size', '0.92rem');
+          label.setAttribute('font-weight', '700');
+          label.setAttribute('pointer-events', 'none');
+          label.textContent = chord.label;
+
+          const title = document.createElementNS(svgNS, 'title');
+          title.textContent = chord.description;
+
+          group.append(polygon, label, title);
+          state.chordLayer.appendChild(group);
+
+          chord.dom = { group, polygon, label, title };
+          chord.isSelected = state.chordSelection.has(chord.id);
+          chord.isPlaying = false;
+          group.classList.toggle('selected', chord.isSelected);
+          applyChordVisualState(chord);
+
+          group.addEventListener('click', () => {
+            if (state.currentMode !== MODES.CHORD) return;
+            playChord(chord);
+            addChordToSequence(chord);
+            toggleChordSelectionHighlight();
+          });
+          // NEW FEATURE: double click to open octave popover for chord
+          group.addEventListener('dblclick', (event) => {
+            if (state.currentMode !== MODES.CHORD) return;
+            event.preventDefault();
+            event.stopPropagation();
+            showChordOctavePopover(chord, event.clientX, event.clientY);
+          });
+        });
+
+        updateViewTransform();
+      }
+
+      // Aliases matching the proposed API names
+      function generateChordTrianglesFromLattice() { buildChordTriangles(); }
+      function drawChordTriangles() { renderChordLattice(); }
+
+      // Decide whether a chord triangle should be drawn based on
+      // current filters and viewport.
+      function shouldRenderChord(chord, visible) {
+        // Type filters
+        if (chord.quality === 'major' && !state.chordFilters.showMajor) return false;
+        if (chord.quality === 'minor' && !state.chordFilters.showMinor) return false;
+
+        // Density down-sampling by root position
+        const step = Math.max(1, state.chordFilters.densityStep || 1);
+        const root = chord.nodes && chord.nodes[0];
+        if (root && (Math.abs(root.fifthSteps) % step !== 0 || Math.abs(root.thirdSteps) % step !== 0)) {
+          return false;
+        }
+
+        if (!state.chordFilters.cullByViewport) return true;
+
+        // Viewport culling: keep triangles whose centroid is within
+        // the visible fifth/third bounds plus a small margin.
+        const margin = 0.8;
+        const spacingX = latticeConfig.spacingX;
+        const spacingY = latticeConfig.spacingY;
+        const third = -chord.centroid.y / spacingY;
+        const fifth = (chord.centroid.x - third * (spacingX / 2)) / spacingX;
+        if (fifth < visible.minFifth - margin || fifth > visible.maxFifth + margin) return false;
+        if (third < visible.minThird - margin || third > visible.maxThird + margin) return false;
+        return true;
+      }
+
+  function toggleChordSelectionHighlight() {
+        state.chordTriangles.forEach((chord) => {
+          if (!chord.dom) return;
+          chord.isSelected = state.chordSelection.has(chord.id);
+          chord.dom.group.classList.toggle('selected', chord.isSelected);
+          applyChordVisualState(chord);
+        });
+  }
+
+  function playChord(chordDef, durationOverride, options) {
+        ensureAudioContext();
+        const opts = options || {};
+        let groupKey = opts.groupKey;
+        const isClick = !groupKey; // 默认视为点击播放
+        if (!groupKey) {
+          state.chordVoiceSeq += 1;
+          groupKey = `click-${state.chordVoiceSeq}`;
+        }
+        if (opts.preStop !== false && isClick && state.lastClickGroupKey) {
+          stopChordVoicesByKey(state.lastClickGroupKey);
+        }
+
+        const duration = durationOverride || CHORD_PLAY_DEFAULT_DURATION;
+        const waveform = state.dom.waveformSelect.value;
+        const ctx = state.audioCtx;
+        const now = ctx.currentTime;
+
+        const voices = [];
+        const octave = chordDef.octave || 0;
+        chordDef.ratios.forEach((ratio) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = waveform;
+          const freq = state.baseFrequency * ratio * Math.pow(2, octave);
+          osc.frequency.setValueAtTime(freq, now);
+
+          const attack = 0.04;
+          const release = 0.25;
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(0.7, now + attack);
+          gain.gain.setValueAtTime(0.7, now + Math.max(duration - release, attack));
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+          osc.connect(gain);
+          gain.connect(state.masterGain);
+          osc.start(now);
+          osc.stop(now + duration + release);
+
+          voices.push({ osc, gain, ratio });
+        });
+
+        state.chordVoices.set(groupKey, { voices, chordId: chordDef.id });
+        highlightChordTriangle(chordDef.id, true);
+
+        if (opts.autoCleanup !== false) {
+          setTimeout(() => {
+            stopChordVoicesByKey(groupKey);
+            highlightChordTriangle(chordDef.id, false);
+          }, duration * 1000 + 50);
+        }
+        if (isClick) {
+          state.lastClickGroupKey = groupKey;
+        }
+        return groupKey;
+      }
+
+      // NEW FEATURE: equal-temperament chord playback
+      function playChordET(chordDef, durationOverride, options) {
+        ensureAudioContext();
+        const opts = options || {};
+        let groupKey = opts.groupKey;
+        const isClick = !groupKey;
+        if (!groupKey) {
+          state.chordVoiceSeq += 1;
+          groupKey = `click-et-${state.chordVoiceSeq}`;
+        }
+        if (opts.preStop !== false && isClick && state.lastClickGroupKey) {
+          stopChordVoicesByKey(state.lastClickGroupKey);
+        }
+
+        const duration = durationOverride || CHORD_PLAY_DEFAULT_DURATION;
+        const waveform = state.dom.waveformSelect.value;
+        const ctx = state.audioCtx;
+        const now = ctx.currentTime;
+
+        const voices = [];
+        const octave = chordDef.octave || 0;
+        chordDef.nodes.forEach((node) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = waveform;
+          const semi = node.semitoneOffset + 12 * (octave || 0);
+          const freq = state.baseFrequency * Math.pow(2, semi / 12);
+          osc.frequency.setValueAtTime(freq, now);
+
+          const attack = 0.04;
+          const release = 0.25;
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(0.7, now + attack);
+          gain.gain.setValueAtTime(0.7, now + Math.max(duration - release, attack));
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+          osc.connect(gain);
+          gain.connect(state.masterGain);
+          osc.start(now);
+          osc.stop(now + duration + release);
+
+          voices.push({ osc, gain, ratio: Math.pow(2, semi / 12) });
+        });
+
+        state.chordVoices.set(groupKey, { voices, chordId: chordDef.id });
+        highlightChordTriangle(chordDef.id, true);
+
+        if (opts.autoCleanup !== false) {
+          setTimeout(() => {
+            stopChordVoicesByKey(groupKey);
+            highlightChordTriangle(chordDef.id, false);
+          }, duration * 1000 + 50);
+        }
+        if (isClick) {
+          state.lastClickGroupKey = groupKey;
+        }
+        return groupKey;
+      }
+
+      // Stop a specific chord voice group by key
+      function stopChordVoicesByKey(key) {
+        const meta = state.chordVoices.get(key);
+        if (!meta) return;
+        const ctx = ensureAudioContext();
+        const now = ctx.currentTime;
+        meta.voices.forEach(({ osc, gain }) => {
+          try {
+            gain.gain.cancelScheduledValues(now);
+            gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+            osc.stop(now + 0.25);
+          } catch (error) {
+            console.warn('Chord oscillator stop error', error);
+          }
+        });
+        state.chordVoices.delete(key);
+      }
+
+      // Stop all chord voices (any group)
+      function stopAllChordVoices() {
+        Array.from(state.chordVoices.keys()).forEach((key) => stopChordVoicesByKey(key));
+      }
+
+      function highlightChordTriangle(chordId, isActive) {
+        const chord = state.chordTriangleMap.get(chordId);
+        if (!chord || !chord.dom) return;
+        chord.isPlaying = !!isActive;
+        chord.dom.group.classList.toggle('playing', chord.isPlaying);
+        applyChordVisualState(chord);
+        // NEW FEATURE: track current playing chord id for live retune
+        if (chord.isPlaying) {
+          state.chordPlayingCurrentId = chord.id;
+        } else if (state.chordPlayingCurrentId === chord.id) {
+          state.chordPlayingCurrentId = null;
+        }
+      }
+
+      function applyChordVisualState(chord) {
+        if (!chord || !chord.dom) return;
+        const polygon = chord.dom.polygon;
+        const labelEl = chord.dom.label;
+        let fill = chord.fill;
+        let stroke = chord.stroke;
+        let strokeWidth = '1';
+        let filter = 'none';
+
+        if (chord.isPlaying) {
+          fill = chord.playingFill;
+          stroke = chord.playingStroke;
+          strokeWidth = '1.8';
+        } else if (chord.isSelected) {
+          fill = chord.selectedFill;
+          stroke = chord.selectedStroke;
+          strokeWidth = '1.4';
+        } else if (chord.isPrimary) {
+          // NEW FEATURE: primary chord distinct appearance
+          fill = chord.primaryFill || fill;
+          stroke = chord.primaryStroke || stroke;
+          strokeWidth = '1.8';
+          filter = 'drop-shadow(0 0 8px rgba(255,255,255,0.7))';
+        }
+
+        polygon.style.fill = fill;
+        polygon.style.stroke = stroke;
+        polygon.style.strokeWidth = strokeWidth;
+        polygon.style.filter = filter;
+        if (labelEl) {
+          labelEl.setAttribute('fill', chord.isPrimary && !chord.isSelected && !chord.isPlaying ? '#ffffff' : '#132046');
+        }
+      }
+
+      function addChordToSequence(chordDef) {
+        if (state.chordSequence.length >= CHORD_SEQUENCE_MAX) return;
+        state.chordSequence.push(chordDef);
+        state.chordSelection.add(chordDef.id);
+        updateChordSequenceDisplay();
+      }
+
+      function updateChordSequenceDisplay() {
+        const container = state.dom.chordSequenceBar;
+        container.innerHTML = '';
+        if (!state.chordSequence.length) {
+          state.dom.sequenceEmptyHint.classList.remove('hidden');
+        } else {
+          state.dom.sequenceEmptyHint.classList.add('hidden');
+          state.chordSequence.forEach((chord, index) => {
+            const item = document.createElement('div');
+            item.className = 'chord-sequence-item';
+            item.dataset.index = String(index);
+            item.textContent = `#${index + 1} ${chord.label}`;
+            container.appendChild(item);
+            // NEW FEATURE: dblclick item to adjust its octave
+            item.addEventListener('dblclick', (ev) => {
+              const rect = item.getBoundingClientRect();
+              const cx = rect.left + rect.width / 2;
+              const cy = rect.top; // show above the item
+              showChordOctavePopover(chord, cx, cy);
+            });
+          });
+        }
+        toggleChordSelectionHighlight();
+      }
+
+  function playChordSequence() {
+        if (!state.chordSequence.length) {
+          alert('请先选择至少一个和弦。');
+          return;
+        }
+        stopChordSequencePlayback();
+        ensureAudioContext();
+
+        const bpm = clamp(Number(state.dom.bpmInput.value) || 80, 40, 240);
+        state.dom.bpmInput.value = bpm;
+        const chordDuration = 240 / bpm; // 全音符
+
+        state.chordPlaybackActive = true;
+        state.chordPlaybackPaused = false;
+        state.chordPlayingIndex = -1;
+        sequenceHighlightUpdate(-1, false);
+        scheduleNextChord(chordDuration);
+      }
+
+  // NEW FEATURE: toggle play/pause for chord sequence (JI)
+  function toggleChordSequencePlayback() {
+    if (!state.chordPlaybackActive && !state.chordPlaybackPaused) {
+      playChordSequence();
+      updateSequencePlayBtnUI();
+      return;
+    }
+    if (state.chordPlaybackActive) {
+      // Pause
+      state.chordPlaybackActive = false;
+      state.chordPlaybackPaused = true;
+      state.chordPlaybackTimers.forEach((t) => clearTimeout(t));
+      state.chordPlaybackTimers = [];
+      stopAllChordVoices();
+      updateSequencePlayBtnUI();
+      return;
+    }
+    if (state.chordPlaybackPaused) {
+      // Resume from current index (next chord)
+      const bpm = clamp(Number(state.dom.bpmInput.value) || 80, 40, 240);
+      const chordDuration = 240 / bpm;
+      state.chordPlaybackActive = true;
+      state.chordPlaybackPaused = false;
+      scheduleNextChord(chordDuration);
+      updateSequencePlayBtnUI();
+    }
+  }
+
+      // NEW FEATURE: play chord sequence in 12-TET
+      function playChordSequenceET() {
+        if (!state.chordSequence.length) {
+          alert('请先选择至少一个和弦。');
+          return;
+        }
+        stopChordSequencePlayback();
+        ensureAudioContext();
+
+        const bpm = clamp(Number(state.dom.bpmInput.value) || 80, 40, 240);
+        state.dom.bpmInput.value = bpm;
+        const chordDuration = 240 / bpm; // 全音符
+
+        state.chordPlaybackActive = true;
+        state.chordPlaybackPaused = false;
+        state.chordPlayingIndex = -1;
+        sequenceHighlightUpdate(-1, false);
+        scheduleNextChordET(chordDuration);
+      }
+
+      // NEW FEATURE: toggle play/pause for chord sequence (12TET)
+      function toggleChordSequenceETPlayback() {
+        if (!state.chordPlaybackActive && !state.chordPlaybackPaused) {
+          playChordSequenceET();
+          updateSequencePlayBtnUI(true);
+          return;
+        }
+        if (state.chordPlaybackActive) {
+          state.chordPlaybackActive = false;
+          state.chordPlaybackPaused = true;
+          state.chordPlaybackTimers.forEach((t) => clearTimeout(t));
+          state.chordPlaybackTimers = [];
+          stopAllChordVoices();
+          updateSequencePlayBtnUI(true);
+          return;
+        }
+        if (state.chordPlaybackPaused) {
+          const bpm = clamp(Number(state.dom.bpmInput.value) || 80, 40, 240);
+          const chordDuration = 240 / bpm;
+          state.chordPlaybackActive = true;
+          state.chordPlaybackPaused = false;
+          scheduleNextChordET(chordDuration);
+          updateSequencePlayBtnUI(true);
+        }
+      }
+
+      // NEW FEATURE: update play button icon with tiny fade
+      function updateSequencePlayBtnUI(isET) {
+        const btn = isET ? state.dom.playSequenceETBtn : state.dom.playSequenceBtn;
+        if (!btn) return;
+        const playing = state.chordPlaybackActive;
+        btn.style.opacity = '0.85';
+        btn.textContent = playing ? (isET ? '12TET ⏸️' : '⏸️') : (isET ? '12TET ▶️' : '▶️');
+        requestAnimationFrame(() => {
+          btn.style.transition = 'opacity 120ms ease';
+          btn.style.opacity = '1';
+        });
+      }
+
+      function scheduleNextChordET(chordDuration) {
+        if (!state.chordPlaybackActive) return;
+        state.chordPlayingIndex += 1;
+        if (state.chordPlayingIndex >= state.chordSequence.length) {
+          stopChordSequencePlayback();
+          updateSequencePlayBtnUI(true);
+          return;
+        }
+        const chordDef = state.chordSequence[state.chordPlayingIndex];
+        sequenceHighlightUpdate(state.chordPlayingIndex, true);
+        const gapSec = 0.05;
+        const groupKey = `seqET-${state.chordPlayingIndex}`;
+        playChordET(chordDef, Math.max(0.05, chordDuration - gapSec), { preStop: false, autoCleanup: false, groupKey });
+        const stopTimer = setTimeout(() => {
+          stopChordVoicesByKey(groupKey);
+        }, Math.max(0, (chordDuration - gapSec) * 1000));
+        state.chordPlaybackTimers.push(stopTimer);
+
+        const timer = setTimeout(() => {
+          sequenceHighlightUpdate(state.chordPlayingIndex, false);
+          scheduleNextChordET(chordDuration);
+        }, chordDuration * 1000);
+        state.chordPlaybackTimers.push(timer);
+      }
+
+      function scheduleNextChord(chordDuration) {
+        if (!state.chordPlaybackActive) return;
+        state.chordPlayingIndex += 1;
+        if (state.chordPlayingIndex >= state.chordSequence.length) {
+          stopChordSequencePlayback();
+          updateSequencePlayBtnUI();
+          return;
+        }
+        const chordDef = state.chordSequence[state.chordPlayingIndex];
+        sequenceHighlightUpdate(state.chordPlayingIndex, true);
+        const gapSec = 0.05; // 50ms 间隙
+        const groupKey = `seq-${state.chordPlayingIndex}`;
+        // 播放当前和弦到指定时长，不清理其他组
+        playChord(chordDef, Math.max(0.05, chordDuration - gapSec), { preStop: false, autoCleanup: false, groupKey });
+
+        // 在时值结束前淡出这一组（不影响下一组）
+        const stopTimer = setTimeout(() => {
+          stopChordVoicesByKey(groupKey);
+        }, Math.max(0, (chordDuration - gapSec) * 1000));
+        state.chordPlaybackTimers.push(stopTimer);
+
+        const timer = setTimeout(() => {
+          sequenceHighlightUpdate(state.chordPlayingIndex, false);
+          scheduleNextChord(chordDuration);
+        }, chordDuration * 1000);
+        state.chordPlaybackTimers.push(timer);
+      }
+
+      function sequenceHighlightUpdate(index, isActive) {
+        const items = state.dom.chordSequenceBar.querySelectorAll('.chord-sequence-item');
+        items.forEach((item) => item.classList.remove('playing'));
+        state.chordTriangles.forEach((chord) => {
+          if (chord.dom) {
+            chord.isPlaying = false;
+            chord.dom.group.classList.remove('playing');
+            applyChordVisualState(chord);
+          }
+        });
+        if (index >= 0 && index < items.length && isActive) {
+          const chordDef = state.chordSequence[index];
+          items[index].classList.add('playing');
+          highlightChordTriangle(chordDef.id, true);
+        }
+      }
+
+      function stopChordSequencePlayback() {
+        state.chordPlaybackActive = false;
+        state.chordPlaybackPaused = false;
+        state.chordPlaybackTimers.forEach((timer) => clearTimeout(timer));
+        state.chordPlaybackTimers = [];
+        state.chordPlayingIndex = -1;
+        sequenceHighlightUpdate(-1, false);
+        stopAllChordVoices();
+        updateSequencePlayBtnUI();
+        updateSequencePlayBtnUI(true);
+      }
+
+      function undoChord() {
+        if (!state.chordSequence.length) return;
+        stopChordSequencePlayback();
+        const removed = state.chordSequence.pop();
+        const stillSelected = state.chordSequence.some((chord) => chord.id === removed.id);
+        if (!stillSelected) {
+          state.chordSelection.delete(removed.id);
+        }
+        updateChordSequenceDisplay();
+      }
+
+      function clearAllChords() {
+        stopChordSequencePlayback();
+        state.chordSequence = [];
+        state.chordSelection.clear();
+        updateChordSequenceDisplay();
+      }
+
+      function updateModeUI() {
+        const toneActive = state.currentMode === MODES.TONE;
+        state.dom.modeSwitcher.querySelectorAll('button').forEach((btn) => {
+          btn.classList.toggle('active', btn.dataset.mode === state.currentMode);
+        });
+
+        state.dom.viewport.classList.toggle('hidden', !toneActive);
+        if (state.chordLayer) {
+          state.chordLayer.classList.toggle('hidden', toneActive);
+        }
+        state.dom.toneInfoPanel.classList.toggle('hidden', !toneActive);
+        state.dom.chordSequencePanel.classList.toggle('hidden', toneActive);
+        state.dom.wrapper.style.cursor = 'grab';
+        state.dom.wrapper.classList.remove('dragging');
+        hideOctavePopover();
+
+        state.dom.toneControls.forEach((row) => row.classList.toggle('hidden', !toneActive));
+        state.dom.chordControls.forEach((row) => row.classList.toggle('hidden', toneActive));
+
+        if (!toneActive) {
+          stopAllVoices();
+          stopAllETVoices();
+          state.isPlaying = false;
+          updatePlayButtonState();
+        } else {
+          stopChordSequencePlayback();
+          stopAllChordVoices();
+        }
+        toggleChordSelectionHighlight();
+        updateChordSequenceDisplay();
+      }
+
+      function switchMode(mode) {
+        if (mode === state.currentMode) return;
+        state.currentMode = mode;
+        updateModeUI();
+      }
+
+      function getNoteNameFromLatticeLegacy(fifthSteps, thirdSteps, semitoneOffset) {
+        return getNoteNameFromLattice(fifthSteps, thirdSteps, semitoneOffset);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

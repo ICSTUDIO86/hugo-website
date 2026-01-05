@@ -1,0 +1,153 @@
+/* Mobile landscape optimization - 手机横屏优化 */
+@media (orientation: landscape) and (max-height: 599px) {
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
+    .container {
+        border-radius: 4px;
+        margin: 0;
+    }
+
+    .header {
+        padding: 8px 4px;
+    }
+
+    .header h1 {
+        font-size: 1.4rem;
+    }
+
+    .controls {
+        padding: 6px;
+    }
+
+    .score-container {
+        padding: 0;
+    }
+
+    #score {
+        min-height: 160px;
+        max-width: calc(100vw - 8px);
+        width: calc(100vw - 8px);
+        padding: 3px;
+        margin: 0;
+        border-radius: 4px;
+    }
+
+    /* 横屏时和弦可以更大 */
+    #score svg {
+        max-width: 100% !important;
+        width: auto !important;
+        height: auto !important;
+        min-width: 300px;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    #score .osmd-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+    }
+
+    button {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+    }
+
+    .btn-primary {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Extreme small mobile devices (very small phones) */
+@media (max-width: 360px) {
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
+    .container {
+        border-radius: 2px;
+        margin: 0;
+    }
+
+    .score-container {
+        padding: 0;
+    }
+
+    #score {
+        min-height: 180px;
+        max-width: calc(100vw - 6px);
+        width: calc(100vw - 6px);
+        padding: 2px;
+        margin: 0;
+        border-radius: 2px;
+    }
+
+    /* 极度紧凑的音乐显示 - 完全无边距 */
+    #score svg {
+        min-width: 150px;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    #score .osmd-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+    }
+
+    .header {
+        padding: 12px 2px;
+    }
+
+    .header h1 {
+        font-size: 1.4rem;
+    }
+
+    .controls {
+        padding: 4px;
+    }
+
+    button {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+    }
+
+    .btn-primary {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (min-width: 600px) and (max-width: 899px) {
+    .score-container {
+        padding: 24px;
+    }
+
+    .control-row {
+        gap: 20px;
+    }
+}
+
+@media (min-width: 900px) {
+    .control-row {
+        gap: 28px;
+    }
+
+    .container:hover {
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+    }
+}

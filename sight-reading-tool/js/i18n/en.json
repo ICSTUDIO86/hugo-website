@@ -1,0 +1,147 @@
+{
+  "hero": {
+    "titleLine1": "Improve Your",
+    "titleHighlight": "Sight Reading",
+    "titleLine2": "Start Here",
+    "subtitle": "Professional sight reading tools designed for musicians",
+    "featureHighlight": "Fully Customizable",
+    "featureText": "Practice Experience",
+    "btnPurchase": "Buy Now",
+    "btnTry": "Try Now",
+    "pill": "IC Sight Reading Tools"
+  },
+
+  "products": {
+    "title": "Four Core Tools",
+    "subtitle": "Professional sight reading practice solutions for different training needs",
+
+    "melody": {
+      "title": "Melody Sight Reading Generator",
+      "description": "Freely choose note values, precisely control articulations (staccato, legato, accents, etc.), and even set their frequency. Completely tailor practice content to your needs."
+    },
+
+    "interval": {
+      "title": "Interval Sight Reading Generator",
+      "description": "Targeted training for specific intervals, freely choose which interval types to practice. From major seconds to perfect octaves, master every interval precisely."
+    },
+
+    "chord": {
+      "title": "Chord Sight Reading Generator",
+      "description": "Supports various chord types: major triads, minor triads, diminished triads, sus, etc. Provides guitar-specific voicings: Drop2, Drop3, Shell Voicing, Close Voicing."
+    },
+
+    "jianpu": {
+      "title": "Jianpu Sight Reading Generator",
+      "description": "Render melodies as numbered notation (jianpu) while keeping full rhythm and key control—ideal for learners who prefer numbered notation."
+    }
+  },
+
+  "features": {
+    "title": "Powerful",
+    "titleHighlight": "Features",
+    "subtitle": "Professional-grade features to help you reach new musical heights",
+
+    "customize": {
+      "icon": "⚙️",
+      "title": "Fully Customizable Generation",
+      "description": "Freely choose key signatures, time signatures, note values, and note-frequency."
+    },
+
+    "guitarVoicing": {
+      "icon": "🎵",
+      "title": "Guitar friendly",
+      "description": "Provides guitar-specific voicing and articulations."
+    },
+
+    "articulations": {
+    "icon": "💻",
+    "title": "Multi-Device Support",
+    "description": "Optimized interfaces for desktop, iPad, and mobile. The software version currently supports desktop only, while mobile users can install it as a PWA."
+    },
+
+    "multiInstrument": {
+      "icon": "🎸",
+      "title": "Multi-Instrument Support",
+      "description": "Suitable for guitar, piano, violin, bass, and various other instruments, meeting the needs of different performers."
+    },
+
+    "randomOrTonal": {
+      "icon": "🎲",
+      "title": "Smart Generation / Musical Coherence",
+      "description": "Notes are randomly generated yet musically coherent, making every exercise both challenging and realistic."
+    },
+
+    "affordable": {
+      "icon": "💰",
+      "title": "One-Time Purchase",
+      "description": "Pay once, generate unlimited practice materials—far more cost-effective than traditional sight-reading books."
+    }
+  },
+
+  "payment": {
+    "title": "Begin Your",
+    "titleHighlight": "Sight Reading Improvement",
+    "titleSuffix": "Journey",
+    "price": "¥128.00",
+    "priceText": "Supports web version and desktop software",
+
+    "cardTitle": "Unlock Sight Reading Tools",
+    "refundPolicy": "7-day no-questions-asked refund policy",
+    "btnFreeTrial": "Free Trial",
+    "btnAlipay": "Alipay Payment",
+    "btnWechat": "WeChat Payment",
+
+    "accessCodeTitle": "🔑 Already Have an Access Code? Use It Now",
+    "accessCodePlaceholder": "Enter access code (11-12 digits)",
+    "btnVerify": "Verify"
+  },
+
+  "faq": {
+    "title": "❓ Frequently Asked",
+    "titleHighlight": "Questions",
+
+    "forgotCode": {
+      "title": "🔑 Forgot Your Access Code?",
+      "description": "If you forgot your access code, you can retrieve it using your order number:",
+      "btnRecover": "🔍 Retrieve Access Code with Order Number",
+      "noteTitle": "💡 Note:",
+      "note1": "Order number or merchant order number can be found in your Alipay or WeChat <strong>payment history</strong>.",
+      "note2": "<strong>Merchant order number</strong> format: <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IC17575395673154298</code>",
+      "note3": "<strong>Order number</strong> format: <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">2025097832001480241441480505</code>"
+    },
+
+    "codeNotWorking": {
+      "title": "⚙️ Access Code Not Working?",
+      "description": "If the tool is still in trial mode after entering the verification code, just refresh the page a few times. If the problem persists, please contact our customer support."
+    },
+
+    "refund": {
+      "title": "💰 How to Get a Refund?",
+      "description": "We understand various situations may arise, so we offer a 7-day no-questions-asked refund policy:",
+      "conditionsTitle": "📋 Refund Conditions:",
+      "condition1": "Refund can be requested within 7 days of purchase",
+      "condition2": "No refunds after 7 days",
+      "onlineRefund": "Online Refund:",
+      "btnRefund": "Request Online Refund"
+    },
+
+    "contact": {
+      "title": "📬 Have Other Questions? Feel Free to Contact Me!",
+      "description": "If you encounter any of the following issues while using the tool, feel free to contact me through the methods below, and I'll help resolve them as soon as possible:",
+      "issue1": "Encountering bugs while using the tool",
+      "issue2": "Access code recovery not working properly",
+      "issue3": "Refund button not working properly",
+      "issue4": "Any other product inquiries",
+      "contactInfoTitle": "📧 Contact Information:",
+      "email": "✉️ Email:",
+      "contactPage": "🌐 Contact Page:",
+      "clickVisit": "Click to Visit",
+      "responseTime": "⏰ All messages will be replied within 48 hours"
+    }
+  },
+
+  "footer": {
+    "tagline": "Let's progress together on the musical journey!",
+    "copyright": "Copyright © 2025. All rights reserved. Igor Chen - icstudio.club"
+  }
+}

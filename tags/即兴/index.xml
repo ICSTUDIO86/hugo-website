@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>即兴 on IC Studio</title><link>https://icstudio.club/tags/%E5%8D%B3%E5%85%B4/</link><description>Recent content in 即兴 on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Mon, 14 Oct 2024 00:00:00 +0000</lastBuildDate><atom:link href="https://icstudio.club/tags/%E5%8D%B3%E5%85%B4/index.xml" rel="self" type="application/rss+xml"/><item><title>随时随地随心：五声音阶的实用之路</title><link>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/pentatonic-guitar-boxes-practice-zh/</link><pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate><guid>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/pentatonic-guitar-boxes-practice-zh/</guid><description>&lt;p>五声音阶只有五个音，却是最简单且最广泛使用的音阶之一。本文带你快速厘清它是什么、在吉他指板上的五个常用位置（box），为什么要牢牢记住主音位置，以及如何高效练习与实际应用，让它成为你创作与即兴的&amp;quot;随时随地随心&amp;quot;的工具。&lt;/p>
+&lt;h2 id="什么是五声音阶">什么是五声音阶？&lt;/h2>
+&lt;p>所谓五声音阶，就是由五个音构成的音阶。你可以把一个大调五声音阶理解为：一个没有四音和七音的&lt;strong>大调音阶&lt;/strong>。例如，C 的大调五声音阶就是把 C 大调的 Fa 和 Si 去掉后得到的五个音。&lt;/p>
+&lt;p>这些五个音在中国传统里对应&amp;quot;&lt;strong>宫—商—角—徵—羽&lt;/strong>&amp;quot;，也正对应着五声音阶里的五个&amp;quot;调式&amp;quot;。当你以不同的音作为主音（tonic）去听同一个五声音列，就得到不同的调式：&lt;/p>
+&lt;ul>
+&lt;li>以 C 为主音：宫调式（大调五声音阶）&lt;/li>
+&lt;li>以 D 为主音：商调式&lt;/li>
+&lt;li>以 E 为主音：角调式&lt;/li>
+&lt;li>以 G 为主音：徵调式&lt;/li>
+&lt;li>以 A 为主音：羽调式（这就是我们常说的&lt;strong>小调五声音阶&lt;/strong>）&lt;/li>
+&lt;/ul>
+&lt;p>小调五声音阶可以理解为：把自然小调的二音和六音去掉。由于五声音阶缺少了大调中的四音和七音——这两个既容易带来紧张感、又是唯一能形成&lt;strong>三全音&lt;/strong>的音——所以它听起来更和谐、也更不容易出现刺耳的音程。正因为结构简单、声音和谐，我强烈建议初学者从五声音阶入门，再逐步过渡到大调音阶；本质上，大调音阶就是在大调五声音阶的基础上加入了四音和七音。&lt;/p>
+&lt;h2 id="在吉他上的五个-box以-a-小调五声音阶为例">在吉他上的五个 box（以 A 小调五声音阶为例）&lt;/h2>
+&lt;p>吉他上常用五个五声音阶指型，因形状而被称为五个&amp;quot;box&amp;quot;。以下以 A 小调五声音阶（即羽调式）示例，并标注常见&lt;strong>主音&lt;/strong>位置，方便你在指板上定位与串联：&lt;/p>
+&lt;h3 id="box-1小调五声音阶的基础形">Box 1（小调五声音阶的基础形）&lt;/h3>
+&lt;ul>
+&lt;li>主音位置：该指型的最低音为主音，此外在四弦7品、一弦5品也有主音。&lt;/li>
+&lt;li>形状参考：
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-1.png" alt="A 小调五声音阶：Box 1（主音示意）">&lt;/li>
+&lt;/ul>
+&lt;h3 id="box-2">Box 2&lt;/h3>
+&lt;ul>
+&lt;li>主音位置：四弦7品、二弦10品。
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-2.png" alt="A 小调五声音阶：Box 2（主音示意）">&lt;/li>
+&lt;/ul>
+&lt;h3 id="box-3">Box 3&lt;/h3>
+&lt;ul>
+&lt;li>主音位置：五弦12品、二弦10品。
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-3.png" alt="A 小调五声音阶：Box 3（主音示意）">&lt;/li>
+&lt;/ul>
+&lt;h3 id="box-4">Box 4&lt;/h3>
+&lt;ul>
+&lt;li>指板重复：12 品后音高开始重复，此 box 既可从空弦起，也可从 12 品起。&lt;/li>
+&lt;li>主音位置：五弦空弦/12品、三弦2品/14品。
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-4.png" alt="A 小调五声音阶：Box 4（主音示意）">&lt;/li>
+&lt;/ul>
+&lt;h3 id="box-5">Box 5&lt;/h3>
+&lt;ul>
+&lt;li>主音位置：六弦5品、三弦2品、一弦5品。
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-5.png" alt="A 小调五声音阶：Box 5（主音示意）">&lt;/li>
+&lt;/ul>
+&lt;p>小结与延伸：&lt;/p>
+&lt;ul>
+&lt;li>多数吉他手口中的&amp;quot;五声音阶&amp;quot;，往往默认指的是&lt;strong>小调五声音阶&lt;/strong>（此处即 A 为主音）。如果把上述五个指型里的 C 当作主音，你就得到 C 的&lt;strong>大调五声音阶&lt;/strong>。&lt;/li>
+&lt;li>牢记&lt;strong>主音位置&lt;/strong>的好处有二：其一，能让乐句自然地以主音收尾，形成稳定、完整的结束感；其二，可帮助你迅速拼接、迁移五个 box，覆盖整个指板。&lt;/li>
+&lt;/ul>
+&lt;h2 id="两个关键指型与跨三弦挪一品">两个关键指型与&amp;quot;跨三弦挪一品&amp;quot;&lt;/h2>
+&lt;p>把五个 box 抽象起来，核心就两类手型：&lt;/p></description></item></channel></rss>
