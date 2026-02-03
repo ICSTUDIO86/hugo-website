@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>音阶 on IC Studio</title><link>https://icstudio.club/tags/%E9%9F%B3%E9%98%B6/</link><description>Recent content in 音阶 on IC Studio</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Fri, 17 Oct 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://icstudio.club/tags/%E9%9F%B3%E9%98%B6/index.xml" rel="self" type="application/rss+xml"/><item><title>拿到谱子就能弹的技能是怎么炼成的？吉他视奏大全</title><link>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-sight-reading-shortest-path-zh/</link><pubDate>Fri, 17 Oct 2025 00:00:00 +0000</pubDate><guid>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-sight-reading-shortest-path-zh/</guid><description>&lt;blockquote>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>音阶 on IC Studio</title><link>https://icstudio.club/tags/%E9%9F%B3%E9%98%B6/</link><description>Recent content in 音阶 on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Fri, 17 Oct 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://icstudio.club/tags/%E9%9F%B3%E9%98%B6/index.xml" rel="self" type="application/rss+xml"/><item><title>拿到谱子就能弹的技能是怎么炼成的？吉他视奏大全</title><link>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-sight-reading-shortest-path-zh/</link><pubDate>Fri, 17 Oct 2025 00:00:00 +0000</pubDate><guid>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-sight-reading-shortest-path-zh/</guid><description>&lt;blockquote>
 &lt;p>目标：让读五线谱不流畅的吉他手，用最短路径获得「看谱就能演奏」的能力。&lt;/p>&lt;/blockquote>
-&lt;p>本文以实战为导向，先建立高效的视奏习惯，再由浅入深分三个维度讲解：旋律视奏、音程视奏、和弦视奏。每个模块都配有明确把位策略与练习节奏。文中的谱例建议配合 &lt;a href="https://icstudio.club/sight-reading-tool/">Cognote&lt;/a>操作；依本文路线配合工具练习，可稳定提升视谱速度与准确度，让你更接近专业演奏者。&lt;/p>
+&lt;p>本文以实战为导向，先建立高效的视奏习惯，再由浅入深分三个维度讲解：旋律视奏、音程视奏、和弦视奏。每个模块都配有明确把位策略与练习节奏。文中的谱例建议配合 &lt;a href="https://icstudio.club/sight-reading-tool/">IC 视奏工具&lt;/a>操作；依本文路线配合工具练习，可稳定提升视谱速度与准确度，让你更接近专业演奏者。&lt;/p>
 &lt;hr>
 &lt;h2 id="视奏习惯效率的倍增器">视奏习惯：效率的倍增器&lt;/h2>
 &lt;p>良好习惯决定训练上限。请在每次练习中坚持以下原则，并用粗体标记重点：&lt;/p>
@@ -48,8 +48,8 @@
 &lt;h2 id="和弦视奏由三和弦-closed-voicing-起步">和弦视奏：由三和弦 Closed Voicing 起步&lt;/h2>
 &lt;p>和弦视奏受制于手型与指板布局，难以在“每个指型”内都完整覆盖。策略是：以&lt;strong>音区/弦组&lt;/strong>为单位，尽可能枚举指板上的可行解，逐步扩充&lt;strong>可即抓取&lt;/strong>的和声词汇。&lt;/p>
 &lt;ul>
-&lt;li>起步和声：从**三和弦的紧密配置（Closed Voicing）**开始。&lt;a href="https://icstudio.club/sight-reading-tool/">Cognote&lt;/a>中，建议先用“钢琴模式”只读高音谱号；速度自 ♩=50 起步，稳定后提至 ♩=100。&lt;/li>
-&lt;li>进阶和声：当 Closed Triads 稳定后，加入 &lt;strong>Drop 2、Drop 3、Spread Triads（含三和弦 Drop 2）与 Shell Voicing&lt;/strong>。Cognote提供相应生成。&lt;/li>
+&lt;li>起步和声：从**三和弦的紧密配置（Closed Voicing）**开始。&lt;a href="https://icstudio.club/sight-reading-tool/">IC 视奏工具&lt;/a>中，建议先用“钢琴模式”只读高音谱号；速度自 ♩=50 起步，稳定后提至 ♩=100。&lt;/li>
+&lt;li>进阶和声：当 Closed Triads 稳定后，加入 &lt;strong>Drop 2、Drop 3、Spread Triads（含三和弦 Drop 2）与 Shell Voicing&lt;/strong>。IC 视奏工具提供相应生成。&lt;/li>
 &lt;li>实作要点：不追求“每把位全覆盖”，而是建立&lt;strong>可移动按法库&lt;/strong>，见谱能快速定位抓取。&lt;/li>
 &lt;/ul>
 &lt;hr>
@@ -104,7 +104,7 @@
 &lt;/table>
 &lt;hr>
 &lt;h2 id="喜欢这篇文章吗">喜欢这篇文章吗？&lt;/h2>
-&lt;p>觉得内容有用？太棒了！想更进一步提升音乐技能，可以看看 &lt;a href="https://icstudio.club/sight-reading-tool/">Cognote&lt;/a>。它专注训练视奏能力，帮你练琴更有方向。同时，你的支持也是对 Cognote 最大的鼓励！&lt;/p></description></item><item><title>随时随地随心：五声音阶的实用之路</title><link>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/pentatonic-guitar-boxes-practice-zh/</link><pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate><guid>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/pentatonic-guitar-boxes-practice-zh/</guid><description>&lt;p>五声音阶只有五个音，却是最简单且最广泛使用的音阶之一。本文带你快速厘清它是什么、在吉他指板上的五个常用位置（box），为什么要牢牢记住主音位置，以及如何高效练习与实际应用，让它成为你创作与即兴的&amp;quot;随时随地随心&amp;quot;的工具。&lt;/p>
+&lt;p>觉得内容有用？太棒了！想更进一步提升音乐技能，可以看看 &lt;a href="https://icstudio.club/sight-reading-tool/">IC 视奏工具&lt;/a>。它专注训练视奏能力，帮你练琴更有方向。同时，你的支持也是对 IC Studio 最大的鼓励！&lt;/p></description></item><item><title>随时随地随心：五声音阶的实用之路</title><link>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/pentatonic-guitar-boxes-practice-zh/</link><pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate><guid>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/pentatonic-guitar-boxes-practice-zh/</guid><description>&lt;p>五声音阶只有五个音，却是最简单且最广泛使用的音阶之一。本文带你快速厘清它是什么、在吉他指板上的五个常用位置（box），为什么要牢牢记住主音位置，以及如何高效练习与实际应用，让它成为你创作与即兴的&amp;quot;随时随地随心&amp;quot;的工具。&lt;/p>
 &lt;h2 id="什么是五声音阶">什么是五声音阶？&lt;/h2>
 &lt;p>所谓五声音阶，就是由五个音构成的音阶。你可以把一个大调五声音阶理解为：一个没有四音和七音的&lt;strong>大调音阶&lt;/strong>。例如，C 的大调五声音阶就是把 C 大调的 Fa 和 Si 去掉后得到的五个音。&lt;/p>
 &lt;p>这些五个音在中国传统里对应&amp;quot;&lt;strong>宫—商—角—徵—羽&lt;/strong>&amp;quot;，也正对应着五声音阶里的五个&amp;quot;调式&amp;quot;。当你以不同的音作为主音（tonic）去听同一个五声音列，就得到不同的调式：&lt;/p>

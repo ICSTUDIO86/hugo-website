@@ -8,4 +8,4 @@ Sitemap: https://icstudio.club/sitemap.xml
 Crawl-delay: 1
 
 # 允许搜索引擎访问所有内容
-# Cognote - 音乐教育与视奏工具
+# IC Studio - 音乐教育与视奏工具

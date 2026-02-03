@@ -10,7 +10,7 @@
     gateway: 'https://zpayz.cn/submit.php',
     pid: '2025090607243839', 
     key: 'UoA5vDBCe51EyVzdK2Fu2udBO1SAadjN',
-    money: '48.00'
+    money: '128.00'
   };
 
   // MD5 (压缩版)

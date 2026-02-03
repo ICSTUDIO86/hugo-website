@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+<head>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>现代调式入门：从 C 大调出发理解七种声音 - IC Studio </title>
+
+<meta name="description" content="IC Studio - 专业音乐教育平台。提供吉他和声、作曲技巧、即兴演奏教学，以及专业级视奏训练工具。从吉他 Drop2、Shell Voicing 到五声音阶、布鲁斯即兴，助力音乐学习者快速提升技能。| IC Studio - Professional music education platform featuring guitar voicings, composition techniques, improvisation lessons, and professional sight reading training tools.">
+
+<link rel="canonical" href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/diaoshi-rumen-c-major-seven-modes-zh/">
+
+<meta property="og:title" content="现代调式入门：从 C 大调出发理解七种声音 - IC Studio">
+<meta property="og:description" content="IC Studio - 专业音乐教育平台。提供吉他和声、作曲技巧、即兴演奏教学，以及专业级视奏训练工具。从吉他 Drop2、Shell Voicing 到五声音阶、布鲁斯即兴，助力音乐学习者快速提升技能。| IC Studio - Professional music education platform featuring guitar voicings, composition techniques, improvisation lessons, and professional sight reading training tools.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/diaoshi-rumen-c-major-seven-modes-zh/">
+<meta property="og:site_name" content="IC Studio">
+<meta property="og:image" content="https://icstudio.club/images/ICLOGO.png">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="现代调式入门：从 C 大调出发理解七种声音 - IC Studio">
+<meta name="twitter:description" content="IC Studio - 专业音乐教育平台。提供吉他和声、作曲技巧、即兴演奏教学，以及专业级视奏训练工具。从吉他 Drop2、Shell Voicing 到五声音阶、布鲁斯即兴，助力音乐学习者快速提升技能。| IC Studio - Professional music education platform featuring guitar voicings, composition techniques, improvisation lessons, and professional sight reading training tools.">
+<meta name="twitter:image" content="https://icstudio.club/images/ICLOGO.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https:\/\/icstudio.club\/#organization",
+      "name": "IC Studio",
+      "url": "https:\/\/icstudio.club\/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https:\/\/icstudio.club\/images/ICLOGO.png"
+      },
+      "description": "IC Studio - 专业音乐教育平台。提供吉他和声、作曲技巧、即兴演奏教学，以及专业级视奏训练工具。从吉他 Drop2、Shell Voicing 到五声音阶、布鲁斯即兴，助力音乐学习者快速提升技能。| IC Studio - Professional music education platform featuring guitar voicings, composition techniques, improvisation lessons, and professional sight reading training tools.",
+      "sameAs": [
+        "https://www.youtube.com/@ICStudio86",
+        "https://space.bilibili.com/376362605"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https:\/\/icstudio.club\/#website",
+      "url": "https:\/\/icstudio.club\/",
+      "name": "IC Studio",
+      "description": "IC Studio - 专业音乐教育平台。提供吉他和声、作曲技巧、即兴演奏教学，以及专业级视奏训练工具。从吉他 Drop2、Shell Voicing 到五声音阶、布鲁斯即兴，助力音乐学习者快速提升技能。| IC Studio - Professional music education platform featuring guitar voicings, composition techniques, improvisation lessons, and professional sight reading training tools.",
+      "publisher": {
+        "@id": "https:\/\/icstudio.club\/#organization"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https:\/\/icstudio.club\/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      },
+      "inLanguage": "zh-CN"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https:\/\/icstudio.club\/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9\/diaoshi-rumen-c-major-seven-modes-zh\/#webpage",
+      "url": "https:\/\/icstudio.club\/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9\/diaoshi-rumen-c-major-seven-modes-zh\/",
+      "name": "现代调式入门：从 C 大调出发理解七种声音",
+      "headline": "现代调式入门：从 C 大调出发理解七种声音",
+      "description": "IC Studio - 专业音乐教育平台。提供吉他和声、作曲技巧、即兴演奏教学，以及专业级视奏训练工具。从吉他 Drop2、Shell Voicing 到五声音阶、布鲁斯即兴，助力音乐学习者快速提升技能。| IC Studio - Professional music education platform featuring guitar voicings, composition techniques, improvisation lessons, and professional sight reading training tools.",
+      "isPartOf": {
+        "@id": "https:\/\/icstudio.club\/#website"
+      },
+      "publisher": {
+        "@id": "https:\/\/icstudio.club\/#organization"
+      },
+      "inLanguage": "zh-CN",
+      "datePublished": "2025-10-12T00:00:00Z",
+      "image": {
+        "@type": "ImageObject",
+        "url": "https:\/\/icstudio.club\/images\/ICLOGO.png"
+      }}]
+}
+</script>
+  <link rel="stylesheet" href="/css/style.css">
+
+
+<link rel="icon" type="image/png" href="/ICLOGO.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/ICLOGO.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/ICLOGO.png">
+<link rel="icon" type="image/png" sizes="64x64" href="/ICLOGO.png">
+<meta name="msapplication-TileImage" content="/ICLOGO.png">
+<meta name="theme-color" content="#ffffff">
+
+<script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
+
+
+
+<script 
+  src="https://www.paypal.com/sdk/js?client-id=BAAdjqh0FzrMwRH9fqeYMsT9ovDAkGo0OZUipoGljE5ZYJJcQ51wkmAaZhLoY0gR5f6nHlu9hhm6GjBgBE&components=hosted-buttons&disable-funding=venmo&currency=EUR">
+</script>
+
+</head>
+<body>
+  <header class="py-6 border-b"><div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col">
+	<div class="flex items-center">
+		<div class="flex items-center">
+			<button class="flex items-center space-x-2 rounded-full border py-1 pr-[5px] pl-3 group bg-zinc-100 hover:bg-zinc-200 toggle-button" data-target="menu-bar">
+				<svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+					<path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"></path>
+				</svg>
+				<span class="bg-blue-500 fill-white rounded-full p-1.5">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="group-hover:animate-spin bi bi-egg-fried fill-white" viewBox="0 0 16 16">
+						<ellipse cx="8" cy="8" rx="6.8" ry="6.8" stroke="#FFFFFF" fill="none" stroke-width="2"></ellipse>
+						<path d="M7.5 8.3c.47.03 1.48-.05 2.15-.01.3.01.47.12.54.14.71.31 1.17 1.19.93 1.96-.09.3-.34.72-.68.94-.4.26-.98.27-1.86.27-.35-.01-.52.08-1.09-.12-1.27-.44-1.79-1.28-1.91-2.31-.08-.65.11-1.28.44-1.81 1.15-1.66 2.78-1.1 4.56-1.23.63-.08.96-.4 1.11-.78.14-.35.13-.72.12-1.05-.02-.9-.43-1.39-1.23-1.49-.13-.02-.43.02-.43.02-.09.06-.22-.03-.59.33-.23.23-.35.37-.43.64-.06.2-.03 3.1-.03 3.2-.01.3-.03 3.58-.01 3.78.05.36-.04 1.01.01 1.62.1.81-.03 1.53-1 1.59-.52.03-.8-.4-.88-.76-.01-.06-.02-.12-.02-.18" 
+          transform="translate(0.8, 1) scale(0.8)" 
+          stroke="#FFFFFF" fill="none" stroke-width="0.96"></path>
+				</svg>
+				</span>
+			</button>
+			<div class="relative rounded-full py-1.5 px-6 bg-zinc-100 hover:bg-zinc-200 text-xl font-bold uppercase mx-2">
+				<h2><a class="before:content-[''] before:z-10 before:top-0 before:right-0 before:left-0 before:bottom-0 before:absolute before:pointer-events-auto" href="https://icstudio.club/">IC Studio</a></h2>
+			</div>
+		</div>
+		<div class="flex items-center ml-auto">
+			<button class="flex items-center rounded-full p-3 bg-zinc-100 hover:bg-zinc-200 toggle-button" data-target="search-bar">
+				<svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+					<path id="path1" class="transition-all ease-linear" d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
+					<path id="path2" class="transition-all ease-linear hidden" d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"></path>
+				</svg>
+			</button>
+		</div>
+	</div>
+  <nav id="menu-bar" class="block mt-3 close">
+    <ul class="flex items-center flex flex-nowrap whitespace-nowrap overflow-x-auto space-x-4">
+    <li class="my-2">
+      <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/">主页</a>
+    </li>
+    <li class="my-2">
+      <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="/blog/">Blog</a>
+    </li>
+    <li class="my-2">
+      <a class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200" href="https://icstudio.club/tools/melody-generator.html">视奏工具</a>
+    </li>
+    </ul>
+  </nav>
+<div id="search-bar" class="block mt-3 close relative">
+	<form id="search" class="flex items-stretch">
+		<input class="w-full block px-6 py-2 rounded-l-full focus:outline-none border border-zinc-200" type="text" placeholder="搜索文章内容...">
+		<button type="submit" class="flex items-center px-7 py-2.5 rounded-r-full border border-zinc-200 hover:bg-zinc-50 transition-colors">
+			<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="group-hover:animate-pulse" viewBox="0 0 16 16">
+				<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
+			</svg>
+		</button>
+	</form>
+</div>
+
+</div></header>
+  <main class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8"><script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "@id": "https:\/\/icstudio.club\/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9\/diaoshi-rumen-c-major-seven-modes-zh\/#article",
+  "headline": "现代调式入门：从 C 大调出发理解七种声音",
+  "name": "现代调式入门：从 C 大调出发理解七种声音",
+  "description": "如果你听过 Dorian、Mixolydian、Lydian、Phrygian 却还分不清它们与大小调的区别，这篇文章会用最基础的方式带你搞懂：什么是调式、如何从 C 大调推导七个调式、它们在现代音乐里的声音特点与例子，以及从主和弦与和声角度辨别一段音乐的调式色彩。\n为什么要知道？ 在即兴方面，如果你了解并且能熟练运用 …",
+  "url": "https:\/\/icstudio.club\/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9\/diaoshi-rumen-c-major-seven-modes-zh\/",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https:\/\/icstudio.club\/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9\/diaoshi-rumen-c-major-seven-modes-zh\/"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Igor Chen",
+    "url": "https:\/\/icstudio.club\/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "IC Studio",
+    "url": "https:\/\/icstudio.club\/",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https:\/\/icstudio.club\/images/ICLOGO.png"
+    }
+  },
+  "datePublished": "2025-10-12T00:00:00Z",
+  "dateModified": "2025-10-12T00:00:00Z",
+  "inLanguage": "zh-CN",
+  "wordCount":  124 ,
+  "articleSection": "音乐教学",
+  "about": {
+    "@type": "Thing",
+    "name": "音乐教育",
+    "description": "吉他、作曲、即兴、音乐理论教学"
+  },
+  "educationalLevel": "初级到高级",
+  "teaches": "现代调式入门：从 C 大调出发理解七种声音"
+}
+</script>
+
+<div class="max-w-4xl mx-auto px-4">
+  
+  <div class="w-full">
+    <article class="prose lg:prose-lg mx-auto">
+
+      
+      <header class="not-prose">
+
+        
+        <h1 id="title" class="text-4xl font-bold leading-normal text-center mb-4">
+          现代调式入门：从 C 大调出发理解七种声音
+        </h1>
+
+      
+      <div class="flex flex-wrap items-center gap-2 text-sm text-zinc-500 mb-6">
+        <time datetime="2025-10-12 00:00:00 &#43;0000 UTC">2025年10月12日</time>
+        <span>；</span>
+        <span>阅读时间约 10 分钟</span>
+      </div>
+
+        
+        
+
+      </header>
+
+      
+      <div class="prose lg:prose-lg max-w-none mb-8">
+        <p>如果你听过 Dorian、Mixolydian、Lydian、Phrygian 却还分不清它们与<strong>大小调</strong>的区别，这篇文章会用最基础的方式带你搞懂：什么是<strong>调式</strong>、如何从 C 大调推导七个调式、它们在现代音乐里的声音特点与例子，以及从<strong>主和弦</strong>与和声角度辨别一段音乐的调式色彩。</p>
+<h2 id="为什么要知道">为什么要知道？</h2>
+<p>在即兴方面，如果你了解并且能熟练运用这些音阶，你的整个<strong>即兴</strong>思路会上升一个等级，Solo 思维不会只停留在大小调，甚至你的思维模式可能都会有翻天覆地的改变，让你创造出更有色彩、与众不同的乐句（详细用法会在之后的视频里说明，目前只需搞懂它们是什么）。在<strong>作曲</strong>方面，把这些音阶放进你的曲子，音乐气氛会非常不一样（后面的例子里会做对比）。把它们学起来，纳入你以后的音乐工具箱里。</p>
+<h2 id="现代调式的结构">现代调式的结构</h2>
+<p>什么是调式？在今天这个语境下，简单来说，调式指的是<strong>以不同的音作为起点来演奏同一个音阶</strong>，于是每个由同一音阶派生出的模式都会有不同的感觉与特征。</p>
+<p>例如有一个<strong>C 大调音阶</strong>。如果要算出 C 大调的其他调式，就在这个音阶里，以不同的音作为起点来演奏同一个 C 大调，也就是把每个音当作新的主音，于是得到新的音阶排列模式。原本是&quot;<strong>全全半全全全半</strong>&quot;；当以 D 为主音时，变成&quot;全半全全全半全&quot;；以 E 为主音时，变成&quot;半全全全半全全&quot;。以此类推，一共得到七种不同的全半关系组合。</p>
+<p>以 C 开头的模式叫 Ionian（一级调式）；以 D 开头叫 Dorian（二级调式）；依次为三级调式 Phrygian、四级调式 Lydian、五级调式 Mixolydian、六级调式 Aeolian、七级调式 Locrian。其中，Ionian 和 Aeolian 分别就是我们常说的<strong>自然大调音阶</strong>和<strong>自然小调音阶</strong>。</p>
+<h2 id="音阶和声的特征">音阶和声的特征</h2>
+<p>如果把这些音阶都平移到以 C 为主音来比较，可以更清楚地听到它们的特征。由于<strong>大小调体系</strong>长期是音乐的核心，写出来的曲子也极为普遍，所以这些调式音阶的很多特点，都是建立在它们与大小调的<strong>不同之处</strong>上。</p>
+<p>这些主音与第三音形成小三度的音阶，会有小调的听感，但又与自然小调略有不同。比如说<strong>Dorian 调式</strong>，相较自然小调，它的六度音是一个大六度而不是小六度，所以这种&quot;<strong>小调带有大六度的听感</strong>&ldquo;就是 Dorian 的专属声音。Daft Punk 的 Get Lucky 就是一个很好的例子；对比用了小六度的版本，这段旋律会突然变得压抑，之前的希望感或幸运感仿佛没有了，再听一遍原版差异就很明显。</p>
+<p>再来是<strong>Phrygian 调式</strong>。比起自然小调，这个音阶的第二个音与主音形成的是<strong>小二度</strong>，而不是大二度；&ldquo;小调带小二度的听感&quot;正是 Phrygian 的特点。一个非常经典的说唱伴奏 Riff 就是用 Phrygian 写的：先听原版的钢琴部分，再对比如果改用普通的小调会怎样——是不是 Hip-Hop 那种&quot;脏脏的&quot;或街头的感觉突然没有了。</p>
+<p>然后是几乎把很多音都降过的 <strong>Locrian</strong>。它的特色音是<strong>降五音</strong>，这也导致它的主和弦是一个减和弦，而不是小和弦。比起流行音乐，这个音阶更常在一些重金属或游戏配乐里听到，例如这首。</p>
+<p>现在来到有大调听感的音阶（主音与三音形成大三度）。例如<strong>Lydian 调式</strong>，它的特色音是音阶里的<strong>升四度</strong>，让原本就有大调声响的 Lydian 听起来更亮。李荣浩的《落俗》间奏部分就有一段 Lydian 的和声进行。</p>
+<p>最后是五级调式 <strong>Mixolydian</strong>。它的特色音是音阶里的<strong>降七音</strong>，这个降七音让主和弦（第一和弦）成为一个属和弦。在流行歌里，I - bVII - IV 这种和声进行里的 bVII，就是从 Mixolydian 调式里借来的。经典例子是 The Beatles 的《Hey Jude》。</p>
+<h2 id="和大小调的区别">和大小调的区别</h2>
+<p>你可能会问：在一首歌里，旋律不会乖乖地顺着音阶上下走让我知道主音在哪，我要怎么区分 E 的 Phrygian 和 C 的 Ionian 呢？事实是，分辨一首歌或一个段落的调式色彩，不能只看旋律，得看<strong>和声</strong>，或者和声与旋律之间的搭配。</p>
+<p>如果要让观众听出这是 E Phrygian，就需要强调两个元素：一是<strong>特色音</strong>，二是<strong>主和弦</strong>。在这个情况下，可以在 Em 和弦上强调那个 F，而不是把它当作经过音或邻音。虽然之前的视频里说过，这种与和声音构成小二度的音通常是不可用的和声外音，但当你处在一个 E Phrygian 的音乐片段里时，这个 F 不仅是可用的和弦外音，也是构成这个调式的特色音。也可以听听在 C Ionian 的歌曲里，如果在 Em 上面强调这个 F，会听起来怎样。</p>
+<h2 id="结尾">结尾</h2>
+<p>以上就是今天关于调式音阶的初级课程。这些调式除了名字之外，无论用法还是声响，都在现代音乐里非常常见：游戏配乐、电影配乐、流行音乐里都能看到它们的身影。如果这篇内容对你有帮助，请点赞并订阅频道，这是支持我们最直接且免费的方式；也欢迎在 Bilibili 给频道充电，用实际行动支持 IC STUDIO。若你是在 YouTube 上看到，也别忘了打开小铃铛，就不会错过任何新视频。这里是 IC STUDIO，我们下期再见！</p>
+<h2 id="喜欢这篇文章吗">喜欢这篇文章吗？</h2>
+<p>觉得内容有用？太棒了！想更进一步提升音乐技能，可以看看 <a href="/sight-reading-tool/">IC 视奏工具</a>。它专注训练视奏能力，帮你练琴更有方向。同时，你的支持也是对 IC Studio 最大的鼓励！</p>
+
+      </div>
+
+    
+    
+    
+    
+      
+    
+      
+        
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+    
+<nav class="flex justify-start items-start w-full text-base not-prose">
+  
+  <div class="text-left">
+    
+      
+      <a href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/use-real-book-effectively-zh/" class="group block p-4">
+        <div class="text-sm text-black mb-1">← 上一篇</div>
+        <div class="font-semibold text-black max-w-xs truncate group-hover:underline">一本书，全面升级你的音乐力</div>
+      </a>
+    
+  </div>
+
+  
+  <div class="text-right ml-auto">
+    
+      
+      <a href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-sight-reading-shortest-path-zh/" class="group block p-4">
+        <div class="text-sm text-black mb-1">下一篇 →</div>
+        <div class="font-semibold text-black max-w-xs truncate group-hover:underline">拿到谱子就能弹的技能是怎么炼成的？吉他视奏大全</div>
+      </a>
+    
+  </div>
+</nav>
+
+
+      
+      <div class="text-center mt-8">
+        <a href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/" class="inline-flex items-center px-6 py-3 text-black hover:text-gray-600 rounded-full transition-colors">
+          ← 返回列表
+        </a>
+      </div>
+
+    </article>
+  </div>
+
+  
+  <div class="hidden lg:block lg:col-span-1">
+    
+  </div>
+
+</div>
+</main>
+  <footer class="bg-zinc-100 py-10 md:py-14"><footer class="bg-zinc-100 py-10 md:py-14"><div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+
+  <div class="flex flex-wrap space-y-6 mb-4">
+  
+    <div class="w-full md:w-3/5 flex flex-col space-y-4 md:pr-8 lg:pr-10">
+  
+    <a class="flex items-center group" href="https://icstudio.club/">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="mr-2 group-hover:animate-spin" viewBox="0 0 24 24">
+        <path d="M13.75 2C13.75 1.58579 13.4142 1.25 13 1.25C12.5858 1.25 12.25 1.58579 12.25 2V14.5359C11.4003 13.7384 10.2572 13.25 9 13.25C6.37665 13.25 4.25 15.3766 4.25 18C4.25 20.6234 6.37665 22.75 9 22.75C11.6234 22.75 13.75 20.6234 13.75 18V6.243C14.9875 7.77225 16.8795 8.75 19 8.75C19.4142 8.75 19.75 8.41421 19.75 8C19.75 7.58579 19.4142 7.25 19 7.25C16.1005 7.25 13.75 4.8995 13.75 2Z"/>
+        </svg>
+      <span class="text-2xl font-semibold uppercase">IC STUDIO</span>
+    </a>
+  
+    <p class="font-semibold">
+      一起在音乐的道路上前进吧！
+    </p>
+  
+    </div>
+  
+    <div class="self-center flex flex-col w-full md:w-2/5">
+  
+    <ul id="social-media" class="flex items-center space-x-4">
+      <li>
+        <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2" href="https://www.youtube.com/@ICStudio86#" target="_blank" rel="noopener noreferrer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M23.498 6.186a2.91 2.91 0 0 0-2.049-2.048C19.653 3.5 12 3.5 12 3.5s-7.653 0-9.449.638A2.91 2.91 0 0 0 .502 6.186C0 8.01 0 12 0 12s0 3.99.502 5.814a2.91 2.91 0 0 0 2.049 2.048C4.347 20.5 12 20.5 12 20.5s7.653 0 9.449-.638a2.91 2.91 0 0 0 2.049-2.048C24 15.99 24 12 24 12s0-3.99-.502-5.814ZM9.75 15.568V8.432L15.568 12Z"/>
+          </svg> 
+        </a>
+      </li>
+      <li>
+        <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2" href="https://space.bilibili.com/376362605" target="_blank" rel="noopener noreferrer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 1024 1024">
+            <path d="M800 192h-72.3l59.9-128.7c4.6-10-0.2-21.7-10.2-26.3-10-4.6-21.7 0.2-26.3 10.2L683.8 192H340.2L272.9 47.2c-4.6-10-16.3-14.8-26.3-10.2s-14.8 16.3-10.2 26.3L296.3 192H224c-70.7 0-128 57.3-128 128v448c0 70.7 57.3 128 128 128h576c70.7 0 128-57.3 128-128V320c0-70.7-57.3-128-128-128zM896 768c0 53-43 96-96 96H224c-53 0-96-43-96-96V320c0-53 43-96 96-96h576c53 0 96 43 96 96v448zM384 640c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32zm256 0c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32z"/>
+            </svg>
+              
+        </a>
+      </li>
+    </ul>
+  
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="border-t pt-4 flex justify-center items-center">
+    <p class="text-sm text-center"> Copyright © 2025. All rights reserved. <a href="https://icstudio.club" target="_blank" rel="noopener">Igor Chen - icstudio.club</a></p>
+  </div>
+  
+  </div>
+  </footer></footer>
+      <script defer src="/js/insertoggle.16f28c640eabc302d4e07ae8e8fbfd9c0d1d33dbd795d1e2c8c4ba04056e4da8.js" integrity="sha256-FvKMZA6rwwLU4Hro6Pv9nA0dM9vXldHiyMS6BAVuTag=" crossorigin="anonymous"></script>
+
+
+<script src="https://unpkg.com/lunr@2.3.9/lunr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lunr-languages@1.10.0/lunr.zh.js"></script>
+      <script defer src="/js/search.d561e1460adb95b88f5133679fdbf532c639fc17d86c4a3443a06438166dec88.js" integrity="sha256-1WHhRgrblbiPUTNnn9v1MsY5/BfYbEo0Q6BkOBZt7Ig=" crossorigin="anonymous"></script>
+  
+</body>
+</html>

@@ -156,27 +156,27 @@
                     <div style="display: grid; gap: 10px;">
                         <button class="popup-download-btn" data-platform="windows-x64"
                                style="display: block; background: #f0f9ff; color: #1e40af; padding: 12px 20px; border: 2px solid #93c5fd; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
-                               onmouseover="this.style.background='#1e40af'; this.style.color='white';" 
+                               onmouseover="this.style.background='#1e40af'; this.style.color='white';"
                                onmouseout="this.style.background='#f0f9ff'; this.style.color='#1e40af';">
-                            💻 Windows x64 (73.2MB)
+                            💻 Windows 安装版 (142MB)
+                        </button>
+                        <button class="popup-download-btn" data-platform="macos-arm64"
+                               style="display: block; background: #fef3c7; color: #92400e; padding: 12px 20px; border: 2px solid #fbbf24; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
+                               onmouseover="this.style.background='#92400e'; this.style.color='white';"
+                               onmouseout="this.style.background='#fef3c7'; this.style.color='#92400e';">
+                            🍎 macOS Apple Silicon (94MB)
                         </button>
                         <button class="popup-download-btn" data-platform="macos-x64-dmg"
                                style="display: block; background: #f0fdf4; color: #166534; padding: 12px 20px; border: 2px solid #86efac; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
-                               onmouseover="this.style.background='#166534'; this.style.color='white';" 
+                               onmouseover="this.style.background='#166534'; this.style.color='white';"
                                onmouseout="this.style.background='#f0fdf4'; this.style.color='#166534';">
-                            🍎 macOS Intel (DMG - 86.2MB)
+                            🍎 macOS Intel (99MB)
                         </button>
-                        <button class="popup-download-btn" data-platform="macos-arm64-zip"
-                               style="display: block; background: #fef3c7; color: #92400e; padding: 12px 20px; border: 2px solid #fbbf24; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
-                               onmouseover="this.style.background='#92400e'; this.style.color='white';" 
-                               onmouseout="this.style.background='#fef3c7'; this.style.color='#92400e';">
-                            🍎 macOS Apple Silicon (ZIP - 86.6MB)
-                        </button>
-                        <button class="popup-download-btn" data-platform="linux-appimage"
+                        <button class="popup-download-btn" data-platform="linux-arm64-deb"
                                style="display: block; background: #ede9fe; color: #6b21a8; padding: 12px 20px; border: 2px solid #c084fc; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
-                               onmouseover="this.style.background='#6b21a8'; this.style.color='white';" 
+                               onmouseover="this.style.background='#6b21a8'; this.style.color='white';"
                                onmouseout="this.style.background='#ede9fe'; this.style.color='#6b21a8';">
-                            🐧 Linux (AppImage - 77.6MB)
+                            🐧 Linux ARM64 DEB (67MB)
                         </button>
                     </div>
                     <p style="font-size: 12px; color: #888; margin-top: 15px;">下载完成后，使用以上访问码激活完整版功能</p>
@@ -274,7 +274,7 @@
 
         window.goToSightReadingTool = function() {
             window.closeSuccessPopup();
-            window.location.href = '/tools/sight-reading-generator.html';
+            window.location.href = '/tools/melody-generator.html';
         };
 
         // 创建和显示界面

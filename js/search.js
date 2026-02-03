@@ -188,7 +188,7 @@ function displaySearchResults(results, query) {
     }
     
     if (results.length === 0) {
-        const suggestions = ['视奏', '音乐', '吉他', 'Cognote', '教学'];
+        const suggestions = ['视奏', '音乐', '吉他', 'IC Studio', '教学'];
         const randomSuggestions = suggestions.sort(() => 0.5 - Math.random()).slice(0, 3);
 
         resultsContainer.innerHTML = `
