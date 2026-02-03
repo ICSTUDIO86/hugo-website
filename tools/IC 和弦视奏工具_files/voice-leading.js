@@ -1,5 +1,5 @@
 /*!
- * IC Studio - Voice Leading 分析器
+ * Cognote - Voice Leading 分析器
  * Voice Leading Analyzer
  *
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club

@@ -21,6 +21,56 @@
     C: 0, 'C#': 1, Db: 1, D: 2, 'D#': 3, Eb: 3, E: 4, F: 5, 'F#': 6, Gb: 6,
     G: 7, 'G#': 8, Ab: 8, A: 9, 'A#': 10, Bb: 10, B: 11, Cb: 11
   };
+  const RELATIVE_MAJOR_BY_MINOR = {
+    Am: 'C',
+    Em: 'G',
+    Bm: 'D',
+    'F#m': 'A',
+    'C#m': 'E',
+    'G#m': 'B',
+    'D#m': 'F#',
+    'A#m': 'C#',
+    Dm: 'F',
+    Gm: 'Bb',
+    Cm: 'Eb',
+    Fm: 'Ab',
+    Bbm: 'Db',
+    Ebm: 'Gb'
+  };
+  const SHARP_KEYS = new Set(['G', 'D', 'A', 'E', 'B', 'F#', 'C#']);
+  const FLAT_KEYS = new Set(['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb']);
+
+  function getRelativeMajorKey(keySignature) {
+    if (!keySignature || typeof keySignature !== 'string') return 'C';
+    if (!keySignature.endsWith('m')) return keySignature;
+    return RELATIVE_MAJOR_BY_MINOR[keySignature] || keySignature.replace(/m$/, '');
+  }
+
+  function getKeyAccidentalBias(keySignature) {
+    const majorKey = getRelativeMajorKey(keySignature || 'C');
+    if (SHARP_KEYS.has(majorKey)) return '#';
+    if (FLAT_KEYS.has(majorKey)) return 'b';
+    return '';
+  }
+
+  function getNoteAccidentalPreference(note) {
+    if (!note || typeof note !== 'object') return null;
+    if (note.preferredAccidental === '#' || note.preferredAccidental === 'b') {
+      return note.preferredAccidental;
+    }
+    if (typeof note.alter === 'number' && note.alter !== 0) {
+      return note.alter > 0 ? '#' : 'b';
+    }
+    return null;
+  }
+
+  function formatJianpuKeyLabel(keySignature) {
+    if (!keySignature || typeof keySignature !== 'string') return '1 = C';
+    if (keySignature.endsWith('m')) {
+      return `6 = ${keySignature.replace(/m$/, '')}`;
+    }
+    return `1 = ${keySignature}`;
+  }
 
   let lastRenderedMelody = null;
   let currentRenderer = null;
@@ -228,6 +278,13 @@
             if (md && builder) {
               nextData = { ...data, score: builder(md, general, true) };
             }
+            const infoKey = nextData?.info?.key;
+            if (typeof infoKey === 'string' && infoKey) {
+              const displayKey = getRelativeMajorKey(infoKey);
+              if (displayKey && infoKey !== displayKey) {
+                nextData = { ...nextData, info: { ...(nextData.info || {}), key: displayKey } };
+              }
+            }
             window.__lastSNLoadData = nextData;
           } catch (e) {
             console.warn('patched loadData failed', e);
@@ -430,25 +487,38 @@
   }
 
   // 兜底：简谱音高映射（当 simple-notation 未加载时仍能输出）
-  function mapMidiToSimpleNotation(midi, keySignature = 'C') {
-    const tonicPc = KEY_TO_TONIC[keySignature] ?? 0;
-    const MAJOR_SCALE_INTERVALS = { 0: 1, 2: 2, 4: 3, 5: 4, 7: 5, 9: 6, 11: 7 };
+  function mapMidiToSimpleNotation(midi, keySignature = 'C', accidentalPreference = null) {
+    const mappingKey = getRelativeMajorKey(keySignature);
+    const tonicPc = KEY_TO_TONIC[mappingKey] ?? 0;
+    const scaleIntervals = [0, 2, 4, 5, 7, 9, 11];
     const tonicMidiRef = 60 + tonicPc; // C4 基准
     const rel = midi - tonicMidiRef;
     const octaveOffset = Math.floor(rel / 12);
-    const basePitch = tonicMidiRef + octaveOffset * 12;
-    const interval = ((midi - basePitch) % 12 + 12) % 12;
-    let number = MAJOR_SCALE_INTERVALS[interval];
+    const interval = ((midi % 12) - tonicPc + 12) % 12;
+
     let accidental = '';
+    let number = null;
+    const scaleIndex = scaleIntervals.indexOf(interval);
+    if (scaleIndex !== -1) {
+      number = scaleIndex + 1;
+    } else {
+      let sharpDegree = null;
+      let flatDegree = null;
+      scaleIntervals.forEach((val, idx) => {
+        if ((val + 1) % 12 === interval) sharpDegree = idx + 1;
+        if ((val + 11) % 12 === interval) flatDegree = idx + 1;
+      });
+      let bias = accidentalPreference || getKeyAccidentalBias(keySignature);
+      if (!bias) bias = sharpDegree ? '#' : 'b';
+      if (bias === '#' && !sharpDegree && flatDegree) bias = 'b';
+      if (bias === 'b' && !flatDegree && sharpDegree) bias = '#';
+      accidental = bias || '';
+      number = bias === '#' ? (sharpDegree ?? flatDegree) : (flatDegree ?? sharpDegree);
+    }
+
     if (!number) {
-      switch (interval) {
-        case 1: number = 1; accidental = '#'; break;
-        case 3: number = 3; accidental = '#'; break;
-        case 6: number = 4; accidental = '#'; break;
-        case 8: number = 6; accidental = '#'; break;
-        case 10: number = 7; accidental = '#'; break;
-        default: number = 1; accidental = '#'; break;
-      }
+      number = 1;
+      accidental = accidental || '#';
     }
     const octaveMarks = octaveOffset > 0 ? '^'.repeat(octaveOffset) : (octaveOffset < 0 ? '_'.repeat(Math.abs(octaveOffset)) : '');
     return `${accidental}${number}${octaveMarks}`;
@@ -642,20 +712,33 @@
         return { groupNotes, nextIndex: j };
       };
 
-      const formatSym = (midi, len) => {
-        const rawSym = (snGeneral && typeof snGeneral.midiToSimpleNote === 'function'
-          ? snGeneral.midiToSimpleNote(midi)
-          : mapMidiToSimpleNotation(midi, melodyData.config?.keySignature || 'C')) || '1';
+      const resolveMidi = (noteOrMidi) => {
+        if (typeof noteOrMidi === 'number') return noteOrMidi;
+        if (noteOrMidi && typeof noteOrMidi === 'object') return midiFromNote(noteOrMidi);
+        return 60;
+      };
+      const formatSym = (noteOrMidi, len) => {
+        const midi = resolveMidi(noteOrMidi);
+        const pref = getNoteAccidentalPreference(noteOrMidi);
+        const rawSym = mapMidiToSimpleNotation(
+          midi,
+          melodyData.config?.keySignature || 'C',
+          pref
+        ) || '1';
         const m = rawSym.match(/^([#b]*\d)([\^_]+)?$/);
         const core = m ? m[1] : rawSym;
         const octave = m ? (m[2] || '') : '';
         const suffix = formatDurationSuffix(len);
         return `${core}${suffix}${octave}`;
       };
-      const formatCore = (midi) => {
-        const rawSym = (snGeneral && typeof snGeneral.midiToSimpleNote === 'function'
-          ? snGeneral.midiToSimpleNote(midi)
-          : mapMidiToSimpleNotation(midi, melodyData.config?.keySignature || 'C')) || '1';
+      const formatCore = (noteOrMidi) => {
+        const midi = resolveMidi(noteOrMidi);
+        const pref = getNoteAccidentalPreference(noteOrMidi);
+        const rawSym = mapMidiToSimpleNotation(
+          midi,
+          melodyData.config?.keySignature || 'C',
+          pref
+        ) || '1';
         const m = rawSym.match(/^([#b]*\d)([\^_]+)?$/);
         const core = m ? m[1] : rawSym;
         const octave = m ? (m[2] || '') : '';
@@ -708,8 +791,7 @@
               innerTokens.push(`0${formatDurationSuffix(baseLen)}`);
               return;
             }
-            const midi = midiFromNote(item);
-            innerTokens.push(formatSym(midi, baseLen));
+            innerTokens.push(formatSym(item, baseLen));
           });
           if (innerTokens.length) {
             const tupletCount = getTripletMeta(groupNotes[0]).tupletCount || 3;
@@ -758,7 +840,7 @@
             if (isSame && isTieSeg) {
               totalQ += curLen;
               totalLen += curLen;
-              parts.push(formatSym(curMidi, curLen));
+              parts.push(formatSym(cur, curLen));
               const isEnd = curTie === 'stop';
               j++;
               if (isEnd) break;
@@ -766,15 +848,15 @@
             }
             break;
           }
-          const emitLong = (midiVal, lengthVal) => {
-            if (lengthVal >= 3.5 - EPS) { pushTokens(formatCore(midiVal), '-', '-', '-'); return; }
-            if (lengthVal >= 2.5 - EPS) { pushTokens(formatCore(midiVal), '-', '-'); return; }
-            if (lengthVal >= 1.75 - EPS) { pushTokens(formatCore(midiVal), '-'); return; }
-            pushToken(formatSym(midiVal, lengthVal));
+          const emitLong = (noteRef, lengthVal) => {
+            if (lengthVal >= 3.5 - EPS) { pushTokens(formatCore(noteRef), '-', '-', '-'); return; }
+            if (lengthVal >= 2.5 - EPS) { pushTokens(formatCore(noteRef), '-', '-'); return; }
+            if (lengthVal >= 1.75 - EPS) { pushTokens(formatCore(noteRef), '-'); return; }
+            pushToken(formatSym(noteRef, lengthVal));
           };
           // 长时值直接用“-”表示；短时值保留tie方括号
           if (totalLen > 0 && totalLen >= 1.75 - EPS) {
-            emitLong(midi, totalLen);
+            emitLong(note, totalLen);
             i = j - 1;
             continue;
           }
@@ -787,11 +869,11 @@
 
         // 非 tie：长时值用 “-” 延长
         totalQ += len;
-        if (len >= 3.5 - EPS) { pushTokens(formatCore(midi), '-', '-', '-'); continue; }
-        if (len >= 2.5 - EPS) { pushTokens(formatCore(midi), '-', '-'); continue; }
-        if (len >= 1.75 - EPS) { pushTokens(formatCore(midi), '-'); continue; }
+        if (len >= 3.5 - EPS) { pushTokens(formatCore(n), '-', '-', '-'); continue; }
+        if (len >= 2.5 - EPS) { pushTokens(formatCore(n), '-', '-'); continue; }
+        if (len >= 1.75 - EPS) { pushTokens(formatCore(n), '-'); continue; }
 
-        pushToken(formatSym(midi, len));
+        pushToken(formatSym(n, len));
       }
 
       // 若小节未填满（生成器偶尔不足拍），补休止符至满拍
@@ -1072,7 +1154,8 @@
     const [num, den] = (config.timeSignature || '4/4').split('/').map((v) => parseInt(v, 10));
     const measureQ = num * (4 / den || 1);
     const tempo = melodyData.tempo || 80;
-    const tonic = KEY_TO_TONIC[config.keySignature] ?? 0;
+    const mappingKey = getRelativeMajorKey(config.keySignature);
+    const tonic = KEY_TO_TONIC[mappingKey] ?? 0;
 
     let notes = [];
     // 附点折叠（仅用于显示）：同音相邻，链和为标准附点时值
@@ -1274,7 +1357,10 @@
     if (!scoreEl) return;
 
     // 额外防护：当临时记号概率为0且为大调时，去除任何残留的alter，避免意外升降号
-    const accRate = (melodyData.config && melodyData.config.accidentalRate) ?? (window.userSettings?.accidentalRate ?? 0);
+    const fallbackAccRate = (typeof userSettings !== 'undefined' && typeof userSettings.accidentalRate === 'number')
+      ? userSettings.accidentalRate
+      : (window.userSettings?.accidentalRate ?? 0);
+    const accRate = (melodyData.config && melodyData.config.accidentalRate) ?? fallbackAccRate;
     if (accRate === 0 && Array.isArray(melodyData.melody)) {
       melodyData = {
         ...melodyData,
@@ -1322,6 +1408,7 @@
 
     const [num, den] = (melodyData.config?.timeSignature || '4/4').split('/').map((v) => parseInt(v, 10));
     const key = melodyData.config?.keySignature || 'C';
+    const displayKey = getRelativeMajorKey(key);
     const tmplBuilder = window.__buildSimpleNotationTemplate || buildSimpleNotationTemplate;
     const scoreText = tmplBuilder(melodyData, general, true);
 
@@ -1336,7 +1423,7 @@
         time: String(num || 4),
         beat: String(den || 4),
         tempo: undefined,
-        key
+        key: displayKey
       },
       score: scoreText,
       lyric: ''
@@ -1381,9 +1468,48 @@
         }
       });
     };
+    const fixKeySignatureLabel = () => {
+      const label = formatJianpuKeyLabel(key);
+      const svg = scoreEl.querySelector('svg');
+      if (!svg) return false;
+      const textEls = Array.from(svg.querySelectorAll('text'));
+      const keyTexts = [];
+      let timeText = null;
+      for (const t of textEls) {
+        const raw = (t.textContent || '').trim();
+        if (!raw) continue;
+        if (!timeText && raw.includes('/')) timeText = t;
+        if (raw.includes('=')) keyTexts.push(t);
+      }
+      if (!keyTexts.length) return false;
+      keyTexts.forEach((t) => { t.textContent = label; });
+      if (!timeText) return true;
+      const timeBox = timeText.getBBox();
+      const keyBox = keyTexts[0].getBBox();
+      const pad = 10;
+      const timeY = timeText.getAttribute('y');
+      const newX = Math.max(0, timeBox.x - keyBox.width - pad);
+      const newY = timeY !== null ? timeY : String(timeBox.y + timeBox.height);
+      keyTexts.forEach((t) => {
+        t.setAttribute('x', String(newX));
+        t.setAttribute('y', String(newY));
+      });
+      return true;
+    };
     fixTimeSignatureLabel();
+    fixKeySignatureLabel();
+    if (scoreEl.__keySigObserver) scoreEl.__keySigObserver.disconnect();
+    const keySigObserver = new MutationObserver(() => {
+      if (fixKeySignatureLabel()) {
+        keySigObserver.disconnect();
+      }
+    });
+    keySigObserver.observe(scoreEl, { childList: true, subtree: true });
+    scoreEl.__keySigObserver = keySigObserver;
     setTimeout(fixTimeSignatureLabel, 0);
     setTimeout(fixTimeSignatureLabel, 80);
+    setTimeout(fixKeySignatureLabel, 0);
+    setTimeout(fixKeySignatureLabel, 80);
     window.currentJianpuRenderer = currentRenderer;
     applyHiddenState(scoreEl);
   }
@@ -1419,7 +1545,8 @@
         body.textContent = '0';
       } else {
         const midi = midiFromNote(n);
-        const sym = mapMidiToSimpleNotation(midi, key);
+        const pref = getNoteAccidentalPreference(n);
+        const sym = mapMidiToSimpleNotation(midi, key, pref);
         body.textContent = sym || '1';
       }
       const mark = document.createElement('span');
@@ -1435,7 +1562,7 @@
 
     const topline = document.createElement('div');
     topline.className = 'jianpu-topline';
-    topline.innerHTML = `<span class="badge">1 = ${key}</span><span class="badge">${timeSignature}</span>`;
+    topline.innerHTML = `<span class="badge">${formatJianpuKeyLabel(key)}</span><span class="badge">${timeSignature}</span>`;
     container.appendChild(topline);
 
     const staff = document.createElement('div');
@@ -1478,18 +1605,26 @@
     if (sn && sn.SimpleNotation && !sn.SimpleNotation.__jianpuPatched) {
       const origLoad = sn.SimpleNotation.prototype.loadData;
       sn.SimpleNotation.prototype.loadData = function(data) {
+        let nextData = data;
         try {
           const md = window.lastRenderedMelody;
           const builder = window.__buildSimpleNotationTemplate || buildSimpleNotationTemplate;
           const general = window.SN && window.SN.General;
           if (md && builder) {
-            data = { ...data, score: builder(md, general, true) };
+            nextData = { ...nextData, score: builder(md, general, true) };
           }
-          window.__lastSNLoadData = data;
+          const infoKey = nextData?.info?.key;
+          if (typeof infoKey === 'string' && infoKey) {
+            const displayKey = getRelativeMajorKey(infoKey);
+            if (displayKey && infoKey !== displayKey) {
+              nextData = { ...nextData, info: { ...(nextData.info || {}), key: displayKey } };
+            }
+          }
+          window.__lastSNLoadData = nextData;
         } catch (e) {
           console.warn('patched loadData failed', e);
         }
-        return origLoad.apply(this, [data]);
+        return origLoad.apply(this, [nextData]);
       };
       sn.SimpleNotation.__jianpuPatched = true;
     }

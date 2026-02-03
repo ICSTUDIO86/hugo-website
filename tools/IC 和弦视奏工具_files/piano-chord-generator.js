@@ -1,12 +1,12 @@
 /**
- * IC Studio 钢琴和声生成器
- * Piano Chord Generator for IC Studio
+ * Cognote 钢琴和声生成器
+ * Piano Chord Generator for Cognote
  *
  * 专门为钢琴演奏设计的和声生成系统
  * Piano-specific harmonic generation system
  *
  * @version 1.0.0
- * @author IC Studio
+ * @author Cognote
  */
 
 class PianoChordGenerator {

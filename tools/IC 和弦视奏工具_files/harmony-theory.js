@@ -1,5 +1,5 @@
 /*!
- * IC Studio - 和声理论基础模块
+ * Cognote - 和声理论基础模块
  * Harmony Theory Foundation Module
  *
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club

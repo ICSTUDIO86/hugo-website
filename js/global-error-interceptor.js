@@ -34,7 +34,7 @@
             alert(`🎉 支付成功！您的访问码是：${accessCode}\n\n页面将自动跳转到视奏工具。`);
             
             setTimeout(() => {
-                window.location.href = '/tools/melody-generator.html';
+                window.location.href = '/tools/sight-reading-generator.html';
             }, 1000);
         }
     }

@@ -1,5 +1,5 @@
 /*!
- * IC Studio 视奏工具 - 紧急修复工具
+ * Cognote - 紧急修复工具
  * Emergency Fix Tool
  * 
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club
@@ -35,8 +35,7 @@ function testBasicGeneration() {
     console.log('🧪 测试基本生成功能');
     
     try {
-        // 临时设置用户设置，测试结束后恢复
-        const originalSettings = window.userSettings;
+        // 设置用户设置
         window.userSettings = {
             customRange: { min: 60, max: 72 },
             maxJump: 12,
@@ -61,8 +60,6 @@ function testBasicGeneration() {
         } else {
             console.error('❌ 生成返回null');
         }
-
-        window.userSettings = originalSettings;
         
     } catch (error) {
         console.error('❌ 生成错误:', error);

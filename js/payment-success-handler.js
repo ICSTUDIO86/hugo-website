@@ -80,7 +80,7 @@
 
             try {
                 console.log('🔍 正在获取订单详细信息...');
-                const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/verify-access-code', {
+                const response = await fetch('https://cloud1-4g1r5ho01a0cfd85.service.tcloudbase.com/checkOrder', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -118,7 +118,7 @@
             // 准备显示数据
             console.log('📋 订单数据详情:', orderData);
             const orderNumber = orderData?.out_trade_no || orderData?.order_id || 'IC' + Date.now().toString().substr(-8);
-            const paymentAmount = orderData?.amount || orderData?.money || '128.00';
+            const paymentAmount = orderData?.amount || orderData?.money || '48.00';
 
             console.log('📋 提取到的订单信息:', {
                 orderNumber,
@@ -169,27 +169,27 @@
                     <div style="display: grid; gap: 10px;">
                         <button class="popup-download-btn" data-platform="windows-x64"
                                style="display: block; background: #f0f9ff; color: #1e40af; padding: 12px 20px; border: 2px solid #93c5fd; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
-                               onmouseover="this.style.background='#1e40af'; this.style.color='white';"
+                               onmouseover="this.style.background='#1e40af'; this.style.color='white';" 
                                onmouseout="this.style.background='#f0f9ff'; this.style.color='#1e40af';">
-                            💻 Windows 安装版 (142MB)
-                        </button>
-                        <button class="popup-download-btn" data-platform="macos-arm64"
-                               style="display: block; background: #fef3c7; color: #92400e; padding: 12px 20px; border: 2px solid #fbbf24; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
-                               onmouseover="this.style.background='#92400e'; this.style.color='white';"
-                               onmouseout="this.style.background='#fef3c7'; this.style.color='#92400e';">
-                            🍎 macOS Apple Silicon (94MB)
+                            💻 Windows x64 (73.2MB)
                         </button>
                         <button class="popup-download-btn" data-platform="macos-x64-dmg"
                                style="display: block; background: #f0fdf4; color: #166534; padding: 12px 20px; border: 2px solid #86efac; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
-                               onmouseover="this.style.background='#166534'; this.style.color='white';"
+                               onmouseover="this.style.background='#166534'; this.style.color='white';" 
                                onmouseout="this.style.background='#f0fdf4'; this.style.color='#166534';">
-                            🍎 macOS Intel (99MB)
+                            🍎 macOS Intel (DMG - 86.2MB)
                         </button>
-                        <button class="popup-download-btn" data-platform="linux-arm64-deb"
+                        <button class="popup-download-btn" data-platform="macos-arm64-zip"
+                               style="display: block; background: #fef3c7; color: #92400e; padding: 12px 20px; border: 2px solid #fbbf24; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
+                               onmouseover="this.style.background='#92400e'; this.style.color='white';" 
+                               onmouseout="this.style.background='#fef3c7'; this.style.color='#92400e';">
+                            🍎 macOS Apple Silicon (ZIP - 86.6MB)
+                        </button>
+                        <button class="popup-download-btn" data-platform="linux-appimage"
                                style="display: block; background: #ede9fe; color: #6b21a8; padding: 12px 20px; border: 2px solid #c084fc; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; cursor: pointer; border: none; width: 100%;"
-                               onmouseover="this.style.background='#6b21a8'; this.style.color='white';"
+                               onmouseover="this.style.background='#6b21a8'; this.style.color='white';" 
                                onmouseout="this.style.background='#ede9fe'; this.style.color='#6b21a8';">
-                            🐧 Linux ARM64 DEB (67MB)
+                            🐧 Linux (AppImage - 77.6MB)
                         </button>
                     </div>
                     <p style="font-size: 12px; color: #888; margin-top: 15px;">下载完成后，使用以上访问码激活完整版功能</p>
@@ -230,7 +230,7 @@
 
         window.goToSightReadingTool = function() {
             window.closeSuccessPopup();
-            window.location.href = '/tools/melody-generator.html';
+            window.location.href = '/tools/sight-reading-generator.html';
         };
 
         // 创建和显示界面

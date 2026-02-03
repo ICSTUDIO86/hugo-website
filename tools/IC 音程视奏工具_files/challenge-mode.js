@@ -10,9 +10,12 @@
   const cursorToggleEl = document.getElementById('challengeCursorToggle');
   const metronomeToggleEl = document.getElementById('challengeMetronomeToggle');
   const hideToggleEl = document.getElementById('challengeHideToggle');
+  const calibrationToggleEl = document.getElementById('challengeCalibrationToggle');
+  const modalModeToggleEl = document.getElementById('challengeModeToggleModal');
 
   const state = {
     active: false,
+    runId: 0,
     rafId: null,
     countdownTimerId: null,
     countInTimerId: null,
@@ -47,9 +50,956 @@
     activeSvg: null,
     audioCtx: null,
     hiddenNodes: new Set(),
+    calibrationEnabled: false,
+    calibrationOffsetSec: 0,
+    judgeEvents: [],
+    judgeIndex: 0,
+    judgeStartMs: 0,
+    judgeTimerId: null,
+    judgeWindowMs: 160,
+    judgeBeatDurationSec: 0,
+    judgeOctShift: null,
+    judgeGateUntilSec: 0,
+    judgeInputQueue: [],
+    judgeAligned: false,
+    cursorNoteIndex: -1,
+    judgeState: null,
+    renderQueue: new Set(),
+    renderRafId: null,
+    judgedElements: new Set(),
   };
 
   function $(id){ return document.getElementById(id); }
+
+  function isMidiConnected(){
+    try {
+      return !!(window.__icMidi && typeof window.__icMidi.getState === 'function' && window.__icMidi.getState().connected);
+    } catch(_) {
+      return false;
+    }
+  }
+
+  function getOsmdInstance(){
+    return (window.intervalRenderer && window.intervalRenderer.osmd) || (typeof osmd !== 'undefined' ? osmd : null);
+  }
+
+  function clearJudgementStyles(){
+    if (state.judgedElements && state.judgedElements.size){
+      state.judgedElements.forEach(el => {
+        el.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+      });
+      state.judgedElements.clear();
+      return;
+    }
+    const svg = scoreEl ? scoreEl.querySelector('svg') : null;
+    if (!svg) return;
+    const nodes = svg.querySelectorAll('.midi-judge-wrong, .midi-judge-correct');
+    if (!nodes.length) return;
+    nodes.forEach(el => el.classList.remove('midi-judge-wrong', 'midi-judge-correct'));
+  }
+
+  function getSvgMetrics(){
+    const svg = scoreEl.querySelector('svg');
+    if (!svg) return null;
+    const containerRect = scoreEl.getBoundingClientRect();
+    const svgBBox = svg.getBoundingClientRect();
+    let vb = { x:0, y:0, width: svgBBox.width, height: svgBBox.height };
+    if (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width > 0){
+      vb = svg.viewBox.baseVal;
+    }
+    return {
+      svg,
+      vb,
+      scaleX: svgBBox.width / (vb.width || 1),
+      scaleY: svgBBox.height / (vb.height || 1),
+      offsetX: svgBBox.left - containerRect.left + scoreEl.scrollLeft,
+      offsetY: svgBBox.top - containerRect.top + scoreEl.scrollTop
+    };
+  }
+
+  function getStaffLineSpacingSvgUnits(){
+    const metrics = getSvgMetrics();
+    if (!metrics) return 0;
+    const { svg, vb } = metrics;
+    const paths = Array.from(svg.querySelectorAll('path'));
+    const ys = [];
+    for (const p of paths){
+      const d = p.getAttribute('d') || '';
+      const nums = d.match(/-?\\d+\\.?\\d*/g);
+      if (!nums || nums.length < 4) continue;
+      const y1 = parseFloat(nums[1]);
+      const y2 = parseFloat(nums[3]);
+      if (!isFinite(y1) || !isFinite(y2)) continue;
+      if (Math.abs(y1 - y2) > 0.2) continue;
+      ys.push(y1 - vb.y);
+    }
+    ys.sort((a,b)=>a-b);
+    const uniq = [];
+    const eps = 0.5;
+    for (const y of ys){
+      if (!uniq.length || Math.abs(y - uniq[uniq.length-1]) > eps) uniq.push(y);
+    }
+    if (uniq.length < 2) return 0;
+    const spacings = [];
+    for (let i=1;i<uniq.length;i++) spacings.push(uniq[i]-uniq[i-1]);
+    return spacings.reduce((a,b)=>a+b,0)/spacings.length;
+  }
+
+  function getOSMDUnitScale(){
+    const metrics = getSvgMetrics();
+    if (!metrics) return 0;
+    const osmdInstance = getOsmdInstance();
+    if (osmdInstance && osmdInstance.EngravingRules && typeof osmdInstance.EngravingRules.UnitInPixels === 'number') {
+      return osmdInstance.EngravingRules.UnitInPixels * (osmdInstance.zoom || 1);
+    }
+    try {
+      if (osmdInstance && osmdInstance.GraphicSheet && Array.isArray(osmdInstance.GraphicSheet.MeasureList)) {
+        const rawXs = [];
+        const measures = osmdInstance.GraphicSheet.MeasureList;
+        for (const m of measures){
+          const gm = m && m[0];
+          if (!gm || !gm.staffEntries) continue;
+          gm.staffEntries.forEach(se => {
+            const entries = se.graphicalVoiceEntries || se.GraphicalVoiceEntries || [];
+            entries.forEach(ve => {
+              const notes = ve.notes || ve.Notes || [];
+              notes.forEach(n => {
+                const bb = n && n.boundingBox;
+                if (!bb || !bb.absolutePosition || !bb.size) return;
+                const xRaw = bb.absolutePosition.x + bb.size.width * 0.5;
+                if (isFinite(xRaw)) rawXs.push(xRaw);
+              });
+            });
+          });
+        }
+        const svg = metrics.svg;
+        const scoreRect = scoreEl.getBoundingClientRect();
+        const noteEls = svg.querySelectorAll('[class*=\"notehead\"], [class*=\"NoteHead\"], [class*=\"stavenote\"], use[href*=\"notehead\" i]');
+        const domXs = [];
+        noteEls.forEach(el => {
+          const r = el.getBoundingClientRect();
+          if (!r || r.width <= 0) return;
+          domXs.push(r.left - scoreRect.left + r.width / 2);
+        });
+        if (rawXs.length >= 2 && domXs.length >= 2){
+          rawXs.sort((a,b)=>a-b);
+          domXs.sort((a,b)=>a-b);
+          const rawSpan = rawXs[rawXs.length - 1] - rawXs[0];
+          const domSpan = domXs[domXs.length - 1] - domXs[0];
+          if (rawSpan > 0 && domSpan > 0){
+            const unitScale = domSpan / (rawSpan * metrics.scaleX);
+            if (isFinite(unitScale) && unitScale > 0) return unitScale;
+          }
+        }
+      }
+    } catch(e) {}
+    const spacing = getStaffLineSpacingSvgUnits();
+    const osmdSpacing = (osmdInstance && osmdInstance.EngravingRules && osmdInstance.EngravingRules.BetweenStaffLinesDistance)
+      ? osmdInstance.EngravingRules.BetweenStaffLinesDistance
+      : 1;
+    return spacing > 0 ? spacing / osmdSpacing : 0;
+  }
+
+  function osmdToScorePx(x, y){
+    const metrics = getSvgMetrics();
+    if (!metrics) return { x: 0, y: 0 };
+    const { vb, scaleX, scaleY, offsetX, offsetY } = metrics;
+    const pxX = (x - vb.x) * scaleX + offsetX;
+    const pxY = (y - vb.y) * scaleY + offsetY;
+    return { x: pxX, y: pxY };
+  }
+
+  function getNotePaintTarget(el){
+    if (!el) return null;
+    return el.closest('g.vf-stavenote, g.vf-note, g.vf-notehead') || el.closest('g') || el;
+  }
+
+  function getElementCenterY(el){
+    try{
+      const r = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+      if (!r) return null;
+      const containerRect = scoreEl.getBoundingClientRect();
+      return r.top - containerRect.top + scoreEl.scrollTop + r.height / 2;
+    } catch(_) {
+      return null;
+    }
+  }
+
+  function buildJudgeTargets(expectedMidis, elements){
+    const expected = Array.isArray(expectedMidis) ? expectedMidis.slice() : [];
+    if (!expected.length) return [];
+    const sortedMidis = expected.slice().sort((a,b)=>a-b);
+    let mappedEls = [];
+    if (Array.isArray(elements) && elements.length){
+      const elInfos = elements.map(el => ({ el, y: getElementCenterY(el) }));
+      elInfos.sort((a,b)=>{
+        const ay = isFinite(a.y) ? a.y : -Infinity;
+        const by = isFinite(b.y) ? b.y : -Infinity;
+        return by - ay; // lower pitch first (larger y)
+      });
+      mappedEls = elInfos.map(e => e.el);
+    }
+    return sortedMidis.map((midi, idx) => ({
+      midi,
+      element: mappedEls[idx] || null,
+      status: 'unjudged'
+    }));
+  }
+
+  function markJudgeTarget(target, status){
+    if (!target) return;
+    setTargetStatus(target, status);
+  }
+
+  function markJudgeEvent(ev, status){
+    if (!ev || ev.judged) return;
+    ev.judged = true;
+    if (Array.isArray(ev.targets)){
+      const ids = [];
+      ev.targets.forEach(t => {
+        if (!t) return;
+        setTargetStatusForce(t, status);
+        if (t.id) ids.push(t.id);
+      });
+      if (ids.length) scheduleRender(ids);
+    }
+  }
+
+  function markJudgeEventWrong(ev){
+    if (!ev) return;
+    if (Array.isArray(ev.targets)){
+      const ids = [];
+      ev.targets.forEach(t => {
+        if (!t) return;
+        setTargetStatus(t, 'wrong');
+        if (t.id) ids.push(t.id);
+      });
+      if (ids.length) scheduleRender(ids);
+    }
+    ev.judged = true;
+  }
+
+  function initIntervalJudgeState(events){
+    const judgedMap = new Map();
+    const targetsById = new Map();
+    const safeEvents = Array.isArray(events) ? events : [];
+    safeEvents.forEach((ev, evIdx) => {
+      ev.id = `ev${evIdx}`;
+      if (Array.isArray(ev.targets)) {
+        ev.targets.forEach((t, tIdx) => {
+          if (!t) return;
+          t.id = `${ev.id}-t${tIdx}`;
+          judgedMap.set(t.id, 'unjudged');
+          targetsById.set(t.id, t);
+        });
+      }
+    });
+    state.judgeState = {
+      events: safeEvents,
+      currentIndex: 0,
+      step: 0,
+      currentTargetId: safeEvents[0] && safeEvents[0].targets && safeEvents[0].targets[0]
+        ? safeEvents[0].targets[0].id
+        : null,
+      windowOpen: false,
+      windowStart: 0,
+      windowEnd: 0,
+      gateUntilSec: 0,
+      octaveOffset: null,
+      judged: { step0: null, step1: null },
+      inputConsumed: 0,
+      judgedMap,
+      targetsById,
+      inputBuffer: []
+    };
+  }
+
+  function resetIntervalJudgeState(){
+    state.judgeState = null;
+  }
+
+  function advanceJudgeIndex(){
+    state.judgeIndex += 1;
+    if (!state.judgeState) return;
+    state.judgeState.currentIndex = state.judgeIndex;
+    state.judgeState.step = 0;
+    state.judgeState.inputBuffer = [];
+    state.judgeState.windowOpen = false;
+    state.judgeState.windowStart = 0;
+    state.judgeState.windowEnd = 0;
+    state.judgeState.judged = { step0: null, step1: null };
+    state.judgeState.inputConsumed = 0;
+    state.judgeState.octaveOffset = null;
+    updateCurrentTargetId();
+  }
+
+  function setTargetStatus(target, status){
+    if (!target || !target.id || !state.judgeState || !state.judgeState.judgedMap) return;
+    const current = state.judgeState.judgedMap.get(target.id) || 'unjudged';
+    const next = status === 'correct' ? 'correct' : 'wrong';
+    if (current === 'wrong') return;
+    if (current === next) return;
+    if (current === 'correct' && next === 'wrong') return;
+    state.judgeState.judgedMap.set(target.id, next);
+    target.status = next;
+  }
+
+  function setTargetStatusForce(target, status){
+    if (!target || !target.id || !state.judgeState || !state.judgeState.judgedMap) return;
+    const next = status === 'correct' ? 'correct' : 'wrong';
+    state.judgeState.judgedMap.set(target.id, next);
+    target.status = next;
+  }
+
+  function renderFromState(targetIds){
+    if (!state.judgeState || !state.judgeState.targetsById) return;
+    const ids = targetIds
+      ? (Array.isArray(targetIds) ? targetIds : [targetIds])
+      : Array.from(state.judgeState.targetsById.keys());
+    ids.forEach(id => {
+      const target = state.judgeState.targetsById.get(id);
+      if (!target) return;
+      const status = state.judgeState.judgedMap.get(id) || 'unjudged';
+      if (status === 'unjudged') return;
+      const el = target.element;
+      if (!el) return;
+      const node = getNotePaintTarget(el);
+      if (!node) return;
+      node.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+      node.classList.add(status === 'correct' ? 'midi-judge-correct' : 'midi-judge-wrong');
+      state.judgedElements.add(node);
+    });
+  }
+
+  function scheduleRender(targetIds){
+    const ids = targetIds
+      ? (Array.isArray(targetIds) ? targetIds : [targetIds])
+      : [];
+    ids.forEach(id => {
+      if (id) state.renderQueue.add(id);
+    });
+    if (state.renderRafId) return;
+    state.renderRafId = requestAnimationFrame(() => {
+      const pending = Array.from(state.renderQueue);
+      state.renderQueue.clear();
+      state.renderRafId = null;
+      if (pending.length) renderFromState(pending);
+    });
+  }
+
+  function updateCurrentTargetId(){
+    if (!state.judgeState) return;
+    const ev = state.judgeState.events[state.judgeState.currentIndex];
+    const target = ev && ev.targets ? ev.targets[state.judgeState.step] : null;
+    state.judgeState.currentTargetId = target ? target.id : null;
+  }
+
+  function getNowSec(perfMs){
+    if (!state.judgeStartMs) return 0;
+    const nowSecRaw = (perfMs - state.judgeStartMs) / 1000;
+    return (state.calibrationEnabled && state.calibrationOffsetSec)
+      ? (nowSecRaw - state.calibrationOffsetSec)
+      : nowSecRaw;
+  }
+
+  function advanceToNextEvent(){
+    if (!state.judgeState) return;
+    state.judgeState.currentIndex += 1;
+    state.judgeState.step = 0;
+    state.judgeState.inputBuffer = [];
+    state.judgeState.windowOpen = false;
+    state.judgeState.windowStart = 0;
+    state.judgeState.windowEnd = 0;
+    state.judgeState.judged = { step0: null, step1: null };
+    state.judgeState.inputConsumed = 0;
+    state.judgeState.octaveOffset = null;
+    // Interval tool: establish octave offset per interval (per event)
+    state.judgeOctShift = null;
+    updateCurrentTargetId();
+    state.judgeIndex = state.judgeState.currentIndex;
+  }
+
+  function getTargetStatus(target){
+    if (!target) return 'unjudged';
+    if (state.judgeState && state.judgeState.judgedMap && target.id) {
+      return state.judgeState.judgedMap.get(target.id) || 'unjudged';
+    }
+    return target.status || 'unjudged';
+  }
+
+  function isEventComplete(ev){
+    if (!ev || !Array.isArray(ev.targets) || !ev.targets.length) return true;
+    return !ev.targets.some(t => t && getTargetStatus(t) === 'unjudged');
+  }
+
+  function findMatchingTarget(ev, midi){
+    if (!ev || !Array.isArray(ev.targets) || !ev.targets.length) return null;
+    for (const t of ev.targets){
+      if (!t || getTargetStatus(t) !== 'unjudged') continue;
+      if (!isFinite(t.midi)) continue;
+      if (t.midi === midi) return t;
+    }
+    return null;
+  }
+
+  function getPitchClass(n){
+    return ((n % 12) + 12) % 12;
+  }
+
+  function matchTargetsWithInputs(targets, inputs, matcher){
+    const remaining = Array.isArray(inputs) ? inputs.slice() : [];
+    const matches = [];
+    (Array.isArray(targets) ? targets : []).forEach(t => {
+      if (!t || !isFinite(t.midi)) return;
+      const idx = remaining.findIndex(inp => inp && isFinite(inp.midi) && matcher(t, inp));
+      if (idx >= 0){
+        matches.push({ target: t, input: remaining[idx] });
+        remaining.splice(idx, 1);
+      }
+    });
+    return matches;
+  }
+
+  function findBestShiftAndMatches(targets, inputs){
+    const matches = matchTargetsWithInputs(
+      targets,
+      inputs,
+      (t, inp) => t.midi === inp.midi
+    );
+    return { shift: null, matches };
+  }
+
+  function judgeEventByInputs(ev, inputs, options){
+    if (!ev || !Array.isArray(ev.targets) || !ev.targets.length) return;
+    const opts = options || {};
+    const finalize = opts.finalize !== false;
+    const allowCalibration = opts.updateCalibration !== false;
+    const targets = ev.targets;
+    const cleanInputs = Array.isArray(inputs)
+      ? inputs.filter(inp => inp && isFinite(inp.midi))
+      : [];
+    const inputCount = cleanInputs.length;
+    if (inputCount === 0 || inputCount > 2){
+      targets.forEach(t => setTargetStatusForce(t, 'wrong'));
+      if (state.judgeState && targets.length){
+        if (targets[0]) state.judgeState.judged.step0 = 'wrong';
+        if (targets[1]) state.judgeState.judged.step1 = 'wrong';
+      }
+      if (Array.isArray(ev.targets)) scheduleRender(ev.targets.map(t => t.id));
+      if (finalize) ev.judged = true;
+      return { allCorrect: false, matchedCount: 0 };
+    }
+    let matches = [];
+    if (inputCount === 1 || inputCount === 2){
+      const result = findBestShiftAndMatches(targets, cleanInputs);
+      matches = result.matches || [];
+    }
+    const matchedTargets = new Set(matches.map(m => m.target));
+    const allCorrect = matchedTargets.size === targets.length;
+    targets.forEach(t => {
+      const status = matchedTargets.has(t) ? 'correct' : 'wrong';
+      setTargetStatusForce(t, status);
+    });
+    if (state.judgeState && targets.length){
+      if (targets[0]) state.judgeState.judged.step0 = matchedTargets.has(targets[0]) ? 'correct' : 'wrong';
+      if (targets[1]) state.judgeState.judged.step1 = matchedTargets.has(targets[1]) ? 'correct' : 'wrong';
+    }
+    if (allCorrect && matches.length && state.calibrationEnabled && allowCalibration){
+      const matchedInputs = matches.map(m => m.input).filter(inp => inp && isFinite(inp.perfMs));
+      if (matchedInputs.length){
+        const earliest = matchedInputs.reduce((a,b) => (a.perfMs <= b.perfMs ? a : b));
+        const nowSecRaw = (earliest.perfMs - state.judgeStartMs) / 1000;
+        const delta = nowSecRaw - ev.timeSec;
+        const nextOffset = (state.calibrationOffsetSec * 0.7) + (delta * 0.3);
+        state.calibrationOffsetSec = Math.max(-0.25, Math.min(0.25, nextOffset));
+      }
+    }
+    if (Array.isArray(ev.targets)) scheduleRender(ev.targets.map(t => t.id));
+    if (finalize) ev.judged = true;
+    return { allCorrect, matchedCount: matchedTargets.size };
+  }
+
+  function getNextUnjudgedTarget(ev){
+    if (!ev || !Array.isArray(ev.targets) || !ev.targets.length) return null;
+    for (const t of ev.targets){
+      if (t && getTargetStatus(t) === 'unjudged') return t;
+    }
+    return null;
+  }
+
+  function clamp(value, min, max){
+    const v = isFinite(value) ? value : min;
+    return Math.min(max, Math.max(min, v));
+  }
+
+  function computeJudgeWindows(bpm){
+    const beatSec = 60 / Math.max(1, bpm || 80);
+    const strict = clamp(0.08 * beatSec, 0.03, 0.09);
+    return { beatSec, strict };
+  }
+
+  function getJudgeWindowForEvent(ev, judgeWindows, isFirst){
+    const strictTolSec = (isFinite(ev?.strictTolSec) && ev.strictTolSec > 0)
+      ? ev.strictTolSec
+      : judgeWindows.strict;
+    const startSec = (typeof ev?.startWindowSec === 'number') ? ev.startWindowSec : ((ev?.timeSec || 0) - strictTolSec);
+    const endSec = (typeof ev?.endWindowSec === 'number') ? ev.endWindowSec : ((ev?.timeSec || 0) + strictTolSec);
+    const baseGrace = clamp(strictTolSec * 0.9, 0.03, 0.09);
+    const firstExtra = isFirst ? Math.max(0.04, baseGrace) : 0;
+    const acceptStart = startSec - baseGrace * 0.6 - (isFirst ? baseGrace * 0.4 : 0);
+    const acceptEnd = endSec + baseGrace + firstExtra;
+    const closeEnd = endSec + baseGrace + firstExtra;
+    return { strictTolSec, startSec, endSec, acceptStart, acceptEnd, closeEnd };
+  }
+
+  function collectNoteheadCandidates(measureRects){
+    const svg = scoreEl.querySelector('svg');
+    if (!svg) return { byMeasure: [], all: [] };
+    const containerRect = scoreEl.getBoundingClientRect();
+    const selector = [
+      '.vf-notehead',
+      '.vf-notehead path',
+      '.vf-notehead ellipse',
+      '.vf-notehead use',
+      '[class*="notehead" i]',
+      '[class*="NoteHead"]',
+      'use[href*="notehead" i]'
+    ].join(',');
+    const nodes = Array.from(svg.querySelectorAll(selector));
+    const candidates = [];
+    nodes.forEach(el => {
+      const r = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+      if (!r || (r.width === 0 && r.height === 0)) return;
+      const cx = r.left - containerRect.left + scoreEl.scrollLeft + r.width / 2;
+      const cy = r.top - containerRect.top + scoreEl.scrollTop + r.height / 2;
+      if (!isFinite(cx) || !isFinite(cy)) return;
+      candidates.push({ el, cx, cy });
+    });
+    const byMeasure = measureRects.map(() => []);
+    candidates.forEach(c => {
+      for (let i=0; i<measureRects.length; i++){
+        const m = measureRects[i];
+        const inX = c.cx >= (m.x - 6) && c.cx <= (m.x + m.width + 6);
+        const inY = c.cy >= (m.y - m.height) && c.cy <= (m.y + m.height * 2);
+        if (inX && inY) {
+          byMeasure[i].push(c);
+          break;
+        }
+      }
+    });
+    return { byMeasure, all: candidates };
+  }
+
+  function pickClosestCandidate(list, x, y, used){
+    if (!list || !list.length) return null;
+    let best = null;
+    let bestDist = Infinity;
+    for (const c of list){
+      if (used.has(c.el)) continue;
+      const dx = c.cx - x;
+      const dy = c.cy - y;
+      const dist = Math.abs(dx) + Math.abs(dy);
+      if (dist < bestDist){
+        bestDist = dist;
+        best = c;
+      }
+    }
+    if (best && bestDist <= 18){
+      used.add(best.el);
+      return best.el;
+    }
+    if (best && bestDist <= 34){
+      used.add(best.el);
+      return best.el;
+    }
+    return null;
+  }
+
+  function parseJudgeEventsFromXML(xml){
+    try{
+      const doc = new DOMParser().parseFromString(xml, 'text/xml');
+      const part = doc.querySelector('part');
+      if (!part) return [];
+      const measures = Array.from(part.querySelectorAll('measure'));
+      let divisions = 1;
+      let beatsNum = 4, beatType = 4;
+      let absQN = 0;
+      const events = [];
+      let lastStartQNAbs = null;
+      for (let mi=0; mi<measures.length; mi++){
+        const m = measures[mi];
+        const attr = m.querySelector('attributes');
+        if (attr){
+          const div = attr.querySelector('divisions');
+          if (div) divisions = Math.max(1, parseInt(div.textContent||'1',10)||1);
+          const time = attr.querySelector('time');
+          if (time){
+            const b = time.querySelector('beats');
+            const bt = time.querySelector('beat-type');
+            if (b && bt){
+              beatsNum = parseInt(b.textContent||'4',10)||4;
+              beatType = parseInt(bt.textContent||'4',10)||4;
+            }
+          }
+        }
+        let posDiv = 0;
+        const notes = Array.from(m.querySelectorAll('note'));
+        for (let ni=0; ni<notes.length; ni++){
+          const n = notes[ni];
+          const isRest = !!n.querySelector('rest');
+          const durEl = n.querySelector('duration');
+          const durDiv = durEl ? Math.max(0, parseInt(durEl.textContent||'0',10)||0) : 0;
+          const isChord = !!n.querySelector('chord');
+          const ties = Array.from(n.querySelectorAll('tie')).map(x=>x.getAttribute('type'));
+          const hasStart = ties.includes('start');
+          const hasStop = ties.includes('stop');
+          const startQNAbsRaw = absQN + (posDiv/divisions);
+          const startQNAbs = (isChord && isFinite(lastStartQNAbs)) ? lastStartQNAbs : startQNAbsRaw;
+          if (!isRest && !(hasStop && !hasStart) && !(hasStop && hasStart)){
+            const pitch = n.querySelector('pitch');
+            const step = pitch?.querySelector('step')?.textContent;
+            const octave = parseInt(pitch?.querySelector('octave')?.textContent || '0', 10);
+            const alter = parseInt(pitch?.querySelector('alter')?.textContent || '0', 10) || 0;
+            if (step && isFinite(octave)){
+              const stepToSemitone = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+              const base = stepToSemitone[step];
+              if (base != null){
+                const midi = (octave + 1) * 12 + base + alter;
+                events.push({ startQN: startQNAbs, midi });
+              }
+            }
+          }
+          if (!isChord) {
+            posDiv += durDiv;
+            lastStartQNAbs = startQNAbsRaw;
+          }
+        }
+        absQN += beatsNum * (4/beatType);
+      }
+      events.sort((a,b)=> a.startQN - b.startQN);
+      const grouped = [];
+      const eps = 1e-4;
+      for (const ev of events){
+        const last = grouped[grouped.length - 1];
+        if (last && Math.abs(ev.startQN - last.startQN) <= eps){
+          last.expectedMidis.push(ev.midi);
+        } else {
+          grouped.push({ startQN: ev.startQN, expectedMidis: [ev.midi] });
+        }
+      }
+      return grouped;
+    } catch(_) {
+      return [];
+    }
+  }
+
+  function buildGraphicJudgeEvents(measureRects){
+    try{
+      if (!measureRects || !measureRects.length) return [];
+      const osmdInstance = getOsmdInstance();
+      if (!osmdInstance || !osmdInstance.GraphicSheet || !Array.isArray(osmdInstance.GraphicSheet.MeasureList)) return [];
+      const scale = getOSMDUnitScale();
+      if (!scale) return [];
+      const sheet = osmdInstance.sheet || osmdInstance.MusicSheet || null;
+      const sourceMeasures = sheet && Array.isArray(sheet.sourceMeasures) ? sheet.sourceMeasures : null;
+      if (!sourceMeasures || !sourceMeasures.length) return [];
+      const candidates = collectNoteheadCandidates(measureRects);
+      const used = new Set();
+      const tiedNoteIds = new Set();
+      try{
+        sheet.sourceMeasures.forEach(sm => {
+          const containers = sm.VerticalSourceStaffEntryContainers || sm.verticalSourceStaffEntryContainers || [];
+          containers.forEach(vc => {
+            const staffEntries = vc?.StaffEntries || vc?.staffEntries || [];
+            staffEntries.forEach(se => {
+              const voiceEntries = se?.VoiceEntries || se?.voiceEntries || [];
+              voiceEntries.forEach(ve => {
+                const notes = ve?.Notes || ve?.notes || [];
+                notes.forEach(n => {
+                  if (n?.tie && Array.isArray(n.tie.notes)) {
+                    n.tie.notes.slice(1).forEach(tied => {
+                      const id = tied?.NoteToGraphicalNoteObjectId;
+                      if (typeof id === 'number') tiedNoteIds.add(id);
+                    });
+                  }
+                });
+              });
+            });
+          });
+        });
+      }catch(_){}
+      const events = [];
+      for (let i=0; i<measureRects.length; i++){
+        const gm = osmdInstance.GraphicSheet.MeasureList[i] && osmdInstance.GraphicSheet.MeasureList[i][0];
+        const baseAbs = sourceMeasures[i]?.absoluteTimestamp?.realValue;
+        if (!gm || typeof baseAbs !== 'number') continue;
+        const staffEntries = gm.staffEntries || [];
+        staffEntries.forEach(se => {
+          const rel = se.relInMeasureTimestamp?.realValue;
+          if (typeof rel !== 'number') return;
+          const voiceEntries = se?.graphicalVoiceEntries || se?.GraphicalVoiceEntries || [];
+          const noteEls = [];
+          voiceEntries.forEach(ve => {
+            const notes = ve?.notes || ve?.Notes || [];
+            notes.forEach(n => {
+              const src = n?.sourceNote;
+              if (src && src.isRestFlag) return;
+              const id = src?.NoteToGraphicalNoteObjectId;
+              if (typeof id === 'number' && tiedNoteIds.has(id)) return;
+              const bb = n?.boundingBox;
+              if (bb && bb.absolutePosition && bb.size){
+                const xSvg = (bb.absolutePosition.x + bb.size.width * 0.5) * scale;
+                const ySvg = (bb.absolutePosition.y + bb.size.height * 0.5) * scale;
+                const px = osmdToScorePx(xSvg, 0).x;
+                const py = osmdToScorePx(0, ySvg).y;
+                const list = candidates.byMeasure[i] && candidates.byMeasure[i].length
+                  ? candidates.byMeasure[i]
+                  : candidates.all;
+                const picked = pickClosestCandidate(list, px, py, used);
+                if (picked) noteEls.push(picked);
+              }
+            });
+          });
+          if (!noteEls.length) return;
+          const timeQN = (baseAbs + rel) * 4;
+          events.push({ timeQN, measureIndex: i, elements: noteEls });
+        });
+      }
+      events.sort((a,b)=> a.timeQN === b.timeQN ? a.measureIndex - b.measureIndex : a.timeQN - b.timeQN);
+      const merged = [];
+      const eps = 1e-3;
+      for (const ev of events){
+        const last = merged[merged.length - 1];
+        if (last && Math.abs(ev.timeQN - last.timeQN) <= eps){
+          last.elements.push(...ev.elements);
+        } else {
+          merged.push({ ...ev, elements: [...ev.elements] });
+        }
+      }
+      return merged;
+    }catch(_){ return []; }
+  }
+
+  function buildJudgeTimeline(measureRects, bpm, noteEvents){
+    try{
+      const xml = getCurrentMelodyXML();
+      if (!xml) return [];
+      const grouped = parseJudgeEventsFromXML(xml);
+      if (!grouped || !grouped.length) return [];
+      const graphicEvents = buildGraphicJudgeEvents(measureRects);
+      let gi = 0;
+      const bpmSafe = Math.max(1, bpm || 80);
+      const judgeWindows = computeJudgeWindows(bpmSafe);
+      const noteTimes = Array.isArray(noteEvents)
+        ? noteEvents.filter(ev => !ev.isRest).map(ev => ev.timeSec)
+        : [];
+      const timeMap = new Map();
+      if (Array.isArray(noteEvents)) {
+        noteEvents.forEach(ev => {
+          if (!ev || ev.isRest) return;
+          if (isFinite(ev.absBeats) && isFinite(ev.timeSec)) {
+            if (!timeMap.has(ev.absBeats)) timeMap.set(ev.absBeats, ev.timeSec);
+          }
+        });
+      }
+      grouped.forEach((ev, idx) => {
+        while (gi < graphicEvents.length && graphicEvents[gi].timeQN + 0.02 < ev.startQN){
+          gi++;
+        }
+        let matched = null;
+        if (gi < graphicEvents.length && Math.abs(graphicEvents[gi].timeQN - ev.startQN) <= 0.04) {
+          matched = graphicEvents[gi];
+          gi++;
+        } else if (gi < graphicEvents.length) {
+          matched = graphicEvents[gi];
+          gi++;
+        }
+        if (matched){
+          ev.elements = matched.elements || [];
+          ev.measureIndex = matched.measureIndex;
+        }
+        const fallbackTime = ev.startQN * (60 / Math.max(1, bpm));
+        const alignedTime = timeMap.has(ev.startQN)
+          ? timeMap.get(ev.startQN)
+          : (idx >= 0 && idx < noteTimes.length && isFinite(noteTimes[idx]) ? noteTimes[idx] : fallbackTime);
+        ev.timeSec = alignedTime;
+        ev.strictTolSec = judgeWindows.strict;
+        ev.startWindowSec = ev.timeSec - ev.strictTolSec;
+        ev.endWindowSec = ev.timeSec + ev.strictTolSec;
+        ev.expectedMidis = Array.isArray(ev.expectedMidis) ? ev.expectedMidis.slice().sort((a,b)=>a-b) : [];
+        ev.targets = buildJudgeTargets(ev.expectedMidis, ev.elements);
+        ev.judged = false;
+      });
+      return grouped.filter(ev => Array.isArray(ev.targets) && ev.targets.length);
+    }catch(_){ return []; }
+  }
+
+  function startJudgeTimeline(startMs){
+    if (state.judgeTimerId) { clearInterval(state.judgeTimerId); state.judgeTimerId = null; }
+    state.judgeStartMs = startMs;
+    state.judgeIndex = 0;
+    state.judgeGateUntilSec = 0;
+    state.judgeAligned = false;
+    state.cursorNoteIndex = -1;
+    initIntervalJudgeState(state.judgeEvents || []);
+    const windowMs = Math.max(90, Math.min(220, state.judgeWindowMs || 160));
+    const fallbackTolSec = windowMs / 1000;
+    state.judgeTimerId = setInterval(() => {
+      if (!state.active) return;
+      const nowMs = performance.now();
+      const nowSec = getNowSec(nowMs);
+      const js = state.judgeState;
+      if (!js || !js.events || !js.events.length) return;
+      if (js.gateUntilSec && nowSec <= js.gateUntilSec) {
+        js.windowOpen = false;
+        return;
+      }
+      const ev = js.events[js.currentIndex];
+      if (!ev) return;
+      const endTolSec = (isFinite(ev.strictTolSec) && ev.strictTolSec > 0) ? ev.strictTolSec : fallbackTolSec;
+      const startSec = (typeof ev.startWindowSec === 'number') ? ev.startWindowSec : (ev.timeSec - endTolSec);
+      const endSec = (typeof ev.endWindowSec === 'number') ? ev.endWindowSec : (ev.timeSec + endTolSec);
+      js.windowStart = startSec;
+      js.windowEnd = endSec;
+      js.windowOpen = nowSec >= startSec && nowSec <= endSec;
+      if (nowSec > endSec){
+        if (!ev.judged){
+          judgeEventByInputs(ev, js.inputBuffer || [], { finalize: true, updateCalibration: true });
+        }
+        js.windowOpen = false;
+        js.gateUntilSec = Math.max(js.gateUntilSec || 0, endSec);
+        state.judgeGateUntilSec = js.gateUntilSec;
+        advanceToNextEvent();
+        updateCurrentTargetId();
+      }
+    }, 80);
+  }
+
+  function stopJudgeTimeline(){
+    if (state.judgeTimerId) { clearInterval(state.judgeTimerId); state.judgeTimerId = null; }
+    state.judgeStartMs = 0;
+    state.judgeIndex = 0;
+    state.judgeGateUntilSec = 0;
+    state.judgeEvents = [];
+    state.judgeInputQueue = [];
+    state.judgeAligned = false;
+    state.cursorNoteIndex = -1;
+    resetIntervalJudgeState();
+  }
+
+  function enqueueJudgeInput(midi){
+    if (!state.active || !toggleEl || !toggleEl.checked) return;
+    if (!state.judgeEvents || !state.judgeEvents.length || !state.judgeStartMs) return;
+    const js = state.judgeState;
+    if (!js) return;
+    const perfMs = performance.now();
+    const nowSec = getNowSec(perfMs);
+    const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
+    const judgeWindows = computeJudgeWindows(bpmVal);
+    if (state.judgeGateUntilSec && nowSec <= state.judgeGateUntilSec) return;
+    if (state.judgeGateUntilSec && nowSec > state.judgeGateUntilSec) {
+      state.judgeGateUntilSec = 0;
+    }
+    const ev = js.events[js.currentIndex];
+    if (!ev || ev.judged) return;
+    const strictTolSec = (isFinite(ev.strictTolSec) && ev.strictTolSec > 0)
+      ? ev.strictTolSec
+      : judgeWindows.strict;
+    const startSec = (typeof ev.startWindowSec === 'number') ? ev.startWindowSec : (ev.timeSec - strictTolSec);
+    const endSec = (typeof ev.endWindowSec === 'number') ? ev.endWindowSec : (ev.timeSec + strictTolSec);
+
+    if (nowSec < startSec) return;
+    if (nowSec > endSec) return;
+
+    if (js.inputBuffer) js.inputBuffer.push({ midi, timeSec: nowSec, perfMs });
+    if (js.inputBuffer && js.inputBuffer.length > 8) js.inputBuffer.shift();
+
+    const cleanInputs = (js.inputBuffer || []).filter(inp => inp && isFinite(inp.midi));
+    if (cleanInputs.length >= 2){
+      judgeEventByInputs(ev, cleanInputs, { finalize: false, updateCalibration: false });
+    }
+  }
+
+  function processJudgeQueue(nowPerf){
+    if (!state.judgeEvents || !state.judgeEvents.length || !state.judgeStartMs) return;
+    if (!state.judgeInputQueue || !state.judgeInputQueue.length) return;
+    const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
+    const judgeWindows = computeJudgeWindows(bpmVal);
+    const gateUntil = state.judgeGateUntilSec || 0;
+    if (gateUntil){
+      while (state.judgeInputQueue.length){
+        const item = state.judgeInputQueue[0];
+        const nowSec = getNowSec(item.perfMs);
+        if (nowSec <= gateUntil){
+          state.judgeInputQueue.shift();
+          continue;
+        }
+        break;
+      }
+      if (!state.judgeInputQueue.length) return;
+      const nextItem = state.judgeInputQueue[0];
+      const nextSec = getNowSec(nextItem.perfMs);
+      if (nextSec <= gateUntil) return;
+      state.judgeGateUntilSec = 0;
+    }
+
+    const js = state.judgeState;
+    if (!js || !js.events || !js.events.length) return;
+    const ev = js.events[js.currentIndex];
+    if (!ev) return;
+    const window = getJudgeWindowForEvent(ev, judgeWindows, js.currentIndex === 0);
+    const startSec = window.startSec;
+    const endSec = window.endSec;
+
+    while (state.judgeInputQueue.length){
+      const item = state.judgeInputQueue[0];
+      const nowSec = getNowSec(item.perfMs);
+      if (nowSec < window.acceptStart){
+        state.judgeInputQueue.shift();
+        continue;
+      }
+      if (nowSec > window.acceptEnd){
+        state.judgeInputQueue.shift();
+        continue;
+      }
+      state.judgeInputQueue.shift();
+      const buffer = js.inputBuffer || [];
+      const cleanInputs = buffer.filter(inp => inp && isFinite(inp.midi));
+      if (cleanInputs.length === 1){
+        const result = findBestShiftAndMatches(ev.targets || [], cleanInputs);
+        const matched = result.matches || [];
+        if (matched.length){
+          matched.forEach(m => setTargetStatus(m.target, 'correct'));
+          scheduleRender(matched.map(m => m.target && m.target.id).filter(Boolean));
+        }
+        return;
+      }
+      if (cleanInputs.length >= 2){
+        judgeEventByInputs(ev, cleanInputs);
+        js.windowOpen = false;
+        js.gateUntilSec = Math.max(js.gateUntilSec || 0, window.closeEnd);
+        state.judgeGateUntilSec = js.gateUntilSec;
+        state.judgeInputQueue = [];
+        advanceToNextEvent();
+      }
+      return;
+    }
+  }
+
+  function applyCalibrationAuto(connected){
+    if (!calibrationToggleEl) return;
+    if (!connected){
+      if (calibrationToggleEl.checked){
+        calibrationToggleEl.checked = false;
+        updateCalibrationToggleVisual();
+      }
+      state.calibrationEnabled = false;
+      state.calibrationOffsetSec = 0;
+      clearJudgementStyles();
+      return;
+    }
+    state.calibrationEnabled = !!calibrationToggleEl.checked;
+  }
 
   const svgns = 'http://www.w3.org/2000/svg';
 
@@ -60,6 +1010,8 @@
     const cursorToggle = $('challengeCursorToggle');
     const metronomeToggle = $('challengeMetronomeToggle');
     const hideToggle = $('challengeHideToggle');
+    const calibrationToggle = $('challengeCalibrationToggle');
+    const modalModeToggle = $('challengeModeToggleModal');
     let hasCursorPref = false;
     let hasMetronomePref = false;
     let hasHidePref = false;
@@ -70,24 +1022,38 @@
       if (cursorToggle && typeof saved.cursor === 'boolean') { cursorToggle.checked = saved.cursor; hasCursorPref = true; }
       if (metronomeToggle && typeof saved.metronome === 'boolean') { metronomeToggle.checked = saved.metronome; hasMetronomePref = true; }
       if (hideToggle && typeof saved.hide === 'boolean') { hideToggle.checked = saved.hide; hasHidePref = true; }
+      if (calibrationToggle && typeof saved.calibration === 'boolean') { calibrationToggle.checked = saved.calibration; }
     } catch(_) {}
+    if (modalModeToggle) modalModeToggle.checked = !!(toggleEl && toggleEl.checked);
     if (cursorToggle && !hasCursorPref) cursorToggle.checked = true;
     if (metronomeToggle && !hasMetronomePref) metronomeToggle.checked = true;
     if (hideToggle && !hasHidePref) hideToggle.checked = true;
+    if (calibrationToggle && !isMidiConnected()) {
+      calibrationToggle.checked = false;
+      state.calibrationEnabled = false;
+    }
     updateCursorToggleVisual();
     updateMetronomeToggleVisual();
     updateHideToggleVisual();
+    updateCalibrationToggleVisual();
+    updateModalModeToggleVisual();
     if (modal) modal.style.display = 'flex';
   }
 
-  function closeChallengeModal(){
+  function hideChallengeModal(){
     const modal = $('challengeModal');
     if (modal) modal.style.display = 'none';
   }
 
   function cancelChallengeSetup(){
-    closeChallengeModal();
+    hideChallengeModal();
     if (toggleEl) { toggleEl.checked = false; updateSwitcherVisual(); }
+    stopChallenge();
+    if (modalModeToggleEl) { modalModeToggleEl.checked = false; updateModalModeToggleVisual(); }
+  }
+
+  function closeChallengeModal(){
+    cancelChallengeSetup();
   }
 
   async function confirmChallengeSetup(){
@@ -96,8 +1062,11 @@
     const cursorEnabled = $('challengeCursorToggle') ? $('challengeCursorToggle').checked : true;
     const metronomeEnabled = $('challengeMetronomeToggle') ? $('challengeMetronomeToggle').checked : true;
     const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : true;
-    try { localStorage.setItem('ic_interval_challenge_settings', JSON.stringify({ prep, bpm, cursor: cursorEnabled, metronome: metronomeEnabled, hide: hideEnabled })); } catch(_) {}
-    closeChallengeModal();
+    const calibrationEnabled = $('challengeCalibrationToggle') ? $('challengeCalibrationToggle').checked : false;
+    try { localStorage.setItem('ic_interval_challenge_settings', JSON.stringify({ prep, bpm, cursor: cursorEnabled, metronome: metronomeEnabled, hide: hideEnabled, calibration: calibrationEnabled })); } catch(_) {}
+    state.calibrationEnabled = calibrationEnabled;
+    state.calibrationOffsetSec = 0;
+    hideChallengeModal();
     try { ensureClickAudio(); } catch(_) {}
     await startChallenge(prep, bpm, cursorEnabled, metronomeEnabled, hideEnabled);
   }
@@ -146,6 +1115,33 @@
     const knob = slider ? slider.querySelector('.slider-button') : null;
     if (!slider || !knob) return;
     if (hideToggleEl.checked){
+      slider.style.backgroundColor = '#34C759';
+      knob.style.transform = 'translateX(26px)';
+    } else {
+      slider.style.backgroundColor = '#ccc';
+      knob.style.transform = 'translateX(0px)';
+    }
+  }
+
+  function updateCalibrationToggleVisual(){
+    const slider = calibrationToggleEl?.parentElement?.querySelector('.slider');
+    const knob = slider ? slider.querySelector('.slider-button') : null;
+    if (!slider || !knob) return;
+    if (calibrationToggleEl.checked){
+      slider.style.backgroundColor = '#34C759';
+      knob.style.transform = 'translateX(26px)';
+    } else {
+      slider.style.backgroundColor = '#ccc';
+      knob.style.transform = 'translateX(0px)';
+      clearJudgementStyles();
+    }
+  }
+
+  function updateModalModeToggleVisual(){
+    const slider = modalModeToggleEl?.parentElement?.querySelector('.slider');
+    const knob = slider ? slider.querySelector('.slider-button') : null;
+    if (!slider || !knob) return;
+    if (modalModeToggleEl.checked){
       slider.style.backgroundColor = '#34C759';
       knob.style.transform = 'translateX(26px)';
     } else {
@@ -276,6 +1272,9 @@
   }
 
   function getCurrentMelodyXML(){
+    if (state.musicXML && typeof state.musicXML === 'string' && state.musicXML.length > 0){
+      return state.musicXML;
+    }
     try{
       if (window.currentIntervalProgression && window.intervalGenerator && typeof window.intervalGenerator.generateMusicXML === 'function'){
         const xml = window.intervalGenerator.generateMusicXML(window.currentIntervalProgression);
@@ -573,12 +1572,14 @@
   }
 
   function getMeasureRectsForMapping(){
-    const base = Array.isArray(state.measureRects) ? state.measureRects : [];
+    let base = Array.isArray(state.measureRects) ? state.measureRects : [];
+    if (!base.length) base = sampleBestMeasureRects();
     if (!base.length) return base;
-    let bars = [];
-    try { bars = collectMeasureRectsByBarlines(); } catch(_) { bars = []; }
-    if (Array.isArray(bars) && bars.length === base.length && bars.every(r => r && r.width > 0 && r.height > 0)){
-      return bars;
+    if (typeof window.getOSMDMeasureRects === 'function'){
+      try {
+        const r = window.getOSMDMeasureRects();
+        if (Array.isArray(r) && r.length === base.length) return r;
+      } catch(_) {}
     }
     return base;
   }
@@ -694,7 +1695,7 @@
       osc.frequency.value = isStrong ? 880 : 660;
       const now = ctx.currentTime;
       const dur = isStrong ? 0.09 : 0.06;
-      const peak = isStrong ? 0.5 : 0.35;
+      const peak = isStrong ? 1.0 : 0.7;
       g.gain.setValueAtTime(0.0001, now);
       g.gain.exponentialRampToValueAtTime(peak, now + 0.005);
       g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
@@ -1196,7 +2197,7 @@
       const measureTotals = [];
       let absQN = 0; // 四分音符为单位的绝对时间
       // 跨小节tie累积
-      let tieOpen = false; let tieDurDiv = 0; let tieIsRest = false; let tieStartAbsQN = 0;
+      let tieOpen = false; let tieDurDiv = 0; let tieIsRest = false; let tieStartAbsQN = 0; let tieMidi = null;
       for (let mi=0; mi<measures.length; mi++){
         const m = measures[mi];
         const attr = m.querySelector('attributes');
@@ -1228,21 +2229,35 @@
           const ties = Array.from(n.querySelectorAll('tie')).map(x=>x.getAttribute('type'));
           const hasStart = ties.includes('start');
           const hasStop = ties.includes('stop');
+          let midi = null;
+          if (!isRest){
+            const pitch = n.querySelector('pitch');
+            const step = pitch?.querySelector('step')?.textContent;
+            const octave = parseInt(pitch?.querySelector('octave')?.textContent || '0', 10);
+            const alter = parseInt(pitch?.querySelector('alter')?.textContent || '0', 10) || 0;
+            if (step && isFinite(octave)){
+              const stepToSemitone = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+              const base = stepToSemitone[step];
+              if (base != null){
+                midi = (octave + 1) * 12 + base + alter;
+              }
+            }
+          }
           const startQNAbs = absQN + (posDiv/divisions);
           const startQNInMeasure = (posDiv/divisions);
           if (hasStart){
-            if (!tieOpen){ tieOpen = true; tieDurDiv = durDiv; tieIsRest = isRest; tieStartAbsQN = startQNAbs; }
+            if (!tieOpen){ tieOpen = true; tieDurDiv = durDiv; tieIsRest = isRest; tieStartAbsQN = startQNAbs; tieMidi = midi; }
             else { tieDurDiv += durDiv; }
           } else if (hasStop && tieOpen){
             tieDurDiv += durDiv;
             const durQNsum = tieDurDiv / divisions;
-            events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: tieStartAbsQN, durBeats: durQNsum, isRest: tieIsRest });
-            tieOpen = false; tieDurDiv = 0; tieIsRest = false;
+            events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: tieStartAbsQN, durBeats: durQNsum, isRest: tieIsRest, midi: tieIsRest ? null : tieMidi });
+            tieOpen = false; tieDurDiv = 0; tieIsRest = false; tieMidi = null;
           } else if (tieOpen){
             tieDurDiv += durDiv; // tie延续
           } else {
             if (!isChord){
-              events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: startQNAbs, durBeats: durQN, isRest });
+              events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: startQNAbs, durBeats: durQN, isRest, midi: isRest ? null : midi });
             }
           }
           if (!isChord) posDiv += durDiv; // chord后续音不推进时间
@@ -1574,6 +2589,82 @@
         }
       }
     } catch(_) {}
+    // Final DOM notehead alignment pass (avoids OSMD entry scaling drift)
+    try {
+      const headMapFinal = collectNoteheadGroupsByMeasure();
+      const measureRectsForMapping = getMeasureRectsForMapping();
+      if (measureRectsForMapping.length){
+        const defaultPerMeasure = (function(){
+          const xml = getCurrentMelodyXML();
+          const ts = xml ? parseTimeSigFromXML(xml) : null;
+          return (ts ? ts.num : 4) * (4/(ts ? ts.den : 4));
+        })();
+        const eventsByMeasure = new Map();
+        for (const ev of mapped){
+          if (!ev || ev.isRest) continue;
+          const arr = eventsByMeasure.get(ev.measure) || [];
+          arr.push(ev);
+          eventsByMeasure.set(ev.measure, arr);
+        }
+        for (const [mIndex, evs] of eventsByMeasure.entries()){
+          const heads = headMapFinal.get(mIndex) || [];
+          if (!heads.length) continue;
+          const perMeas = (measureTotals && measureTotals[mIndex] != null) ? measureTotals[mIndex] : defaultPerMeasure;
+          const ordered = evs.slice().sort((a,b)=> (a.posBeats - b.posBeats) || (a.absBeats - b.absBeats));
+          const sortedHeads = heads.slice().sort((a,b)=>a.x-b.x);
+          if (sortedHeads.length >= ordered.length){
+            let lastIdx = -1;
+            for (const ev of ordered){
+              const targetX = measureRectsForMapping[mIndex].x +
+                Math.max(0, Math.min(1, ev.posBeats / Math.max(0.0001, perMeas))) * measureRectsForMapping[mIndex].width;
+              let best = null;
+              let bestIdx = -1;
+              let bestDist = Infinity;
+              for (let i = lastIdx + 1; i < sortedHeads.length; i++){
+                const h = sortedHeads[i];
+                const d = Math.abs(h.x - targetX);
+                if (d < bestDist){ bestDist = d; best = h; bestIdx = i; }
+              }
+              if (best){
+                ev.x = best.x;
+                if (isFinite(best.top) && isFinite(best.bottom)){
+                  const pad = Math.max(2, (best.bottom - best.top) * 0.2);
+                  ev.y1 = best.top - pad;
+                  ev.y2 = best.bottom + pad;
+                }
+                if (isFinite(best.width)){
+                  ev.width = Math.max(6, best.width + 2);
+                }
+                lastIdx = bestIdx;
+              }
+            }
+          } else {
+            const snapTol = Math.max(12, measureRectsForMapping[mIndex].width * 0.12);
+            for (const ev of ordered){
+              const targetX = measureRectsForMapping[mIndex].x +
+                Math.max(0, Math.min(1, ev.posBeats / Math.max(0.0001, perMeas))) * measureRectsForMapping[mIndex].width;
+              let best = null;
+              let bestDist = Infinity;
+              for (const h of heads){
+                const d = Math.abs(h.x - targetX);
+                if (d < bestDist){ bestDist = d; best = h; }
+              }
+              if (best && bestDist <= snapTol){
+                ev.x = best.x;
+                if (isFinite(best.top) && isFinite(best.bottom)){
+                  const pad = Math.max(2, (best.bottom - best.top) * 0.2);
+                  ev.y1 = best.top - pad;
+                  ev.y2 = best.bottom + pad;
+                }
+                if (isFinite(best.width)){
+                  ev.width = Math.max(6, best.width + 2);
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch(_) {}
     return { events: mapped, measureTotals: measureTotals || [], measureStarts: (timeline && timeline.measureStarts) ? timeline.measureStarts : [] };
   }
 
@@ -1618,8 +2709,10 @@
       const mr = measureRects[mi];
       const prev = mi > 0 ? measureRects[mi - 1] : null;
       const next = mi < measureRects.length - 1 ? measureRects[mi + 1] : null;
-      const leftBound = prev ? (prev.x + prev.width + mr.x) / 2 : (mr.x - 2);
-      const rightBound = next ? (mr.x + mr.width + next.x) / 2 : (mr.x + mr.width + 2);
+      const sameLinePrev = prev && Math.abs(prev.y - mr.y) <= (mr.height * 0.5);
+      const sameLineNext = next && Math.abs(next.y - mr.y) <= (mr.height * 0.5);
+      const leftBound = sameLinePrev ? (prev.x + prev.width + mr.x) / 2 : (mr.x - 2);
+      const rightBound = sameLineNext ? (mr.x + mr.width + next.x) / 2 : (mr.x + mr.width + 2);
       const padY = Math.max(8, Math.min(24, mr.height * 0.25));
       const heads = [];
       baseGroups.forEach(g=>{
@@ -1760,8 +2853,10 @@
       const mr = measureRects[mi];
       const prev = mi > 0 ? measureRects[mi - 1] : null;
       const next = mi < measureRects.length - 1 ? measureRects[mi + 1] : null;
-      const leftBound = prev ? (prev.x + prev.width + mr.x) / 2 : (mr.x - 2);
-      const rightBound = next ? (mr.x + mr.width + next.x) / 2 : (mr.x + mr.width + 2);
+      const sameLinePrev = prev && Math.abs(prev.y - mr.y) <= (mr.height * 0.5);
+      const sameLineNext = next && Math.abs(next.y - mr.y) <= (mr.height * 0.5);
+      const leftBound = sameLinePrev ? (prev.x + prev.width + mr.x) / 2 : (mr.x - 2);
+      const rightBound = sameLineNext ? (mr.x + mr.width + next.x) / 2 : (mr.x + mr.width + 2);
       const padY = Math.max(8, Math.min(24, mr.height * 0.25));
       const staves = [];
       items.forEach(it => {
@@ -1792,11 +2887,13 @@
       const durSec = durBeats * secPerQuarter;
       return {
         measureIndex: ev.measure,
+        absBeats: ev.absBeats,
         x: ev.x,
         top,
         height,
         width,
         isRest,
+        midi: ev.midi,
         durBeats,
         durSec,
         timeSec: (ev.absBeats || 0) * secPerQuarter
@@ -1873,6 +2970,10 @@
     const startTs = performance.now();
     let idx = 0;
     state.lastNoteMeasure = -1;
+    state.cursorNoteIndex = -1;
+    if (state.judgeEvents && state.judgeEvents.length) {
+      startJudgeTimeline(startTs);
+    }
 
     function placeAtEvent(ev){
       if (!state.cursorEl) return;
@@ -1889,6 +2990,14 @@
       const height = isFinite(ev.height) && ev.height > 0 ? ev.height : fallback.height;
       const width = (isFinite(ev.width) && ev.width > 0) ? ev.width : (state.cursorWidth || 12);
       positionCursorRect(ev.x - width / 2, top, width, height);
+      if (!state.judgeAligned && state.judgeStartMs && isFinite(ev.timeSec)) {
+        const expectedMs = state.judgeStartMs + ev.timeSec * 1000;
+        const deltaMs = performance.now() - expectedMs;
+        if (Math.abs(deltaMs) > 8) {
+          state.judgeStartMs += deltaMs;
+        }
+        state.judgeAligned = true;
+      }
     }
 
     function scheduleNext(){
@@ -1901,10 +3010,12 @@
       const delay = Math.max(0, ev.timeSec * 1000 - (performance.now() - startTs));
       state.noteTimerId = setTimeout(() => {
         if (!state.active) return;
+        const currentIndex = idx;
         if (ev.measureIndex > 0 && ev.measureIndex !== state.lastNoteMeasure){
           applyClipForIndex(ev.measureIndex - 1);
         }
         placeAtEvent(ev);
+        state.cursorNoteIndex = currentIndex;
         state.lastNoteMeasure = ev.measureIndex;
         idx++;
         if (idx >= noteEvents.length){
@@ -1963,19 +3074,34 @@
     if (state.metronomeTimerId) { clearInterval(state.metronomeTimerId); state.metronomeTimerId = null; }
     const tsInfo = getTimeSignatureInfo();
     const beatSec = (60/Math.max(1,bpm)) * (4/tsInfo.den);
-    let beat = 0;
+    let patternInfo = null;
+    try { if (typeof loadMetronomePatternSettings === 'function') loadMetronomePatternSettings(); } catch(_) {}
+    try { if (typeof getMetronomePatternInfo === 'function') patternInfo = getMetronomePatternInfo(bpm); } catch(_) {}
+    const usePattern = !!(patternInfo && patternInfo.usePattern && Array.isArray(patternInfo.steps) && patternInfo.steps.length);
+    const subdivision = usePattern ? (patternInfo.subdivision || 1) : 1;
+    const stepsPerBar = usePattern ? (patternInfo.stepsPerBar || (tsInfo.beats * subdivision)) : tsInfo.beats;
+    const stepsPerPattern = usePattern ? (patternInfo.stepsPerPattern || stepsPerBar) : stepsPerBar;
+    const steps = usePattern ? patternInfo.steps : new Array(stepsPerPattern).fill(1);
+    const stepSec = usePattern && patternInfo && patternInfo.stepDuration ? patternInfo.stepDuration : beatSec;
+    let stepIndex = 0;
     function strongBeat(n){
       if (tsInfo.is68) return n === 1 || n === 4;
       return n === 1;
     }
     function tick(){
-      beat = (beat % tsInfo.beats) + 1;
-      ensureClickAudio();
+      const stepInBar = stepsPerBar ? (stepIndex % stepsPerBar) : 0;
+      const beatNumber = Math.floor(stepInBar / subdivision) + 1;
+      const isBeatStart = (stepInBar % subdivision) === 0;
+      const shouldPlay = !usePattern || steps[(stepIndex % stepsPerPattern)] === 1;
       state.lastBeatTimeMs = performance.now();
-      try { playClick(strongBeat(beat)); } catch(_) {}
+      if (shouldPlay) {
+        ensureClickAudio();
+        try { playClick(isBeatStart && strongBeat(beatNumber)); } catch(_) {}
+      }
+      stepIndex += 1;
     }
     tick();
-    state.metronomeTimerId = setInterval(tick, beatSec * 1000);
+    state.metronomeTimerId = setInterval(tick, stepSec * 1000);
   }
 
   function startJumpCursor(bpm){
@@ -2047,6 +3173,8 @@
 
   async function startChallenge(prepSec, bpm, cursorEnabled, metronomeEnabled, hideEnabled){
     if (state.active) stopChallenge({ keepToggle: true, keepAuto: true });
+    state.runId += 1;
+    const runId = state.runId;
     state.active = true;
     state.autoRestart = true;
     state.cursorEnabled = cursorEnabled !== false;
@@ -2073,14 +3201,19 @@
       try { await window.generateIntervals(); } catch(_) {}
     }
     state.musicXML = getCurrentMelodyXML();
+    if (!state.active || state.runId !== runId) return;
     await ensureScoreReady();
+    if (!state.active || state.runId !== runId) return;
     const rects = await waitForMeasuresReady(Math.max(3000, prepSec*1000));
+    if (!state.active || state.runId !== runId) return;
     state.measureRects = rects;
     state.measureRects = await waitForStableMeasures(state.measureRects, 500);
+    if (!state.active || state.runId !== runId) return;
 
     const nowMs = Date.now();
     const remainMs = Math.max(0, prepSec*1000 - (nowMs - tStart));
     await new Promise(r => setTimeout(r, remainMs));
+    if (!state.active || state.runId !== runId) return;
     if (state.countdownTimerId) { clearInterval(state.countdownTimerId); state.countdownTimerId = null; }
     hideCountdownUI();
 
@@ -2090,9 +3223,13 @@
         try { await window.generateIntervals(); } catch(_) {}
       }
       state.musicXML = getCurrentMelodyXML();
+      if (!state.active || state.runId !== runId) return;
       await ensureScoreReady();
+      if (!state.active || state.runId !== runId) return;
       state.measureRects = await waitForMeasuresReady(5000);
+      if (!state.active || state.runId !== runId) return;
       state.measureRects = await waitForStableMeasures(state.measureRects, 400);
+      if (!state.active || state.runId !== runId) return;
     }
 
     if (!state.measureRects || !state.measureRects.length){
@@ -2105,6 +3242,12 @@
     state.measureBuckets = buildMeasureElementIndex();
     state.measureDuration = parseMeasureDurationSec(bpm);
     state.noteEvents = buildNoteTimeline(bpm);
+    clearJudgementStyles();
+    state.judgeWindowMs = Math.max(90, Math.min(220, (60 / Math.max(1, bpm)) * 0.35 * 1000));
+    state.judgeOctShift = null;
+    const judgeWindows = computeJudgeWindows(bpm);
+    state.judgeBeatDurationSec = judgeWindows.beatSec;
+    state.judgeEvents = buildJudgeTimeline(state.measureRects, bpm, state.noteEvents);
     const heights = state.measureRects.map(r => r.height).filter(h => isFinite(h) && h > 0);
     if (heights.length){
       const minH = Math.min(...heights);
@@ -2128,6 +3271,7 @@
 
   function stopChallenge(options){
     const opts = options || {};
+    state.runId += 1;
     if (state.observer) { try { state.observer.disconnect(); } catch(_){} state.observer = null; }
     if (state.resizeHandler) { window.removeEventListener('resize', state.resizeHandler); state.resizeHandler = null; }
     if (state.countdownTimerId) { clearInterval(state.countdownTimerId); state.countdownTimerId = null; }
@@ -2140,6 +3284,12 @@
     if (state.beatTimerId) { clearInterval(state.beatTimerId); state.beatTimerId = null; }
     if (state.metronomeTimerId) { clearInterval(state.metronomeTimerId); state.metronomeTimerId = null; }
     if (state.rafId) { cancelAnimationFrame(state.rafId); state.rafId = null; }
+    stopJudgeTimeline();
+    state.judgeOctShift = null;
+    state.judgeBeatDurationSec = 0;
+    state.calibrationEnabled = false;
+    state.calibrationOffsetSec = 0;
+    clearJudgementStyles();
     removeCountInLabel();
     restoreHiddenElements();
     clearOverlay();
@@ -2162,7 +3312,14 @@
       if (prep === 0 && state.lastBeatTimeMs){
         const tsInfo = getTimeSignatureInfo();
         const beatMs = (60/Math.max(1,bpm)) * (4/tsInfo.den) * 1000;
-        const nextBeat = state.lastBeatTimeMs + beatMs;
+        let stepMs = beatMs;
+        let patternInfo = null;
+        try { if (typeof loadMetronomePatternSettings === 'function') loadMetronomePatternSettings(); } catch(_) {}
+        try { if (typeof getMetronomePatternInfo === 'function') patternInfo = getMetronomePatternInfo(bpm); } catch(_) {}
+        if (patternInfo && patternInfo.usePattern && patternInfo.stepDuration) {
+          stepMs = patternInfo.stepDuration * 1000;
+        }
+        const nextBeat = state.lastBeatTimeMs + stepMs;
         state.nextCountInDelayMs = Math.max(0, nextBeat - performance.now());
       } else {
         state.nextCountInDelayMs = 0;
@@ -2204,6 +3361,40 @@
     hideToggleEl.addEventListener('change', updateHideToggleVisual);
     updateHideToggleVisual();
   }
+  if (calibrationToggleEl){
+    calibrationToggleEl.addEventListener('change', updateCalibrationToggleVisual);
+    updateCalibrationToggleVisual();
+  }
+  if (modalModeToggleEl){
+    modalModeToggleEl.addEventListener('change', ()=>{
+      updateModalModeToggleVisual();
+      if (!modalModeToggleEl.checked){
+        cancelChallengeSetup();
+        return;
+      }
+      if (toggleEl && !toggleEl.checked){
+        toggleEl.checked = true;
+        updateSwitcherVisual();
+      }
+    });
+    updateModalModeToggleVisual();
+  }
+
+  window.addEventListener('ic-midi-connection', (ev) => {
+    const connected = !!(ev && ev.detail && ev.detail.connected);
+    applyCalibrationAuto(connected);
+  });
+  try {
+    if (window.__icMidi && typeof window.__icMidi.getState === 'function') {
+      applyCalibrationAuto(!!window.__icMidi.getState().connected);
+    }
+  } catch(_) {}
+
+  window.__icChallenge = {
+    isActive: () => !!(state.active && toggleEl && toggleEl.checked),
+    handleMidiNoteOn: (midi) => enqueueJudgeInput(midi),
+    clearJudgement: () => clearJudgementStyles()
+  };
 
   // expose APIs
   window.openChallengeModal = openChallengeModal;

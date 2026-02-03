@@ -60,7 +60,7 @@ class TrialLimiter {
     return Math.abs(hash);
   }
 
-  // 检查权限状态（集成计数器系统限制）
+  // 检查权限状态（简化版，移除时间限制）
   checkTrialStatus() {
     // 检查是否有有效的访问码
     const hasValidAccess = this.hasValidAccessCode();
@@ -86,26 +86,12 @@ class TrialLimiter {
       };
     }
 
-    // 检查计数器系统状态（如果已加载）
-    if (window.melodyCounterSystem && window.melodyCounterSystem.currentStatus) {
-      const counterStatus = window.melodyCounterSystem.currentStatus;
-      console.log('📊 使用计数器系统状态:', counterStatus);
-      return {
-        allowed: counterStatus.allowed || false,
-        hasAccess: counterStatus.hasFullAccess || false,
-        reason: 'counter-system',
-        remaining: counterStatus.remaining,
-        total: counterStatus.total,
-        expired: counterStatus.expired
-      };
-    }
-
-    // 计数器系统未加载时，允许使用（等待计数器系统初始化）
-    console.log('⏳ 计数器系统尚未加载，暂时允许使用');
+    // 现在依赖计数器系统进行限制检查
+    // 如果没有访问码且不在豁免期，允许使用但依赖其他系统（如计数器）进行限制
     return {
       allowed: true,
-      reason: 'counter-system-loading',
-      message: '正在加载试用限制系统...'
+      reason: 'counter-managed',
+      message: '现在由计数器系统管理使用限制'
     };
   }
 
@@ -163,8 +149,9 @@ class TrialLimiter {
       }
 
       console.log('✅ 完整版用户，已隐藏所有付费相关界面');
+    } else {
+      this.ensureAccessCodeArea();
     }
-    // 对于非完整版用户，不需要额外操作，计数器系统会处理显示
   }
 
   // 更新试用状态显示（简化版）
@@ -196,7 +183,6 @@ class TrialLimiter {
           <p style="color: #3498db;">正在验证您的权限...</p>
         </div>
       `;
-    }
 
     statusDisplayDiv.innerHTML = statusContent;
   }
@@ -278,7 +264,7 @@ class TrialLimiter {
 
     // 5. 确保没有全局权限检查函数阻止使用
     if (window.checkFullAccess) {
-      // 覆盖权限检查，集成计数器系统限制
+      // 临时覆盖权限检查，允许基本使用（计数器系统会管理限制）
       const originalCheck = window.checkFullAccess;
       window.checkFullAccess = function() {
         // 如果有有效访问码，返回 true
@@ -290,14 +276,10 @@ class TrialLimiter {
         if (exemptTime && (Date.now() - parseInt(exemptTime) < 5 * 60 * 1000)) {
           return true;
         }
-        // 检查计数器系统状态
-        if (window.melodyCounterSystem && window.melodyCounterSystem.currentStatus) {
-          return window.melodyCounterSystem.currentStatus.allowed || false;
-        }
-        // 如果计数器系统未加载，返回 false 以启用限制
-        return false;
+        // 否则允许基本使用，但由计数器系统管理限制
+        return true; // 改为始终返回 true，让计数器系统管理
       };
-      console.log('✅ 权限检查已集成计数器系统限制');
+      console.log('✅ 权限检查已调整，现在由计数器系统管理限制');
     }
 
     console.log('🎉 工具完全可用状态已确保');

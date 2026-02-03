@@ -1,8 +1,8 @@
 /**
- * IC Studio - 视奏工具页面国际化系统
+ * Cognote - 视奏工具页面国际化系统
  * Internationalization System for Sight Reading Tool
  *
- * Copyright © 2025 IC Studio. All rights reserved.
+ * Copyright © 2025 Cognote. All rights reserved.
  * Author: Igor Chen
  * Website: https://icstudio.club
  */

@@ -780,8 +780,7 @@
             if (result.access_code) {
               // 使用统一支付成功处理器（支持支付宝账号收集）
               if (window.showUnifiedPaymentSuccess) {
-                // 修复：传入完整的订单信息，确保下载按钮可以正常工作
-                window.showUnifiedPaymentSuccess(result.access_code, 'zpay-simple', result.order_info);
+                window.showUnifiedPaymentSuccess(result.access_code, 'zpay-simple');
               } else {
                 // 降级到原有显示方式
                 showAccessCode(result.access_code, result.order_info);
@@ -840,7 +839,7 @@
         },
         body: JSON.stringify({
           name: 'IC Studio 视奏工具授权',
-          money: '128.00',
+          money: '48.00',
           type: 'alipay'
         })
       });
@@ -882,7 +881,7 @@
         },
         body: JSON.stringify({
           name: 'IC Studio 视奏工具授权',
-          money: '128.00',
+          money: '48.00',
           type: 'wxpay'
         })
       });
@@ -1157,14 +1156,13 @@
       showVerificationProgress();
       
       // 调用CloudBase云函数进行服务器端验证
-      const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/verify-access-code', {
+      const response = await fetch('https://cloud1-4g1r5ho01a0cfd85.service.tcloudbase.com/checkOrder', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          code: accessCode,
-          deviceId: 'zpay-verify-' + Date.now()
+          code: accessCode
         })
       });
       
@@ -1397,7 +1395,7 @@
       if (countdown <= 0) {
         clearInterval(interval);
         // 跳转到完整版视奏工具，使用URL参数激活完整版
-        window.location.href = '/tools/melody-generator.html?premium=true&source=payment';
+        window.location.href = '/tools/sight-reading-generator.html?premium=true&source=payment';
       }
     }, 1000);
   }

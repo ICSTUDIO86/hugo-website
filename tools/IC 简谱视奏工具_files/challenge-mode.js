@@ -10,9 +10,12 @@
   const cursorToggleEl = document.getElementById('challengeCursorToggle');
   const metronomeToggleEl = document.getElementById('challengeMetronomeToggle');
   const hideToggleEl = document.getElementById('challengeHideToggle');
+  const calibrationToggleEl = document.getElementById('challengeCalibrationToggle');
+  const modalModeToggleEl = document.getElementById('challengeModeToggleModal');
 
   const state = {
     active: false,
+    runId: 0,
     rafId: null,
     countdownTimerId: null,
     countInTimerId: null,
@@ -55,9 +58,311 @@
     hiddenNodes: new Set(),
     textMedianHeight: null,
     bucketRebuildId: null,
+    calibrationEnabled: false,
+    calibrationOffsetSec: 0,
+    judgeEvents: [],
+    judgeIndex: 0,
+    judgeStartMs: 0,
+    judgeTimerId: null,
+    judgeWindowMs: 160,
+    judgeBeatDurationSec: 0,
+    judgeOctShift: null,
+    judgeGateUntilSec: 0,
+    judgedElements: new Set(),
   };
 
   function $(id){ return document.getElementById(id); }
+
+  function isMidiConnected(){
+    try {
+      return !!(window.__icMidi && typeof window.__icMidi.getState === 'function' && window.__icMidi.getState().connected);
+    } catch(_) {
+      return false;
+    }
+  }
+
+  function clearJudgementStyles(){
+    if (state.judgedElements && state.judgedElements.size){
+      state.judgedElements.forEach(el => {
+        el.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+      });
+      state.judgedElements.clear();
+    }
+    const svg = scoreEl ? scoreEl.querySelector('svg') : null;
+    if (!svg) return;
+    const nodes = svg.querySelectorAll('.midi-judge-wrong, .midi-judge-correct');
+    if (!nodes.length) return;
+    nodes.forEach(el => el.classList.remove('midi-judge-wrong', 'midi-judge-correct'));
+  }
+
+  function getNotePaintTarget(el){
+    if (!el) return null;
+    const idx = el.getAttribute ? el.getAttribute('note-index') : null;
+    if (idx) {
+      const svg = el.ownerSVGElement || (scoreEl ? scoreEl.querySelector('svg') : null);
+      if (svg) {
+        const group = svg.querySelector(`[sn-tag="note-${idx}"]`);
+        if (group) return group;
+      }
+    }
+    if (el.tagName && el.tagName.toLowerCase() === 'text') return el;
+    const text = el.closest ? el.closest('text') : null;
+    return text || el;
+  }
+
+  function markJudgeEvent(ev, status){
+    if (!ev || ev.judged) return;
+    ev.judged = true;
+    const cls = status === 'correct' ? 'midi-judge-correct' : 'midi-judge-wrong';
+    const els = Array.isArray(ev.elements) ? ev.elements : [];
+    els.forEach(el => {
+      const target = getNotePaintTarget(el);
+      if (!target) return;
+      target.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+      target.classList.add(cls);
+      state.judgedElements.add(target);
+    });
+  }
+
+  function clamp(value, min, max){
+    const v = isFinite(value) ? value : min;
+    return Math.min(max, Math.max(min, v));
+  }
+
+  function computeJudgeWindows(bpm){
+    const beatSec = 60 / Math.max(1, bpm || 80);
+    const strict = clamp(0.08 * beatSec, 0.03, 0.09);
+    return { beatSec, strict };
+  }
+
+  function collectIndexedNoteElements(){
+    const svg = scoreEl ? scoreEl.querySelector('svg') : null;
+    if (!svg) return [];
+    const nodes = Array.from(svg.querySelectorAll('[note-index]'));
+    if (!nodes.length) return [];
+    const measures = state.measureRects || [];
+    const svgBBox = svg.getBoundingClientRect();
+    const findMeasureIndex = (cx, cy) => {
+      for (let i=0; i<measures.length; i++){
+        const m = measures[i];
+        if (!m) continue;
+        if (cx >= m.x - 1 && cx <= m.x + m.width + 1 && cy >= m.y - 1 && cy <= m.y + m.height + 1) return i;
+      }
+      return -1;
+    };
+    const out = [];
+    nodes.forEach(node => {
+      const idxRaw = node.getAttribute('note-index');
+      const idx = idxRaw != null ? parseInt(idxRaw, 10) : NaN;
+      if (!Number.isFinite(idx)) return;
+      let skip = false;
+      const dataStr = node.getAttribute('note-data');
+      if (dataStr) {
+        try {
+          const data = JSON.parse(dataStr);
+          const noteVal = data.note;
+          const noteData = data.noteData || '';
+          const isDash = noteVal === '-' || noteData === '-' || noteData === '--';
+          const isRest = noteVal === '0' || noteVal === 0 || data.isRest;
+          const isTieEnd = !!data.isTieEnd && !data.isTieStart;
+          if (isDash || isRest || isTieEnd) skip = true;
+        } catch(_) {}
+      } else {
+        const txt = (node.textContent || '').trim();
+        if (txt === '-' || txt === '0') skip = true;
+      }
+      if (skip) return;
+      const r = node.getBoundingClientRect ? node.getBoundingClientRect() : null;
+      if (!r || (r.width <= 0 && r.height <= 0)) return;
+      const left = r.left - svgBBox.left;
+      const top = r.top - svgBBox.top;
+      const cx = left + r.width / 2;
+      const cy = top + r.height / 2;
+      const measureIndex = findMeasureIndex(cx, cy);
+      out.push({ index: idx, el: node, measureIndex });
+    });
+    out.sort((a,b)=> a.index - b.index);
+    return out;
+  }
+
+  function buildJudgeTimeline(bpm){
+    try{
+      const timeline = parseTimelineFromMelodyData() || parseTimelineFromXML();
+      if (!timeline || !Array.isArray(timeline.events)) return [];
+      const noteSlotsByMeasure = Array.isArray(timeline.noteSlotsByMeasure) ? timeline.noteSlotsByMeasure : [];
+      const raw = [];
+      timeline.events.forEach(ev => {
+        if (!ev || ev.isRest) return;
+        let midi = null;
+        const slots = noteSlotsByMeasure[ev.measure];
+        if (slots && typeof ev.noteIndex === 'number' && slots[ev.noteIndex]) {
+          const slotMidi = slots[ev.noteIndex].midi;
+          if (typeof slotMidi === 'number') midi = slotMidi;
+        }
+        if (typeof ev.midi === 'number') midi = ev.midi;
+        if (typeof midi !== 'number') return;
+        const startQN = (typeof ev.absBeats === 'number' ? ev.absBeats : 0);
+        raw.push({ startQN, expectedMidis: [midi], measureIndex: ev.measure });
+      });
+      if (!raw.length) return [];
+      raw.sort((a,b)=> a.startQN - b.startQN);
+      const grouped = [];
+      const eps = 1e-4;
+      for (const ev of raw){
+        const last = grouped[grouped.length - 1];
+        if (last && Math.abs(ev.startQN - last.startQN) <= eps){
+          last.expectedMidis.push(...ev.expectedMidis);
+        } else {
+          grouped.push({ startQN: ev.startQN, expectedMidis: [...ev.expectedMidis], measureIndex: ev.measureIndex });
+        }
+      }
+      const noteEls = collectIndexedNoteElements();
+      let ei = 0;
+      const bpmSafe = Math.max(1, bpm || 80);
+      const judgeWindows = computeJudgeWindows(bpmSafe);
+      grouped.forEach(ev => {
+        const count = Math.max(1, ev.expectedMidis.length);
+        const els = [];
+        for (let i=0; i<count; i++){
+          if (ei < noteEls.length) {
+            const entry = noteEls[ei];
+            els.push(entry.el);
+            if (ev.measureIndex == null && entry && typeof entry.measureIndex === 'number') {
+              ev.measureIndex = entry.measureIndex;
+            }
+          }
+          ei++;
+        }
+        ev.elements = els;
+        ev.timeSec = ev.startQN * (60 / Math.max(1, bpm));
+        ev.strictTolSec = judgeWindows.strict;
+        ev.startWindowSec = ev.timeSec - ev.strictTolSec;
+        ev.endWindowSec = ev.timeSec + ev.strictTolSec;
+        ev.judged = false;
+      });
+      return grouped;
+    }catch(_){ return []; }
+  }
+
+  function startJudgeTimeline(startMs){
+    if (state.judgeTimerId) { clearInterval(state.judgeTimerId); state.judgeTimerId = null; }
+    state.judgeStartMs = startMs;
+    state.judgeIndex = 0;
+    state.judgeGateUntilSec = 0;
+    const windowMs = Math.max(90, Math.min(220, state.judgeWindowMs || 160));
+    const fallbackTolSec = windowMs / 1000;
+    state.judgeTimerId = setInterval(() => {
+      if (!state.active) return;
+      const nowMs = performance.now();
+      const nowSec = (nowMs - state.judgeStartMs) / 1000;
+      while (state.judgeIndex < state.judgeEvents.length){
+        const ev = state.judgeEvents[state.judgeIndex];
+        if (ev.judged) { state.judgeIndex++; continue; }
+        const endTolSec = (isFinite(ev.strictTolSec) && ev.strictTolSec > 0) ? ev.strictTolSec : fallbackTolSec;
+        const endSec = (typeof ev.endWindowSec === 'number') ? ev.endWindowSec : (ev.timeSec + endTolSec);
+        if (nowSec > endSec){
+          if (state.calibrationEnabled){
+            markJudgeEvent(ev, 'wrong');
+          } else {
+            ev.judged = true;
+          }
+          state.judgeIndex++;
+          continue;
+        }
+        break;
+      }
+    }, 80);
+  }
+
+  function stopJudgeTimeline(){
+    if (state.judgeTimerId) { clearInterval(state.judgeTimerId); state.judgeTimerId = null; }
+    state.judgeStartMs = 0;
+    state.judgeIndex = 0;
+    state.judgeGateUntilSec = 0;
+    state.judgeEvents = [];
+  }
+
+  function handleJudgeInput(midi){
+    if (!state.active || !toggleEl || !toggleEl.checked) return;
+    if (!state.judgeEvents || !state.judgeEvents.length || !state.judgeStartMs) return;
+    const nowSecRaw = (performance.now() - state.judgeStartMs) / 1000;
+    const nowSec = (state.calibrationEnabled && state.calibrationOffsetSec)
+      ? (nowSecRaw - state.calibrationOffsetSec)
+      : nowSecRaw;
+    const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
+    const judgeWindows = computeJudgeWindows(bpmVal);
+    if (state.judgeGateUntilSec && nowSec <= state.judgeGateUntilSec) return;
+    if (state.judgeGateUntilSec && nowSec > state.judgeGateUntilSec) {
+      state.judgeGateUntilSec = 0;
+    }
+    const ev = state.judgeEvents[state.judgeIndex];
+    if (!ev || ev.judged) return;
+    const strictTolSec = (isFinite(ev.strictTolSec) && ev.strictTolSec > 0)
+      ? ev.strictTolSec
+      : judgeWindows.strict;
+    const startSec = (typeof ev.startWindowSec === 'number') ? ev.startWindowSec : (ev.timeSec - strictTolSec);
+    const endSec = (typeof ev.endWindowSec === 'number') ? ev.endWindowSec : (ev.timeSec + strictTolSec);
+
+    if (nowSec < startSec) return;
+    if (nowSec > endSec) return;
+
+    const expected = Array.isArray(ev.expectedMidis) ? ev.expectedMidis : [];
+    const pitchClass = (n) => ((n % 12) + 12) % 12;
+    let match = false;
+    let matchedBase = null;
+
+    if (expected.length){
+      if (state.judgeOctShift == null){
+        const pc = pitchClass(midi);
+        for (const target of expected){
+          if (pitchClass(target) === pc){
+            match = true;
+            matchedBase = target;
+            break;
+          }
+        }
+      } else {
+        const shift = state.judgeOctShift;
+        match = expected.some(target => midi === (target + 12 * shift));
+      }
+    }
+
+    if (match){
+      const errorSec = nowSec - ev.timeSec;
+      const absErrorSec = Math.abs(errorSec);
+      const timingStatus = absErrorSec <= strictTolSec ? 'correct' : 'wrong';
+      markJudgeEvent(ev, timingStatus);
+      if (state.calibrationEnabled){
+        const delta = nowSecRaw - ev.timeSec;
+        const nextOffset = (state.calibrationOffsetSec * 0.7) + (delta * 0.3);
+        state.calibrationOffsetSec = Math.max(-0.25, Math.min(0.25, nextOffset));
+      }
+      if (state.judgeOctShift == null && matchedBase != null){
+        state.judgeOctShift = Math.round((midi - matchedBase) / 12);
+      }
+      state.judgeGateUntilSec = endSec;
+      state.judgeIndex++;
+    } else {
+      markJudgeEvent(ev, 'wrong');
+      state.judgeGateUntilSec = endSec;
+      state.judgeIndex++;
+    }
+  }
+
+  function applyCalibrationAuto(connected){
+    if (!calibrationToggleEl) return;
+    if (!connected){
+      if (calibrationToggleEl.checked){
+        calibrationToggleEl.checked = false;
+        updateCalibrationToggleVisual();
+      }
+      state.calibrationEnabled = false;
+      state.calibrationOffsetSec = 0;
+      clearJudgementStyles();
+      return;
+    }
+    state.calibrationEnabled = !!calibrationToggleEl.checked;
+  }
 
   const svgns = 'http://www.w3.org/2000/svg';
 
@@ -68,6 +373,8 @@
     const cursorToggle = $('challengeCursorToggle');
     const metronomeToggle = $('challengeMetronomeToggle');
     const hideToggle = $('challengeHideToggle');
+    const calibrationToggle = $('challengeCalibrationToggle');
+    const modalModeToggle = $('challengeModeToggleModal');
     let hasCursorPref = false;
     let hasMetronomePref = false;
     let hasHidePref = false;
@@ -78,24 +385,38 @@
       if (cursorToggle && typeof saved.cursor === 'boolean') { cursorToggle.checked = saved.cursor; hasCursorPref = true; }
       if (metronomeToggle && typeof saved.metronome === 'boolean') { metronomeToggle.checked = saved.metronome; hasMetronomePref = true; }
       if (hideToggle && typeof saved.hide === 'boolean') { hideToggle.checked = saved.hide; hasHidePref = true; }
+      if (calibrationToggle && typeof saved.calibration === 'boolean') { calibrationToggle.checked = saved.calibration; }
     } catch(_) {}
+    if (modalModeToggle) modalModeToggle.checked = !!(toggleEl && toggleEl.checked);
     if (cursorToggle && !hasCursorPref) cursorToggle.checked = true;
     if (metronomeToggle && !hasMetronomePref) metronomeToggle.checked = true;
     if (hideToggle && !hasHidePref) hideToggle.checked = true;
+    if (calibrationToggle && !isMidiConnected()) {
+      calibrationToggle.checked = false;
+      state.calibrationEnabled = false;
+    }
     updateCursorToggleVisual();
     updateMetronomeToggleVisual();
     updateHideToggleVisual();
+    updateCalibrationToggleVisual();
+    updateModalModeToggleVisual();
     if (modal) modal.style.display = 'flex';
   }
 
-  function closeChallengeModal(){
+  function hideChallengeModal(){
     const modal = $('challengeModal');
     if (modal) modal.style.display = 'none';
   }
 
   function cancelChallengeSetup(){
-    closeChallengeModal();
+    hideChallengeModal();
     if (toggleEl) { toggleEl.checked = false; updateSwitcherVisual(); }
+    stopChallenge();
+    if (modalModeToggleEl) { modalModeToggleEl.checked = false; updateModalModeToggleVisual(); }
+  }
+
+  function closeChallengeModal(){
+    cancelChallengeSetup();
   }
 
   async function confirmChallengeSetup(){
@@ -104,8 +425,11 @@
     const cursorEnabled = $('challengeCursorToggle') ? $('challengeCursorToggle').checked : true;
     const metronomeEnabled = $('challengeMetronomeToggle') ? $('challengeMetronomeToggle').checked : true;
     const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : true;
-    try { localStorage.setItem('ic_jianpu_challenge_settings', JSON.stringify({ prep, bpm, cursor: cursorEnabled, metronome: metronomeEnabled, hide: hideEnabled })); } catch(_) {}
-    closeChallengeModal();
+    const calibrationEnabled = $('challengeCalibrationToggle') ? $('challengeCalibrationToggle').checked : false;
+    try { localStorage.setItem('ic_jianpu_challenge_settings', JSON.stringify({ prep, bpm, cursor: cursorEnabled, metronome: metronomeEnabled, hide: hideEnabled, calibration: calibrationEnabled })); } catch(_) {}
+    state.calibrationEnabled = calibrationEnabled;
+    state.calibrationOffsetSec = 0;
+    hideChallengeModal();
     try { ensureClickAudio(); } catch(_) {}
     await startChallenge(prep, bpm, cursorEnabled, metronomeEnabled, hideEnabled);
   }
@@ -154,6 +478,33 @@
     const knob = slider ? slider.querySelector('.slider-button') : null;
     if (!slider || !knob) return;
     if (hideToggleEl.checked){
+      slider.style.backgroundColor = '#e53935';
+      knob.style.transform = 'translateX(26px)';
+    } else {
+      slider.style.backgroundColor = '#ccc';
+      knob.style.transform = 'translateX(0px)';
+    }
+  }
+
+  function updateCalibrationToggleVisual(){
+    const slider = calibrationToggleEl?.parentElement?.querySelector('.slider');
+    const knob = slider ? slider.querySelector('.slider-button') : null;
+    if (!slider || !knob) return;
+    if (calibrationToggleEl.checked){
+      slider.style.backgroundColor = '#e53935';
+      knob.style.transform = 'translateX(26px)';
+    } else {
+      slider.style.backgroundColor = '#ccc';
+      knob.style.transform = 'translateX(0px)';
+      clearJudgementStyles();
+    }
+  }
+
+  function updateModalModeToggleVisual(){
+    const slider = modalModeToggleEl?.parentElement?.querySelector('.slider');
+    const knob = slider ? slider.querySelector('.slider-button') : null;
+    if (!slider || !knob) return;
+    if (modalModeToggleEl.checked){
       slider.style.backgroundColor = '#e53935';
       knob.style.transform = 'translateX(26px)';
     } else {
@@ -2310,6 +2661,9 @@
     const startTs = performance.now();
     let idx = 0;
     state.lastNoteMeasure = -1;
+    if (state.judgeEvents && state.judgeEvents.length) {
+      startJudgeTimeline(startTs);
+    }
 
     function placeAtEvent(ev){
       const m = state.measureRects[ev.measureIndex];
@@ -2357,7 +2711,15 @@
     if (state.metronomeTimerId) { clearTimeout(state.metronomeTimerId); state.metronomeTimerId = null; }
     const tsInfo = getTimeSignatureInfo();
     const beatMs = (60/Math.max(1,bpm)) * (4/tsInfo.den) * 1000;
-    let beat = 1;
+    let patternInfo = null;
+    try { if (typeof loadMetronomePatternSettings === 'function') loadMetronomePatternSettings(); } catch(_) {}
+    try { if (typeof getMetronomePatternInfo === 'function') patternInfo = getMetronomePatternInfo(bpm); } catch(_) {}
+    const usePattern = !!(patternInfo && patternInfo.usePattern && Array.isArray(patternInfo.steps) && patternInfo.steps.length);
+    const subdivision = usePattern ? (patternInfo.subdivision || 1) : 1;
+    const stepsPerBar = usePattern ? (patternInfo.stepsPerBar || (tsInfo.beats * subdivision)) : tsInfo.beats;
+    const stepsPerPattern = usePattern ? (patternInfo.stepsPerPattern || stepsPerBar) : stepsPerBar;
+    const steps = usePattern ? patternInfo.steps : new Array(stepsPerPattern).fill(1);
+    const stepMs = usePattern && patternInfo && patternInfo.stepDuration ? (patternInfo.stepDuration * 1000) : beatMs;
     let tickIndex = 0;
     function strongBeat(n){
       if (tsInfo.is68) return n === 1 || n === 4;
@@ -2365,14 +2727,19 @@
     }
     function scheduleTick(){
       if (!state.active || !state.metronomeEnabled) return;
-      const target = anchorPerf + tickIndex * beatMs;
+      const target = anchorPerf + tickIndex * stepMs;
       const delay = Math.max(0, target - performance.now());
       state.metronomeTimerId = setTimeout(() => {
         if (!state.active || !state.metronomeEnabled) return;
-        ensureClickAudio();
+        const stepInBar = stepsPerBar ? (tickIndex % stepsPerBar) : 0;
+        const beatNumber = Math.floor(stepInBar / subdivision) + 1;
+        const isBeatStart = (stepInBar % subdivision) === 0;
+        const shouldPlay = !usePattern || steps[(tickIndex % stepsPerPattern)] === 1;
         state.lastBeatTimeMs = target;
-        try { playClick(strongBeat(beat)); } catch(_) {}
-        beat = (beat % tsInfo.beats) + 1;
+        if (shouldPlay) {
+          ensureClickAudio();
+          try { playClick(isBeatStart && strongBeat(beatNumber)); } catch(_) {}
+        }
         tickIndex += 1;
         scheduleTick();
       }, delay);
@@ -2422,6 +2789,9 @@
     const ac = phase && phase.audioContext ? phase.audioContext : null;
     const anchorAc = (ac && state.anchorAcTime != null) ? state.anchorAcTime : null;
     const anchorPerfStart = state.anchorPerfStart || performance.now();
+    if (state.judgeEvents && state.judgeEvents.length) {
+      startJudgeTimeline(anchorPerfStart);
+    }
 
     const anchorSecBase = (anchorAc!=null) ? anchorAc : 0;
     const toSec = qn => qn * secPerQuarter;
@@ -2587,6 +2957,8 @@
 
   async function startChallenge(prepSec, bpm, cursorEnabled, metronomeEnabled, hideEnabled){
     if (state.active) stopChallenge({ keepToggle: true, keepAuto: true });
+    state.runId += 1;
+    const runId = state.runId;
     state.active = true;
     state.autoRestart = true;
     state.cursorEnabled = cursorEnabled !== false;
@@ -2605,14 +2977,19 @@
     if (typeof window.generateMelody === 'function') {
       try { await window.generateMelody(); } catch(_) {}
     }
+    if (!state.active || state.runId !== runId) return;
     await ensureScoreReady();
+    if (!state.active || state.runId !== runId) return;
     const rects = await waitForMeasuresReady(Math.max(3000, prepSec*1000));
+    if (!state.active || state.runId !== runId) return;
     state.measureRects = rects;
     state.measureRects = await waitForStableMeasures(state.measureRects, 500);
+    if (!state.active || state.runId !== runId) return;
 
     const nowMs = Date.now();
     const remainMs = Math.max(0, prepSec*1000 - (nowMs - tStart));
     await new Promise(r => setTimeout(r, remainMs));
+    if (!state.active || state.runId !== runId) return;
     if (state.countdownTimerId) { clearInterval(state.countdownTimerId); state.countdownTimerId = null; }
     hideCountdownUI();
 
@@ -2620,9 +2997,13 @@
       if (typeof window.generateMelody === 'function') {
         try { await window.generateMelody(); } catch(_) {}
       }
+      if (!state.active || state.runId !== runId) return;
       await ensureScoreReady();
+      if (!state.active || state.runId !== runId) return;
       state.measureRects = await waitForMeasuresReady(5000);
+      if (!state.active || state.runId !== runId) return;
       state.measureRects = await waitForStableMeasures(state.measureRects, 400);
+      if (!state.active || state.runId !== runId) return;
     }
 
     if (!state.measureRects || !state.measureRects.length){
@@ -2639,6 +3020,12 @@
     state.measureClipRects = computeMeasureClipRects();
     state.measureDuration = parseMeasureDurationSec(bpm);
     state.noteEvents = buildNoteTimeline(bpm);
+    clearJudgementStyles();
+    state.judgeWindowMs = Math.max(90, Math.min(220, (60 / Math.max(1, bpm)) * 0.35 * 1000));
+    state.judgeOctShift = null;
+    const judgeWindows = computeJudgeWindows(bpm);
+    state.judgeBeatDurationSec = judgeWindows.beatSec;
+    state.judgeEvents = buildJudgeTimeline(bpm);
     const heights = state.measureRects.map(r => r.height).filter(h => isFinite(h) && h > 0);
     if (heights.length){
       const minH = Math.min(...heights);
@@ -2671,6 +3058,7 @@
 
   function stopChallenge(options){
     const opts = options || {};
+    state.runId += 1;
     if (state.observer) { try { state.observer.disconnect(); } catch(_){} state.observer = null; }
     if (state.resizeHandler) { window.removeEventListener('resize', state.resizeHandler); state.resizeHandler = null; }
     if (state.countdownTimerId) { clearInterval(state.countdownTimerId); state.countdownTimerId = null; }
@@ -2685,6 +3073,12 @@
     }
     if (state.bucketRebuildId) { clearTimeout(state.bucketRebuildId); state.bucketRebuildId = null; }
     if (state.rafId) { cancelAnimationFrame(state.rafId); state.rafId = null; }
+    stopJudgeTimeline();
+    state.judgeOctShift = null;
+    state.judgeBeatDurationSec = 0;
+    state.calibrationEnabled = false;
+    state.calibrationOffsetSec = 0;
+    clearJudgementStyles();
     removeCountInLabel();
     restoreHiddenElements();
     clearOverlay();
@@ -2710,7 +3104,14 @@
       if (prep === 0 && state.lastBeatTimeMs){
         const tsInfo = getTimeSignatureInfo();
         const beatMs = (60/Math.max(1,bpm)) * (4/tsInfo.den) * 1000;
-        const nextBeat = state.lastBeatTimeMs + beatMs;
+        let stepMs = beatMs;
+        let patternInfo = null;
+        try { if (typeof loadMetronomePatternSettings === 'function') loadMetronomePatternSettings(); } catch(_) {}
+        try { if (typeof getMetronomePatternInfo === 'function') patternInfo = getMetronomePatternInfo(bpm); } catch(_) {}
+        if (patternInfo && patternInfo.usePattern && patternInfo.stepDuration) {
+          stepMs = patternInfo.stepDuration * 1000;
+        }
+        const nextBeat = state.lastBeatTimeMs + stepMs;
         state.nextCountInDelayMs = Math.max(0, nextBeat - performance.now());
       } else {
         state.nextCountInDelayMs = 0;
@@ -2752,6 +3153,40 @@
     hideToggleEl.addEventListener('change', updateHideToggleVisual);
     updateHideToggleVisual();
   }
+  if (calibrationToggleEl){
+    calibrationToggleEl.addEventListener('change', updateCalibrationToggleVisual);
+    updateCalibrationToggleVisual();
+  }
+  if (modalModeToggleEl){
+    modalModeToggleEl.addEventListener('change', ()=>{
+      updateModalModeToggleVisual();
+      if (!modalModeToggleEl.checked){
+        cancelChallengeSetup();
+        return;
+      }
+      if (toggleEl && !toggleEl.checked){
+        toggleEl.checked = true;
+        updateSwitcherVisual();
+      }
+    });
+    updateModalModeToggleVisual();
+  }
+
+  window.addEventListener('ic-midi-connection', (ev) => {
+    const connected = !!(ev && ev.detail && ev.detail.connected);
+    applyCalibrationAuto(connected);
+  });
+  try {
+    if (window.__icMidi && typeof window.__icMidi.getState === 'function') {
+      applyCalibrationAuto(!!window.__icMidi.getState().connected);
+    }
+  } catch(_) {}
+
+  window.__icChallenge = {
+    isActive: () => !!(state.active && toggleEl && toggleEl.checked),
+    handleMidiNoteOn: (midi) => handleJudgeInput(midi),
+    clearJudgement: () => clearJudgementStyles()
+  };
 
   // expose APIs
   window.openChallengeModal = openChallengeModal;

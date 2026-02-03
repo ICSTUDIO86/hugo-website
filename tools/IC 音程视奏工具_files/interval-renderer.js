@@ -1409,4 +1409,87 @@ window.getCurrentResponsiveLayout = getCurrentResponsiveLayout;
 window.analyzeLayout = analyzeLayout;
 window.applyCustomLayout = applyCustomLayout;
 
+/**
+ * 基于OSMD图形层读取每个小节的像素矩形（相对于SVG局部坐标）
+ * 返回: [{x,y,width,height}, ...] 或 null
+ */
+window.getOSMDMeasureRects = function(){
+    try {
+        const osmdRef = (window.intervalRenderer && window.intervalRenderer.osmd) ? window.intervalRenderer.osmd : (window.osmd || null);
+        if (!osmdRef) return null;
+        const scoreDiv = document.getElementById('score');
+        if (!scoreDiv) return null;
+        const svg = scoreDiv.querySelector('svg');
+        if (!svg) return null;
+        const gs = osmdRef.GraphicSheet;
+        const unitToPx = (osmdRef && osmdRef.EngravingRules && typeof osmdRef.EngravingRules.UnitInPixels === 'number')
+            ? osmdRef.EngravingRules.UnitInPixels * (osmdRef.zoom || 1)
+            : (10 * (osmdRef.zoom || 1));
+
+        const byMeasure = new Map();
+
+        function addMeasureBBox(measureObj){
+            if (!measureObj) return;
+            const ps = measureObj.PositionAndShape || measureObj.positionAndShape || measureObj.boundingBox || measureObj.BoundingBox;
+            const abs = ps && (ps.AbsolutePosition || ps.absolutePosition || ps.Position || ps.position);
+            const size = ps && (ps.Size || ps.size || ps.Extent || ps.extent);
+            if (!abs || !size) return;
+            const ax = (abs.x || abs.X || 0) * unitToPx;
+            const ay = (abs.y || abs.Y || 0) * unitToPx;
+            const aw = (size.width || size.X || size.x || 0) * unitToPx;
+            const ah = (size.height || size.Y || size.y || 0) * unitToPx;
+            if (!(aw > 0 && ah > 0)) return;
+            const pm = measureObj.ParentMeasure || measureObj.parentMeasure || measureObj.SourceMeasure || measureObj.sourceMeasure || measureObj;
+            let num = pm && (pm.MeasureNumber || pm.measureNumber || pm.measure_no || pm.measureNo);
+            if (typeof num === 'string') num = parseInt(num, 10);
+            if (!isFinite(num)) return;
+            const minX = ax, minY = ay, maxX = ax + aw, maxY = ay + ah;
+            const prev = byMeasure.get(num);
+            if (!prev) {
+                byMeasure.set(num, { minX, minY, maxX, maxY });
+            } else {
+                prev.minX = Math.min(prev.minX, minX);
+                prev.minY = Math.min(prev.minY, minY);
+                prev.maxX = Math.max(prev.maxX, maxX);
+                prev.maxY = Math.max(prev.maxY, maxY);
+            }
+        }
+
+        if (gs && Array.isArray(gs.MeasureList) && gs.MeasureList.length > 0){
+            for (const gm of gs.MeasureList){
+                if (Array.isArray(gm)) {
+                    gm.forEach(m => addMeasureBBox(m));
+                } else {
+                    addMeasureBBox(gm);
+                }
+            }
+        }
+        if (gs){
+            const arrays = Object.keys(gs).map(k => gs[k]).filter(v => Array.isArray(v));
+            for (const arr of arrays){
+                for (const item of arr){
+                    const measures = item && (item.Measures || item.measures || item.GraphicalMeasures || item.graphicalMeasures || item.measuresInStaff || item.MeasuresInStaff);
+                    if (!measures || !Array.isArray(measures)) continue;
+                    for (const m of measures){
+                        if (Array.isArray(m)) {
+                            m.forEach(mm => addMeasureBBox(mm));
+                        } else {
+                            addMeasureBBox(m);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (byMeasure.size > 0){
+            const nums = Array.from(byMeasure.keys()).sort((a,b)=>a-b);
+            return nums.map(n => {
+                const b = byMeasure.get(n);
+                return { x: b.minX, y: b.minY, width: Math.max(1, b.maxX - b.minX), height: Math.max(1, b.maxY - b.minY) };
+            });
+        }
+    } catch(_) {}
+    return null;
+};
+
 console.log('✅ 增强OSMD渲染系统已加载到interval-renderer.js');

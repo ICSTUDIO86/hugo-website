@@ -1,6 +1,6 @@
 /*!
  * Apple-inspired Minimalist UI for Chord Sight-Reading Generator
- * IC Studio 视奏工具 - 专业级和弦视奏生成器
+ * Cognote - 专业级和弦视奏生成器
  *
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club
  *
@@ -525,6 +525,44 @@ input[type="range"]::-moz-range-thumb {
     letter-spacing: 0.5px;
 }
 
+.metronome-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.metronome-label-row label {
+    margin: 0;
+}
+
+.metronome-settings-btn {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: var(--neutral-white);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    color: var(--neutral-black);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.metronome-settings-btn:hover {
+    border-color: var(--border-color-medium);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.metronome-settings-btn:active {
+    transform: translateY(0);
+}
+
 .metronome-play-btn {
     width: 28px;
     height: 28px;
@@ -620,12 +658,199 @@ input[type="range"]::-moz-range-thumb {
     background: var(--accent-orange) !important;
 }
 
+[data-theme="dark"] .metronome-settings-btn {
+    background: var(--neutral-light) !important;
+    border-color: var(--border-color) !important;
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] .metronome-settings-btn:hover {
+    background: var(--neutral-medium) !important;
+    border-color: var(--border-color-medium) !important;
+}
+
 [data-theme="dark"] .metronome-beat-indicator {
     background: var(--neutral-medium) !important;
 }
 
 [data-theme="dark"] .metronome-beat-indicator.beat {
     background: var(--accent-green) !important;
+}
+
+.metronome-pattern-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+
+.metronome-pattern-toggle-group {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+}
+
+.metronome-pattern-toggle-group .toggle-container {
+    flex-shrink: 0;
+}
+
+.metronome-pattern-select {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--neutral-white);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.metronome-pattern-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--neutral-light);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--neutral-dark);
+}
+
+.metronome-pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(32px, 1fr));
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--neutral-white);
+    margin-bottom: 8px;
+}
+
+.metronome-pattern-grid.disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.metronome-pattern-step {
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--neutral-light);
+    color: var(--neutral-dark);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.metronome-pattern-step.beat-start {
+    border-color: var(--primary-orange);
+    color: var(--primary-orange);
+}
+
+.metronome-pattern-step.active {
+    background: #FF9500;
+    color: #ffffff;
+    border-color: #FF9500;
+    box-shadow: 0 3px 6px rgba(255, 149, 0, 0.3);
+}
+
+.metronome-pattern-step.active.beat-start {
+    background: #FF9500;
+    border-color: #FF9500;
+    box-shadow: 0 3px 6px rgba(255, 149, 0, 0.3);
+}
+
+.metronome-pattern-step.bar-start {
+    box-shadow: inset 0 0 0 2px rgba(255, 149, 0, 0.35);
+}
+
+.metronome-pattern-step.active.bar-start {
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), 0 6px 16px rgba(170, 95, 0, 0.45);
+}
+
+/* Toggle switches (match melody switcher style) */
+.toggle-container {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+}
+
+.toggle-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    background: var(--neutral-light);
+    border-radius: 999px;
+    transition: all 0.25s ease;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.toggle-button {
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: var(--neutral-white);
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    transition: all 0.25s ease;
+}
+
+.toggle-input:checked + .toggle-slider {
+    background: var(--primary-orange);
+}
+
+.toggle-input:checked + .toggle-slider .toggle-button {
+    transform: translateX(24px);
+    box-shadow: 0 4px 10px rgba(255, 149, 0, 0.35);
+}
+
+[data-theme="dark"] .toggle-slider {
+    background: #2d2d30;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .toggle-button {
+    background: #1f1f22;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .toggle-input:checked + .toggle-slider {
+    background: var(--primary-orange);
+}
+
+[data-theme="dark"] .metronome-pattern-select {
+    background: var(--neutral-light) !important;
+    border-color: var(--border-color) !important;
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] .metronome-pattern-info {
+    background: var(--neutral-medium) !important;
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] .metronome-pattern-grid {
+    background: var(--neutral-white) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .metronome-pattern-step {
+    background: var(--neutral-light) !important;
+    border-color: var(--border-color) !important;
+    color: var(--neutral-black) !important;
 }
 
 /* Original spacing restored */
@@ -1023,6 +1248,28 @@ button {
     position: relative !important;
     z-index: 10001 !important;
     pointer-events: auto !important;
+}
+
+#challengeModal .control-row {
+    background: transparent;
+    margin-top: 0;
+    margin-bottom: 32px;
+}
+
+#challengeModal .control-group input[type="number"] {
+    width: 100%;
+}
+
+#challengeModal .modal-content {
+    width: 90%;
+    max-width: 600px;
+}
+
+#challengeModal .modal-hint {
+    font-size: 0.9rem;
+    color: var(--secondary-text);
+    margin: 0;
+    line-height: 1.4;
 }
 
 #challengeModal .switch {

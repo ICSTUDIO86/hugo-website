@@ -557,7 +557,7 @@
       osc.frequency.value = isStrong ? 880 : 660;
       const now = ctx.currentTime;
       const dur = isStrong ? 0.09 : 0.06;
-      const peak = isStrong ? 0.5 : 0.35;
+      const peak = isStrong ? 1.0 : 0.7;
       g.gain.setValueAtTime(0.0001, now);
       g.gain.exponentialRampToValueAtTime(peak, now + 0.005);
       g.gain.exponentialRampToValueAtTime(0.0001, now + dur);

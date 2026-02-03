@@ -1,104 +1,45 @@
 <!DOCTYPE html>
-<!-- saved from url=(0303)file:///Users/igorchen/Downloads/IC%20Studio/IC%20%E8%A7%86%E5%A5%8F%E5%B7%A5%E5%85%B7%20%E7%AC%AC%E4%B8%80%E7%89%88%20(%E5%B7%B2%E4%B8%8A%E6%9E%B6)%20%E9%9F%B3%E7%A8%8B%E4%BF%AE%E5%A4%8D%E4%B8%AD%202/%E8%A7%86%E5%A5%8F%E6%97%8B%E5%BE%8B%E7%94%9F%E6%88%90%E5%99%A8%20-%20%E7%BB%88%E6%9E%81%E7%89%88.html -->
 <html lang="zh-CN" data-theme="dark">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>
+    (function() {
+      var isFile = location.protocol === 'file:' || location.origin === 'null';
+      if (!isFile) return;
+      try {
+        console.warn('🚫 检测到file://协议，已阻止');
+      } catch (e) {}
+      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
+      document.open();
+      document.write(html);
+      document.close();
+      throw new Error('file-protocol-blocked');
+    })();
+  </script>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>
-      (function() {
-        if (window.location.protocol !== 'file:') {
-          return;
-        }
-
-        const offlineHtml = `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>无法离线使用</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #1f2933;
-    }
-    .offline-wrap {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    .offline-card {
-      background: rgba(255, 255, 255, 0.96);
-      padding: 32px;
-      max-width: 480px;
-      border-radius: 16px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-      text-align: center;
-    }
-    .offline-card h1 {
-      margin: 0 0 12px;
-      font-size: 24px;
-    }
-    .offline-card p {
-      margin: 0 0 16px;
-      color: #52606d;
-      line-height: 1.6;
-    }
-    .offline-card a {
-      display: inline-block;
-      padding: 12px 24px;
-      border-radius: 999px;
-      background: #3f5ae0;
-      color: #fff;
-      text-decoration: none;
-      font-weight: 600;
-    }
-  </style>
-</head>
-<body>
-  <div class="offline-wrap">
-    <div class="offline-card">
-      <div style="font-size: 48px; margin-bottom: 12px;">⚠️</div>
-      <h1>无法离线使用</h1>
-      <p>IC 视奏工具需要在线访问以验证授权。请使用在线版本继续。</p>
-      <a href="https://icstudio.club/tools/">访问在线版本 →</a>
-    </div>
-  </div>
-</body>
-</html>`;
-
-        document.open();
-        document.write(offlineHtml);
-        document.close();
-        throw new Error('Offline use is not supported.');
-      })();
-    </script>
 
     <!-- Primary SEO Meta Tags -->
-    <title>Jianpu Sight Reading Generator | IC 简谱视奏生成器 - Professional Music Practice Tool</title>
+    <title>Jianpu Sight Reading Generator | Cognote - Professional Music Practice Tool</title>
     <meta name="description" content="Professional online sight reading tool for numbered notation (jianpu) practice. Generate random melodies with the same engine as the staff version, customize range, time signatures, rhythms, and keys. Render clean red-themed jianpu instantly. | 专业在线简谱视奏训练工具，复用旋律生成引擎，支持自定义音域、拍号、节奏、调号，红色主题的简谱渲染。">
-    <meta name="keywords" content="jianpu, numbered notation, sight reading, melody generator, sight reading tool, music practice, 简谱, 简谱视奏, 视奏工具, 旋律生成器, 视奏训练, 乐谱生成, 音乐理论, 节奏练习, 听力训练">
-    <meta name="author" content="Igor Chen - IC Studio">
+    <meta name="keywords" content="jianpu, numbered notation, sight reading, melody generator, sight reading tool, music practice, 简谱, 简谱视奏, 视奏工具, 旋律生成器, 视奏训练, 乐谱生成, 音乐理论, 节奏练习, 听力训练, IC 视奏工具, Cognote">
+    <meta name="author" content="Igor Chen - Cognote">
     <link rel="canonical" href="https://icstudio.club/tools/jianpu-generator.html">
 
     <!-- Open Graph / Facebook / WeChat -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://icstudio.club/tools/jianpu-generator.html">
-    <meta property="og:title" content="Jianpu Sight Reading Generator | IC 简谱视奏生成器">
+    <meta property="og:title" content="Jianpu Sight Reading Generator | Cognote">
     <meta property="og:description" content="Professional online numbered-notation sight reading tool. Generate random melodies with customizable settings and render them as jianpu. Free 20 trials. | 专业简谱视奏训练工具，随机旋律生成，红色主题的简谱渲染。">
     <meta property="og:image" content="https://icstudio.club/images/ICLOGO.png">
-    <meta property="og:image:alt" content="IC Studio Jianpu Sight Reading Generator Interface">
-    <meta property="og:site_name" content="IC Studio">
+    <meta property="og:image:alt" content="Cognote Jianpu Sight Reading Generator Interface">
+    <meta property="og:site_name" content="Cognote">
     <meta property="og:locale" content="zh_CN">
     <meta property="og:locale:alternate" content="en_US">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://icstudio.club/tools/jianpu-generator.html">
-    <meta name="twitter:title" content="Jianpu Sight Reading Generator | IC Studio">
+    <meta name="twitter:title" content="Jianpu Sight Reading Generator | Cognote">
     <meta name="twitter:description" content="Professional numbered-notation sight reading tool for melody practice. Customizable range, rhythms, keys. Piano audio playback.">
     <meta name="twitter:image" content="https://icstudio.club/images/ICLOGO.png">
 
@@ -107,8 +48,8 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "IC Jianpu Sight Reading Generator",
-      "alternateName": "IC 简谱视奏生成器",
+      "name": "Cognote Jianpu Sight Reading Generator",
+      "alternateName": ["IC 视奏工具", "简谱视奏生成器"],
       "description": "Professional online sight reading tool for generating random melodies with customizable parameters including range, time signatures, rhythms, keys, and dynamics, and rendering them as numbered notation (jianpu) with a red theme.",
       "url": "https://icstudio.club/tools/jianpu-generator.html",
       "applicationCategory": "MusicApplication",
@@ -141,7 +82,7 @@
       },
       "provider": {
         "@type": "Organization",
-        "name": "IC Studio",
+        "name": "Cognote",
         "url": "https://icstudio.club",
         "logo": "https://icstudio.club/images/ICLOGO.png",
         "sameAs": [
@@ -163,9 +104,6 @@
       }
     }
     </script>
-    <!-- React Grab (analytics/debug) -->
-    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
-    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com/">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
@@ -179,25 +117,21 @@
       const cdnUrl = 'https://unpkg.com/simple-notation@latest/dist/simple-notation.js';
       import(cdnUrl)
         .then((SN) => { window.SN = SN; })
-        .catch((e) => {
+        .catch(async (e) => {
           console.warn('simple-notation CDN 预加载失败，回退本地', e);
-          const script = document.createElement('script');
-          script.src = './assets/js/simple-notation.umd.cjs';
-          script.onload = () => {
-            if (!window.SN) {
-              console.error('simple-notation 本地预加载失败');
-            }
-          };
-          script.onerror = () => {
-            console.error('simple-notation 本地预加载失败');
-          };
-          document.head.appendChild(script);
+          try {
+            const SN = await import('./assets/js/simple-notation.js');
+            window.SN = SN;
+          } catch (err) {
+            console.error('simple-notation 本地预加载失败', err);
+          }
         });
     </script>
 
     <!-- 删除SpessaSynth - 改用更简单的Web Audio API方案 -->
 
     <link rel="stylesheet" href="./IC 简谱视奏工具_files/apple-ui-styles.css">
+    <link rel="stylesheet" href="assets/css/midi-input.css">
     <script src="assets/js/sample-player.js?v=6"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function(){
@@ -217,7 +151,7 @@
         --accent-green: #111111;
         --accent-orange: #111111;
       }
-      body.jianpu-theme .container { border-top: 8px solid rgba(17, 17, 17, 0.1); }
+      body.jianpu-theme .container { border-top: 8px solid rgba(183, 28, 28, 0.6); }
       body.jianpu-theme .header { background: rgba(17, 17, 17, 0.02); }
       body.jianpu-theme .header .header-text h1,
       body.jianpu-theme .header .header-text p { color: #1d1d1f; }
@@ -231,6 +165,7 @@
         border-color: #c62828;
         box-shadow: 0 4px 16px rgba(229, 57, 53, 0.4);
       }
+      body.jianpu-theme #currentFunction { color: #f66b69; }
       body.jianpu-theme .function-btn:active { background: #b71c1c; }
       body.jianpu-theme .metronome-play-btn {
         background: #e53935;
@@ -241,6 +176,20 @@
       }
       body.jianpu-theme .metronome-play-btn.active {
         background: #f57c00;
+      }
+      body.jianpu-theme .metronome-pattern-step.beat-start {
+        border-color: #e53935;
+        color: #e53935;
+      }
+      body.jianpu-theme .metronome-pattern-step.active {
+        background: #e53935;
+        border-color: #e53935;
+        color: #ffffff;
+      }
+      body.jianpu-theme .metronome-pattern-step.active.beat-start,
+      body.jianpu-theme .metronome-pattern-step.bar-start,
+      body.jianpu-theme .metronome-pattern-step.active.bar-start {
+        border-color: #e53935;
       }
       body.jianpu-theme .btn-primary {
         background: #e53935;
@@ -525,7 +474,7 @@
         <div class="header">
             <div class="header-content">
                 <div class="header-text">
-                    <h1 data-i18n="app.title">IC Studio - 简谱视奏生成器</h1>
+                    <h1 data-i18n="app.title">Cognote - 简谱视奏生成器</h1>
                     <p data-i18n="app.subtitle">专业级乐谱渲染与音乐理论工具</p>
                 </div>
                 <div class="header-controls">
@@ -550,46 +499,16 @@
                                 <span class="function-icon">🎹</span>
                                 <span data-i18n="app.chordMode">和弦视奏</span>
                             </div>
+                            <div class="function-option" onclick="switchFunction('rhythm')">
+                                <span class="function-icon">🥁</span>
+                                <span data-i18n="app.rhythmMode">节奏视奏</span>
+                            </div>
                         </div>
                     </div>
                     <div class="settings-dropdown">
                         <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">
                             ⚙️ <span data-i18n="settings.title">设置</span>
                         </button>
-                        <div class="settings-menu" id="settingsMenu">
-                            <!-- 主题设置 -->
-                            <div class="settings-section">
-                                <div class="settings-section-title" data-i18n="settings.theme">主题</div>
-                                <div class="theme-options">
-                                    <div class="theme-option" onclick="setTheme('light')">
-                                        <span class="theme-icon">☀️</span>
-                                        <span data-i18n="settings.lightMode">浅色模式</span>
-                                    </div>
-                                    <div class="theme-option" onclick="setTheme('dark')">
-                                        <span class="theme-icon">🌙</span>
-                                        <span data-i18n="settings.darkMode">深色模式</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- 语言设置 -->
-                            <div class="settings-section">
-                                <div class="settings-section-title" data-i18n="settings.language">语言</div>
-                                <div class="language-options">
-                                    <div class="language-option" onclick="switchLanguage('zh-CN')">
-                                        简体中文
-                                    </div>
-                                    <div class="language-option" onclick="switchLanguage('zh-TW')">
-                                        繁體中文
-                                    </div>
-                                    <div class="language-option" onclick="switchLanguage('en')">
-                                        English
-                                    </div>
-                                </div>
-                            </div>
-
-
-                        </div>
                     </div>
                 </div>
             </div>
@@ -742,7 +661,12 @@
                 </div>
 
                 <div class="control-group metronome-group" style="flex: none; width: 160px;">
-                    <label for="headerMetronomeBpm" data-i18n="controls.metronome">节拍器</label>
+                    <div class="metronome-label-row">
+                        <button class="metronome-settings-btn" id="metronomePatternBtn" onclick="openMetronomePatternSettings()" title="节拍器节奏设置" aria-label="节拍器节奏设置">
+                            ⚙️
+                        </button>
+                        <label for="headerMetronomeBpm" data-i18n="controls.metronome">节拍器</label>
+                    </div>
                     <div class="metronome-control">
                         <input type="number" id="headerMetronomeBpm" min="1" max="999" value="60" class="bpm-input-control">
                         <button class="metronome-play-btn" id="headerMetronomeBtn" onclick="toggleMetronome()" title="开始/停止节拍器">
@@ -807,7 +731,7 @@
             margin-top: 7.5px;
         ">
             <p style="margin: 0; line-height: 1.5;">
-                <strong>IC Studio 视奏工具</strong> - 专业级视奏旋律生成器
+                <strong>Cognote</strong> - 专业级视奏旋律生成器
             </p>
             <p style="margin: 8px 0 0 0; font-size: 13px; opacity: 0.8;">
                 Copyright © 2025. All rights reserved. Igor Chen - 
@@ -826,6 +750,26 @@
                 <button class="close-btn" onclick="closeChallengeModal()">×</button>
             </div>
             <div class="modal-body">
+                <div class="control-row" style="margin-top: 8px;">
+                    <div class="control-group">
+                        <label for="challengeModeToggleModal" data-i18n="challenge.modeToggle">挑战模式</label>
+                        <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                            <input type="checkbox" id="challengeModeToggleModal" style="opacity: 0; width: 0; height: 0;">
+                            <span class="slider" style="position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
+                                <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label for="challengeCalibrationToggle" data-i18n="challenge.calibration">输入校准</label>
+                        <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                            <input type="checkbox" id="challengeCalibrationToggle" style="opacity: 0; width: 0; height: 0;">
+                            <span class="slider" style="position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
+                                <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
                 <div class="control-row" style="margin-top: 8px;">
                     <div class="control-group">
                         <label for="challengePrepTime" data-i18n="challenge.prepTime">准备时间（秒）</label>
@@ -873,6 +817,120 @@
             <div class="modal-buttons">
                 <button class="btn-secondary" onclick="cancelChallengeSetup()" data-i18n="button.cancel">取消</button>
                 <button class="btn-primary" onclick="confirmChallengeSetup()" data-i18n="button.start">开始</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="metronomePatternModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="modal.metronomePattern.title">节拍器节奏型</h3>
+                <button class="close-btn" onclick="closeMetronomePatternSettings()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="metronome-pattern-row">
+                    <div class="control-group metronome-pattern-toggle-group" style="flex: 1; min-width: 160px;">
+                        <div class="toggle-container">
+                            <input type="checkbox" id="metronomePatternEnable" class="toggle-input">
+                            <label for="metronomePatternEnable" class="toggle-slider">
+                                <span class="toggle-button"></span>
+                            </label>
+                        </div>
+                        <label for="metronomePatternEnable" data-i18n="metronomePattern.enable">启用自定义节奏</label>
+                    </div>
+                    <div class="control-group" style="flex: 1; min-width: 180px;">
+                        <label data-i18n="metronomePattern.subdivision">细分</label>
+                        <select id="metronomePatternSubdivision" class="metronome-pattern-select">
+                            <option value="1" data-i18n="metronomePattern.subdivision.beat">每拍1下</option>
+                            <option value="2" data-i18n="metronomePattern.subdivision.eighth">每拍2分 (八分)</option>
+                            <option value="3" data-i18n="metronomePattern.subdivision.triplet">每拍3分 (三连)</option>
+                            <option value="4" data-i18n="metronomePattern.subdivision.sixteenth">每拍4分 (十六分)</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex: 1; min-width: 140px;">
+                        <label data-i18n="metronomePattern.bars">小节数</label>
+                        <select id="metronomePatternBars" class="metronome-pattern-select">
+                            <option value="1" data-i18n="metronomePattern.bars.1">1小节</option>
+                            <option value="2" data-i18n="metronomePattern.bars.2">2小节</option>
+                            <option value="4" data-i18n="metronomePattern.bars.4">4小节</option>
+                        </select>
+                    </div>
+                    <div class="metronome-pattern-info">
+                        <span data-i18n="metronomePattern.timeSig">当前拍号</span>
+                        <strong id="metronomePatternTimeSig">4/4</strong>
+                    </div>
+                </div>
+
+                <div class="metronome-pattern-grid" id="metronomePatternGrid"></div>
+                <p class="modal-hint" data-i18n="metronomePattern.hint">点击方格启用/静音节拍</p>
+
+                <div class="modal-buttons">
+                    <button class="btn-secondary" onclick="resetMetronomePattern()" data-i18n="metronomePattern.resetBeats">重置为每拍</button>
+                    <button class="btn-secondary" onclick="clearMetronomePattern()" data-i18n="metronomePattern.clear">全部静音</button>
+                    <button class="btn-primary" onclick="saveMetronomePatternSettingsAndClose()" data-i18n="button.saveOnly">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="settings.title">设置</h3>
+                <button class="close-btn" onclick="closeSettingsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-menu show" id="settingsMenu" style="position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; border: 0; min-width: 0; background: transparent;">
+                    <!-- 主题设置 -->
+                    <div class="settings-section">
+                        <div class="settings-section-title" data-i18n="settings.theme">主题</div>
+                        <div class="theme-options">
+                            <div class="theme-option" onclick="setTheme('light')">
+                                <span class="theme-icon">☀️</span>
+                                <span data-i18n="settings.lightMode">浅色模式</span>
+                            </div>
+                            <div class="theme-option" onclick="setTheme('dark')">
+                                <span class="theme-icon">🌙</span>
+                                <span data-i18n="settings.darkMode">深色模式</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 语言设置 -->
+                    <div class="settings-section">
+                        <div class="settings-section-title" data-i18n="settings.language">语言</div>
+                        <div class="language-options">
+                            <div class="language-option" onclick="switchLanguage('zh-CN')">
+                                简体中文
+                            </div>
+                            <div class="language-option" onclick="switchLanguage('zh-TW')">
+                                繁體中文
+                            </div>
+                            <div class="language-option" onclick="switchLanguage('en')">
+                                English
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MIDI 输入 -->
+                    <div class="settings-section" id="midiSettingsSection">
+                        <div class="settings-section-title" data-i18n="settings.midi">MIDI 输入</div>
+                        <div class="midi-settings-row">
+                            <span data-i18n="midi.enable">启用</span>
+                            <label class="toggle-container">
+                                <input type="checkbox" id="midiEnableToggle" class="toggle-input">
+                                <span class="toggle-slider"><span class="toggle-button"></span></span>
+                            </label>
+                        </div>
+                        <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
+                            <label for="midiDeviceSelect" data-i18n="midi.device">设备</label>
+                            <select id="midiDeviceSelect" class="midi-select" disabled>
+                                <option value="">-</option>
+                            </select>
+                        </div>
+                        <div class="midi-status" id="midiStatusText" data-i18n="midi.status.disabled">MIDI 已关闭</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -934,7 +992,7 @@
                 </div>
 
                 <!-- 🔥 通用附点音符选项 -->
-                <div class="rhythm-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--info-border);">
+                <div class="rhythm-section" id="dottedOptionsSection" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--info-border);">
                     <h4 style="margin-bottom: 15px;" data-i18n="rhythm.dottedOptions">附点音符选项</h4>
                     <div style="background: var(--info-bg); padding: 15px; border-radius: 8px;">
                         <label class="checkbox-item" style="margin-bottom: 10px;">
@@ -954,6 +1012,13 @@
                     <p style="font-size: 0.9rem; color: var(--secondary-text); margin-bottom: 20px;" data-i18n="rhythm.freqDesc">调整各节奏单位在旋律中的出现频率 (0% = 不使用, 100% = 优先使用)</p>
                     
                     <div class="rhythm-frequency-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="frequency-item" id="freq-dotted-item">
+                            <label for="freq-dotted" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="rhythm.freq.dottedOverall">附点音符总体频率:</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="freq-dotted" min="0" max="100" value="20" style="flex: 1;">
+                                <span id="freq-dotted-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">20%</span>
+                            </div>
+                        </div>
                         <div class="frequency-item" id="freq-whole-item">
                             <label for="freq-whole" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="rhythm.freq.whole">全音符频率:</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
@@ -1341,6 +1406,24 @@
                             <input type="checkbox" id="time-6/8" value="6/8">
                             <span data-i18n="time.6-8">6/8 拍</span>
                         </label>
+                        <label class="checkbox-item" style="display: none;">
+                            <input type="checkbox" id="time-custom" value="custom">
+                            <span data-i18n="time.custom">自定义</span>
+                        </label>
+                    </div>
+                    <div id="customTimeSignatureFields" style="display: none; margin-top: 12px; padding: 12px; border: 1px dashed var(--border-color); border-radius: 10px; background: var(--neutral-white);">
+                        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <label for="customTimeBeats" style="min-width: 80px;" data-i18n="time.custom.beats">拍数</label>
+                            <input type="number" id="customTimeBeats" min="1" step="1" value="5" style="width: 90px;">
+                            <label for="customTimeBeatValue" style="min-width: 80px;" data-i18n="time.custom.denominator">单位</label>
+                            <select id="customTimeBeatValue" style="min-width: 120px;">
+                                <option value="2">2</option>
+                                <option value="4" selected>4</option>
+                                <option value="8">8</option>
+                                <option value="16">16</option>
+                            </select>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 12px; color: var(--neutral-dark);" data-i18n="time.custom.hint">示例：5/4、7/4、5/8、7/8</div>
                     </div>
                 </div>
 
@@ -1510,8 +1593,12 @@
                 window.ICStudioSync.syncTheme(theme, 'jianpu-tool');
             }
 
-            // 关闭设置菜单
+            // 关闭设置弹窗
             closeSettings();
+
+            if (window.__icMidi && typeof window.__icMidi.refreshStatus === 'function') {
+                window.__icMidi.refreshStatus();
+            }
 
             console.log(`🎨 主题已设置为: ${theme}`);
         }
@@ -1533,34 +1620,34 @@
             console.log(`🎨 主题已切换到: ${theme}`);
         }
         
-        // 设置菜单控制
+        // 设置弹窗控制
         function toggleSettings() {
-            const settingsMenu = document.getElementById('settingsMenu');
-            const isVisible = settingsMenu.classList.contains('show');
-            
+            const modal = document.getElementById('settingsModal');
+            const isVisible = modal && (modal.style.display === 'flex' || modal.style.display === 'block');
+
             if (isVisible) {
-                closeSettings();
+                closeSettingsModal();
             } else {
-                openSettings();
+                openSettingsModal();
             }
         }
-        
-        function openSettings() {
-            const settingsMenu = document.getElementById('settingsMenu');
-            settingsMenu.classList.add('show');
-            
-            // 添加点击外部区域关闭菜单的监听器
-            setTimeout(() => {
-                document.addEventListener('click', handleClickOutside);
-            }, 10);
+
+        function openSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
-        
+
+        function closeSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            if (!modal) return;
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
         function closeSettings() {
-            const settingsMenu = document.getElementById('settingsMenu');
-            settingsMenu.classList.remove('show');
-            
-            // 移除点击外部区域的监听器
-            document.removeEventListener('click', handleClickOutside);
+            closeSettingsModal();
         }
         
         // 功能选择器控制
@@ -1625,17 +1712,12 @@
                 navigateTo('interval-generator.html');
             } else if (mode === 'chord') {
                 navigateTo('chord-generator.html');
+            } else if (mode === 'rhythm') {
+                navigateTo('rhythm.html');
             }
         }
         
-        // 处理点击外部区域关闭设置菜单
-        function handleClickOutside(event) {
-            const settingsDropdown = document.querySelector('.settings-dropdown');
-            
-            if (settingsDropdown && !settingsDropdown.contains(event.target)) {
-                closeSettings();
-            }
-        }
+        // 设置已改为弹窗，不再使用下拉外部点击关闭
 
         // 节拍器相关变量和功能
         let metronomeInterval = null;
@@ -1648,6 +1730,283 @@
         let metronomeStartTime = null;
         let metronomeCurrentBeat = 0;
         let metronomeSchedulerInterval = null;
+
+        const metronomePatternStorageKey = 'ic_jianpu_metronome_pattern';
+        const metronomeSubdivisionOptions = [1, 2, 3, 4];
+        const metronomeBarsOptions = [1, 2, 4];
+        let metronomePattern = {
+            enabled: false,
+            subdivision: 1,
+            bars: 1,
+            steps: []
+        };
+
+        function normalizeMetronomeSubdivision(value) {
+            const normalized = parseInt(value, 10);
+            return metronomeSubdivisionOptions.includes(normalized) ? normalized : 1;
+        }
+
+        function normalizeMetronomeBars(value) {
+            const normalized = parseInt(value, 10);
+            return metronomeBarsOptions.includes(normalized) ? normalized : 1;
+        }
+
+        function buildDefaultMetronomePattern(stepsPerPattern, subdivision) {
+            const steps = new Array(stepsPerPattern).fill(0);
+            for (let i = 0; i < stepsPerPattern; i += subdivision) {
+                steps[i] = 1;
+            }
+            return steps;
+        }
+
+        function ensureMetronomePatternSteps(stepsPerPattern, subdivision) {
+            if (!Array.isArray(metronomePattern.steps) || metronomePattern.steps.length !== stepsPerPattern) {
+                metronomePattern.steps = buildDefaultMetronomePattern(stepsPerPattern, subdivision);
+                saveMetronomePatternSettings();
+            }
+            metronomePattern.steps = metronomePattern.steps.map(step => (step ? 1 : 0));
+            return metronomePattern.steps;
+        }
+
+        function loadMetronomePatternSettings() {
+            try {
+                const raw = localStorage.getItem(metronomePatternStorageKey);
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (data && typeof data === 'object') {
+                    metronomePattern.enabled = !!data.enabled;
+                    metronomePattern.subdivision = normalizeMetronomeSubdivision(data.subdivision);
+                    metronomePattern.bars = normalizeMetronomeBars(data.bars);
+                    metronomePattern.steps = Array.isArray(data.steps) ? data.steps.map(step => (step ? 1 : 0)) : [];
+                }
+            } catch (error) {
+                console.warn('⚠️ 节拍器节奏型读取失败，使用默认设置', error);
+            }
+        }
+
+        function saveMetronomePatternSettings() {
+            try {
+                const payload = {
+                    enabled: !!metronomePattern.enabled,
+                    subdivision: normalizeMetronomeSubdivision(metronomePattern.subdivision),
+                    bars: normalizeMetronomeBars(metronomePattern.bars),
+                    steps: Array.isArray(metronomePattern.steps) ? metronomePattern.steps.map(step => (step ? 1 : 0)) : []
+                };
+                localStorage.setItem(metronomePatternStorageKey, JSON.stringify(payload));
+            } catch (error) {
+                console.warn('⚠️ 节拍器节奏型保存失败', error);
+            }
+        }
+
+        function getMetronomeTimeSignatureInfo() {
+            let beats = 4;
+            let den = 4;
+            try {
+                if (typeof userSettings !== 'undefined' && Array.isArray(userSettings.allowedTimeSignatures) && userSettings.allowedTimeSignatures.length === 1) {
+                    const parts = String(userSettings.allowedTimeSignatures[0]).split('/');
+                    beats = parseInt(parts[0] || '4', 10) || beats;
+                    den = parseInt(parts[1] || '4', 10) || den;
+                    return { beats, den };
+                }
+                if (typeof window !== 'undefined' && window.currentTimeSignature) {
+                    const parts = String(window.currentTimeSignature).split('/');
+                    beats = parseInt(parts[0] || '4', 10) || beats;
+                    den = parseInt(parts[1] || '4', 10) || den;
+                }
+            } catch (error) {
+                console.warn('⚠️ 无法读取当前拍号，使用默认4/4拍', error);
+            }
+            return { beats, den };
+        }
+
+        function getMetronomePatternInfo(tempoOverride) {
+            const tempo = Math.max(1, tempoOverride || metronomeTempo);
+            if (!metronomePattern.enabled) {
+                return {
+                    usePattern: false,
+                    stepDuration: 60.0 / tempo
+                };
+            }
+
+            const tsInfo = getMetronomeTimeSignatureInfo();
+            const subdivision = normalizeMetronomeSubdivision(metronomePattern.subdivision);
+            const bars = normalizeMetronomeBars(metronomePattern.bars);
+            const beatDuration = (60.0 / tempo) * (4 / tsInfo.den);
+            const stepDuration = beatDuration / subdivision;
+            const stepsPerBar = tsInfo.beats * subdivision;
+            const stepsPerPattern = stepsPerBar * bars;
+            const steps = ensureMetronomePatternSteps(stepsPerPattern, subdivision);
+
+            return {
+                usePattern: true,
+                stepDuration,
+                stepsPerBar,
+                stepsPerPattern,
+                steps,
+                subdivision,
+                bars
+            };
+        }
+
+        function restartMetronomeIfRunning() {
+            if (isMetronomeRunning) {
+                stopMetronome();
+                startMetronome();
+            }
+        }
+
+        function updateMetronomePatternTimeSig() {
+            const label = document.getElementById('metronomePatternTimeSig');
+            if (!label) return;
+            const tsInfo = getMetronomeTimeSignatureInfo();
+            label.textContent = `${tsInfo.beats}/${tsInfo.den}`;
+        }
+
+        function renderMetronomePatternGrid() {
+            const grid = document.getElementById('metronomePatternGrid');
+            if (!grid) return;
+            const tsInfo = getMetronomeTimeSignatureInfo();
+            const subdivision = normalizeMetronomeSubdivision(metronomePattern.subdivision);
+            const bars = normalizeMetronomeBars(metronomePattern.bars);
+            const stepsPerBar = tsInfo.beats * subdivision;
+            const stepsPerPattern = stepsPerBar * bars;
+            const steps = ensureMetronomePatternSteps(stepsPerPattern, subdivision);
+
+            grid.classList.toggle('disabled', !metronomePattern.enabled);
+            grid.style.gridTemplateColumns = `repeat(${stepsPerBar}, minmax(32px, 1fr))`;
+            grid.style.gridAutoFlow = 'row';
+            grid.innerHTML = '';
+
+            for (let i = 0; i < stepsPerPattern; i++) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'metronome-pattern-step';
+                if (steps[i]) btn.classList.add('active');
+                if (i % subdivision === 0) btn.classList.add('beat-start');
+                if (i % stepsPerBar === 0) btn.classList.add('bar-start');
+                btn.dataset.step = String(i);
+                btn.setAttribute('aria-pressed', steps[i] ? 'true' : 'false');
+                if (i % subdivision === 0) {
+                    const beatNumber = (Math.floor(i / subdivision) % tsInfo.beats) + 1;
+                    btn.textContent = String(beatNumber);
+                } else {
+                    btn.textContent = '';
+                }
+                grid.appendChild(btn);
+            }
+        }
+
+        function updateMetronomePatternUI() {
+            const enableToggle = document.getElementById('metronomePatternEnable');
+            const subdivisionSelect = document.getElementById('metronomePatternSubdivision');
+            const barsSelect = document.getElementById('metronomePatternBars');
+
+            if (enableToggle) enableToggle.checked = !!metronomePattern.enabled;
+            if (subdivisionSelect) subdivisionSelect.value = String(normalizeMetronomeSubdivision(metronomePattern.subdivision));
+            if (barsSelect) barsSelect.value = String(normalizeMetronomeBars(metronomePattern.bars));
+
+            updateMetronomePatternTimeSig();
+            renderMetronomePatternGrid();
+        }
+
+        function openMetronomePatternSettings() {
+            const modal = document.getElementById('metronomePatternModal');
+            if (!modal) return;
+            updateMetronomePatternUI();
+            modal.style.display = 'flex';
+        }
+
+        function closeMetronomePatternSettings() {
+            const modal = document.getElementById('metronomePatternModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function resetMetronomePattern() {
+            const subdivision = normalizeMetronomeSubdivision(metronomePattern.subdivision);
+            const bars = normalizeMetronomeBars(metronomePattern.bars);
+            const tsInfo = getMetronomeTimeSignatureInfo();
+            const stepsPerPattern = tsInfo.beats * subdivision * bars;
+            metronomePattern.steps = buildDefaultMetronomePattern(stepsPerPattern, subdivision);
+            renderMetronomePatternGrid();
+            saveMetronomePatternSettings();
+            restartMetronomeIfRunning();
+        }
+
+        function clearMetronomePattern() {
+            const subdivision = normalizeMetronomeSubdivision(metronomePattern.subdivision);
+            const bars = normalizeMetronomeBars(metronomePattern.bars);
+            const tsInfo = getMetronomeTimeSignatureInfo();
+            const stepsPerPattern = tsInfo.beats * subdivision * bars;
+            metronomePattern.steps = new Array(stepsPerPattern).fill(0);
+            renderMetronomePatternGrid();
+            saveMetronomePatternSettings();
+            restartMetronomeIfRunning();
+        }
+
+        function saveMetronomePatternSettingsAndClose() {
+            saveMetronomePatternSettings();
+            restartMetronomeIfRunning();
+            closeMetronomePatternSettings();
+        }
+
+        function initializeMetronomePatternUI() {
+            loadMetronomePatternSettings();
+            const enableToggle = document.getElementById('metronomePatternEnable');
+            const subdivisionSelect = document.getElementById('metronomePatternSubdivision');
+            const barsSelect = document.getElementById('metronomePatternBars');
+            const grid = document.getElementById('metronomePatternGrid');
+
+            if (enableToggle) {
+                enableToggle.checked = !!metronomePattern.enabled;
+                enableToggle.addEventListener('change', function() {
+                    metronomePattern.enabled = !!this.checked;
+                    renderMetronomePatternGrid();
+                    saveMetronomePatternSettings();
+                    restartMetronomeIfRunning();
+                });
+            }
+
+            if (subdivisionSelect) {
+                subdivisionSelect.value = String(normalizeMetronomeSubdivision(metronomePattern.subdivision));
+                subdivisionSelect.addEventListener('change', function() {
+                    metronomePattern.subdivision = normalizeMetronomeSubdivision(this.value);
+                    renderMetronomePatternGrid();
+                    saveMetronomePatternSettings();
+                    restartMetronomeIfRunning();
+                });
+            }
+
+            if (barsSelect) {
+                barsSelect.value = String(normalizeMetronomeBars(metronomePattern.bars));
+                barsSelect.addEventListener('change', function() {
+                    metronomePattern.bars = normalizeMetronomeBars(this.value);
+                    renderMetronomePatternGrid();
+                    saveMetronomePatternSettings();
+                    restartMetronomeIfRunning();
+                });
+            }
+
+            if (grid) {
+                grid.addEventListener('click', function(event) {
+                    const target = event.target;
+                    if (!target || !target.classList.contains('metronome-pattern-step')) return;
+                    const index = parseInt(target.dataset.step, 10);
+                    if (isNaN(index)) return;
+                    if (!metronomePattern.enabled) {
+                        metronomePattern.enabled = true;
+                        if (enableToggle) enableToggle.checked = true;
+                        grid.classList.remove('disabled');
+                    }
+                    metronomePattern.steps[index] = metronomePattern.steps[index] ? 0 : 1;
+                    target.classList.toggle('active', !!metronomePattern.steps[index]);
+                    target.setAttribute('aria-pressed', metronomePattern.steps[index] ? 'true' : 'false');
+                    saveMetronomePatternSettings();
+                    restartMetronomeIfRunning();
+                });
+            }
+
+            updateMetronomePatternUI();
+        }
         // 提供给挑战模式的只读状态
         window.getMetronomeState = function(){
             try {
@@ -1661,10 +2020,11 @@
         // 提供节拍网格信息给挑战模式使用
         window.getMetronomePhase = function(){
             try {
+                const patternInfo = getMetronomePatternInfo(metronomeTempo);
                 return {
                     audioContext: metronomeAudioContext || null,
                     tempo: metronomeTempo || 60,
-                    beatDuration: metronomeTempo ? (60 / metronomeTempo) : 1,
+                    beatDuration: patternInfo ? patternInfo.stepDuration : (metronomeTempo ? (60 / metronomeTempo) : 1),
                     startTime: metronomeStartTime ?? 0,
                     currentBeat: metronomeCurrentBeat || 0,
                     isRunning: !!isMetronomeRunning
@@ -1738,7 +2098,7 @@
                 oscillator.frequency.setValueAtTime(523.25, scheduleTime); // C5音高
 
                 // 设置自然的音量包络 (更好的release time)
-                gainNode.gain.setValueAtTime(0.25, scheduleTime);
+                gainNode.gain.setValueAtTime(0.5, scheduleTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, scheduleTime + 0.05);
 
                 oscillator.start(scheduleTime);
@@ -1784,18 +2144,26 @@
                 if (!initializeMetronomeAudio()) return;
             }
 
-            const beatDuration = 60.0 / metronomeTempo; // 每拍的秒数
+            const patternInfo = getMetronomePatternInfo(metronomeTempo);
+            const stepDuration = patternInfo.stepDuration; // 每步的秒数
             const lookahead = 0.1; // 提前 100ms 调度
             const scheduleAheadTime = 0.2; // 调度未来 200ms 的节拍
 
-            while (metronomeStartTime + metronomeCurrentBeat * beatDuration <
+            while (metronomeStartTime + metronomeCurrentBeat * stepDuration <
                    metronomeAudioContext.currentTime + scheduleAheadTime) {
 
-                const beatTime = metronomeStartTime + metronomeCurrentBeat * beatDuration;
+                const beatTime = metronomeStartTime + metronomeCurrentBeat * stepDuration;
+                let shouldPlay = true;
+                if (patternInfo.usePattern && patternInfo.stepsPerPattern) {
+                    const stepIndex = metronomeCurrentBeat % patternInfo.stepsPerPattern;
+                    shouldPlay = patternInfo.steps[stepIndex] === 1;
+                }
 
                 // 调度这一拍（声音 + UI指示）
-                playMetronomeSound(beatTime);
-                triggerBeatIndicatorAt(beatTime);
+                if (shouldPlay) {
+                    playMetronomeSound(beatTime);
+                    triggerBeatIndicatorAt(beatTime);
+                }
 
                 metronomeCurrentBeat++;
             }
@@ -1803,6 +2171,7 @@
 
         // 启动节拍器 - 使用精确 Web Audio API 调度
         function startMetronome() {
+            loadMetronomePatternSettings();
             const headerInput = document.getElementById('headerMetronomeBpm');
             const tempo = parseInt(headerInput ? headerInput.value : metronomeTempo) || 60;
             metronomeTempo = tempo;
@@ -1827,7 +2196,8 @@
             // 这样所有音乐和节拍器都在同一个网格上
             metronomeStartTime = 0; // 全局网格起点
 
-            const beatDuration = 60.0 / metronomeTempo;
+            const patternInfo = getMetronomePatternInfo(metronomeTempo);
+            const beatDuration = patternInfo.stepDuration;
             const now = metronomeAudioContext.currentTime;
 
             // 计算当前应该在第几拍（从时间 0 开始）
@@ -1843,7 +2213,7 @@
                 metronomeCurrentBeat = nextBeatNumber;
             }
 
-            console.log(`🎵 节拍器对齐全局网格: ${metronomeTempo} BPM, 当前=${now.toFixed(3)}s, 从第${metronomeCurrentBeat}拍开始 (时间=${(metronomeCurrentBeat * beatDuration).toFixed(3)}s)`);
+            console.log(`🎵 节拍器对齐全局网格: ${metronomeTempo} BPM, 当前=${now.toFixed(3)}s, 从第${metronomeCurrentBeat}步开始 (时间=${(metronomeCurrentBeat * beatDuration).toFixed(3)}s)`);
 
             // 立即调度第一批节拍
             scheduleMetronomeBeat();
@@ -2064,6 +2434,7 @@
                     }
                 });
             }
+            initializeMetronomePatternUI();
         });
         
         // 初始化主题
@@ -2082,12 +2453,13 @@
         // 多语言翻译对象
         const translations = {
             'zh-CN': {
-                'app.title': 'IC Studio - 简谱视奏生成器',
+                'app.title': 'Cognote - 简谱视奏生成器',
                 'app.subtitle': '专业级简谱视奏与音乐理论工具',
                 'app.jianpuMode': '简谱视奏',
                 'app.melodyMode': '旋律视奏',
                 'app.intervalMode': '音程视奏',
                 'app.chordMode': '和弦视奏',
+                'app.rhythmMode': '节奏视奏',
                 'controls.interval': '音程跨度',
                 'controls.intervalSettings': '音程设置',
                 'controls.measures': '小节数',
@@ -2109,6 +2481,7 @@
                 'controls.englishNames': '音名',
                 'controls.accidental': '临时记号',
                 'controls.metronome': '节拍器',
+                'controls.metronomePattern': '节拍器节奏型',
                 'controls.generate': '生成旋律',
                 'controls.previous': '上一条',
                 'controls.next': '下一条',
@@ -2127,6 +2500,15 @@
                 'settings.language': '语言',
                 'settings.lightMode': '浅色模式',
                 'settings.darkMode': '深色模式',
+                'settings.midi': 'MIDI 输入',
+                'midi.enable': '启用',
+                'midi.device': '设备',
+                'midi.status.unsupported': '当前浏览器不支持 MIDI',
+                'midi.status.permission': '未授权 MIDI 访问',
+                'midi.status.nodevice': '未检测到 MIDI 设备',
+                'midi.status.connected': '已连接: {device}',
+                'midi.status.disconnected': '设备已断开',
+                'midi.status.disabled': 'MIDI 已关闭',
                 'settings.metronome': '节拍器',
                 'settings.tempo': '速度 (BPM)',
                 'settings.startMetronome': '开始节拍器',
@@ -2139,6 +2521,21 @@
                 'modal.clef.title': '谱号设置',
                 'modal.articulation.title': 'Articulations',
                 'modal.challenge.title': '挑战模式',
+                'modal.metronomePattern.title': '节拍器节奏型',
+                'metronomePattern.enable': '启用自定义节奏',
+                'metronomePattern.subdivision': '细分',
+                'metronomePattern.subdivision.beat': '每拍1下',
+                'metronomePattern.subdivision.eighth': '每拍2分 (八分)',
+                'metronomePattern.subdivision.triplet': '每拍3分 (三连)',
+                'metronomePattern.subdivision.sixteenth': '每拍4分 (十六分)',
+                'metronomePattern.bars': '小节数',
+                'metronomePattern.bars.1': '1小节',
+                'metronomePattern.bars.2': '2小节',
+                'metronomePattern.bars.4': '4小节',
+                'metronomePattern.timeSig': '当前拍号',
+                'metronomePattern.hint': '点击方格启用/静音节拍',
+                'metronomePattern.resetBeats': '重置为每拍',
+                'metronomePattern.clear': '全部静音',
                 // Modal content
                 'modal.rhythm.basicUnit': '基本节奏单位',
                 'modal.keySignature.major': '大调 (Major)',
@@ -2151,6 +2548,8 @@
                 'challenge.cursor': '光标',
                 'challenge.metronome': '节拍器',
                 'challenge.hide': '隐藏',
+                'challenge.modeToggle': '挑战模式',
+                'challenge.calibration': '输入校准',
                 'challenge.cursorHint': '光标开关：光标用于提示当前应演奏的位置，count-in结束后出现并随旋律跳动。',
                 'challenge.hideHint': '隐藏开关：开启后，系统在进入下一小节时会自动遮挡上一小节，仅保留当前阅读区。',
                 'challenge.preparingLabel': '准备',
@@ -2207,6 +2606,7 @@
                 'rhythm.quadruplet': '四连音',
                 'rhythm.dottedOptions': '附点音符选项',
                 'rhythm.allowDotted': '允许附点音符 (根据已选节奏自动生成附点版本)',
+                'rhythm.freq.dottedOverall': '附点音符总体频率:',
                 'rhythm.freq.whole': '全音符频率:',
                 'rhythm.freq.dottedHalf': '附点二分音符频率:',
                 'rhythm.freq.half': '二分音符频率:',
@@ -2222,22 +2622,28 @@
                 'time.3-4': '3/4 拍',
                 'time.4-4': '4/4 拍',
                 'time.6-8': '6/8 拍',
+                'time.custom': '自定义',
+                'time.custom.beats': '拍数',
+                'time.custom.denominator': '单位',
+                'time.custom.hint': '示例：5/4、7/4、5/8、7/8',
                 'button.selectAll': '全选',
                 'button.selectAllMajor': '全选',
                 'button.selectAllMinor': '全选',
                 'button.save': '保存设置',
+                'button.saveOnly': '保存',
                 'button.cancel': '取消',
                 'button.advanced': '高级设置',
                 'button.hideAdvanced': '隐藏高级设置',
                 'button.resetDefault': '返回默认',
             },
             'zh-TW': {
-                'app.title': 'IC Studio - 簡譜視奏生成器',
+                'app.title': 'Cognote - 簡譜視奏生成器',
                 'app.subtitle': '專業級簡譜視奏與音樂理論工具',
                 'app.jianpuMode': '簡譜視奏',
                 'app.melodyMode': '旋律視奏',
                 'app.intervalMode': '音程視奏',
                 'app.chordMode': '和弦視奏',
+                'app.rhythmMode': '節奏視奏',
                 'controls.interval': '音程跨度',
                 'controls.intervalSettings': '音程設置',
                 'controls.measures': '小節數',
@@ -2259,6 +2665,7 @@
                 'controls.englishNames': '音名',
                 'controls.accidental': '臨時記號',
                 'controls.metronome': '節拍器',
+                'controls.metronomePattern': '節拍器節奏型',
                 'controls.generate': '生成旋律',
                 'controls.previous': '上一條',
                 'controls.next': '下一條',
@@ -2277,6 +2684,15 @@
                 'settings.language': '語言',
                 'settings.lightMode': '淺色模式',
                 'settings.darkMode': '深色模式',
+                'settings.midi': 'MIDI 輸入',
+                'midi.enable': '啟用',
+                'midi.device': '裝置',
+                'midi.status.unsupported': '目前瀏覽器不支援 MIDI',
+                'midi.status.permission': '未授權 MIDI 存取',
+                'midi.status.nodevice': '未偵測到 MIDI 裝置',
+                'midi.status.connected': '已連接: {device}',
+                'midi.status.disconnected': '裝置已斷開',
+                'midi.status.disabled': 'MIDI 已關閉',
                 'settings.metronome': '節拍器',
                 'settings.tempo': '速度 (BPM)',
                 'settings.startMetronome': '開始節拍器',
@@ -2289,6 +2705,21 @@
                 'modal.clef.title': '譜號設置',
                 'modal.articulation.title': 'Articulations',
                 'modal.challenge.title': '挑戰模式',
+                'modal.metronomePattern.title': '節拍器節奏型',
+                'metronomePattern.enable': '啟用自訂節奏',
+                'metronomePattern.subdivision': '細分',
+                'metronomePattern.subdivision.beat': '每拍1下',
+                'metronomePattern.subdivision.eighth': '每拍2分 (八分)',
+                'metronomePattern.subdivision.triplet': '每拍3分 (三連)',
+                'metronomePattern.subdivision.sixteenth': '每拍4分 (十六分)',
+                'metronomePattern.bars': '小節數',
+                'metronomePattern.bars.1': '1小節',
+                'metronomePattern.bars.2': '2小節',
+                'metronomePattern.bars.4': '4小節',
+                'metronomePattern.timeSig': '目前拍號',
+                'metronomePattern.hint': '點擊方格啟用/靜音節拍',
+                'metronomePattern.resetBeats': '重置為每拍',
+                'metronomePattern.clear': '全部靜音',
                 // Modal content
                 'modal.rhythm.basicUnit': '基本節奏單位',
                 'modal.keySignature.major': '大調 (Major)',
@@ -2301,6 +2732,8 @@
                 'challenge.cursor': '光標',
                 'challenge.metronome': '節拍器',
                 'challenge.hide': '隱藏',
+                'challenge.modeToggle': '挑戰模式',
+                'challenge.calibration': '輸入校準',
                 'challenge.cursorHint': '光標開關：光標用於提示目前應演奏的位置，count-in結束後出現並隨旋律跳動。',
                 'challenge.hideHint': '隱藏開關：開啟後，系統在進入下一小節時會自動遮擋上一小節，僅保留當前閱讀區。',
                 'challenge.preparingLabel': '準備',
@@ -2357,6 +2790,7 @@
                 'rhythm.quadruplet': '四連音',
                 'rhythm.dottedOptions': '附點音符選項',
                 'rhythm.allowDotted': '允許附點音符 (根據已選節奏自動生成附點版本)',
+                'rhythm.freq.dottedOverall': '附點音符總體頻率:',
                 'rhythm.freq.whole': '全音符頻率:',
                 'rhythm.freq.dottedHalf': '附點二分音符頻率:',
                 'rhythm.freq.half': '二分音符頻率:',
@@ -2372,22 +2806,28 @@
                 'time.3-4': '3/4 拍',
                 'time.4-4': '4/4 拍',
                 'time.6-8': '6/8 拍',
+                'time.custom': '自訂',
+                'time.custom.beats': '拍數',
+                'time.custom.denominator': '單位',
+                'time.custom.hint': '例：5/4、7/4、5/8、7/8',
                 'button.selectAll': '全選',
                 'button.selectAllMajor': '全選大調',
                 'button.selectAllMinor': '全選小調',
                 'button.save': '保存設置',
+                'button.saveOnly': '保存',
                 'button.cancel': '取消',
                 'button.advanced': '高級設置',
                 'button.hideAdvanced': '隱藏高級設置',
                 'button.resetDefault': '返回默認',
             },
             'en': {
-                'app.title': 'IC Studio - Jianpu Sight-Reading Generator',
+                'app.title': 'Cognote - Jianpu Sight-Reading Generator',
                 'app.subtitle': 'Professional Jianpu Rendering & Music Theory Tool',
                 'app.jianpuMode': 'Jianpu Sight-Reading',
                 'app.melodyMode': 'Melody Sight-Reading',
                 'app.intervalMode': 'Interval Sight-Reading',
                 'app.chordMode': 'Chord Sight-Reading',
+                'app.rhythmMode': 'Rhythm Sight-Reading',
                 'controls.interval': 'Interval Range',
                 'controls.intervalSettings': 'Interval Settings',
                 'controls.measures': 'Measures',
@@ -2409,6 +2849,7 @@
                 'controls.englishNames': 'Note Names',
                 'controls.accidental': 'Accidentals',
                 'controls.metronome': 'Metronome',
+                'controls.metronomePattern': 'Metronome Pattern',
                 'controls.generate': 'Generate Melody',
                 'controls.previous': 'Previous',
                 'controls.next': 'Next',
@@ -2427,6 +2868,15 @@
                 'settings.language': 'Language',
                 'settings.lightMode': 'Light Mode',
                 'settings.darkMode': 'Dark Mode',
+                'settings.midi': 'MIDI Input',
+                'midi.enable': 'Enable',
+                'midi.device': 'Device',
+                'midi.status.unsupported': 'MIDI is not supported in this browser',
+                'midi.status.permission': 'MIDI access not authorized',
+                'midi.status.nodevice': 'No MIDI devices detected',
+                'midi.status.connected': 'Connected: {device}',
+                'midi.status.disconnected': 'Device disconnected',
+                'midi.status.disabled': 'MIDI is off',
                 'settings.metronome': 'Metronome',
                 'settings.tempo': 'Tempo (BPM)',
                 'settings.startMetronome': 'Start Metronome',
@@ -2439,6 +2889,21 @@
                 'modal.clef.title': 'Clef Settings',
                 'modal.articulation.title': 'Articulations',
                 'modal.challenge.title': 'Challenge Mode',
+                'modal.metronomePattern.title': 'Metronome Pattern',
+                'metronomePattern.enable': 'Enable custom pattern',
+                'metronomePattern.subdivision': 'Subdivision',
+                'metronomePattern.subdivision.beat': '1 per beat',
+                'metronomePattern.subdivision.eighth': '2 per beat (eighths)',
+                'metronomePattern.subdivision.triplet': '3 per beat (triplets)',
+                'metronomePattern.subdivision.sixteenth': '4 per beat (sixteenths)',
+                'metronomePattern.bars': 'Bars',
+                'metronomePattern.bars.1': '1 bar',
+                'metronomePattern.bars.2': '2 bars',
+                'metronomePattern.bars.4': '4 bars',
+                'metronomePattern.timeSig': 'Time signature',
+                'metronomePattern.hint': 'Click squares to enable/mute beats',
+                'metronomePattern.resetBeats': 'Reset to beats',
+                'metronomePattern.clear': 'Mute all',
                 // Modal content
                 'modal.rhythm.basicUnit': 'Basic Rhythm Unit',
                 'modal.keySignature.major': 'Major',
@@ -2451,6 +2916,8 @@
                 'challenge.cursor': 'Cursor',
                 'challenge.metronome': 'Metronome',
                 'challenge.hide': 'Hide',
+                'challenge.modeToggle': 'Challenge Mode',
+                'challenge.calibration': 'Input Calibration',
                 'challenge.cursorHint': 'Cursor toggle: The cursor indicates the exact playing position and appears after the count-in, following the melody.',
                 'challenge.hideHint': 'Hide toggle: When enabled, the previous measure is masked as you enter the next, leaving only the current reading area.',
                 'challenge.preparingLabel': 'Prep',
@@ -2507,6 +2974,7 @@
                 'rhythm.quadruplet': 'Quadruplet',
                 'rhythm.dottedOptions': 'Dotted Note Options',
                 'rhythm.allowDotted': 'Allow Dotted Notes (Auto-generate dotted versions based on selected rhythms)',
+                'rhythm.freq.dottedOverall': 'Overall Dotted Note Frequency:',
                 'rhythm.freq.whole': 'Whole Note Frequency:',
                 'rhythm.freq.dottedHalf': 'Dotted Half Note Frequency:',
                 'rhythm.freq.half': 'Half Note Frequency:',
@@ -2522,10 +2990,15 @@
                 'time.3-4': '3/4 Time',
                 'time.4-4': '4/4 Time',
                 'time.6-8': '6/8 Time',
+                'time.custom': 'Custom',
+                'time.custom.beats': 'Beats',
+                'time.custom.denominator': 'Unit',
+                'time.custom.hint': 'Examples: 5/4, 7/4, 5/8, 7/8',
                 'button.selectAll': 'Select All',
                 'button.selectAllMajor': 'Select All Major',
                 'button.selectAllMinor': 'Select All Minor',
                 'button.save': 'Save Settings',
+                'button.saveOnly': 'Save',
                 'button.cancel': 'Cancel',
                 'button.advanced': 'Advanced Settings',
                 'button.hideAdvanced': 'Hide Advanced Settings',
@@ -3161,7 +3634,7 @@
                 console.log('⚠️ 没有旋律数据，播放测试音符');
                 // 初始化采样器（懒加载）
                 if (!window.__icSamplePlayer && window.ICSamplePlayer) {
-                    window.__icSamplePlayer = new ICSamplePlayer({ rootPath: 'assets/samples/piano-ogg' });
+                    window.__icSamplePlayer = new ICSamplePlayer({ rootPath: 'assets/samples/piano-ogg-full' });
                     window.__icSamplePlayer.load();
                 }
                 playTestNote();
@@ -3437,6 +3910,7 @@
             const fundamentalGain = window.melodyAudioCtx.createGain();
             const mainFilter = window.melodyAudioCtx.createBiquadFilter();
             const compressor = window.melodyAudioCtx.createDynamicsCompressor();
+            const outputGain = window.melodyAudioCtx.createGain();
 
             // 基频设置
             fundamental.frequency.value = frequency;
@@ -3458,7 +3932,9 @@
             fundamental.connect(mainFilter);
             mainFilter.connect(fundamentalGain);
             fundamentalGain.connect(compressor);
-            compressor.connect(window.melodyAudioCtx.destination);
+            outputGain.gain.value = 2;
+            compressor.connect(outputGain);
+            outputGain.connect(window.melodyAudioCtx.destination);
 
             // 🎵 谐波系列 - 模拟真实钢琴的谐波结构
             const harmonics = [];
@@ -4055,7 +4531,7 @@
 
             // 使用与NiceChord节拍器一致的包络
             const clickDuration = 0.05;
-            const volume = 0.25; // 统一音量
+            const volume = 0.5; // 统一音量
 
             gainNode.gain.setValueAtTime(volume, startTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + clickDuration);
@@ -4337,13 +4813,15 @@
         // 🎯 通用弹窗外部点击关闭功能
         function initializeModalClickOutsideToClose() {
             const modalIds = [
+                'settingsModal',
                 'rhythmModal',
                 'articulationModal',
                 'keySignatureModal',
                 'timeSignatureModal',
                 'intervalModal',
                 'clefModal',
-                'challengeModal'
+                'challengeModal',
+                'metronomePatternModal'
             ];
 
             modalIds.forEach(modalId => {
@@ -4356,6 +4834,11 @@
 
                             // 根据弹窗类型调用相应的关闭函数
                 switch(modalId) {
+                                case 'settingsModal':
+                                    if (typeof closeSettingsModal === 'function') {
+                                        closeSettingsModal();
+                                    }
+                                    break;
                                 case 'rhythmModal':
                                     if (typeof closeRhythmSettings === 'function') {
                                         closeRhythmSettings();
@@ -4391,6 +4874,11 @@
                                 cancelChallengeSetup();
                             }
                             break;
+                        case 'metronomePatternModal':
+                            if (typeof closeMetronomePatternSettings === 'function') {
+                                closeMetronomePatternSettings();
+                            }
+                            break;
                                 default:
                                     // 通用关闭方法
                                     modal.style.display = 'none';
@@ -4406,6 +4894,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeModalClickOutsideToClose();
             console.log('🎯 弹窗外部点击关闭功能已初始化');
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('settingsModal');
+                if (modal && modal.style.display !== 'none') {
+                    closeSettingsModal();
+                }
+            }
         });
 
         // 练习计数器（会话内计数，刷新清零）
@@ -5592,7 +6089,23 @@ function collectMeasureRectsByGlobalEqualSplit(){
         */
     </script>
 
-    <!-- 🛡️ 试用保护系统脚本 -->
+    <script>
+        window.IC_MIDI_CONFIG = {
+            getAudioContext: () => {
+                if (!window.melodyAudioCtx) {
+                    window.melodyAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (window.melodyAudioCtx && window.melodyAudioCtx.state === 'suspended') {
+                    window.melodyAudioCtx.resume().catch(()=>{});
+                }
+                return window.melodyAudioCtx;
+            },
+            sampleRoot: 'assets/samples/piano-ogg-full',
+            useSamplePlayer: true
+        };
+    </script>
+    <script src="assets/js/midi-input.js?v=1"></script>
+
     <script src="/js/trial-limiter.js?v=20250909"></script>
     <script src="/js/advanced-trial-protection.js?v=20250920"></script>
     <script src="/js/melody-counter-system.js?v=20250920"></script>

@@ -1,5 +1,5 @@
 /*!
- * IC Studio 视奏工具 - 小调变化音处理模块
+ * Cognote - 小调变化音处理模块
  * Minor Alterations Module - Enhanced Version
  * 
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club

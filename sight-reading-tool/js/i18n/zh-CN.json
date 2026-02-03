@@ -7,11 +7,11 @@
     "featureHighlight": "真正读懂音乐",
     "btnPurchase": "立即购买",
     "btnTry": "立即试用",
-    "pill": "IC 视奏工具"
+    "pill": "Cognote"
   },
 
   "products": {
-    "title": "四大核心工具",
+    "title": "五大核心工具",
     "subtitle": "针对不同训练需求，提供专业的视奏练习方案",
 
     "melody": {
@@ -32,6 +32,11 @@
     "jianpu": {
       "title": "简谱视奏生成器",
       "description": "使用简谱（数字记谱法）显示旋律，保留节奏与调号控制，适合更习惯简谱的学习者。"
+    },
+
+    "rhythm": {
+      "title": "节奏视奏生成器",
+      "description": "专注节奏与时值训练，支持单线打击谱、节奏密度与切分控制，适合提升稳定性与律动感。"
     }
   },
 
@@ -65,9 +70,9 @@
     },
 
     "affordable": {
-      "icon": "💰",
-      "title": "买断机制",
-      "description": "一次性购买，无限生成练习内容，性价比远超传统视奏教材。"
+      "icon": "🎹",
+      "title": "支持 MIDI 输入与校准",
+      "description": "连接 MIDI 键盘即可输入练习；支持延迟与力度校准，提升识别准确度与跟手感。"
     }
   },
 

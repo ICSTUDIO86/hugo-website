@@ -1,104 +1,45 @@
 <!DOCTYPE html>
-<!-- saved from url=(0269)file:///Users/igorchen/Downloads/IC%20Studio/IC%20%E8%A7%86%E5%A5%8F%E5%B7%A5%E5%85%B7%20%E7%AC%AC%E4%B8%80%E7%89%88%20(%E5%B7%B2%E4%B8%8A%E6%9E%B6)%20%E9%9F%B3%E7%A8%8B%E4%BF%AE%E5%A4%8D%E4%B8%AD%202/%E5%92%8C%E5%BC%A6%E8%A7%86%E5%A5%8F%E7%94%9F%E6%88%90%E5%99%A8.html -->
 <html lang="zh-CN" data-theme="light">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script>
+    (function() {
+      var isFile = location.protocol === 'file:' || location.origin === 'null';
+      if (!isFile) return;
+      try {
+        console.warn('🚫 检测到file://协议，已阻止');
+      } catch (e) {}
+      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
+      document.open();
+      document.write(html);
+      document.close();
+      throw new Error('file-protocol-blocked');
+    })();
+  </script>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>
-      (function() {
-        if (window.location.protocol !== 'file:') {
-          return;
-        }
-
-        const offlineHtml = `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>无法离线使用</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #1f2933;
-    }
-    .offline-wrap {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    .offline-card {
-      background: rgba(255, 255, 255, 0.96);
-      padding: 32px;
-      max-width: 480px;
-      border-radius: 16px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-      text-align: center;
-    }
-    .offline-card h1 {
-      margin: 0 0 12px;
-      font-size: 24px;
-    }
-    .offline-card p {
-      margin: 0 0 16px;
-      color: #52606d;
-      line-height: 1.6;
-    }
-    .offline-card a {
-      display: inline-block;
-      padding: 12px 24px;
-      border-radius: 999px;
-      background: #3f5ae0;
-      color: #fff;
-      text-decoration: none;
-      font-weight: 600;
-    }
-  </style>
-</head>
-<body>
-  <div class="offline-wrap">
-    <div class="offline-card">
-      <div style="font-size: 48px; margin-bottom: 12px;">⚠️</div>
-      <h1>无法离线使用</h1>
-      <p>IC 视奏工具需要在线访问以验证授权。请使用在线版本继续。</p>
-      <a href="https://icstudio.club/tools/">访问在线版本 →</a>
-    </div>
-  </div>
-</body>
-</html>`;
-
-        document.open();
-        document.write(offlineHtml);
-        document.close();
-        throw new Error('Offline use is not supported.');
-      })();
-    </script>
 
     <!-- Primary SEO Meta Tags -->
-    <title>Chord Sight Reading Tool | IC 和弦视奏工具 - Harmony Training & Chord Recognition</title>
+    <title>Chord Sight Reading Tool | Cognote - Harmony Training & Chord Recognition</title>
     <meta name="description" content="Professional chord sight reading and harmony training tool online. Practice chord recognition with triads, seventh chords, extended chords, and inversions. Features customizable range, multiple voicings, real-time piano audio playback, standard music notation. Free 20 trials. Perfect for pianists, guitarists, jazz musicians developing chord reading and harmony skills. | 专业和弦视奏与和声训练工具，支持三和弦、七和弦、延伸和弦、转位，自定义音域、多种和弦配置，实时钢琴音频。">
-    <meta name="keywords" content="chord sight reading, chord recognition, harmony training, chord reading practice, jazz chords, chord inversions, seventh chords, extended chords, voicing practice, piano chords, guitar chords, music theory chords, chord identification, harmonic analysis, chord progression practice, free chord trainer, online chord tool, chord exercises, 和弦视奏, 和弦识别, 和声训练, 七和弦, 转位和弦, 爵士和弦, 钢琴和弦, 吉他和弦">
-    <meta name="author" content="Igor Chen - IC Studio">
+    <meta name="keywords" content="chord sight reading, chord recognition, harmony training, chord reading practice, jazz chords, chord inversions, seventh chords, extended chords, voicing practice, piano chords, guitar chords, music theory chords, chord identification, harmonic analysis, chord progression practice, free chord trainer, online chord tool, chord exercises, 和弦视奏, 和弦识别, 和声训练, 七和弦, 转位和弦, 爵士和弦, 钢琴和弦, 吉他和弦, IC 视奏工具, Cognote">
+    <meta name="author" content="Igor Chen - Cognote">
     <link rel="canonical" href="https://icstudio.club/tools/chord-generator.html">
 
     <!-- Open Graph / Facebook / WeChat -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://icstudio.club/tools/chord-generator.html">
-    <meta property="og:title" content="Chord Sight Reading Tool | IC 和弦视奏工具">
+    <meta property="og:title" content="Chord Sight Reading Tool | Cognote">
     <meta property="og:description" content="Professional chord sight reading & harmony training tool. Practice chord recognition with triads, seventh chords, inversions. Piano audio playback. Free 20 trials. | 专业和弦视奏工具，三和弦、七和弦、转位，实时音频。">
     <meta property="og:image" content="https://icstudio.club/images/ICLOGO.png">
-    <meta property="og:image:alt" content="IC Studio Chord Sight Reading Tool Interface">
-    <meta property="og:site_name" content="IC Studio">
+    <meta property="og:image:alt" content="Cognote Chord Sight Reading Tool Interface">
+    <meta property="og:site_name" content="Cognote">
     <meta property="og:locale" content="zh_CN">
     <meta property="og:locale:alternate" content="en_US">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://icstudio.club/tools/chord-generator.html">
-    <meta name="twitter:title" content="Chord Sight Reading & Harmony Training Tool | IC Studio">
+    <meta name="twitter:title" content="Chord Sight Reading & Harmony Training Tool | Cognote">
     <meta name="twitter:description" content="Professional chord sight reading tool. Practice triads, seventh chords, inversions. Piano audio. Free 20 trials.">
     <meta name="twitter:image" content="https://icstudio.club/images/ICLOGO.png">
 
@@ -107,8 +48,8 @@
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
-      "name": "IC Chord Sight Reading Tool",
-      "alternateName": "IC 和弦视奏工具",
+      "name": "Cognote Chord Sight Reading Tool",
+      "alternateName": ["IC 视奏工具", "和弦视奏工具"],
       "description": "Professional online chord sight reading and harmony training tool for musicians. Practice chord recognition with triads, seventh chords, extended chords, and inversions. Features customizable pitch range, multiple voicings, real-time piano audio playback, and standard music notation rendering. Perfect for developing harmony reading skills.",
       "url": "https://icstudio.club/tools/chord-generator.html",
       "applicationCategory": "MusicApplication",
@@ -144,7 +85,7 @@
       },
       "provider": {
         "@type": "Organization",
-        "name": "IC Studio",
+        "name": "Cognote",
         "url": "https://icstudio.club",
         "logo": "https://icstudio.club/images/ICLOGO.png",
         "sameAs": [
@@ -167,9 +108,6 @@
     }
     </script>
 
-    <!-- React Grab (analytics/debug) -->
-    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
-
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com/">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
@@ -184,6 +122,7 @@
     <!-- 删除SpessaSynth - 改用更简单的Web Audio API方案 -->
 
     <link rel="stylesheet" href="./IC 和弦视奏工具_files/apple-ui-styles-chord.css">
+    <link rel="stylesheet" href="assets/css/midi-input.css">
     <script src="assets/js/sample-player.js?v=6"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function(){
@@ -222,7 +161,7 @@
         <div class="header">
             <div class="header-content">
                 <div class="header-text">
-                    <h1 data-i18n="app.title">IC Studio - 和弦视奏生成器</h1>
+                    <h1 data-i18n="app.title">Cognote - 和弦视奏生成器</h1>
                     <p data-i18n="app.subtitle">专业级乐谱渲染与音乐理论工具</p>
                 </div>
                 <div class="header-controls">
@@ -247,46 +186,16 @@
                                 <span class="function-icon">🎹</span>
                                 <span data-i18n="app.chordMode">和弦视奏</span>
                             </div>
+                            <div class="function-option" onclick="switchFunction('rhythm')">
+                                <span class="function-icon">🥁</span>
+                                <span data-i18n="app.rhythmMode">节奏视奏</span>
+                            </div>
                         </div>
                     </div>
                     <div class="settings-dropdown">
                         <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">
                             ⚙️ <span data-i18n="settings.title">设置</span>
                         </button>
-                        <div class="settings-menu" id="settingsMenu">
-                            <!-- 主题设置 -->
-                            <div class="settings-section">
-                                <div class="settings-section-title" data-i18n="settings.theme">主题</div>
-                                <div class="theme-options">
-                                    <div class="theme-option" onclick="setTheme('light')">
-                                        <span class="theme-icon">☀️</span>
-                                        <span data-i18n="settings.lightMode">浅色模式</span>
-                                    </div>
-                                    <div class="theme-option" onclick="setTheme('dark')">
-                                        <span class="theme-icon">🌙</span>
-                                        <span data-i18n="settings.darkMode">深色模式</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 语言设置 -->
-                            <div class="settings-section">
-                                <div class="settings-section-title" data-i18n="settings.language">语言</div>
-                                <div class="language-options">
-                                    <div class="language-option" onclick="switchLanguage('zh-CN')">
-                                        简体中文
-                                    </div>
-                                    <div class="language-option" onclick="switchLanguage('zh-TW')">
-                                        繁體中文
-                                    </div>
-                                    <div class="language-option" onclick="switchLanguage('en')">
-                                        English
-                                    </div>
-                                </div>
-                            </div>
-
-
-                        </div>
                     </div>
                 </div>
             </div>
@@ -463,8 +372,23 @@
                     </div>
                 </div>
 
+                <div class="control-group chord-jianpu-group" style="flex: none; width: 140px; margin-right: 0px; display: none;">
+                    <label data-i18n="controls.jianpuChordSymbols">简谱代号</label>
+                    <div class="toggle-container">
+                        <input type="checkbox" id="chordJianpuToggle" class="toggle-input">
+                        <label for="chordJianpuToggle" class="toggle-slider">
+                            <span class="toggle-button"></span>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="control-group metronome-group" style="flex: none; width: 160px;">
-                    <label for="headerMetronomeBpm" data-i18n="controls.metronome">节拍器</label>
+                    <div class="metronome-label-row">
+                        <button class="metronome-settings-btn" id="metronomePatternBtn" onclick="openMetronomePatternSettings()" title="节拍器节奏设置" aria-label="节拍器节奏设置">
+                            ⚙️
+                        </button>
+                        <label for="headerMetronomeBpm" data-i18n="controls.metronome">节拍器</label>
+                    </div>
                     <div class="metronome-control">
                         <input type="number" id="headerMetronomeBpm" min="1" max="999" value="60" class="bpm-input-control">
                         <button class="metronome-play-btn" id="headerMetronomeBtn" onclick="toggleMetronome()" title="开始/停止节拍器">
@@ -513,8 +437,23 @@
                         </div>
                     </div>
 
+                    <div class="control-group chord-jianpu-group" style="flex: none; width: 140px; margin-right: 0px; display: none;">
+                        <label data-i18n="controls.jianpuChordSymbols">简谱代号</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="chordJianpuToggle" class="toggle-input">
+                            <label for="chordJianpuToggle" class="toggle-slider">
+                                <span class="toggle-button"></span>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="control-group metronome-group" style="flex: none; width: 160px;">
-                        <label for="headerMetronomeBpm" data-i18n="controls.metronome">节拍器</label>
+                        <div class="metronome-label-row">
+                            <button class="metronome-settings-btn" id="metronomePatternBtn" onclick="openMetronomePatternSettings()" title="节拍器节奏设置" aria-label="节拍器节奏设置">
+                                ⚙️
+                            </button>
+                            <label for="headerMetronomeBpm" data-i18n="controls.metronome">节拍器</label>
+                        </div>
                         <div class="metronome-control">
                             <input type="number" id="headerMetronomeBpm" min="1" max="999" value="60" class="bpm-input-control">
                             <button class="metronome-play-btn" id="headerMetronomeBtn" onclick="toggleMetronome()" title="开始/停止节拍器">
@@ -534,6 +473,7 @@
                         <span data-i18n="challenge.seconds" style="opacity:0.7;">秒</span>
                     </div>
                     <button id="generateChordsBtn" class="btn-primary" data-i18n="controls.generate">生成和弦</button>
+                    <div id="melody-counter-status"></div>
                     <div class="button-group">
                         <button class="btn-secondary" onclick="previousChords()" data-i18n="controls.previous">上一条</button>
                         <button class="btn-secondary" onclick="nextChords()" data-i18n="controls.next">下一条</button>
@@ -590,7 +530,7 @@
             margin-top: 7.5px;
         ">
             <p style="margin: 0; line-height: 1.5;">
-                <strong>IC Studio 视奏工具</strong> - 专业级和弦视奏生成器
+                <strong>Cognote</strong> - 专业级和弦视奏生成器
             </p>
             <p style="margin: 8px 0 0 0; font-size: 13px; opacity: 0.8;">
                 Copyright © 2025. All rights reserved. Igor Chen -
@@ -601,6 +541,68 @@
     </div>
 
     <!-- 和弦类型设置弹窗 -->
+    <div id="settingsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="settings.title">设置</h3>
+                <button class="close-btn" onclick="closeSettingsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-menu show" id="settingsMenu" style="position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; border: 0; min-width: 0; background: transparent;">
+                    <!-- 主题设置 -->
+                    <div class="settings-section">
+                        <div class="settings-section-title" data-i18n="settings.theme">主题</div>
+                        <div class="theme-options">
+                            <div class="theme-option" onclick="setTheme('light')">
+                                <span class="theme-icon">☀️</span>
+                                <span data-i18n="settings.lightMode">浅色模式</span>
+                            </div>
+                            <div class="theme-option" onclick="setTheme('dark')">
+                                <span class="theme-icon">🌙</span>
+                                <span data-i18n="settings.darkMode">深色模式</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 语言设置 -->
+                    <div class="settings-section">
+                        <div class="settings-section-title" data-i18n="settings.language">语言</div>
+                        <div class="language-options">
+                            <div class="language-option" onclick="switchLanguage('zh-CN')">
+                                简体中文
+                            </div>
+                            <div class="language-option" onclick="switchLanguage('zh-TW')">
+                                繁體中文
+                            </div>
+                            <div class="language-option" onclick="switchLanguage('en')">
+                                English
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MIDI 输入 -->
+                    <div class="settings-section" id="midiSettingsSection">
+                        <div class="settings-section-title" data-i18n="settings.midi">MIDI 输入</div>
+                        <div class="midi-settings-row">
+                            <span data-i18n="midi.enable">启用</span>
+                            <label class="toggle-container">
+                                <input type="checkbox" id="midiEnableToggle" class="toggle-input">
+                                <span class="toggle-slider"><span class="toggle-button"></span></span>
+                            </label>
+                        </div>
+                        <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
+                            <label for="midiDeviceSelect" data-i18n="midi.device">设备</label>
+                            <select id="midiDeviceSelect" class="midi-select" disabled>
+                                <option value="">-</option>
+                            </select>
+                        </div>
+                        <div class="midi-status" id="midiStatusText" data-i18n="midi.status.disabled">MIDI 已关闭</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="chordTypeModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -1164,6 +1166,26 @@
             <div class="modal-body">
                 <div class="control-row">
                     <div class="control-group">
+                        <label for="challengeModeToggleModal" data-i18n="challenge.modeToggle">挑战模式</label>
+                        <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                            <input type="checkbox" id="challengeModeToggleModal" style="opacity: 0; width: 0; height: 0;">
+                            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
+                                <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label for="challengeCalibrationToggle" data-i18n="challenge.calibration">输入校准</label>
+                        <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                            <input type="checkbox" id="challengeCalibrationToggle" style="opacity: 0; width: 0; height: 0;">
+                            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
+                                <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-group">
                         <label for="challengePrepTime" data-i18n="challenge.prepTime">准备时间（秒）</label>
                         <input type="number" id="challengePrepTime" min="0" max="60" step="1" value="10">
                     </div>
@@ -1216,6 +1238,58 @@
         </div>
     </div>
 
+    <div id="metronomePatternModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="modal.metronomePattern.title">节拍器节奏型</h3>
+                <button class="close-btn" onclick="closeMetronomePatternSettings()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="metronome-pattern-row">
+                    <div class="control-group metronome-pattern-toggle-group" style="flex: 1; min-width: 160px;">
+                        <div class="toggle-container">
+                            <input type="checkbox" id="metronomePatternEnable" class="toggle-input">
+                            <label for="metronomePatternEnable" class="toggle-slider">
+                                <span class="toggle-button"></span>
+                            </label>
+                        </div>
+                        <label for="metronomePatternEnable" data-i18n="metronomePattern.enable">启用自定义节奏</label>
+                    </div>
+                    <div class="control-group" style="flex: 1; min-width: 180px;">
+                        <label data-i18n="metronomePattern.subdivision">细分</label>
+                        <select id="metronomePatternSubdivision" class="metronome-pattern-select">
+                            <option value="1" data-i18n="metronomePattern.subdivision.beat">每拍1下</option>
+                            <option value="2" data-i18n="metronomePattern.subdivision.eighth">每拍2分 (八分)</option>
+                            <option value="3" data-i18n="metronomePattern.subdivision.triplet">每拍3分 (三连)</option>
+                            <option value="4" data-i18n="metronomePattern.subdivision.sixteenth">每拍4分 (十六分)</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex: 1; min-width: 140px;">
+                        <label data-i18n="metronomePattern.bars">小节数</label>
+                        <select id="metronomePatternBars" class="metronome-pattern-select">
+                            <option value="1" data-i18n="metronomePattern.bars.1">1小节</option>
+                            <option value="2" data-i18n="metronomePattern.bars.2">2小节</option>
+                            <option value="4" data-i18n="metronomePattern.bars.4">4小节</option>
+                        </select>
+                    </div>
+                    <div class="metronome-pattern-info">
+                        <span data-i18n="metronomePattern.timeSig">当前拍号</span>
+                        <strong id="metronomePatternTimeSig">4/4</strong>
+                    </div>
+                </div>
+
+                <div class="metronome-pattern-grid" id="metronomePatternGrid"></div>
+                <p class="modal-hint" data-i18n="metronomePattern.hint">点击方格启用/静音节拍</p>
+
+                <div class="modal-buttons">
+                    <button class="btn-secondary" onclick="resetMetronomePattern()" data-i18n="metronomePattern.resetBeats">重置为每拍</button>
+                    <button class="btn-secondary" onclick="clearMetronomePattern()" data-i18n="metronomePattern.clear">全部静音</button>
+                    <button class="btn-primary" onclick="saveMetronomePatternSettingsAndClose()" data-i18n="button.saveOnly">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 🎯 通用弹窗外部点击关闭功能 -->
     <script>
         // ============================================================
@@ -1228,34 +1302,34 @@
         // UI控制函数 (UI Control Functions)
         // ============================================================
 
-        // 设置菜单控制
+        // 设置弹窗控制
         function toggleSettings() {
-            const settingsMenu = document.getElementById('settingsMenu');
-            const isVisible = settingsMenu.classList.contains('show');
+            const modal = document.getElementById('settingsModal');
+            const isVisible = modal && (modal.style.display === 'flex' || modal.style.display === 'block');
 
             if (isVisible) {
-                closeSettings();
+                closeSettingsModal();
             } else {
-                openSettings();
+                openSettingsModal();
             }
         }
 
-        function openSettings() {
-            const settingsMenu = document.getElementById('settingsMenu');
-            settingsMenu.classList.add('show');
+        function openSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
 
-            // 添加点击外部区域关闭菜单的监听器
-            setTimeout(() => {
-                document.addEventListener('click', handleClickOutside);
-            }, 10);
+        function closeSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            if (!modal) return;
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
         }
 
         function closeSettings() {
-            const settingsMenu = document.getElementById('settingsMenu');
-            settingsMenu.classList.remove('show');
-
-            // 移除点击外部区域的监听器
-            document.removeEventListener('click', handleClickOutside);
+            closeSettingsModal();
         }
 
         // 功能选择器控制
@@ -1312,21 +1386,18 @@
                 // 已经在和弦视奏页面
                 closeFunctionSelector();
                 console.log('已在和弦视奏模式');
+            } else if (mode === 'rhythm') {
+                // 导航到节奏视奏页面
+                window.location.href = 'rhythm.html';
             }
         }
 
-        // 处理点击外部区域关闭设置菜单
-        function handleClickOutside(event) {
-            const settingsDropdown = document.querySelector('.settings-dropdown');
-
-            if (settingsDropdown && !settingsDropdown.contains(event.target)) {
-                closeSettings();
-            }
-        }
+        // 处理点击外部区域关闭设置菜单（已改为弹窗，无需下拉处理）
 
         // 🎯 通用弹窗外部点击关闭功能
         function initializeModalClickOutsideToClose() {
             const modalIds = [
+                'settingsModal',
                 'chordTypeModal',
                 'rhythmModal',
                 'keySignatureModal',
@@ -1334,7 +1405,8 @@
                 'clefModal',
                 'bassClefRangeModal',
                 'trebleClefRangeModal',
-                'challengeModal'
+                'challengeModal',
+                'metronomePatternModal'
             ];
 
             modalIds.forEach(modalId => {
@@ -1347,6 +1419,11 @@
 
                             // 根据弹窗类型调用相应的关闭函数
                             switch(modalId) {
+                                case 'settingsModal':
+                                    if (typeof closeSettingsModal === 'function') {
+                                        closeSettingsModal();
+                                    }
+                                    break;
                                 case 'chordTypeModal':
                                     if (typeof closeChordTypeSettings === 'function') {
                                         closeChordTypeSettings();
@@ -1387,6 +1464,11 @@
                                         cancelChallengeSetup();
                                     }
                                     break;
+                                case 'metronomePatternModal':
+                                    if (typeof closeMetronomePatternSettings === 'function') {
+                                        closeMetronomePatternSettings();
+                                    }
+                                    break;
                                 default:
                                     // 通用关闭方法
                                     modal.style.display = 'none';
@@ -1413,17 +1495,7 @@
                     }
                 }
 
-                // 处理设置菜单
-                const settingsMenu = document.getElementById('settingsMenu');
-                const settingsBtn = document.getElementById('settingsBtn');
-
-                if (settingsMenu && settingsMenu.classList.contains('show')) {
-                    // 如果点击的不是菜单本身或触发按钮，则关闭菜单
-                    if (!settingsMenu.contains(event.target) && !settingsBtn.contains(event.target)) {
-                        settingsMenu.classList.remove('show');
-                        console.log('🎯 点击外部区域关闭设置菜单');
-                    }
-                }
+                // 设置已改为弹窗，不在此处处理
             });
         }
 
@@ -1531,9 +1603,15 @@
                 window.ICStudioSync.syncTheme(theme, 'chord-tool');
             }
 
-            // 关闭设置菜单
-            if (typeof closeSettings === 'function') {
+            // 关闭设置弹窗
+            if (typeof closeSettingsModal === 'function') {
+                closeSettingsModal();
+            } else if (typeof closeSettings === 'function') {
                 closeSettings();
+            }
+
+            if (window.__icMidi && typeof window.__icMidi.refreshStatus === 'function') {
+                window.__icMidi.refreshStatus();
             }
 
             console.log(`🎨 和弦视奏工具主题已设置为: ${theme}`);
@@ -1660,44 +1738,7 @@
             console.log(`🌐 和弦视奏工具语言已切换为: ${language}`);
         }
 
-        // 设置菜单控制系统 - 统一实现
-        function toggleSettings() {
-            const settingsMenu = document.getElementById('settingsMenu');
-            const isVisible = settingsMenu.classList.contains('show');
-
-            if (isVisible) {
-                closeSettings();
-            } else {
-                openSettings();
-            }
-        }
-
-        function openSettings() {
-            const settingsMenu = document.getElementById('settingsMenu');
-            settingsMenu.classList.add('show');
-
-            // 添加点击外部区域关闭菜单的监听器
-            setTimeout(() => {
-                document.addEventListener('click', handleClickOutside);
-            }, 10);
-        }
-
-        function closeSettings() {
-            const settingsMenu = document.getElementById('settingsMenu');
-            settingsMenu.classList.remove('show');
-
-            // 移除点击外部区域的监听器
-            document.removeEventListener('click', handleClickOutside);
-        }
-
-        // 处理点击外部区域关闭设置菜单
-        function handleClickOutside(event) {
-            const settingsDropdown = document.querySelector('.settings-dropdown');
-
-            if (settingsDropdown && !settingsDropdown.contains(event.target)) {
-                closeSettings();
-            }
-        }
+        // 设置菜单控制已改为弹窗，复用上方函数
 
         // 页面加载时初始化主题和翻译
         document.addEventListener('DOMContentLoaded', function() {
@@ -1797,6 +1838,279 @@
         let metronomeAudioContext = null;
         let isMetronomeRunning = false;
         let metronomeTempo = 60; // 默认60 BPM
+        let metronomeStepIndex = 0;
+
+        const metronomePatternStorageKey = 'ic_chord_metronome_pattern';
+        const metronomeSubdivisionOptions = [1, 2, 3, 4];
+        const metronomeBarsOptions = [1, 2, 4];
+        let metronomePattern = {
+            enabled: false,
+            subdivision: 1,
+            bars: 1,
+            steps: []
+        };
+
+        function normalizeMetronomeSubdivision(value) {
+            const normalized = parseInt(value, 10);
+            return metronomeSubdivisionOptions.includes(normalized) ? normalized : 1;
+        }
+
+        function normalizeMetronomeBars(value) {
+            const normalized = parseInt(value, 10);
+            return metronomeBarsOptions.includes(normalized) ? normalized : 1;
+        }
+
+        function buildDefaultMetronomePattern(stepsPerPattern, subdivision) {
+            const steps = new Array(stepsPerPattern).fill(0);
+            for (let i = 0; i < stepsPerPattern; i += subdivision) {
+                steps[i] = 1;
+            }
+            return steps;
+        }
+
+        function ensureMetronomePatternSteps(stepsPerPattern, subdivision) {
+            if (!Array.isArray(metronomePattern.steps) || metronomePattern.steps.length !== stepsPerPattern) {
+                metronomePattern.steps = buildDefaultMetronomePattern(stepsPerPattern, subdivision);
+                saveMetronomePatternSettings();
+            }
+            metronomePattern.steps = metronomePattern.steps.map(step => (step ? 1 : 0));
+            return metronomePattern.steps;
+        }
+
+        function loadMetronomePatternSettings() {
+            try {
+                const raw = localStorage.getItem(metronomePatternStorageKey);
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (data && typeof data === 'object') {
+                    metronomePattern.enabled = !!data.enabled;
+                    metronomePattern.subdivision = normalizeMetronomeSubdivision(data.subdivision);
+                    metronomePattern.bars = normalizeMetronomeBars(data.bars);
+                    metronomePattern.steps = Array.isArray(data.steps) ? data.steps.map(step => (step ? 1 : 0)) : [];
+                }
+            } catch (error) {
+                console.warn('⚠️ 节拍器节奏型读取失败，使用默认设置', error);
+            }
+        }
+
+        function saveMetronomePatternSettings() {
+            try {
+                const payload = {
+                    enabled: !!metronomePattern.enabled,
+                    subdivision: normalizeMetronomeSubdivision(metronomePattern.subdivision),
+                    bars: normalizeMetronomeBars(metronomePattern.bars),
+                    steps: Array.isArray(metronomePattern.steps) ? metronomePattern.steps.map(step => (step ? 1 : 0)) : []
+                };
+                localStorage.setItem(metronomePatternStorageKey, JSON.stringify(payload));
+            } catch (error) {
+                console.warn('⚠️ 节拍器节奏型保存失败', error);
+            }
+        }
+
+        function getMetronomeTimeSignatureInfo() {
+            let beats = 4;
+            let den = 4;
+            try {
+                if (typeof chordSettings !== 'undefined' && Array.isArray(chordSettings.timeSignatures) && chordSettings.timeSignatures.length === 1) {
+                    const parts = String(chordSettings.timeSignatures[0]).split('/');
+                    beats = parseInt(parts[0] || '4', 10) || beats;
+                    den = parseInt(parts[1] || '4', 10) || den;
+                    return { beats, den };
+                }
+            } catch (error) {
+                console.warn('⚠️ 无法读取当前拍号，使用默认4/4拍', error);
+            }
+            return { beats, den };
+        }
+
+        function getMetronomePatternInfo(tempoOverride) {
+            const tempo = Math.max(1, tempoOverride || metronomeTempo);
+            if (!metronomePattern.enabled) {
+                return {
+                    usePattern: false,
+                    stepDuration: 60.0 / tempo
+                };
+            }
+
+            const tsInfo = getMetronomeTimeSignatureInfo();
+            const subdivision = normalizeMetronomeSubdivision(metronomePattern.subdivision);
+            const bars = normalizeMetronomeBars(metronomePattern.bars);
+            const beatDuration = (60.0 / tempo) * (4 / tsInfo.den);
+            const stepDuration = beatDuration / subdivision;
+            const stepsPerBar = tsInfo.beats * subdivision;
+            const stepsPerPattern = stepsPerBar * bars;
+            const steps = ensureMetronomePatternSteps(stepsPerPattern, subdivision);
+
+            return {
+                usePattern: true,
+                stepDuration,
+                stepsPerBar,
+                stepsPerPattern,
+                steps,
+                subdivision,
+                bars
+            };
+        }
+
+        function restartMetronomeIfRunning() {
+            if (isMetronomeRunning) {
+                stopMetronome();
+                startMetronome();
+            }
+        }
+
+        function updateMetronomePatternTimeSig() {
+            const label = document.getElementById('metronomePatternTimeSig');
+            if (!label) return;
+            const tsInfo = getMetronomeTimeSignatureInfo();
+            label.textContent = `${tsInfo.beats}/${tsInfo.den}`;
+        }
+
+        function renderMetronomePatternGrid() {
+            const grid = document.getElementById('metronomePatternGrid');
+            if (!grid) return;
+            const tsInfo = getMetronomeTimeSignatureInfo();
+            const subdivision = normalizeMetronomeSubdivision(metronomePattern.subdivision);
+            const bars = normalizeMetronomeBars(metronomePattern.bars);
+            const stepsPerBar = tsInfo.beats * subdivision;
+            const stepsPerPattern = stepsPerBar * bars;
+            const steps = ensureMetronomePatternSteps(stepsPerPattern, subdivision);
+
+            grid.classList.toggle('disabled', !metronomePattern.enabled);
+            grid.style.gridTemplateColumns = `repeat(${stepsPerBar}, minmax(32px, 1fr))`;
+            grid.style.gridAutoFlow = 'row';
+            grid.innerHTML = '';
+
+            for (let i = 0; i < stepsPerPattern; i++) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'metronome-pattern-step';
+                if (steps[i]) btn.classList.add('active');
+                if (i % subdivision === 0) btn.classList.add('beat-start');
+                if (i % stepsPerBar === 0) btn.classList.add('bar-start');
+                btn.dataset.step = String(i);
+                btn.setAttribute('aria-pressed', steps[i] ? 'true' : 'false');
+                if (i % subdivision === 0) {
+                    const beatNumber = (Math.floor(i / subdivision) % tsInfo.beats) + 1;
+                    btn.textContent = String(beatNumber);
+                } else {
+                    btn.textContent = '';
+                }
+                grid.appendChild(btn);
+            }
+        }
+
+        function updateMetronomePatternUI() {
+            const enableToggle = document.getElementById('metronomePatternEnable');
+            const subdivisionSelect = document.getElementById('metronomePatternSubdivision');
+            const barsSelect = document.getElementById('metronomePatternBars');
+
+            if (enableToggle) enableToggle.checked = !!metronomePattern.enabled;
+            if (subdivisionSelect) subdivisionSelect.value = String(normalizeMetronomeSubdivision(metronomePattern.subdivision));
+            if (barsSelect) barsSelect.value = String(normalizeMetronomeBars(metronomePattern.bars));
+
+            updateMetronomePatternTimeSig();
+            renderMetronomePatternGrid();
+        }
+
+        function openMetronomePatternSettings() {
+            const modal = document.getElementById('metronomePatternModal');
+            if (!modal) return;
+            updateMetronomePatternUI();
+            modal.style.display = 'flex';
+        }
+
+        function closeMetronomePatternSettings() {
+            const modal = document.getElementById('metronomePatternModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function resetMetronomePattern() {
+            const subdivision = normalizeMetronomeSubdivision(metronomePattern.subdivision);
+            const bars = normalizeMetronomeBars(metronomePattern.bars);
+            const tsInfo = getMetronomeTimeSignatureInfo();
+            const stepsPerPattern = tsInfo.beats * subdivision * bars;
+            metronomePattern.steps = buildDefaultMetronomePattern(stepsPerPattern, subdivision);
+            renderMetronomePatternGrid();
+            saveMetronomePatternSettings();
+            restartMetronomeIfRunning();
+        }
+
+        function clearMetronomePattern() {
+            const subdivision = normalizeMetronomeSubdivision(metronomePattern.subdivision);
+            const bars = normalizeMetronomeBars(metronomePattern.bars);
+            const tsInfo = getMetronomeTimeSignatureInfo();
+            const stepsPerPattern = tsInfo.beats * subdivision * bars;
+            metronomePattern.steps = new Array(stepsPerPattern).fill(0);
+            renderMetronomePatternGrid();
+            saveMetronomePatternSettings();
+            restartMetronomeIfRunning();
+        }
+
+        function saveMetronomePatternSettingsAndClose() {
+            saveMetronomePatternSettings();
+            restartMetronomeIfRunning();
+            closeMetronomePatternSettings();
+        }
+
+        function initializeMetronomePatternUI() {
+            loadMetronomePatternSettings();
+            const enableToggle = document.getElementById('metronomePatternEnable');
+            const subdivisionSelect = document.getElementById('metronomePatternSubdivision');
+            const barsSelect = document.getElementById('metronomePatternBars');
+            const grid = document.getElementById('metronomePatternGrid');
+
+            if (enableToggle) {
+                enableToggle.checked = !!metronomePattern.enabled;
+                enableToggle.addEventListener('change', function() {
+                    metronomePattern.enabled = !!this.checked;
+                    renderMetronomePatternGrid();
+                    saveMetronomePatternSettings();
+                    restartMetronomeIfRunning();
+                });
+            }
+
+            if (subdivisionSelect) {
+                subdivisionSelect.value = String(normalizeMetronomeSubdivision(metronomePattern.subdivision));
+                subdivisionSelect.addEventListener('change', function() {
+                    metronomePattern.subdivision = normalizeMetronomeSubdivision(this.value);
+                    renderMetronomePatternGrid();
+                    saveMetronomePatternSettings();
+                    restartMetronomeIfRunning();
+                });
+            }
+
+            if (barsSelect) {
+                barsSelect.value = String(normalizeMetronomeBars(metronomePattern.bars));
+                barsSelect.addEventListener('change', function() {
+                    metronomePattern.bars = normalizeMetronomeBars(this.value);
+                    renderMetronomePatternGrid();
+                    saveMetronomePatternSettings();
+                    restartMetronomeIfRunning();
+                });
+            }
+
+            if (grid) {
+                grid.addEventListener('click', function(event) {
+                    const target = event.target;
+                    if (!target || !target.classList.contains('metronome-pattern-step')) return;
+                    const index = parseInt(target.dataset.step, 10);
+                    if (isNaN(index)) return;
+                    if (!metronomePattern.enabled) {
+                        metronomePattern.enabled = true;
+                        if (enableToggle) enableToggle.checked = true;
+                        grid.classList.remove('disabled');
+                    }
+                    metronomePattern.steps[index] = metronomePattern.steps[index] ? 0 : 1;
+                    target.classList.toggle('active', !!metronomePattern.steps[index]);
+                    target.setAttribute('aria-pressed', metronomePattern.steps[index] ? 'true' : 'false');
+                    saveMetronomePatternSettings();
+                    restartMetronomeIfRunning();
+                });
+            }
+
+            updateMetronomePatternUI();
+        }
 
         // 初始化节拍器音频
         function initializeMetronomeAudio() {
@@ -1833,7 +2147,7 @@
                 oscillator.frequency.setValueAtTime(523.25, metronomeAudioContext.currentTime); // C5音高
 
                 // 设置自然的音量包络 (更好的release time)
-                gainNode.gain.setValueAtTime(0.25, metronomeAudioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.5, metronomeAudioContext.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, metronomeAudioContext.currentTime + 0.05);
 
                 oscillator.start(metronomeAudioContext.currentTime);
@@ -1874,18 +2188,33 @@
             if (isMetronomeRunning) return;
 
             const btn = document.getElementById('headerMetronomeBtn');
-            const interval = 60000 / metronomeTempo; // 计算间隔时间（毫秒）
+            loadMetronomePatternSettings();
+            const patternInfo = getMetronomePatternInfo(metronomeTempo);
+            const interval = (patternInfo.stepDuration || (60 / metronomeTempo)) * 1000; // 计算间隔时间（毫秒）
 
             isMetronomeRunning = true;
             btn.textContent = '🎵';
             btn.title = '停止节拍器';
+            metronomeStepIndex = 0;
+
+            function tick() {
+                let shouldPlay = true;
+                if (patternInfo.usePattern && patternInfo.stepsPerPattern) {
+                    const stepIndex = metronomeStepIndex % patternInfo.stepsPerPattern;
+                    shouldPlay = patternInfo.steps[stepIndex] === 1;
+                }
+                if (shouldPlay) {
+                    playMetronomeSound();
+                }
+                metronomeStepIndex++;
+            }
 
             // 立即播放第一声
-            playMetronomeSound();
+            tick();
 
             // 设置定时器
             metronomeInterval = setInterval(() => {
-                playMetronomeSound();
+                tick();
             }, interval);
 
             console.log(`🎵 节拍器已启动: ${metronomeTempo} BPM`);
@@ -1929,6 +2258,8 @@
             const sliderButton = slider.querySelector('.slider-button');
             const keySettingsBtn = document.getElementById('keySettingsBtn');
             const keySettingsGroup = keySettingsBtn ? keySettingsBtn.parentElement : null;
+            const jianpuGroups = document.querySelectorAll('.chord-jianpu-group');
+            const jianpuToggles = document.querySelectorAll('input[id="chordJianpuToggle"]');
 
             if (toggle.checked) {
                 // 启用功能和声模式
@@ -1943,6 +2274,9 @@
                 if (keySettingsGroup) {
                     keySettingsGroup.style.removeProperty('display');
                 }
+                jianpuGroups.forEach((group) => {
+                    group.style.removeProperty('display');
+                });
                 console.log('🎼 已启用功能和声模式');
             } else {
                 // 启用完全随机模式
@@ -1957,7 +2291,20 @@
                 if (keySettingsGroup) {
                     keySettingsGroup.style.display = 'none';
                 }
+                jianpuGroups.forEach((group) => {
+                    group.style.display = 'none';
+                });
+                jianpuToggles.forEach((jianpuToggle) => {
+                    jianpuToggle.checked = false;
+                });
+                if (window.displaySettings) {
+                    window.displaySettings.updateJianpuChordState(false);
+                }
                 console.log('🎲 已启用完全随机模式（固定C大调）');
+            }
+
+            if (typeof applyJianpuChordSymbols === 'function') {
+                applyJianpuChordSymbols();
             }
         }
 
@@ -2403,6 +2750,7 @@
         window.displaySettings = {
             staffVisible: true,     // 默认显示五线谱
             chordSymbolsVisible: true,  // 默认显示和弦代号
+            jianpuChordSymbols: false,  // 功能和声简谱代号
 
             // 更新状态的方法
             updateStaffState: function(visible) {
@@ -2412,12 +2760,17 @@
             updateChordState: function(visible) {
                 this.chordSymbolsVisible = visible;
                 console.log(`🌍 全局状态更新: 和弦代号=${visible ? '显示' : '隐藏'}`);
+            },
+            updateJianpuChordState: function(enabled) {
+                this.jianpuChordSymbols = enabled;
+                console.log(`🌍 全局状态更新: 简谱代号=${enabled ? '启用' : '关闭'}`);
             }
         };
 
         // 将函数添加到全局window对象，便于其他模块调用
         window.applyStaffDisplayState = applyStaffDisplayState;
         window.applyChordSymbolsState = applyChordSymbolsState;
+        window.applyJianpuChordSymbols = applyJianpuChordSymbols;
         window.isChordSymbolElement = isChordSymbolElement;
 
         // 🧪 手动测试函数 - 用户可以在控制台中直接调用
@@ -2459,6 +2812,7 @@
             // 🔧 修复 (2025-10-01): 使用querySelector获取第一个toggle（支持多个toggle）
             const toggle = document.querySelector('input[id="chordSymbolsToggle"]');
             const scoreContainer = document.getElementById('score'); // 修复：正确的ID是'score'
+            const jianpuEnabled = !!(window.displaySettings && window.displaySettings.jianpuChordSymbols);
 
             if (toggle && scoreContainer) {
                 const svg = scoreContainer.querySelector('svg');
@@ -2476,10 +2830,25 @@
                         // 修复：正确获取SVG元素的class属性
                         const className = (text.className && text.className.baseVal) || text.getAttribute('class') || '';
 
+                        const isJianpuTarget = text.dataset && text.dataset.jianpuTarget === 'true';
                         // 检查是否是小节号（纯数字）
                         const isMeasureNumber = content.match(/^\d+$/);
 
-                        if (isMeasureNumber) {
+                        if (isJianpuTarget) {
+                            // 简谱代号需要参与显隐控制
+                            chordCount++;
+                            debugInfo.push(`${index+1}: "${content}" [简谱代号-处理] (class: "${className}")`);
+
+                            if (jianpuEnabled) {
+                                text.style.display = '';
+                                text.style.visibility = 'visible';
+                                text.style.opacity = '1';
+                            } else {
+                                text.style.display = 'none';
+                                text.style.visibility = 'hidden';
+                                text.style.opacity = '0';
+                            }
+                        } else if (isMeasureNumber) {
                             // 保留小节号，不隐藏
                             measureCount++;
                             debugInfo.push(`${index+1}: "${content}" [小节号-保留]`);
@@ -2488,7 +2857,7 @@
                             chordCount++;
                             debugInfo.push(`${index+1}: "${content}" [和弦代号-处理] (class: "${className}")`);
 
-                            if (toggle.checked) {
+                            if (toggle.checked || jianpuEnabled) {
                                 text.style.display = '';
                                 text.style.visibility = 'visible';
                                 text.style.opacity = '1';
@@ -2517,6 +2886,85 @@
                 console.log('toggle:', toggle);
                 console.log('scoreContainer:', scoreContainer);
             }
+        }
+
+        function getChordTextElements(svg) {
+            const selectors = [
+                'text[id*="chord"]',
+                'text[id*="Chord"]',
+                'text[id*="harmony"]',
+                'text[id*="Harmony"]',
+                'g[id*="chord"] text',
+                'g[id*="Chord"] text',
+                'g[id*="harmony"] text',
+                'g[id*="Harmony"] text'
+            ];
+            const elements = Array.from(svg.querySelectorAll(selectors.join(', ')));
+            const marked = Array.from(svg.querySelectorAll('text[data-jianpu-target="true"]'));
+            if (elements.length > 0) {
+                return Array.from(new Set([...elements, ...marked]));
+            }
+            const fallback = Array.from(svg.querySelectorAll('text')).filter((el) => isChordSymbolElement(el));
+            return Array.from(new Set([...fallback, ...marked]));
+        }
+
+        function applyJianpuChordSymbols() {
+            const toggle = document.querySelector('input[id="chordJianpuToggle"]');
+            const scoreContainer = document.getElementById('score');
+            if (!scoreContainer) return;
+            const svg = scoreContainer.querySelector('svg');
+            if (!svg) return;
+
+            const chords = window.currentChords;
+            if (!chords || !Array.isArray(chords.progression)) return;
+
+            const useJianpu = !!(toggle && toggle.checked);
+            const symbolToggle = document.querySelector('input[id="chordSymbolsToggle"]');
+            const showChordSymbols = !symbolToggle || symbolToggle.checked;
+            const showSymbols = useJianpu || showChordSymbols;
+            const chordTextElements = getChordTextElements(svg);
+
+            chordTextElements.forEach((element, index) => {
+                if (index >= chords.progression.length) return;
+                const chord = chords.progression[index];
+                if (!chord) return;
+
+                const currentText = (element.textContent || '').trim();
+                const slashIndex = currentText.indexOf('/');
+                const inversionPart = slashIndex !== -1 ? currentText.slice(slashIndex) : '';
+
+                if (useJianpu && typeof getJianpuChordSymbol === 'function') {
+                    if (element.dataset && element.dataset.origChordHtml === undefined) {
+                        element.dataset.origChordHtml = element.innerHTML;
+                    }
+                    const expected = getJianpuChordSymbol(chord, chords.key);
+                    if (expected) {
+                        element.textContent = expected + inversionPart;
+                        if (element.dataset) element.dataset.jianpuApplied = 'true';
+                    }
+                    if (element.dataset) element.dataset.jianpuTarget = 'true';
+                } else if (element.dataset && element.dataset.jianpuApplied === 'true') {
+                    if (element.dataset.origChordHtml !== undefined) {
+                        element.innerHTML = element.dataset.origChordHtml;
+                    }
+                    delete element.dataset.jianpuApplied;
+                    delete element.dataset.origChordHtml;
+                }
+
+                if (!useJianpu && element.dataset) {
+                    delete element.dataset.jianpuTarget;
+                }
+
+                if (!showSymbols) {
+                    element.style.display = 'none';
+                    element.style.visibility = 'hidden';
+                    element.style.opacity = '0';
+                } else {
+                    element.style.display = '';
+                    element.style.visibility = 'visible';
+                    element.style.opacity = '1';
+                }
+            });
         }
 
         // 初始化功能和声开关
@@ -2634,6 +3082,7 @@
                 bpmInput.addEventListener('change', updateMetronomeTempo);
                 bpmInput.addEventListener('input', updateMetronomeTempo);
             }
+            initializeMetronomePatternUI();
 
             // 监听临时记号滑块变化
             const accidentalSlider = document.getElementById('accidentalRate');
@@ -2704,6 +3153,42 @@
                 window.displaySettings.updateChordState(chordSymbolsToggles[0].checked);
             } else {
                 console.error('❌ 未找到和弦代号开关元素 chordSymbolsToggle');
+            }
+
+            // 🎼 初始化简谱和弦代号开关 - 仅功能和声模式可用
+            const chordJianpuToggles = document.querySelectorAll('input[id="chordJianpuToggle"]');
+            if (chordJianpuToggles.length > 0) {
+                console.log(`🔍 找到${chordJianpuToggles.length}个简谱代号开关元素`);
+                chordJianpuToggles.forEach((toggle, index) => {
+                    toggle.addEventListener('change', function() {
+                        console.log(`🎼 简谱代号开关${index + 1}变化: ${this.checked ? '启用' : '关闭'}`);
+
+                        if (window.displaySettings) {
+                            window.displaySettings.updateJianpuChordState(this.checked);
+                        }
+
+                        // 同步所有toggle的状态
+                        chordJianpuToggles.forEach(t => {
+                            if (t !== this) t.checked = this.checked;
+                        });
+
+                        const chordSymbolsToggle = document.querySelector('input[id="chordSymbolsToggle"]');
+                        const symbolsVisible = !chordSymbolsToggle || chordSymbolsToggle.checked;
+                        if (!symbolsVisible && window.currentChords && window.currentChords.progression && typeof displayChords === 'function') {
+                            displayChords(window.currentChords);
+                        } else if (typeof applyJianpuChordSymbols === 'function') {
+                            applyJianpuChordSymbols();
+                        }
+                    });
+                    console.log(`✅ 简谱代号开关${index + 1}事件监听器已绑定`);
+                });
+
+                if (window.displaySettings) {
+                    console.log('🔍 当前简谱代号开关状态:', chordJianpuToggles[0].checked);
+                    window.displaySettings.updateJianpuChordState(chordJianpuToggles[0].checked);
+                }
+            } else {
+                console.error('❌ 未找到简谱代号开关元素 chordJianpuToggle');
             }
 
             // 改进的模块加载和初始化策略
@@ -4421,8 +4906,51 @@
         });
     </script>
 
+    <script>
+        window.IC_MIDI_CONFIG = {
+            getAudioContext: () => {
+                if (typeof window.getChordAudioContext === 'function') {
+                    const ctx = window.getChordAudioContext();
+                    if (ctx) return ctx;
+                }
+                if (!window.__chordMidiAudioCtx) {
+                    window.__chordMidiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (window.__chordMidiAudioCtx && window.__chordMidiAudioCtx.state === 'suspended') {
+                    window.__chordMidiAudioCtx.resume().catch(()=>{});
+                }
+                return window.__chordMidiAudioCtx;
+            },
+            sampleRoot: 'assets/samples/piano-ogg-full',
+            useSamplePlayer: true,
+            translations: (typeof I18n !== 'undefined' ? I18n.translations : null),
+            getLanguage: () => {
+                try { return localStorage.getItem('preferredLanguage') || 'zh-CN'; } catch(_) { return 'zh-CN'; }
+            }
+        };
+    </script>
+    <script src="assets/js/midi-input.js?v=1"></script>
+
     <!-- 挑战模式逻辑 -->
     <script src="./IC 和弦视奏工具_files/challenge-mode.js"></script>
+
+    <script>
+        // 让试用系统复用 generateMelody 入口
+        if (typeof window.generateChords === 'function') {
+            const originalGenerateChords = window.generateChords;
+            if (typeof window.generateMelody !== 'function') {
+                window.generateMelody = function(...args) {
+                    return originalGenerateChords.apply(this, args);
+                };
+            }
+            window.generateChords = function(...args) {
+                if (typeof window.generateMelody === 'function' && window.generateMelody !== window.generateChords) {
+                    return window.generateMelody(...args);
+                }
+                return originalGenerateChords.apply(this, args);
+            };
+        }
+    </script>
 
     <!-- 🛡️ 试用保护系统脚本 -->
     <script src="/js/trial-limiter.js?v=20250909"></script>

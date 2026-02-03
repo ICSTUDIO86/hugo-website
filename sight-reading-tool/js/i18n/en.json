@@ -8,11 +8,11 @@
     "featureText": "Practice Experience",
     "btnPurchase": "Buy Now",
     "btnTry": "Try Now",
-    "pill": "IC Sight Reading Tools"
+    "pill": "Cognote"
   },
 
   "products": {
-    "title": "Four Core Tools",
+    "title": "Five Core Tools",
     "subtitle": "Professional sight reading practice solutions for different training needs",
 
     "melody": {
@@ -33,6 +33,11 @@
     "jianpu": {
       "title": "Jianpu Sight Reading Generator",
       "description": "Render melodies as numbered notation (jianpu) while keeping full rhythm and key control—ideal for learners who prefer numbered notation."
+    },
+
+    "rhythm": {
+      "title": "Rhythm Sight Reading Generator",
+      "description": "Focused rhythm training with single-line percussion staff, density controls, and syncopation settings to build timing and groove."
     }
   },
 
@@ -72,9 +77,9 @@
     },
 
     "affordable": {
-      "icon": "💰",
-      "title": "One-Time Purchase",
-      "description": "Pay once, generate unlimited practice materials—far more cost-effective than traditional sight-reading books."
+      "icon": "🎹",
+      "title": "MIDI Input & Calibration",
+      "description": "Connect a MIDI keyboard for input, with latency and velocity calibration to improve accuracy and feel."
     }
   },
 

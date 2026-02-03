@@ -434,6 +434,12 @@ class IntervalGenerator {
 
         // 🎵 初始化三连音ID计数器（修复bracket重叠问题）
         this.tripletIdCounter = 0;
+        this.chromaticState = {
+            active: false,
+            remaining: 0,
+            direction: 0
+        };
+        this._pendingAccidentalPreference = null;
 
         // 调内音阶定义（大调和小调）
         this.scales = {
@@ -1816,52 +1822,7 @@ class IntervalGenerator {
      * 安全：不越界、不跨越当前音域
      */
     applyRandomAccidentalsToProgression(progression) {
-        const rate = typeof this.accidentalRate === 'number' ? this.accidentalRate : 0;
-        if (!rate || rate <= 0) return;
-
-        const rangeMin = this.rangeMin || 60;
-        const rangeMax = this.rangeMax || 84;
-
-        const useKey = this.currentKeySignature || 'C';
-
-        for (const measure of progression.measures || []) {
-            const lower = measure.lowerVoice || [];
-            const upper = measure.upperVoice || [];
-            const pairs = Math.min(lower.length, upper.length);
-
-            for (let i = 0; i < pairs; i++) {
-                const ln = lower[i];
-                const un = upper[i];
-                if (!ln || !un || ln.type !== 'note' || un.type !== 'note') continue;
-
-                // 以百分比概率应用一次
-                if (Math.random() * 100 > rate) continue;
-
-                // 选择偏移方向 ±1 半音
-                const offset = Math.random() < 0.5 ? 1 : -1;
-                const newLower = (ln.midi ?? this.calculateMidiDirect?.(ln.pitch) ?? this.noteToMidi(ln.pitch)) + offset;
-                const newUpper = (un.midi ?? this.calculateMidiDirect?.(un.pitch) ?? this.noteToMidi(un.pitch)) + offset;
-
-                // 越界保护
-                if (newLower < rangeMin || newUpper > rangeMax) continue;
-
-                // 应用偏移并重拼写
-                ln.midi = newLower;
-                un.midi = newUpper;
-                try {
-                    if (typeof this.midiToNoteWithKey === 'function' && useKey) {
-                        ln.pitch = this.midiToNoteWithKey(ln.midi, useKey);
-                        un.pitch = this.midiToNoteWithKey(un.midi, useKey);
-                    } else {
-                        ln.pitch = this.midiToNote(ln.midi);
-                        un.pitch = this.midiToNote(un.midi);
-                    }
-                } catch (_) {
-                    // 回退：若拼写异常，撤销偏移
-                    ln.midi -= offset; un.midi -= offset;
-                }
-            }
-        }
+        return;
     }
 
     /**
@@ -3203,45 +3164,110 @@ class IntervalGenerator {
             }  // 结束 else 分支（智能变化音系统）
         }
 
-        // 🔧 修复：恢复临时记号功能（根据用户设置的概率应用）
-        if (this.accidentalRate > 0 && Math.random() * 100 <= this.accidentalRate) {
-            // 解析音符名和八度
-            const match = keySignaturePitch.match(/([A-G])([#b]?)([0-9]+)/);
-            if (!match) return keySignaturePitch;
+        return keySignaturePitch;
+    }
 
-            const [, noteName, currentAccidental, octave] = match;
+    resetChromaticRun() {
+        this.chromaticState.active = false;
+        this.chromaticState.remaining = 0;
+        this.chromaticState.direction = 0;
+    }
 
-            // 智能选择临时记号，避免不合理的音程
-            let newAccidental;
-            if (!currentAccidental) {
-                // 没有升降号的自然音，随机添加升号或降号
-                newAccidental = Math.random() < 0.5 ? '#' : 'b';
-            } else if (currentAccidental === '#') {
-                // 已有升号，可以还原或双升
-                newAccidental = Math.random() < 0.7 ? '' : '##';
-            } else if (currentAccidental === 'b') {
-                // 已有降号，可以还原或双降
-                newAccidental = Math.random() < 0.7 ? '' : 'bb';
+    getChromaticRunLength() {
+        const rate = typeof this.accidentalRate === 'number' ? this.accidentalRate / 100 : 0;
+        let maxLen = 2;
+        if (rate >= 0.75) {
+            maxLen = 4;
+        } else if (rate >= 0.45) {
+            maxLen = 3;
+        }
+        return Math.floor(Math.random() * (maxLen - 1 + 1)) + 2;
+    }
+
+    determineChromaticDirection(lastMidi, targetMidi) {
+        if (typeof lastMidi !== 'number') return 1;
+        if (typeof targetMidi !== 'number') {
+            return Math.random() < 0.5 ? 1 : -1;
+        }
+        const direction = Math.sign(targetMidi - lastMidi);
+        if (direction === 0) {
+            return Math.random() < 0.5 ? 1 : -1;
+        }
+        return direction > 0 ? 1 : -1;
+    }
+
+    queueAccidentalPreference(midi, direction) {
+        const preference = direction > 0 ? '#' : 'b';
+        this._pendingAccidentalPreference = { midi, preference };
+    }
+
+    consumeAccidentalPreference(midi) {
+        if (this._pendingAccidentalPreference) {
+            if (this._pendingAccidentalPreference.midi === midi) {
+                const preference = this._pendingAccidentalPreference.preference;
+                this._pendingAccidentalPreference = null;
+                return preference;
             }
+            this._pendingAccidentalPreference = null;
+        }
+        return null;
+    }
 
-            // 特殊情况处理：E#->F, B#->C, Fb->E, Cb->B
-            if (noteName === 'E' && newAccidental === '#') return 'F' + octave;
-            if (noteName === 'B' && newAccidental === '#') {
-                const newOctave = parseInt(octave) + 1;
-                return 'C' + newOctave;
-            }
-            if (noteName === 'F' && newAccidental === 'b') return 'E' + octave;
-            if (noteName === 'C' && newAccidental === 'b') {
-                const newOctave = parseInt(octave) - 1;
-                return 'B' + newOctave;
-            }
-
-            const newPitch = noteName + newAccidental + octave;
-            console.log(`🎼 应用随机临时记号(${this.accidentalRate}%概率): ${pitch} -> ${newPitch}`);
-            return newPitch;
+    applyChromaticShiftToInterval(lowerMidi, upperMidi, lastLowerMidi, rangeMin, rangeMax) {
+        const rate = typeof this.accidentalRate === 'number' ? this.accidentalRate / 100 : 0;
+        if (!rate || rate <= 0) {
+            this.resetChromaticRun();
+            return { lowerMidi, upperMidi, applied: false };
+        }
+        if (typeof lastLowerMidi !== 'number') {
+            this.resetChromaticRun();
+            return { lowerMidi, upperMidi, applied: false };
         }
 
-        return keySignaturePitch;
+        const interval = Math.abs(lowerMidi - lastLowerMidi);
+        const allowStepwiseRun = interval <= 2;
+        const inRange = (lm, um) => lm >= rangeMin && lm <= rangeMax && um >= rangeMin && um <= rangeMax;
+
+        if (this.chromaticState.active && this.chromaticState.remaining > 0) {
+            if (!allowStepwiseRun) {
+                this.resetChromaticRun();
+                return { lowerMidi, upperMidi, applied: false };
+            }
+            const desiredLower = lastLowerMidi + this.chromaticState.direction;
+            const offset = desiredLower - lowerMidi;
+            const shiftedLower = lowerMidi + offset;
+            const shiftedUpper = upperMidi + offset;
+            if (!inRange(shiftedLower, shiftedUpper)) {
+                this.resetChromaticRun();
+                return { lowerMidi, upperMidi, applied: false };
+            }
+            this.chromaticState.remaining -= 1;
+            if (this.chromaticState.remaining <= 0) {
+                this.resetChromaticRun();
+            }
+            this.queueAccidentalPreference(shiftedLower, this.chromaticState.direction);
+            return { lowerMidi: shiftedLower, upperMidi: shiftedUpper, applied: true };
+        }
+
+        if (!allowStepwiseRun || Math.random() >= rate) {
+            return { lowerMidi, upperMidi, applied: false };
+        }
+
+        const direction = this.determineChromaticDirection(lastLowerMidi, lowerMidi);
+        const desiredLower = lastLowerMidi + direction;
+        const offset = desiredLower - lowerMidi;
+        const shiftedLower = lowerMidi + offset;
+        const shiftedUpper = upperMidi + offset;
+        if (!inRange(shiftedLower, shiftedUpper)) {
+            return { lowerMidi, upperMidi, applied: false };
+        }
+
+        const runLength = this.getChromaticRunLength();
+        this.chromaticState.active = runLength > 1;
+        this.chromaticState.remaining = Math.max(0, runLength - 1);
+        this.chromaticState.direction = direction;
+        this.queueAccidentalPreference(shiftedLower, direction);
+        return { lowerMidi: shiftedLower, upperMidi: shiftedUpper, applied: true };
     }
 
     /**
@@ -6709,30 +6735,32 @@ class IntervalGenerator {
 
                 console.log(`✅ [最终验证通过] 拼写后半音数正确: ${actualFinalSemitones}半音`);
 
-                // 🎯 页面“临时记号”设置：成对整体偏移±1半音，保持音程不变
-                // 注：仅在两音符同时不越界时应用
-                if (this.accidentalRate > 0 && Math.random() * 100 <= this.accidentalRate) {
-                    const offset = Math.random() < 0.5 ? 1 : -1;
-                    const shiftedLower = finalLowerMidi + offset;
-                    const shiftedUpper = finalUpperMidi + offset;
-                    if (shiftedLower >= rangeMin && shiftedUpper <= rangeMax) {
-                        finalLowerMidi = shiftedLower;
-                        finalUpperMidi = shiftedUpper;
-                        try {
-                            if (typeof this.midiToNoteWithKey === 'function' && this.currentKeySignature) {
-                                finalLowerPitch = this.midiToNoteWithKey(finalLowerMidi, this.currentKeySignature);
-                                finalUpperPitch = this.midiToNoteWithKey(finalUpperMidi, this.currentKeySignature);
-                            } else {
-                                finalLowerPitch = this.midiToNote(finalLowerMidi);
-                                finalUpperPitch = this.midiToNote(finalUpperMidi);
-                            }
-                            console.log(`🎼 应用临时记号(成对偏移${offset > 0 ? '+' : ''}${offset}半音): ${finalLowerPitch} - ${finalUpperPitch}`);
-                        } catch (_) {
-                            // 若拼写失败则回退
-                            finalLowerMidi -= offset;
-                            finalUpperMidi -= offset;
-                        }
+                // 🎯 临时记号：改为半音阶连接逻辑（按下声部级进驱动）
+                const shiftResult = this.applyChromaticShiftToInterval(
+                    finalLowerMidi,
+                    finalUpperMidi,
+                    previousInterval ? previousInterval.lowerMidi : null,
+                    rangeMin,
+                    rangeMax
+                );
+                finalLowerMidi = shiftResult.lowerMidi;
+                finalUpperMidi = shiftResult.upperMidi;
+
+                try {
+                    const lowerPref = this.consumeAccidentalPreference(finalLowerMidi);
+                    if (typeof this.midiToNoteWithKey === 'function' && this.currentKeySignature) {
+                        finalLowerPitch = this.midiToNoteWithKey(finalLowerMidi, this.currentKeySignature, lowerPref);
+                        const upperPref = this.consumeAccidentalPreference(finalUpperMidi);
+                        finalUpperPitch = this.midiToNoteWithKey(finalUpperMidi, this.currentKeySignature, upperPref);
+                    } else {
+                        finalLowerPitch = this.midiToNote(finalLowerMidi);
+                        finalUpperPitch = this.midiToNote(finalUpperMidi);
                     }
+                    if (shiftResult.applied) {
+                        console.log(`🎼 应用临时记号(半音阶连接): ${finalLowerPitch} - ${finalUpperPitch}`);
+                    }
+                } catch (_) {
+                    // 若拼写失败则回退
                 }
 
                 return {
@@ -8364,6 +8392,45 @@ class IntervalGenerator {
         }
     }
 
+    getPreferredSpelling(pitchClass, preferredAccidental) {
+        if (!preferredAccidental) return null;
+        if (preferredAccidental === '#') {
+            const sharpMap = {
+                1: 'C#',
+                3: 'D#',
+                6: 'F#',
+                8: 'G#',
+                10: 'A#'
+            };
+            return sharpMap[pitchClass] || null;
+        }
+        if (preferredAccidental === 'b') {
+            const flatMap = {
+                1: 'Db',
+                3: 'Eb',
+                6: 'Gb',
+                8: 'Ab',
+                10: 'Bb'
+            };
+            return flatMap[pitchClass] || null;
+        }
+        return null;
+    }
+
+    getKeyAccidentalBias(keySignature) {
+        const keyInfo = KEY_SIGNATURES[keySignature];
+        if (!keyInfo) return null;
+        if (Array.isArray(keyInfo.sharps) && keyInfo.sharps.length > 0) return '#';
+        if (Array.isArray(keyInfo.flats) && keyInfo.flats.length > 0) return 'b';
+        return null;
+    }
+
+    normalizeAccidentalPreference(preferredAccidental, keySignature) {
+        if (!preferredAccidental) return null;
+        const bias = this.getKeyAccidentalBias(keySignature || this.currentKeySignature);
+        return bias || preferredAccidental;
+    }
+
     /**
      * MIDI值转音符名（根据调号）
      * 🔧 增强版：使用getCorrectSpelling()获取准确的小调拼写
@@ -8372,12 +8439,13 @@ class IntervalGenerator {
      * @param {string} keySignature - 调号
      * @returns {string} 音符名
      */
-    midiToNoteWithKey(midi, keySignature) {
+    midiToNoteWithKey(midi, keySignature, preferredAccidental = null) {
         const octave = Math.floor((midi - 12) / 12);
         const pitchClass = (midi - 12) % 12;
 
-        // 🎵 使用新的getCorrectSpelling()获取正确的音名拼写
-        const noteName = this.getCorrectSpelling(pitchClass, keySignature);
+        const normalizedPreference = this.normalizeAccidentalPreference(preferredAccidental, keySignature);
+        const preferredSpelling = this.getPreferredSpelling(pitchClass, normalizedPreference);
+        const noteName = preferredSpelling || this.getCorrectSpelling(pitchClass, keySignature);
 
         return noteName + octave;
     }

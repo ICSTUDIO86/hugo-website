@@ -1,5 +1,5 @@
 /*!
- * IC Studio - 和弦视奏生成器
+ * Cognote - 和弦视奏生成器
  * Chord Sight-Reading Generator JavaScript
  *
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club
@@ -16,10 +16,39 @@ window.currentChords = null;
 window.chordsHistory = [];
 window.currentChordsIndex = -1;
 let audioContext = null;
+window.getChordAudioContext = function() {
+    if (!audioContext) {
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (_) {
+            return null;
+        }
+    }
+    if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume().catch(() => {});
+    }
+    return audioContext;
+};
 // metronomeInterval variable is declared in main HTML file
 let currentTempo = 60;
 let chordsVisible = true;
 let chordSymbolsVisible = true; // 🎵 和弦代号显示控制
+function resolveChordSymbolsVisible() {
+    if (window.displaySettings && typeof window.displaySettings.chordSymbolsVisible === 'boolean') {
+        chordSymbolsVisible = window.displaySettings.chordSymbolsVisible;
+    }
+    return chordSymbolsVisible;
+}
+
+function resolveChordSymbolRenderState() {
+    const symbolsVisible = resolveChordSymbolsVisible();
+    const jianpuEnabled = !!(window.displaySettings && window.displaySettings.jianpuChordSymbols);
+    return {
+        symbolsVisible,
+        jianpuEnabled,
+        renderHarmony: symbolsVisible || jianpuEnabled
+    };
+}
 
 // ============================================
 // 🎵 和弦代号系统 - 统一配置中心
@@ -146,6 +175,46 @@ function getChordSymbol(chord) {
 
     const typeSymbol = getChordTypeSymbol(chord.type);
     return chord.root + typeSymbol;
+}
+
+function parseRomanNumeralSymbol(romanNumeral) {
+    if (!romanNumeral || typeof romanNumeral !== 'string') return null;
+    const match = romanNumeral.match(/^([#b]*)([ivIV]+)(.*)$/);
+    if (!match) return null;
+    return {
+        accidentals: match[1] || '',
+        numeral: match[2] || '',
+        suffix: match[3] || ''
+    };
+}
+
+// 将功能和声的罗马数字转换为简谱和弦代号（例如 V7 -> 5 7）
+function getJianpuChordSymbol(chord, keyOverride) {
+    if (!chord || !chord.root) return '';
+    const typeSymbol = getChordTypeSymbol(chord.type);
+    const key = keyOverride || chord.key || window.currentChords?.key;
+    let roman = chord.romanNumeral;
+
+    if ((!roman || roman === '?') && window.harmonyTheory && chord.root && chord.type && key) {
+        roman = window.harmonyTheory.getRomanNumeral(chord.root, chord.type, key);
+    }
+
+    const parsed = parseRomanNumeralSymbol(roman);
+    if (!parsed) return getChordSymbol(chord);
+
+    const numeralMap = {
+        I: 1,
+        II: 2,
+        III: 3,
+        IV: 4,
+        V: 5,
+        VI: 6,
+        VII: 7
+    };
+    const degree = numeralMap[parsed.numeral.toUpperCase()];
+    if (!degree) return getChordSymbol(chord);
+
+    return `${parsed.accidentals || ''}${degree}${typeSymbol}`;
 }
 
 /**
@@ -693,6 +762,13 @@ function setupEventListeners() {
                 visibleModals.forEach(modal => {
                     // 根据弹窗ID调用相应的关闭函数（包含保存逻辑）
                     switch (modal.id) {
+                        case 'settingsModal':
+                            if (typeof closeSettingsModal === 'function') {
+                                closeSettingsModal();
+                            } else {
+                                modal.style.display = 'none';
+                            }
+                            break;
                         case 'chordTypeModal':
                             closeChordTypeSettings();
                             break;
@@ -6526,8 +6602,13 @@ function displayChords(chords) {
     hideEmptyStateHint();
 
     try {
+        resolveChordSymbolsVisible();
         // 生成MusicXML
         const musicXML = generateMusicXML(chords);
+        const { renderHarmony: preLoadRenderHarmony } = resolveChordSymbolRenderState();
+        if (osmd && osmd.EngravingRules && "RenderChordSymbols" in osmd.EngravingRules) {
+            osmd.EngravingRules.RenderChordSymbols = preLoadRenderHarmony;
+        }
         try {
             chords.musicXML = musicXML;
             if (window.currentChords) {
@@ -6973,13 +7054,15 @@ function displayChords(chords) {
                     }
 
                     // 第七层：🎵 和弦代号显示控制 - 恢复原始简单配置
+                    const { symbolsVisible: showChordSymbols, jianpuEnabled, renderHarmony } = resolveChordSymbolRenderState();
                     console.log(`\n🔍 ========== OSMD和弦代号配置诊断 ==========`);
-                    console.log(`  🎵 chordSymbolsVisible全局变量: ${chordSymbolsVisible}`);
+                    console.log(`  🎵 chordSymbolsVisible全局变量: ${showChordSymbols}`);
                     console.log(`  🎵 window.displaySettings?.chordSymbolsVisible: ${window.displaySettings?.chordSymbolsVisible}`);
+                    console.log(`  🎵 简谱代号启用: ${jianpuEnabled}`);
 
                     if ("RenderChordSymbols" in osmd.EngravingRules) {
-                        osmd.EngravingRules.RenderChordSymbols = chordSymbolsVisible;
-                        console.log(`  ✅ 已设置 osmd.EngravingRules.RenderChordSymbols = ${chordSymbolsVisible}`);
+                        osmd.EngravingRules.RenderChordSymbols = renderHarmony;
+                        console.log(`  ✅ 已设置 osmd.EngravingRules.RenderChordSymbols = ${renderHarmony}`);
                         console.log(`  🔍 验证设置: osmd.EngravingRules.RenderChordSymbols = ${osmd.EngravingRules.RenderChordSymbols}`);
                     } else {
                         console.warn(`  ⚠️ RenderChordSymbols属性不存在于OSMD EngravingRules中`);
@@ -7036,7 +7119,8 @@ function displayChords(chords) {
                     console.log(`   - 每行目标小节数: ${totalMeasures === 2 ? 2 : 4}`);
                     console.log(`   - MinMeasuresPerSystem: ${osmd.EngravingRules.MinMeasuresPerSystem}`);
                     console.log(`   - RenderXMeasuresPerLineAkaSystem: ${osmd.EngravingRules.RenderXMeasuresPerLineAkaSystem}`);
-                    console.log(`   - 🎵 和弦代号显示: ${chordSymbolsVisible}`);
+                    console.log(`   - 🎵 和弦代号显示: ${showChordSymbols}`);
+                    console.log(`   - 🎼 简谱代号启用: ${jianpuEnabled}`);
                     console.log(`   - 📏 统一小节宽度: 解决七和弦vs三和弦spacing不一致问题`);
                 }
 
@@ -7233,6 +7317,10 @@ function displayChords(chords) {
                             detectMeasuresPerLine(svg, chords.progression.length);
                         }
 
+                        if (window.displaySettings?.jianpuChordSymbols && typeof window.applyJianpuChordSymbols === 'function') {
+                            window.applyJianpuChordSymbols();
+                        }
+
                         // 显示容器（此时所有代号已正确）
                         scoreDiv.style.visibility = 'visible';
 
@@ -7309,6 +7397,9 @@ function displayChords(chords) {
                             if (typeof window.applyChordSymbolsState === 'function') {
                                 window.applyChordSymbolsState();
                             }
+                            if (typeof window.applyJianpuChordSymbols === 'function') {
+                                window.applyJianpuChordSymbols();
+                            }
 
                             // 🔍 检查隐藏状态（基于全局状态）
                             if (window.displaySettings) {
@@ -7322,6 +7413,11 @@ function displayChords(chords) {
                                     console.log('🚀 应用和弦代号隐藏状态');
                                     if (typeof window.applyChordSymbolsState === 'function') {
                                         window.applyChordSymbolsState();
+                                    }
+                                }
+                                if (window.displaySettings.jianpuChordSymbols) {
+                                    if (typeof window.applyJianpuChordSymbols === 'function') {
+                                        window.applyJianpuChordSymbols();
                                     }
                                 }
                             }
@@ -7355,6 +7451,7 @@ function displayChords(chords) {
 
 // 生成MusicXML
 function generateMusicXML(chords) {
+    const { symbolsVisible: showChordSymbols, jianpuEnabled, renderHarmony } = resolveChordSymbolRenderState();
     // 🎯 优先使用直接传递的keyInfo对象，避免查找失败导致的问题
     const keyInfo = chords.keyInfo
         ? chords.keyInfo
@@ -7640,6 +7737,7 @@ function generateChordNotesXML(chord, keyInfo, timeSignature = '4/4') {
 
     let notesXML = '';
     const { duration, noteType, hasDot } = calculateNoteDurationFromTimeSignature(timeSignature);
+    const { symbolsVisible: showChordSymbols, jianpuEnabled, renderHarmony } = resolveChordSymbolRenderState();
 
     // 🎼 检测是否为大谱表模式
     const instrumentToggle = document.getElementById('instrumentModeToggle');
@@ -7670,6 +7768,7 @@ function generateChordNotesXML(chord, keyInfo, timeSignature = '4/4') {
  */
 function generatePianoGrandStaffNotesXML(chord, keyInfo, timeSignature, duration, noteType, hasDot) {
     console.log('🎹 开始生成钢琴大谱表MusicXML');
+    const { renderHarmony } = resolveChordSymbolRenderState();
 
     if (!chord.pianoData || !chord.pianoData.bassClefMidi || !chord.pianoData.trebleClefMidi) {
         console.error('❌ 钢琴数据不完整:', chord.pianoData);
@@ -7717,7 +7816,7 @@ function generatePianoGrandStaffNotesXML(chord, keyInfo, timeSignature, duration
     console.log(`🎹 跳过analyzeChord分析，避免基于错误音符顺序的分析结果`);
     let analyzedChord = null;  // 保持为null，强制使用原始chord.root和chord.type
 
-    if (chordSymbolsVisible && chord.root && chord.type) {
+    if (renderHarmony && chord.root && chord.type) {
         // 🎵 优先检查是否为6/9和弦（2025-10-02修复：避免显示Cmaj7/D这种错误代号）
         if (chord.is69Voicing) {
             chordSymbol = chord.root + '6/9';
@@ -8200,12 +8299,13 @@ function generatePianoGrandStaffNotesXML(chord, keyInfo, timeSignature, duration
     let analyzedChord = null;
 
     console.log('\n🔍 === 和弦代号生成诊断 ===');
-    console.log(`  - chordSymbolsVisible: ${chordSymbolsVisible}`);
+    console.log(`  - chordSymbolsVisible: ${showChordSymbols}`);
+    console.log(`  - jianpuChordSymbols: ${jianpuEnabled}`);
     console.log(`  - chord.root: ${chord.root}`);
     console.log(`  - chord.type: ${chord.type}`);
-    console.log(`  - 条件满足 (chordSymbolsVisible && chord.root && chord.type): ${chordSymbolsVisible && chord.root && chord.type}`);
+    console.log(`  - 条件满足 (renderHarmony && chord.root && chord.type): ${renderHarmony && chord.root && chord.type}`);
 
-    if (chordSymbolsVisible && chord.root && chord.type) {
+    if (renderHarmony && chord.root && chord.type) {
         // 🎵 优先检查是否为6/9和弦（2025-10-02修复：避免显示Cmaj7/D这种错误代号）
         if (chord.is69Voicing) {
             chordSymbol = chord.root + '6/9';
@@ -12183,7 +12283,7 @@ function midiToFrequency(midiNote) {
 }
 
 // Count In节拍播放函数 (增强调试版)
-function playCountInBeat(frequency, startTime, duration, volume = 0.3) {
+function playCountInBeat(frequency, startTime, duration, volume = 0.6) {
     console.log(`🔍 Count In调试: 准备播放 ${frequency}Hz, 开始时间: ${startTime.toFixed(3)}s, 时长: ${duration.toFixed(3)}s`);
 
     if (!audioContext) {
@@ -12221,7 +12321,7 @@ function playCountInBeat(frequency, startTime, duration, volume = 0.3) {
 }
 
 // 播放单个音符 (参考旋律视奏工具的三角波音色)
-function playNote(frequency, startTime, duration, volume = 0.1) {
+function playNote(frequency, startTime, duration, volume = 0.2) {
     if (!audioContext) {
         console.warn('🔍 playNote: audioContext未初始化');
         return null;
@@ -12731,6 +12831,10 @@ function toggleChordSymbols() {
     chordSymbolsVisible = !chordSymbolsVisible;
     const symbolBtn = document.getElementById('chordSymbolBtn');
 
+    if (window.displaySettings && typeof window.displaySettings.updateChordState === 'function') {
+        window.displaySettings.updateChordState(chordSymbolsVisible);
+    }
+
     if (symbolBtn) {
         if (chordSymbolsVisible) {
             symbolBtn.innerHTML = '🎵';
@@ -12804,7 +12908,7 @@ function playMetronomeSound() {
         oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5音高
 
         // 设置自然的音量包络 (更好的release time)
-        gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
+        gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
 
         oscillator.start(audioContext.currentTime);
@@ -12864,14 +12968,28 @@ function switchFunction(type) {
         case 'chord':
             // 当前页面
             break;
+        case 'rhythm':
+            window.location.href = 'rhythm.html';
+            break;
     }
 }
 
 // 设置控制
 function toggleSettings() {
-    const menu = document.getElementById('settingsMenu');
-    if (menu) {
-        menu.classList.toggle('show');
+    const modal = document.getElementById('settingsModal');
+    if (!modal) return;
+    if (modal.style.display === 'flex' || modal.style.display === 'block') {
+        if (typeof closeSettingsModal === 'function') {
+            closeSettingsModal();
+        } else {
+            modal.style.display = 'none';
+        }
+    } else {
+        if (typeof openSettingsModal === 'function') {
+            openSettingsModal();
+        } else {
+            modal.style.display = 'flex';
+        }
     }
 }
 
@@ -12879,7 +12997,9 @@ function toggleSettings() {
 function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('preferredTheme', theme);
-    toggleSettings();
+    if (typeof closeSettingsModal === 'function') {
+        closeSettingsModal();
+    }
 }
 
 function loadTheme() {
@@ -12909,6 +13029,58 @@ const selectAllStates = {
     clefs: null
 };
 
+function getSelectAllText(isAllSelected) {
+    if (typeof translate === 'function') {
+        return isAllSelected ? translate('button.unselectAll') : translate('button.selectAll');
+    }
+    return isAllSelected ? '取消全选' : '全选';
+}
+
+function isCheckboxVisible(checkbox) {
+    if (!checkbox) return false;
+    const container = checkbox.closest('.checkbox-item') || checkbox.parentElement;
+    if (!container) return true;
+    const style = window.getComputedStyle(container);
+    return style.display !== 'none' && style.visibility !== 'hidden';
+}
+
+function areAllCheckboxesChecked(checkboxIds) {
+    let hasVisible = false;
+    for (const id of checkboxIds) {
+        const checkbox = document.getElementById(id);
+        if (!checkbox || !isCheckboxVisible(checkbox)) {
+            continue;
+        }
+        hasVisible = true;
+        if (!checkbox.checked) {
+            return false;
+        }
+    }
+    return hasVisible;
+}
+
+function updateSelectAllButtonText(buttonSelector, isAllSelected) {
+    const button = document.querySelector(buttonSelector);
+    if (button) {
+        button.textContent = getSelectAllText(isAllSelected);
+    }
+}
+
+function updateSelectAllInlineText(textElementId, isAllSelected) {
+    const textElement = document.getElementById(textElementId);
+    if (textElement) {
+        textElement.textContent = getSelectAllText(isAllSelected);
+    }
+}
+
+function syncSelectAllButtonText(buttonSelector, checkboxIds) {
+    updateSelectAllButtonText(buttonSelector, areAllCheckboxesChecked(checkboxIds));
+}
+
+function syncSelectAllInlineText(textElementId, checkboxIds) {
+    updateSelectAllInlineText(textElementId, areAllCheckboxesChecked(checkboxIds));
+}
+
 // 和弦类型设置
 function openChordTypeSettings() {
     console.log('🔧 打开和弦类型设置...');
@@ -12926,6 +13098,23 @@ function openChordTypeSettings() {
             translatePage();
             console.log('🌐 和弦类型设置弹窗翻译已应用');
         }
+
+        syncSelectAllButtonText(
+            'button[onclick="selectAllBasicChords()"]',
+            ['chord-major', 'chord-minor', 'chord-diminished', 'chord-augmented', 'chord-triad-inversion', 'chord-sus']
+        );
+        syncSelectAllButtonText(
+            'button[onclick="selectAllSeventhChords()"]',
+            ['chord-major7', 'chord-minor7', 'chord-dominant7', 'chord-minor7b5', 'chord-seventh-inversion', 'chord-7sus']
+        );
+        syncSelectAllInlineText(
+            'voicingSelectAllText',
+            ['voicing-close', 'voicing-drop2', 'voicing-drop3', 'voicing-shell']
+        );
+        syncSelectAllInlineText(
+            'noteCountSelectAllText',
+            ['notecount-3', 'notecount-4', 'notecount-5', 'notecount-6', 'notecount-7']
+        );
     } else {
         console.error('未找到chordTypeModal元素');
     }
@@ -13400,6 +13589,11 @@ function selectAllBasicChords() {
             if (checkbox) checkbox.checked = true;
         });
     }
+
+    syncSelectAllButtonText(
+        'button[onclick="selectAllBasicChords()"]',
+        ['chord-major', 'chord-minor', 'chord-diminished', 'chord-augmented', 'chord-triad-inversion', 'chord-sus']
+    );
 }
 
 function selectAllSeventhChords() {
@@ -13465,6 +13659,11 @@ function selectAllSeventhChords() {
             if (checkbox) checkbox.checked = true;
         });
     }
+
+    syncSelectAllButtonText(
+        'button[onclick="selectAllSeventhChords()"]',
+        ['chord-major7', 'chord-minor7', 'chord-dominant7', 'chord-minor7b5', 'chord-seventh-inversion', 'chord-7sus']
+    );
 }
 
 function toggleChordAdvancedSettings() {
@@ -13482,7 +13681,6 @@ function toggleChordAdvancedSettings() {
 
 function toggleSelectAllVoicings() {
     const voicingCheckboxes = ['voicing-close', 'voicing-drop2', 'voicing-drop3', 'voicing-shell'];
-    const selectAllText = document.getElementById('voicingSelectAllText');
 
     // 检查是否所有voicing都被选中
     const allChecked = voicingCheckboxes.every(id => {
@@ -13505,7 +13703,6 @@ function toggleSelectAllVoicings() {
                 if (checkbox) checkbox.checked = false;
             });
         }
-        selectAllText.textContent = '全选';
     } else {
         // 保存当前状态
         selectAllStates.voicings = {};
@@ -13519,8 +13716,8 @@ function toggleSelectAllVoicings() {
             const checkbox = document.getElementById(id);
             if (checkbox) checkbox.checked = true;
         });
-        selectAllText.textContent = '取消全选';
     }
+    syncSelectAllInlineText('voicingSelectAllText', voicingCheckboxes);
 }
 
 // 节奏设置
@@ -13534,6 +13731,11 @@ function openRhythmSettings() {
             translatePage();
             console.log('🌐 节奏设置弹窗翻译已应用');
         }
+
+        syncSelectAllButtonText(
+            'button[onclick="selectAllRhythms()"]',
+            ['rhythm-whole', 'rhythm-half', 'rhythm-quarter', 'rhythm-eighth']
+        );
     }
 }
 
@@ -13603,6 +13805,11 @@ function selectAllRhythms() {
             if (checkbox) checkbox.checked = true;
         });
     }
+
+    syncSelectAllButtonText(
+        'button[onclick="selectAllRhythms()"]',
+        ['rhythm-whole', 'rhythm-half', 'rhythm-quarter', 'rhythm-eighth']
+    );
 }
 
 // 演奏技巧设置
@@ -13618,6 +13825,15 @@ function openKeySettings() {
             translatePage();
             console.log('🌐 调号设置弹窗翻译已应用');
         }
+
+        syncSelectAllButtonText(
+            'button[onclick="selectAllMajorKeys()"]',
+            ['key-C-major', 'key-G-major', 'key-D-major', 'key-A-major', 'key-E-major', 'key-B-major', 'key-Fs-major', 'key-F-major', 'key-Bb-major', 'key-Eb-major', 'key-Ab-major', 'key-Db-major', 'key-Gb-major']
+        );
+        syncSelectAllButtonText(
+            'button[onclick="selectAllMinorKeys()"]',
+            ['key-a-minor', 'key-e-minor', 'key-b-minor', 'key-fs-minor', 'key-cs-minor', 'key-gs-minor', 'key-ds-minor', 'key-d-minor', 'key-g-minor', 'key-c-minor', 'key-f-minor', 'key-bb-minor', 'key-eb-minor']
+        );
     }
 }
 
@@ -13690,6 +13906,11 @@ function selectAllMajorKeys() {
             if (checkbox) checkbox.checked = true;
         });
     }
+
+    syncSelectAllButtonText(
+        'button[onclick="selectAllMajorKeys()"]',
+        ['key-C-major', 'key-G-major', 'key-D-major', 'key-A-major', 'key-E-major', 'key-B-major', 'key-Fs-major', 'key-F-major', 'key-Bb-major', 'key-Eb-major', 'key-Ab-major', 'key-Db-major', 'key-Gb-major']
+    );
 }
 
 function selectAllMinorKeys() {
@@ -13733,6 +13954,11 @@ function selectAllMinorKeys() {
             if (checkbox) checkbox.checked = true;
         });
     }
+
+    syncSelectAllButtonText(
+        'button[onclick="selectAllMinorKeys()"]',
+        ['key-a-minor', 'key-e-minor', 'key-b-minor', 'key-fs-minor', 'key-cs-minor', 'key-gs-minor', 'key-ds-minor', 'key-d-minor', 'key-g-minor', 'key-c-minor', 'key-f-minor', 'key-bb-minor', 'key-eb-minor']
+    );
 }
 
 // 拍号设置
@@ -13746,6 +13972,11 @@ function openTimeSignatureSettings() {
             translatePage();
             console.log('🌐 拍号设置弹窗翻译已应用');
         }
+
+        syncSelectAllButtonText(
+            'button[onclick="selectAllTimeSignatures()"]',
+            ['time-4-4', 'time-3-4', 'time-2-4', 'time-6-8']
+        );
     }
 }
 
@@ -13815,6 +14046,11 @@ function selectAllTimeSignatures() {
             if (checkbox) checkbox.checked = true;
         });
     }
+
+    syncSelectAllButtonText(
+        'button[onclick="selectAllTimeSignatures()"]',
+        ['time-4-4', 'time-3-4', 'time-2-4', 'time-6-8']
+    );
 }
 
 // 谱号设置
@@ -13828,6 +14064,11 @@ function openClefSettings() {
             translatePage();
             console.log('🌐 谱号设置弹窗翻译已应用');
         }
+
+        syncSelectAllButtonText(
+            'button[onclick="selectAllClefs()"]',
+            ['clef-treble', 'clef-bass']
+        );
     }
 }
 
@@ -13907,6 +14148,11 @@ function selectAllClefs() {
             if (checkbox) checkbox.checked = true;
         });
     }
+
+    syncSelectAllButtonText(
+        'button[onclick="selectAllClefs()"]',
+        ['clef-treble', 'clef-bass']
+    );
 }
 
 // 保存用户对音域的调整

@@ -2,7 +2,7 @@
  * Piano Note-Count Engine
  * 钢琴音数生成引擎 - 基于音数选择的和声生成系统
  *
- * Copyright © 2025 Igor Chen - IC Studio
+ * Copyright © 2025 Igor Chen - Cognote
  *
  * 核心功能：
  * - 基于音数选择（3-7音）生成钢琴和声

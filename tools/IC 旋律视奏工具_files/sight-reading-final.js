@@ -1,5 +1,5 @@
 /*!
- * IC Studio 视奏工具 - 专业级视奏旋律生成器
+ * Cognote - 专业级视奏旋律生成器
  * Professional Music Sight-Reading Tool - Final Version
  * 
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club
@@ -30,6 +30,7 @@ let audioContext = null;
 let masterGain = null;
 let lowPassFilter = null;
 let isAudioInitialized = false;
+const AUDIO_BOOST = 4;
 
 /**
  * 初始化音频系统，包含低通滤波器来降低高频
@@ -42,7 +43,7 @@ function initializeAudio() {
 
         // 创建主音量控制
         masterGain = audioContext.createGain();
-        masterGain.gain.value = 0.3; // 设置合适的音量
+        masterGain.gain.value = 0.3 * AUDIO_BOOST; // 设置合适的音量
 
         // 🔥 创建低通滤波器来降低高频，让音色更温和
         lowPassFilter = audioContext.createBiquadFilter();
@@ -188,8 +189,8 @@ function adjustAudioFilter(cutoffFreq = 2000, volume = 0.3) {
     }
 
     if (masterGain) {
-        masterGain.gain.value = volume;
-        console.log(`🔊 主音量已调整为: ${(volume * 100).toFixed(0)}%`);
+        masterGain.gain.value = volume * AUDIO_BOOST;
+        console.log(`🔊 主音量已调整为: ${(volume * AUDIO_BOOST * 100).toFixed(0)}%`);
     }
 }
 
@@ -246,15 +247,17 @@ let userSettings = {
     allowedTimeSignatures: ['4/4'], // 允许的拍号，默认4/4拍
     allowedIntervals: [12], // 允许的最大音程跨度，默认完全八度
     allowedClefs: ['treble'], // 允许的谱号，默认高音谱号
+    customTimeSignature: null, // 自定义拍号（仅旋律工具使用）
     
     // 节奏频率设置
     rhythmFrequencies: {
+        dotted: 20,
         whole: 10,
         half: 30,
         quarter: 50,
         eighth: 40,
         '16th': 20,
-        triplet: 15,
+        triplet: 35,
         duplet: 30,
         quadruplet: 25
     },
@@ -275,6 +278,88 @@ let userSettings = {
         }
     }
 };
+
+const BUILTIN_TIME_SIGNATURES = ['2/4', '3/4', '4/4', '6/8'];
+
+function parseTimeSignatureString(ts) {
+    if (typeof ts !== 'string') return null;
+    const parts = ts.split('/');
+    if (parts.length !== 2) return null;
+    const beats = parseInt(parts[0], 10);
+    const beatType = parseInt(parts[1], 10);
+    if (!Number.isFinite(beats) || !Number.isFinite(beatType)) return null;
+    return { beats, beatType };
+}
+
+function isBuiltInTimeSignature(ts) {
+    return BUILTIN_TIME_SIGNATURES.includes(ts);
+}
+
+function isCompoundTimeSignature(ts) {
+    const parsed = parseTimeSignatureString(ts);
+    if (!parsed) return false;
+    if (parsed.beatType !== 8) return false;
+    if (parsed.beats % 3 !== 0) return false;
+    return parsed.beats > 3;
+}
+
+function getBeamingReferenceTimeSignature(ts) {
+    if (isBuiltInTimeSignature(ts)) return ts;
+    return isCompoundTimeSignature(ts) ? '6/8' : '4/4';
+}
+
+function getCustomBeatGrouping(timeSignature, measureIndex) {
+    if (!timeSignature || isBuiltInTimeSignature(timeSignature)) return null;
+    const parsed = parseTimeSignatureString(timeSignature);
+    if (!parsed) return null;
+    const { beats, beatType } = parsed;
+    const unit = beatType === 8 ? 0.5 : beatType === 16 ? 0.25 : beatType === 2 ? 2 : 1;
+    let groups = [];
+
+    if (beats === 5) {
+        groups = (measureIndex % 2 === 0) ? [3, 2] : [2, 3];
+    } else if (beats === 7) {
+        groups = (measureIndex % 2 === 0) ? [3, 2, 2] : [2, 2, 3];
+    } else if (beats === 8) {
+        groups = (measureIndex % 2 === 0) ? [3, 3, 2] : [2, 3, 3];
+    } else if (isCompoundTimeSignature(timeSignature)) {
+        const fullGroups = Math.floor(beats / 3);
+        groups = new Array(fullGroups).fill(3);
+        const remainder = beats % 3;
+        if (remainder) groups.push(remainder);
+    } else {
+        let remaining = beats;
+        while (remaining > 0) {
+            if (remaining === 5) {
+                groups.push(3, 2);
+                break;
+            }
+            if (remaining === 7) {
+                groups.push(3, 2, 2);
+                break;
+            }
+            if (remaining === 3) {
+                groups.push(3);
+                break;
+            }
+            if (remaining === 2) {
+                groups.push(2);
+                break;
+            }
+            groups.push(2);
+            remaining -= 2;
+        }
+    }
+
+    const starts = [0];
+    let acc = 0;
+    for (let i = 0; i < groups.length - 1; i++) {
+        acc += groups[i] * unit;
+        starts.push(acc);
+    }
+
+    return { starts, totalBeats: beats * (4 / beatType) };
+}
 
 
 /**
@@ -2856,6 +2941,12 @@ class IntelligentMelodyGenerator {
 
         // 初始化八分音符配对标记
         this._expectEighthNotePair = false;
+        this.chromaticState = {
+            active: false,
+            remaining: 0,
+            direction: 0
+        };
+        this._pendingAccidentalPreference = null;
 
         // 首先初始化音阶
         this.scale = KEY_SCALES[keySignature] || KEY_SCALES['C']; // 如果调号无效，默认使用C大调
@@ -2892,9 +2983,15 @@ class IntelligentMelodyGenerator {
             this.beatUnit = 4;
             console.log('🎵 3/4拍：3个四分音符拍');
         } else {
-            // 其他拍号使用传统计算
-            this.beatsPerMeasure = beats;
-            this.beatUnit = beatType;
+            // 其他拍号使用传统计算（自定义拍号需按分母换算为四分音符拍）
+            if (beatType && beatType !== 4) {
+                this.beatsPerMeasure = beats * (4 / beatType);
+                this.beatUnit = beatType;
+                console.log(`🎵 ${timeSignature}拍：${beats}个${beatType}分音符 = ${this.beatsPerMeasure}个四分音符拍长度`);
+            } else {
+                this.beatsPerMeasure = beats;
+                this.beatUnit = beatType;
+            }
         }
         
         console.log(`🎵 初始化智能生成器: ${measures}小节 ${timeSignature} ${keySignature}调 ${clef}谱号`);
@@ -2999,183 +3096,6 @@ class IntelligentMelodyGenerator {
         return safePreferredNotes;
     }
 
-    initializeTupletBudget() {
-        this._tupletBudgetRemaining = null;
-        this._tupletBudgetFrequency = null;
-
-        if (!userSettings || !userSettings.rhythmFrequencies) {
-            return;
-        }
-
-        const allowedDurations = Array.isArray(this.rules.allowedDurations)
-            ? this.rules.allowedDurations
-            : [];
-        const hasTriplet = allowedDurations.includes('triplet');
-        const hasDuplet = allowedDurations.includes('duplet');
-        const hasQuadruplet = allowedDurations.includes('quadruplet');
-
-        if (!hasTriplet && !hasDuplet && !hasQuadruplet) {
-            return;
-        }
-
-        const rawTripletFreq = hasTriplet ? this.getRawRhythmFrequency('triplet') : 0;
-        const rawDupletFreq = hasDuplet ? this.getRawRhythmFrequency('duplet') : 0;
-        const rawQuadrupletFreq = hasQuadruplet ? this.getRawRhythmFrequency('quadruplet') : 0;
-        const freqCandidates = [rawTripletFreq, rawDupletFreq, rawQuadrupletFreq].filter(freq => freq > 0);
-
-        if (!freqCandidates.length) {
-            return;
-        }
-
-        const tupletFrequency = Math.max(...freqCandidates);
-        if (tupletFrequency <= 0) {
-            this._tupletBudgetRemaining = 0;
-            this._tupletBudgetFrequency = 0;
-            return;
-        }
-
-        let adjustedFrequency = tupletFrequency;
-        const nonTupletNotesPerBeat = this.getAverageNotesPerBeat(false);
-        const tupletNotesPerBeat = this.getAverageNotesPerBeat(true);
-        if (nonTupletNotesPerBeat > 0 && tupletNotesPerBeat > 0) {
-            const densityRatio = nonTupletNotesPerBeat / tupletNotesPerBeat;
-            const densityFactor = Math.pow(densityRatio, 0.35);
-            adjustedFrequency = Math.max(0, Math.min(100, tupletFrequency * densityFactor));
-            console.log(`🎯 连音频率密度校正: 非连音${nonTupletNotesPerBeat.toFixed(2)} vs 连音${tupletNotesPerBeat.toFixed(2)} (系数${densityFactor.toFixed(2)}) => ${adjustedFrequency.toFixed(1)}%`);
-        }
-
-        const totalBeats = this.measures * this.beatsPerMeasure;
-        this._tupletBudgetRemaining = (totalBeats * adjustedFrequency) / 100;
-        this._tupletBudgetFrequency = adjustedFrequency;
-        console.log(`🎯 连音预算初始化: 总${totalBeats}拍 * ${adjustedFrequency.toFixed(1)}% = ${this._tupletBudgetRemaining.toFixed(2)}拍`);
-    }
-
-    getMinTupletBeats() {
-        const allowedDurations = Array.isArray(this.rules.allowedDurations)
-            ? this.rules.allowedDurations
-            : [];
-        const allowedTupletTypes = new Set();
-        if (allowedDurations.includes('triplet')) allowedTupletTypes.add('triplet');
-        if (allowedDurations.includes('duplet')) allowedTupletTypes.add('duplet');
-        if (allowedDurations.includes('quadruplet')) allowedTupletTypes.add('quadruplet');
-
-        const timeSignature = this.rules.timeSignature || this.timeSignature || '4/4';
-        let minBeats = Infinity;
-
-        for (const [typeName, typeInfo] of Object.entries(this.TRIPLET_RULES.types)) {
-            const tupletType = typeInfo.tupletType || 'triplet';
-            if (!allowedTupletTypes.has(tupletType)) {
-                continue;
-            }
-            if (typeInfo.allowedTimeSignatures && !typeInfo.allowedTimeSignatures.includes(timeSignature)) {
-                continue;
-            }
-            const baseNoteType = typeInfo.duration;
-            if (!allowedDurations.includes(baseNoteType)) {
-                continue;
-            }
-            minBeats = Math.min(minBeats, typeInfo.totalBeats);
-        }
-
-        return Number.isFinite(minBeats) ? minBeats : 0;
-    }
-
-    getAverageNotesPerBeat(includeTuplets) {
-        const allowedDurations = Array.isArray(this.rules.allowedDurations)
-            ? this.rules.allowedDurations
-            : [];
-
-        if (!includeTuplets) {
-            const nonTupletDurations = allowedDurations.filter(duration =>
-                duration !== 'triplet' && duration !== 'duplet' && duration !== 'quadruplet'
-            );
-            let weightSum = 0;
-            let weightedNotes = 0;
-
-            for (const duration of nonTupletDurations) {
-                const beats = this.durationToBeats(duration);
-                if (beats <= 0) {
-                    continue;
-                }
-                const notesPerBeat = 1 / beats;
-                const key = mapDurationToFrequencyKey(duration);
-                const weight = this.getRawRhythmFrequency(key);
-                if (weight > 0) {
-                    weightSum += weight;
-                    weightedNotes += weight * notesPerBeat;
-                }
-            }
-
-            if (weightSum > 0) {
-                return weightedNotes / weightSum;
-            }
-            return 1;
-        }
-
-        const allowedTupletTypes = new Set();
-        if (allowedDurations.includes('triplet')) allowedTupletTypes.add('triplet');
-        if (allowedDurations.includes('duplet')) allowedTupletTypes.add('duplet');
-        if (allowedDurations.includes('quadruplet')) allowedTupletTypes.add('quadruplet');
-
-        const timeSignature = this.rules.timeSignature || this.timeSignature || '4/4';
-        let weightSum = 0;
-        let weightedNotes = 0;
-
-        for (const [typeName, typeInfo] of Object.entries(this.TRIPLET_RULES.types)) {
-            const tupletType = typeInfo.tupletType || 'triplet';
-            if (!allowedTupletTypes.has(tupletType)) {
-                continue;
-            }
-            if (typeInfo.allowedTimeSignatures && !typeInfo.allowedTimeSignatures.includes(timeSignature)) {
-                continue;
-            }
-            const baseNoteType = typeInfo.duration;
-            if (!allowedDurations.includes(baseNoteType)) {
-                continue;
-            }
-            const totalBeats = typeInfo.totalBeats || 1;
-            const tupletCount = typeInfo.tupletCount || 3;
-            const notesPerBeat = tupletCount / totalBeats;
-            const weight = this.calculateTripletTypeWeight(typeName, this.beatsPerMeasure, 0, timeSignature);
-            if (weight > 0) {
-                weightSum += weight;
-                weightedNotes += weight * notesPerBeat;
-            }
-        }
-
-        if (weightSum > 0) {
-            return weightedNotes / weightSum;
-        }
-        return 3;
-    }
-
-    resetTupletBudgetForMeasure(measureIndex) {
-        if (typeof this._tupletBudgetRemaining !== 'number') {
-            this._tripletBudget = null;
-            return;
-        }
-
-        const remainingMeasures = Math.max(1, this.measures - measureIndex);
-        let perMeasureTarget = this._tupletBudgetRemaining / remainingMeasures;
-        perMeasureTarget = Math.max(0, Math.min(this.beatsPerMeasure, perMeasureTarget));
-
-        const minTupletBeats = this.getMinTupletBeats();
-        if (minTupletBeats > 0 && perMeasureTarget > 0 && perMeasureTarget < minTupletBeats) {
-            const roll = this.random.nextFloat();
-            const chance = perMeasureTarget / minTupletBeats;
-            if (roll < chance) {
-                perMeasureTarget = minTupletBeats;
-                console.log(`🎯 连音预算上取整: roll=${roll.toFixed(2)} < ${chance.toFixed(2)}，使用${perMeasureTarget}拍`);
-            } else {
-                perMeasureTarget = 0;
-                console.log(`🎯 连音预算下取整: roll=${roll.toFixed(2)} >= ${chance.toFixed(2)}，本小节禁用连音`);
-            }
-        }
-
-        this._tripletBudget = perMeasureTarget;
-        console.log(`🎯 小节${measureIndex + 1}连音预算: ${this._tripletBudget.toFixed(3)}拍 (剩余总预算${this._tupletBudgetRemaining.toFixed(3)}拍)`);
-    }
-
     /**
      * 生成完整旋律
      */
@@ -3185,8 +3105,6 @@ class IntelligentMelodyGenerator {
         let lastDirection = 0; // -1下行, 0平行, 1上行
         let consecutiveJumps = 0;
         let measureDirectionChanges = 0;
-
-        this.initializeTupletBudget();
         
         for (let measureIndex = 0; measureIndex < this.measures; measureIndex++) {
             console.log(`\\n--- 生成第${measureIndex + 1}小节 ---`);
@@ -3243,10 +3161,11 @@ class IntelligentMelodyGenerator {
         // 🔥 最后一道防线：全局演奏法安全检查
         const cadenceAligned = this.enforceFinalChordTone(melody);
         const sanitizedMelody = this.sanitizeArticulations(cadenceAligned);
+        const slurSafeMelody = this.removeStaccatoFromSlurStarts(sanitizedMelody);
         
         console.log(`✅ 旋律生成完成: ${this.stats.noteCount}音符 ${this.stats.restCount}休止 休止比例${(this.stats.restRatio*100).toFixed(1)}%`);
         
-        return sanitizedMelody;
+        return slurSafeMelody;
     }
 
     /**
@@ -3261,12 +3180,11 @@ class IntelligentMelodyGenerator {
         this._expectEighthNotePair = false;
         this._beatPatternQueue = [];
         this._lastBeatHad16th = false;
+        this._sixteenthRun = 0;
         let currentMidi = lastMidi;
         let currentDirection = lastDirection;
         let currentConsecutiveJumps = consecutiveJumps;
         let measureDirectionChanges = 0;
-
-        this.resetTupletBudgetForMeasure(measureIndex);
         
         // 第一小节特殊处理
         if (measureIndex === 0) {
@@ -3352,7 +3270,7 @@ class IntelligentMelodyGenerator {
                     // 更严格的三连音验证（现在支持休止符）
                     const tripletValid = triplet && 
                                        Array.isArray(triplet.notes) && 
-                                       triplet.notes.length >= 2 &&
+                                       triplet.notes.length === 3 && 
                                        typeof triplet.totalBeats === 'number' &&
                                        triplet.totalBeats > 0 &&
                                        triplet.totalBeats <= remainingBeats + 0.001 &&
@@ -3370,13 +3288,6 @@ class IntelligentMelodyGenerator {
                         currentMidi = triplet.lastMidi;
                         currentDirection = triplet.lastDirection;
                         console.log(`    ✅ 三连音成功: ${triplet.notes.length}个音符 (${triplet.totalBeats}拍), 剩余: ${remainingBeats}拍`);
-
-                        if (typeof this._tripletBudget === 'number') {
-                            this._tripletBudget = Math.max(0, this._tripletBudget - triplet.totalBeats);
-                        }
-                        if (typeof this._tupletBudgetRemaining === 'number') {
-                            this._tupletBudgetRemaining = Math.max(0, this._tupletBudgetRemaining - triplet.totalBeats);
-                        }
                         
                         // 验证剩余拍数不为负数
                         if (remainingBeats < -0.001) {
@@ -3814,7 +3725,14 @@ class IntelligentMelodyGenerator {
                     console.log(`✅ 音域合规: MIDI ${nextMidi} 在 ${this.rules.range.min}-${this.rules.range.max} 范围内`);
                 }
                 
-                const { step, octave, alter } = this.midiToMusicXML(nextMidi);
+                let preferredAccidental = this.consumeAccidentalPreference(nextMidi);
+                if (typeof currentMidi === 'number' && Math.abs(nextMidi - currentMidi) === 1) {
+                    const directionPreference = nextMidi > currentMidi ? '#' : 'b';
+                    if (!preferredAccidental || preferredAccidental !== directionPreference) {
+                        preferredAccidental = directionPreference;
+                    }
+                }
+                const { step, octave, alter } = this.midiToMusicXML(nextMidi, preferredAccidental);
                 
                 const noteObject = {
                     type: 'note',
@@ -3895,7 +3813,7 @@ class IntelligentMelodyGenerator {
         }
         
         // 验证和修复小节完整性
-        const totalBeats = notes.reduce((sum, note) => sum + note.beats, 0);
+        let totalBeats = notes.reduce((sum, note) => sum + note.beats, 0);
         const beatsDifference = this.beatsPerMeasure - totalBeats;
         
         if (Math.abs(beatsDifference) > 0.001) {
@@ -4083,12 +4001,34 @@ class IntelligentMelodyGenerator {
         }
         
         // 🎵 应用拍点清晰度规则 - 拆分跨拍音符
-        const correctedNotes = this.applybeatClarityRules(notes, measureIndex);
+        let correctedNotes = this.applybeatClarityRules(notes, measureIndex);
+
+        // 自定义拍号：按分组边界进行拍点清晰化拆分（仅自定义分支）
+        correctedNotes = this.applyCustomGroupingBeatClarity(correctedNotes, measureIndex);
+        correctedNotes = this.normalizeCustomTies(correctedNotes, measureIndex);
+        correctedNotes = this.mergeCustomGroupingTiedNotes(correctedNotes, measureIndex);
+        correctedNotes = this.normalizeCustomTies(correctedNotes, measureIndex);
+
+        // 自定义拍号：标记强拍位置（用于重音/节奏感知）
+        const customGrouping = getCustomBeatGrouping(this.timeSignature, measureIndex);
+        if (customGrouping && Array.isArray(customGrouping.starts)) {
+            const strongStarts = customGrouping.starts;
+            let position = 0;
+            correctedNotes.forEach(note => {
+                const isStrong = strongStarts.some(start => Math.abs(position - start) < 0.001);
+                note.isStrong = isStrong;
+                position += note.beats;
+            });
+        }
         
         // 获取当前拍点显示层级（用于符槓分组）
-        const criticalBeats = RHYTHM_NOTATION_RULES.getCriticalBeatsWithLocalRhythm(correctedNotes, this.timeSignature);
+        const beamingTimeSignature = getBeamingReferenceTimeSignature(this.timeSignature || '4/4');
+        const beamSignatureForGeneration = (!isBuiltInTimeSignature(this.timeSignature) && this.timeSignature)
+            ? this.timeSignature
+            : beamingTimeSignature;
+        const criticalBeats = RHYTHM_NOTATION_RULES.getCriticalBeatsWithLocalRhythm(correctedNotes, beamingTimeSignature);
         let currentBeatLevel = null;
-        if (this.timeSignature === '4/4') {
+        if (beamingTimeSignature === '4/4') {
             if (criticalBeats.includes(1) && criticalBeats.includes(2) && criticalBeats.includes(3)) {
                 currentBeatLevel = 'quarter';
             } else if (criticalBeats.includes(2)) {
@@ -4101,7 +4041,7 @@ class IntelligentMelodyGenerator {
         
         // 生成beam信息
         console.log(`🔍 即将调用generateBeams，传入${correctedNotes.length}个音符`);
-        const beamGroups = this.generateBeams(correctedNotes, currentBeatLevel);
+        const beamGroups = this.generateBeams(correctedNotes, currentBeatLevel, beamSignatureForGeneration);
         console.log(`🔍 generateBeams返回了${beamGroups.length}个beam组`);
         beamGroups.forEach((group, i) => {
             console.log(`  beam组${i+1}: start=${group.start}, end=${group.end}, notes=[${group.notes.join(',')}]`);
@@ -4246,7 +4186,10 @@ class IntelligentMelodyGenerator {
         
         // 🎵 休止符合并规则 - 将正拍内的连续休止符合并
         notes = this.mergeRestsByBeats(notes);
-        
+
+        // 🎵 四分音符拍点内相邻休止符合并规则
+        notes = this.mergeAdjacentRestsInQuarterBeats(notes);
+
         // 🎵 二分音符拍点内相邻休止符合并规则
         notes = this.mergeAdjacentRestsInHalfBeats(notes);
         
@@ -4532,6 +4475,280 @@ class IntelligentMelodyGenerator {
     }
 
     /**
+     * 自定义拍号：按分组边界拆分跨组音符（使用 tie 连接）
+     * simple: 2个分母单位为一组
+     * compound: 3个分母单位为一组
+     */
+    applyCustomGroupingBeatClarity(notes, measureIndex) {
+        if (!this.timeSignature || isBuiltInTimeSignature(this.timeSignature)) {
+            return notes;
+        }
+
+        const parsed = parseTimeSignatureString(this.timeSignature);
+        if (!parsed) return notes;
+
+        const unit = 4 / parsed.beatType; // 分母单位对应的拍值（以四分音符为1拍）
+        if (!unit || !Number.isFinite(unit)) return notes;
+
+        const isCompound = isCompoundTimeSignature(this.timeSignature);
+        const groupSize = unit * (isCompound ? 3 : 1);
+        if (!groupSize || !Number.isFinite(groupSize)) return notes;
+
+        const measureLength = parsed.beats * unit;
+        const boundaries = [];
+        for (let pos = groupSize; pos < measureLength - 0.0001; pos += groupSize) {
+            boundaries.push(Math.round(pos * 10000) / 10000);
+        }
+
+        if (boundaries.length === 0) return notes;
+
+        console.log(`🎼 自定义拍号拍点清晰化: ${this.timeSignature} ${isCompound ? 'compound' : 'simple'}, 分组大小=${groupSize}拍, 边界=[${boundaries.join(', ')}]`);
+
+        const corrected = [];
+        let currentPos = 0;
+        const tolerance = 0.0001;
+
+        for (const note of notes) {
+            const noteEnd = currentPos + note.beats;
+            if (note.type !== 'note' || note.isTriplet) {
+                corrected.push(note);
+                currentPos = noteEnd;
+                continue;
+            }
+
+            const splitPoints = boundaries.filter(b => b > currentPos + tolerance && b < noteEnd - tolerance);
+            if (splitPoints.length === 0) {
+                corrected.push(note);
+                currentPos = noteEnd;
+                continue;
+            }
+
+            const segments = this.splitNoteAtMultiplePoints(note, currentPos, splitPoints);
+            segments.forEach(segment => {
+                // 休止符不允许 tie（这里只处理音符）
+                if (segment.type === 'note') {
+                    segment.tied = true;
+                }
+                corrected.push(segment);
+            });
+            console.log(`  🔪 拆分跨组音符: ${note.duration}(${note.beats}拍) -> ${segments.length}段 (位置${currentPos}-${noteEnd})`);
+            currentPos = noteEnd;
+        }
+
+        return corrected;
+    }
+
+    /**
+     * 自定义拍号：规范化tie链，确保相邻同音符段形成有效链条
+     */
+    normalizeCustomTies(notes, measureIndex) {
+        if (!this.timeSignature || isBuiltInTimeSignature(this.timeSignature)) {
+            return notes;
+        }
+
+        const normalized = [...notes];
+        let i = 0;
+        let cleanedSingles = 0;
+
+        while (i < normalized.length) {
+            const current = normalized[i];
+            if (!current || current.type !== 'note' || (!current.tied && !current.tieType)) {
+                i++;
+                continue;
+            }
+
+            if (current.midi === undefined || current.midi === null) {
+                current.tied = false;
+                current.tieType = null;
+                cleanedSingles++;
+                i++;
+                continue;
+            }
+
+            const group = [current];
+            let j = i + 1;
+            while (j < normalized.length) {
+                const next = normalized[j];
+                if (!next || next.type !== 'note') break;
+                if (next.midi !== current.midi) break;
+                if (!next.tied && !next.tieType) break;
+                group.push(next);
+                j++;
+            }
+
+            if (group.length > 1) {
+                this.ensureTiedChain(group);
+            } else {
+                current.tied = false;
+                current.tieType = null;
+                cleanedSingles++;
+            }
+
+            i = j;
+        }
+
+        if (cleanedSingles > 0) {
+            console.log(`🧹 自定义拍号tie规范化: 清理${cleanedSingles}个孤立tie`);
+        }
+
+        return normalized;
+    }
+
+    /**
+     * 自定义拍号：合并分组内的连音符段，避免无意义拆分
+     * 仅在不跨越分组边界且不影响拍点可读性时合并
+     */
+    mergeCustomGroupingTiedNotes(notes, measureIndex) {
+        if (!this.timeSignature || isBuiltInTimeSignature(this.timeSignature)) {
+            return notes;
+        }
+
+        const grouping = getCustomBeatGrouping(this.timeSignature, measureIndex);
+        if (!grouping || !Array.isArray(grouping.starts)) {
+            return notes;
+        }
+
+        const boundaries = grouping.starts
+            .slice(1)
+            .map(pos => Math.round(pos * 10000) / 10000);
+        const totalBeats = grouping.totalBeats;
+        const tolerance = 0.0001;
+        const merged = [];
+        let i = 0;
+        let currentPos = 0;
+
+        const isStandardDuration = (beats, duration) => {
+            const expected = this.durationToBeats(duration);
+            return Math.abs(beats - expected) < 0.01;
+        };
+
+        const isWithinSingleGroup = (startPos, endPos) => {
+            if (boundaries.length === 0) return true;
+            return !boundaries.some(boundary => boundary > startPos + tolerance && boundary < endPos - tolerance);
+        };
+
+        const mergeSegmentsWithinGroup = (segments) => {
+            const output = [];
+            let idx = 0;
+            while (idx < segments.length) {
+                let sum = 0;
+                let bestEnd = null;
+                let bestDuration = null;
+
+                for (let end = idx; end < segments.length; end++) {
+                    sum += segments[end].beats;
+                    if (sum > totalBeats + tolerance) break;
+                    const duration = this.beatsToNoteDuration(sum);
+                    if (end > idx && duration && isStandardDuration(sum, duration)) {
+                        if (this.rules.allowedDurations.includes(duration)) {
+                            bestEnd = end;
+                            bestDuration = duration;
+                        }
+                    }
+                }
+
+                if (bestEnd !== null && bestDuration) {
+                    const mergedNote = {
+                        ...segments[idx],
+                        duration: bestDuration,
+                        beats: segments.slice(idx, bestEnd + 1).reduce((acc, seg) => acc + seg.beats, 0),
+                        tied: true,
+                        tieType: null
+                    };
+                    output.push(mergedNote);
+                    idx = bestEnd + 1;
+                    continue;
+                }
+
+                output.push(segments[idx]);
+                idx += 1;
+            }
+            return output;
+        };
+
+        while (i < notes.length) {
+            const current = notes[i];
+
+            if (!current || current.type !== 'note' || !current.tied || current.tieType !== 'start') {
+                merged.push(current);
+                currentPos += current ? current.beats : 0;
+                i += 1;
+                continue;
+            }
+
+            const chain = [current];
+            let j = i + 1;
+            while (j < notes.length) {
+                const next = notes[j];
+                if (!next || next.type !== 'note') break;
+                if (!next.tied && !next.tieType) break;
+                if (next.midi !== current.midi) break;
+                chain.push(next);
+                if (next.tieType === 'stop') {
+                    j += 1;
+                    break;
+                }
+                j += 1;
+            }
+
+            const chainStartPos = currentPos;
+            const chainEndPos = chainStartPos + chain.reduce((acc, seg) => acc + seg.beats, 0);
+
+            if (chain.length < 2) {
+                merged.push(current);
+                currentPos += current.beats;
+                i += 1;
+                continue;
+            }
+
+            if (!isWithinSingleGroup(chainStartPos, chainEndPos)) {
+                // 按分组边界拆开处理
+                let segmentPos = chainStartPos;
+                let buffer = [];
+
+                const flushBuffer = () => {
+                    if (buffer.length === 0) return;
+                    const mergedBuffer = mergeSegmentsWithinGroup(buffer);
+                    mergedBuffer.forEach(note => merged.push(note));
+                    buffer = [];
+                };
+
+                for (const segment of chain) {
+                    const segmentEnd = segmentPos + segment.beats;
+                    const crossesBoundary = boundaries.some(boundary =>
+                        boundary > segmentPos + tolerance && boundary < segmentEnd - tolerance
+                    );
+
+                    if (crossesBoundary) {
+                        flushBuffer();
+                        merged.push(segment);
+                        segmentPos = segmentEnd;
+                        continue;
+                    }
+
+                    buffer.push(segment);
+
+                    const hitsBoundary = boundaries.some(boundary => Math.abs(segmentEnd - boundary) < tolerance);
+                    if (hitsBoundary) {
+                        flushBuffer();
+                    }
+                    segmentPos = segmentEnd;
+                }
+
+                flushBuffer();
+            } else {
+                const mergedChain = mergeSegmentsWithinGroup(chain);
+                mergedChain.forEach(note => merged.push(note));
+            }
+
+            currentPos = chainEndPos;
+            i += chain.length;
+        }
+
+        return merged;
+    }
+
+    /**
      * 计算音符在小节中的位置
      */
     calculateNotePosition(notes, targetNote) {
@@ -4621,16 +4838,25 @@ class IntelligentMelodyGenerator {
             return notes;
         }
         
+        const finestRhythm = Math.min(...notes.map(n => n.beats));
+        const hasSixteenth = finestRhythm <= 0.25 + 0.0001;
         // 定义正拍区间（4/4拍）
         const beatRegions = [
             { start: 0, end: 1, duration: 1, name: '第1拍' },    // 第1拍：四分拍
             { start: 1, end: 2, duration: 1, name: '第2拍' },    // 第2拍：四分拍 
             { start: 2, end: 3, duration: 1, name: '第3拍' },    // 第3拍：四分拍
             { start: 3, end: 4, duration: 1, name: '第4拍' },    // 第4拍：四分拍
-            { start: 0, end: 2, duration: 2, name: '前半小节' },  // 前半：二分拍
-            { start: 2, end: 4, duration: 2, name: '后半小节' }   // 后半：二分拍
             // 注：先处理小区间，再处理大区间
         ];
+        if (!hasSixteenth) {
+            // 只有在没有16分音符时，允许合并到二分拍区间，避免拍点模糊
+            beatRegions.push(
+                { start: 0, end: 2, duration: 2, name: '前半小节' },
+                { start: 2, end: 4, duration: 2, name: '后半小节' }
+            );
+        } else {
+            console.log(`🎵 [休止符合并] 检测到16分音符，跳过二分拍区间合并`);
+        }
         
         let mergedNotes = [...notes];
         let hasChanges = true;
@@ -4702,6 +4928,11 @@ class IntelligentMelodyGenerator {
     mergeAdjacentRestsInHalfBeats(notes) {
         if (this.timeSignature !== '4/4') {
             console.log(`🎵 [相邻休止符合并] 仅支持4/4拍，当前: ${this.timeSignature}`);
+            return notes;
+        }
+        const finestRhythm = Math.min(...notes.map(n => n.beats));
+        if (finestRhythm <= 0.25 + 0.0001) {
+            console.log(`🎵 [相邻休止符合并] 检测到16分音符，跳过二分音符拍点内合并`);
             return notes;
         }
         
@@ -4805,6 +5036,105 @@ class IntelligentMelodyGenerator {
             }
         }
         
+        return { hasChanges: false, notes: notes };
+    }
+
+    /**
+     * 四分音符拍点内相邻休止符合并规则
+     * 仅在单个四分拍内部合并相邻休止符，不跨越拍点
+     */
+    mergeAdjacentRestsInQuarterBeats(notes) {
+        if (this.timeSignature !== '4/4') {
+            console.log(`🎵 [四分拍休止符合并] 仅支持4/4拍，当前: ${this.timeSignature}`);
+            return notes;
+        }
+
+        console.log(`🎵 [四分拍休止符合并] 开始处理，原始音符数量: ${notes.length}`);
+
+        const beatRegions = [
+            { start: 0, end: 1, name: '第1拍' },
+            { start: 1, end: 2, name: '第2拍' },
+            { start: 2, end: 3, name: '第3拍' },
+            { start: 3, end: 4, name: '第4拍' }
+        ];
+
+        let mergedNotes = [...notes];
+        let hasChanges = true;
+        let iterations = 0;
+        const maxIterations = 10;
+
+        while (hasChanges && iterations < maxIterations) {
+            hasChanges = false;
+            iterations++;
+            console.log(`🎵 [四分拍休止符合并] 第${iterations}次迭代`);
+
+            for (const region of beatRegions) {
+                const regionResult = this.mergeAdjacentRestsInQuarterRegion(mergedNotes, region);
+                if (regionResult.hasChanges) {
+                    mergedNotes = regionResult.notes;
+                    hasChanges = true;
+                    console.log(`  ✅ ${region.name}内相邻休止符被合并`);
+                    break;
+                }
+            }
+        }
+
+        console.log(`🎵 [四分拍休止符合并] 完成，音符数量: ${notes.length} → ${mergedNotes.length}`);
+        return mergedNotes;
+    }
+
+    /**
+     * 在单个四分拍区域内合并相邻休止符（要求完全落在该拍内）
+     */
+    mergeAdjacentRestsInQuarterRegion(notes, region) {
+        let currentPos = 0;
+        const regionNotes = [];
+        const tolerance = 0.001;
+
+        for (let i = 0; i < notes.length; i++) {
+            const note = notes[i];
+            const noteStart = currentPos;
+            const noteEnd = currentPos + note.beats;
+
+            if (noteStart >= region.start - tolerance && noteEnd <= region.end + tolerance) {
+                regionNotes.push({
+                    index: i,
+                    note: note,
+                    start: noteStart,
+                    end: noteEnd
+                });
+            }
+
+            currentPos = noteEnd;
+        }
+
+        if (regionNotes.length < 2) {
+            return { hasChanges: false, notes: notes };
+        }
+
+        for (let i = 0; i < regionNotes.length - 1; i++) {
+            const current = regionNotes[i];
+            const next = regionNotes[i + 1];
+
+            if (current.note.type === 'rest' && next.note.type === 'rest' &&
+                Math.abs(current.end - next.start) < tolerance) {
+
+                const totalBeats = current.note.beats + next.note.beats;
+                const mergedDuration = this.beatsToRestDuration(totalBeats);
+
+                if (mergedDuration) {
+                    const mergedRest = {
+                        type: 'rest',
+                        duration: mergedDuration,
+                        beats: totalBeats
+                    };
+                    const mergedNotes = [...notes];
+                    mergedNotes.splice(current.index, 2, mergedRest);
+                    return { hasChanges: true, notes: mergedNotes };
+                }
+            }
+        }
+
         return { hasChanges: false, notes: notes };
     }
 
@@ -5229,9 +5559,22 @@ class IntelligentMelodyGenerator {
         ];
     }
 
+    getBeatStructure(timeSignature) {
+        if (typeof RHYTHM_NOTATION_RULES?.getBeatStructure === 'function') {
+            return RHYTHM_NOTATION_RULES.getBeatStructure(timeSignature);
+        }
+        const parsed = parseTimeSignatureString(timeSignature);
+        const beatsPerMeasure = parsed ? parsed.beats : 4;
+        return {
+            beatsPerMeasure,
+            strongBeats: [0],
+            subdivisions: []
+        };
+    }
+
     // 通用拍点层级生成
     getBeatHierarchyGeneric(timeSignature) {
-        const structure = RHYTHM_NOTATION_RULES.getBeatStructure(timeSignature);
+        const structure = this.getBeatStructure(timeSignature);
         const beatHierarchy = [];
         const maxBeats = structure.beatsPerMeasure;
         
@@ -6319,6 +6662,10 @@ class IntelligentMelodyGenerator {
         const regionNotes = [];
         let regionStartIndex = -1;
         let regionEndIndex = -1;
+        let regionStartPosition = null;
+        let regionEndPosition = null;
+        let hasOutsideOverlap = false;
+        const tolerance = 0.001;
         
         // 找到区域内的音符
         for (let i = 0; i < notes.length; i++) {
@@ -6328,6 +6675,11 @@ class IntelligentMelodyGenerator {
             if (noteEnd > region.start && noteStart < region.end) {
                 if (regionStartIndex === -1) regionStartIndex = i;
                 regionEndIndex = i;
+                if (regionStartPosition === null) regionStartPosition = noteStart;
+                regionEndPosition = noteEnd;
+                if (noteStart < region.start - tolerance || noteEnd > region.end + tolerance) {
+                    hasOutsideOverlap = true;
+                }
                 regionNotes.push(notes[i]);
             }
             
@@ -6336,7 +6688,11 @@ class IntelligentMelodyGenerator {
         
         // 检查区域内是否全是休止符
         const allRests = regionNotes.length > 0 && regionNotes.every(note => note.type === 'rest');
-        if (allRests && regionNotes.length > 1) {
+        const alignsWithRegion = regionStartPosition !== null &&
+            Math.abs(regionStartPosition - region.start) < tolerance &&
+            Math.abs(regionEndPosition - region.end) < tolerance;
+
+        if (allRests && regionNotes.length > 1 && alignsWithRegion && !hasOutsideOverlap) {
             console.log(`🎯 [3/4拍优化] ${region.name}全是休止符，合并为一个休止符`);
             
             const totalBeats = region.end - region.start;
@@ -7470,6 +7826,36 @@ class IntelligentMelodyGenerator {
             }
         }
 
+        // 🔥 限制低频率下的16分音符连发，避免出现一长串16分音符
+        if (this.timeSignature !== '6/8') {
+            const isSixteenth = selectedDuration === '16th' || selectedDuration === '16th.';
+            if (isSixteenth) {
+                const sixteenthFreq = getUserFrequency('rhythm', '16th');
+                let maxRun;
+                if (sixteenthFreq <= 10) maxRun = 2;
+                else if (sixteenthFreq <= 25) maxRun = 3;
+                else if (sixteenthFreq <= 50) maxRun = 4;
+                else maxRun = 6;
+
+                const nextRun = (this._sixteenthRun || 0) + 1;
+                if (nextRun > maxRun) {
+                    const alternatives = available.filter(d => d !== '16th' && d !== '16th.');
+                    if (alternatives.length > 0) {
+                        const fallback = selectDurationByPreciseFrequency(alternatives, this.random);
+                        console.log(`🎯 [16分音符抑制] 频率${sixteenthFreq}% 连续${nextRun}超限(${maxRun})，改选${fallback}`);
+                        selectedDuration = fallback;
+                        this._sixteenthRun = (fallback === '16th' || fallback === '16th.') ? 1 : 0;
+                    } else {
+                        this._sixteenthRun = nextRun;
+                    }
+                } else {
+                    this._sixteenthRun = nextRun;
+                }
+            } else {
+                this._sixteenthRun = 0;
+            }
+        }
+
         // 🔥 最终验证：确保选择的时值不会导致小节填充问题
         const finalBeats = this.durationToBeats(selectedDuration);
         const remainingAfterNote = remainingBeats - finalBeats;
@@ -8012,7 +8398,7 @@ class IntelligentMelodyGenerator {
                     }
                     return this.validateAndCorrectMidi(selectedNote, "generateInScaleNote-首音符-无临时记号");
                 }
-                const noteWithAccidental = this.addAccidentalIfNeeded(selectedNote);
+                const noteWithAccidental = this.addAccidentalIfNeeded(selectedNote, null);
                 return this.validateAndCorrectMidi(noteWithAccidental, "generateInScaleNote-首音符-含临时记号");
             }
             
@@ -8169,7 +8555,7 @@ class IntelligentMelodyGenerator {
             }
             
             // 尝试添加临时记号（小调会在方法内过滤非法音）
-            const finalNote = this.addAccidentalIfNeeded(selectedNote);
+            const finalNote = this.addAccidentalIfNeeded(selectedNote, lastMidi);
             
             // 检查加了临时记号后是否仍然满足音程限制，且小调不超出允许集合
             const finalInterval = Math.abs(finalNote - lastMidi);
@@ -8525,12 +8911,110 @@ class IntelligentMelodyGenerator {
     /**
      * 根据设置决定是否添加临时记号
      */
-    addAccidentalIfNeeded(midi) {
-        // 根据临时记号概率决定是否添加升降号
-        if (this.rules.accidentalRate > 0 && this.random.nextFloat() < this.rules.accidentalRate) {
-            return this.addAccidental(midi);
+    addAccidentalIfNeeded(midi, lastMidi = null) {
+        if (!this.rules.accidentalRate || this.rules.accidentalRate <= 0) {
+            this.resetChromaticRun();
+            return midi;
         }
-        return midi;
+        if (typeof lastMidi !== 'number') {
+            this.resetChromaticRun();
+            return midi;
+        }
+
+        const interval = Math.abs(midi - lastMidi);
+        const allowStepwiseRun = interval <= 2;
+
+        if (this.chromaticState.active && this.chromaticState.remaining > 0) {
+            if (!allowStepwiseRun) {
+                this.resetChromaticRun();
+                return midi;
+            }
+            const nextMidi = lastMidi + this.chromaticState.direction;
+            if (this.isChromaticStepValid(nextMidi)) {
+                this.chromaticState.remaining -= 1;
+                if (this.chromaticState.remaining <= 0) {
+                    this.resetChromaticRun();
+                }
+                this.queueAccidentalPreference(nextMidi, this.chromaticState.direction);
+                return nextMidi;
+            }
+            this.resetChromaticRun();
+            return midi;
+        }
+
+        if (!allowStepwiseRun || this.random.nextFloat() >= this.rules.accidentalRate) {
+            return midi;
+        }
+
+        const direction = this.determineChromaticDirection(lastMidi, midi);
+        const nextMidi = lastMidi + direction;
+        if (!this.isChromaticStepValid(nextMidi)) {
+            return midi;
+        }
+
+        const runLength = this.getChromaticRunLength();
+        this.chromaticState.active = runLength > 1;
+        this.chromaticState.remaining = Math.max(0, runLength - 1);
+        this.chromaticState.direction = direction;
+        this.queueAccidentalPreference(nextMidi, direction);
+        return nextMidi;
+    }
+
+    resetChromaticRun() {
+        this.chromaticState.active = false;
+        this.chromaticState.remaining = 0;
+        this.chromaticState.direction = 0;
+    }
+
+    getChromaticRunLength() {
+        const rate = this.rules.accidentalRate || 0;
+        let maxLen = 2;
+        if (rate >= 0.75) {
+            maxLen = 4;
+        } else if (rate >= 0.45) {
+            maxLen = 3;
+        }
+        return this.random.nextInt(2, maxLen + 1);
+    }
+
+    determineChromaticDirection(lastMidi, targetMidi) {
+        if (typeof lastMidi !== 'number') return 1;
+        if (typeof targetMidi !== 'number') {
+            return this.random.nextFloat() < 0.5 ? 1 : -1;
+        }
+        const direction = Math.sign(targetMidi - lastMidi);
+        if (direction === 0) {
+            return this.random.nextFloat() < 0.5 ? 1 : -1;
+        }
+        return direction > 0 ? 1 : -1;
+    }
+
+    isChromaticStepValid(midi) {
+        if (midi < this.rules.range.min || midi > this.rules.range.max) {
+            return false;
+        }
+        const minorAllowed = this.getAllowedMinorPitchClasses(this.keySignature);
+        if (minorAllowed && !minorAllowed.has(midi % 12)) {
+            return false;
+        }
+        return true;
+    }
+
+    queueAccidentalPreference(midi, direction) {
+        const preference = direction > 0 ? '#' : 'b';
+        this._pendingAccidentalPreference = { midi, preference };
+    }
+
+    consumeAccidentalPreference(midi) {
+        if (this._pendingAccidentalPreference) {
+            if (this._pendingAccidentalPreference.midi === midi) {
+                const preference = this._pendingAccidentalPreference.preference;
+                this._pendingAccidentalPreference = null;
+                return preference;
+            }
+            this._pendingAccidentalPreference = null;
+        }
+        return null;
     }
     
     /**
@@ -8759,8 +9243,8 @@ class IntelligentMelodyGenerator {
             for (let i = 0; i < count; i++) weighted.push(candidate);
         });
         
-        // 级进音符通常不需要临时记号，直接返回
-        return this.random.choice(weighted.length ? weighted : candidates);
+        const selected = this.random.choice(weighted.length ? weighted : candidates);
+        return this.addAccidentalIfNeeded(selected, lastMidi);
     }
 
     pickAlternateMelodyNote(lastMidi, options = {}) {
@@ -8817,7 +9301,7 @@ class IntelligentMelodyGenerator {
         if (candidates.length > 0) {
             const selectedNote = candidates[0]; // 选择最近的回归音
             console.log(`✓ 级进回归音符: MIDI ${selectedNote}, 与前音间隔: ${Math.abs(selectedNote - lastMidi)}半音`);
-            return selectedNote;
+            return this.addAccidentalIfNeeded(selectedNote, lastMidi);
         }
         
         // 如果级进回归失败，回退到普通级进生成
@@ -8849,24 +9333,155 @@ class IntelligentMelodyGenerator {
      * 生成beam分组 - 强行实现用户规则
      * 核心规则：同一四分音符拍内的八分音符必须连杆
      */
-    generateBeams(notes, currentBeatLevel = null) {
-        const timeSignature = this.rules.timeSignature || '4/4';
-        console.log(`🎼 generateBeams 被调用 - 拍号: ${timeSignature}, 音符数: ${notes.length}`);
+    generateBeams(notes, currentBeatLevel = null, timeSignatureOverride = null) {
+        const rawTimeSignature = timeSignatureOverride || this.rules.timeSignature || '4/4';
+        if (!isBuiltInTimeSignature(rawTimeSignature) && rawTimeSignature !== 'multi') {
+            console.log(`🎼 generateBeams 被调用 - 自定义拍号: ${rawTimeSignature}, 音符数: ${notes.length}`);
+            return this.generateBeamsForCustomTimeSignature(notes, rawTimeSignature);
+        }
+        const timeSignature = getBeamingReferenceTimeSignature(rawTimeSignature);
+        console.log(`🎼 generateBeams 被调用 - 拍号: ${rawTimeSignature} (beaming使用 ${timeSignature}), 音符数: ${notes.length}`);
 
         // 根据拍号选择合适的beaming方法
         if (timeSignature === '4/4') {
-            console.log(`使用4/4拍专用beaming逻辑（按拍点分组）`);
-            return this.generateBeamsFor4_4_Complex(notes);
+            console.log(`使用4/4拍专用beaming逻辑`);
+            return this.generateBeamsFor4_4(notes);
         } else if (timeSignature === '3/4') {
             console.log(`使用3/4拍专用beaming逻辑`);
             return this.generateBeamsFor3_4(notes);
         } else if (timeSignature === '2/4') {
             console.log(`使用2/4拍legacy beaming逻辑`);
-            return this.generateBeamsLegacy(notes, currentBeatLevel);
+            return this.generateBeamsLegacy(notes, currentBeatLevel, timeSignature);
         } else {
             console.log(`使用通用legacy beaming逻辑`);
-            return this.generateBeamsLegacy(notes, currentBeatLevel);
+            return this.generateBeamsLegacy(notes, currentBeatLevel, timeSignature);
         }
+    }
+
+    /**
+     * 自定义拍号 beaming 规则：
+     * 同一拍点内的符尾必须整体连在一起，休止符/拍点边界中断
+     */
+    generateBeamsForCustomTimeSignature(notes, timeSignature) {
+        const parsed = parseTimeSignatureString(timeSignature);
+        if (!parsed) return [];
+
+        const unit = 4 / parsed.beatType; // 拍号分母单位对应的拍值（以四分音符为1拍）
+        const isCompound = isCompoundTimeSignature(timeSignature);
+        const groupSize = unit * (isCompound ? 3 : 1);
+        const tolerance = 0.0001;
+
+        console.log(`🎼 自定义拍号beaming: ${timeSignature} ${isCompound ? 'compound' : 'simple'}, 分组大小=${groupSize}拍`);
+
+        const beamGroups = [];
+        const noteMeta = [];
+        let position = 0;
+
+        // 预计算音符位置与可beam属性
+        for (let i = 0; i < notes.length; i++) {
+            const note = notes[i];
+            const start = position;
+            const end = position + note.beats;
+            const beamLevel = BEAMING_RULES.basicRules.beamLevels[note.duration] || 0;
+            const isBeamable = note.type === 'note' && !note.isTriplet &&
+                note.duration !== 'whole' && note.duration !== 'half' && note.duration !== 'half.' &&
+                beamLevel >= 1;
+
+            noteMeta.push({
+                index: i,
+                note,
+                start,
+                end,
+                beamLevel,
+                isBeamable
+            });
+            position = end;
+        }
+
+        let currentGroup = [];
+        let currentGroupStart = null;
+
+        const finalizeGroup = () => {
+            if (currentGroup.length < 2) {
+                currentGroup = [];
+                return;
+            }
+            const groupIndices = currentGroup.map(meta => meta.index);
+            const beamMap = {};
+
+            currentGroup.forEach((meta, idx) => {
+                const isFirst = idx === 0;
+                const isLast = idx === currentGroup.length - 1;
+                beamMap[meta.index] = { 1: isFirst ? 'begin' : isLast ? 'end' : 'continue' };
+            });
+
+            // 复拍子 + 16分音符：次级beam在八分音符层级内断开
+            if (isCompound && currentGroup.some(meta => meta.beamLevel >= 2)) {
+                const subSize = unit;
+                currentGroup.forEach((meta, idx) => {
+                    if (meta.beamLevel < 2) return;
+                    const localPos = meta.start - (currentGroupStart || 0);
+                    const subGroup = Math.floor((localPos + tolerance) / subSize);
+                    const prevMeta = idx > 0 ? currentGroup[idx - 1] : null;
+                    const nextMeta = idx < currentGroup.length - 1 ? currentGroup[idx + 1] : null;
+
+                    const prevIsSameSub = prevMeta && prevMeta.beamLevel >= 2 &&
+                        Math.floor(((prevMeta.start - (currentGroupStart || 0)) + tolerance) / subSize) === subGroup;
+                    const nextIsSameSub = nextMeta && nextMeta.beamLevel >= 2 &&
+                        Math.floor(((nextMeta.start - (currentGroupStart || 0)) + tolerance) / subSize) === subGroup;
+
+                    let beam2;
+                    if (!prevIsSameSub && !nextIsSameSub) {
+                        beam2 = 'backward hook';
+                    } else if (!prevIsSameSub && nextIsSameSub) {
+                        beam2 = 'begin';
+                    } else if (prevIsSameSub && !nextIsSameSub) {
+                        beam2 = 'end';
+                    } else {
+                        beam2 = 'continue';
+                    }
+
+                    if (!beamMap[meta.index]) beamMap[meta.index] = {};
+                    beamMap[meta.index][2] = beam2;
+                });
+            }
+
+            beamGroups.push({
+                start: groupIndices[0],
+                end: groupIndices[groupIndices.length - 1],
+                notes: groupIndices,
+                beamMap,
+                stemDirection: 'up'
+            });
+
+            currentGroup = [];
+        };
+
+        noteMeta.forEach(meta => {
+            const groupIndex = Math.floor((meta.start + tolerance) / groupSize);
+            const groupStart = groupIndex * groupSize;
+
+            if (currentGroupStart === null) {
+                currentGroupStart = groupStart;
+            }
+
+            if (Math.abs(groupStart - currentGroupStart) > tolerance) {
+                finalizeGroup();
+                currentGroupStart = groupStart;
+            }
+
+            if (!meta.isBeamable) {
+                finalizeGroup();
+                return;
+            }
+
+            currentGroup.push(meta);
+        });
+
+        finalizeGroup();
+
+        console.log(`🎼 自定义拍号beaming完成: ${beamGroups.length}个beam组`);
+        return beamGroups;
     }
     
     /**
@@ -8875,6 +9490,11 @@ class IntelligentMelodyGenerator {
     generateBeamsFor4_4(notes) {
         console.log(`🔥 使用超级简单的beaming逻辑 - 直接连接所有可连杆音符`);
         console.log(`🔍 传入的音符数据总数: ${notes.length}`);
+        const normalizePosition = (pos) => {
+            const rounded = Math.round(pos * 10000) / 10000;
+            const nearest = Math.round(rounded);
+            return Math.abs(rounded - nearest) < 0.001 ? nearest : rounded;
+        };
 
         // 详细打印所有音符数据
         notes.forEach((note, i) => {
@@ -8888,15 +9508,19 @@ class IntelligentMelodyGenerator {
 
         for (let i = 0; i < notes.length; i++) {
             const note = notes[i];
-            const beatNumber = Math.floor(position) % 4;
+            const cleanPosition = normalizePosition(position);
+            const beatNumber = Math.floor(cleanPosition) % 4;
 
-            console.log(`🔍 处理音符${i}: ${note.type}/${note.duration}, 拍${beatNumber}, 位置${position.toFixed(3)}`);
+            console.log(`🔍 处理音符${i}: ${note.type}/${note.duration}, 拍${beatNumber}, 位置${position.toFixed(3)} -> ${cleanPosition.toFixed(3)}`);
 
             // 最简单的连杆检查
             let canBeam = false;
             if (note.type === 'note') {
                 // 只要不是全音符或二分音符，都可以连杆
-                canBeam = note.duration !== 'whole' && note.duration !== 'half' && note.duration !== 'half.';
+                canBeam = !note.isTriplet &&
+                    note.duration !== 'whole' &&
+                    note.duration !== 'half' &&
+                    note.duration !== 'half.';
                 console.log(`  🔍 音符${i}(${note.duration}): 可连杆=${canBeam}`);
             }
 
@@ -9294,6 +9918,7 @@ class IntelligentMelodyGenerator {
      */
     isBeamableNote(note) {
         if (note.type !== 'note') return false;
+        if (note.isTriplet) return false;
         
         console.log(`    🔍 检查连杆能力: ${note.duration}, beats=${note.beats}`);
         
@@ -9316,6 +9941,7 @@ class IntelligentMelodyGenerator {
      */
     isStandardBeamable(note) {
         if (note.type !== 'note') return false;
+        if (note.isTriplet) return false;
 
         console.log(`    📏 标准连杆检查: duration=${note.duration}, beats=${note.beats}, tied=${note.tied}, tieType=${note.tieType}`);
 
@@ -9471,11 +10097,12 @@ class IntelligentMelodyGenerator {
     /**
      * 传统连杆生成逻辑（用于非4/4拍号）
      */
-    generateBeamsLegacy(notes, currentBeatLevel = null) {
+    generateBeamsLegacy(notes, currentBeatLevel = null, timeSignatureOverride = null) {
         const beamGroups = [];
         let currentGroup = [];
         let currentPosition = 0;
-        const timeSignature = this.rules.timeSignature || '4/4';
+        const rawTimeSignature = timeSignatureOverride || this.rules.timeSignature || '4/4';
+        const timeSignature = getBeamingReferenceTimeSignature(rawTimeSignature);
         
         for (let i = 0; i < notes.length; i++) {
             const note = notes[i];
@@ -9974,65 +10601,28 @@ class IntelligentMelodyGenerator {
      * 判断是否可以生成三连音
      */
     canGenerateTriplet(remainingBeats) {
-        const allowedDurations = Array.isArray(this.rules.allowedDurations)
-            ? this.rules.allowedDurations
-            : [];
-        const hasTriplet = allowedDurations.includes('triplet');
-        const hasDuplet = allowedDurations.includes('duplet');
-        const hasQuadruplet = allowedDurations.includes('quadruplet');
-
-        // 只有当设置中允许任一连音类型时才生成
-        if (!hasTriplet && !hasDuplet && !hasQuadruplet) {
-            console.log(`🚫 连音被禁用: allowedDurations=[${allowedDurations.join(',')}]`);
+        // 只有当设置中允许三连音时才生成
+        if (!Array.isArray(this.rules.allowedDurations) || !this.rules.allowedDurations.includes('triplet')) {
+            console.log(`🚫 三连音被禁用: allowedDurations=[${this.rules.allowedDurations?.join(',')}]`);
             console.log(`🔍 用户原始设置: allowedRhythms=[${userSettings?.allowedRhythms?.join(',')}]`);
             return false;
         }
 
-        if (typeof this._tripletBudget === 'number' && this._tripletBudget <= 0.001) {
-            console.log(`🚫 三连音预算耗尽：剩余${this._tripletBudget.toFixed(3)}拍`);
-            return false;
-        }
-        if (typeof this._tripletBudget === 'number') {
-            const minTupletBeats = this.getMinTupletBeats();
-            if (minTupletBeats > 0 && this._tripletBudget + 0.001 < minTupletBeats) {
-                console.log(`🚫 连音预算不足以放置最小连音：预算${this._tripletBudget.toFixed(3)}拍 < ${minTupletBeats}拍`);
+        // 检查用户设置的三连音频率
+        if (userSettings && userSettings.rhythmFrequencies && userSettings.rhythmFrequencies.triplet !== undefined) {
+            const tripletFrequency = userSettings.rhythmFrequencies.triplet;
+            if (tripletFrequency === 0) {
+                console.log(`🚫 用户频率设置：三连音频率为 0%，完全禁用`);
                 return false;
             }
-        }
 
-        const useBudget = typeof this._tupletBudgetRemaining === 'number';
+            // 根据用户设置的频率来决定是否生成三连音
+            const randomValue = this.random.nextFloat() * 100;
+            const shouldGenerate = randomValue < tripletFrequency;
+            console.log(`🎯 三连音频率检查：随机值 ${randomValue.toFixed(1)} vs 用户频率 ${tripletFrequency}% = ${shouldGenerate ? '✅生成' : '❌跳过'}`);
 
-        // 检查用户设置的连音频率（只应用一次，不再叠加额外概率）
-        if (!useBudget && userSettings && userSettings.rhythmFrequencies) {
-            const rawTripletFreq = hasTriplet ? this.getRawRhythmFrequency('triplet') : 0;
-            const rawDupletFreq = hasDuplet ? this.getRawRhythmFrequency('duplet') : 0;
-            const rawQuadrupletFreq = hasQuadruplet ? this.getRawRhythmFrequency('quadruplet') : 0;
-            const freqCandidates = [rawTripletFreq, rawDupletFreq, rawQuadrupletFreq].filter(freq => freq > 0);
-
-            if (freqCandidates.length) {
-                const tupletFrequency = Math.max(...freqCandidates);
-                if (tupletFrequency === 0) {
-                    console.log('🚫 用户频率设置：连音频率为 0%，完全禁用');
-                    return false;
-                }
-
-                // 使用相对权重：连音频率与其它节奏频率对比，避免连音过度占比
-                const nonTupletDurations = allowedDurations.filter(duration => {
-                    if (duration === 'triplet' || duration === 'duplet' || duration === 'quadruplet') return false;
-                    const beats = this.durationToBeats(duration);
-                    return beats <= remainingBeats + 0.001;
-                });
-                const nonTupletWeight = nonTupletDurations.reduce((sum, duration) => {
-                    const key = mapDurationToFrequencyKey(duration);
-                    const raw = this.getRawRhythmFrequency(key);
-                    return sum + Math.max(0, raw);
-                }, 0);
-                const totalWeight = tupletFrequency + nonTupletWeight;
-                const adjustedProbability = totalWeight > 0 ? (tupletFrequency / totalWeight) : 1;
-                const randomValue = this.random.nextFloat();
-                const shouldGenerate = randomValue < adjustedProbability;
-                console.log(`🎯 连音权重检查：连音${tupletFrequency} vs 其它${nonTupletWeight} => ${(adjustedProbability * 100).toFixed(1)}% (${shouldGenerate ? '✅生成' : '❌跳过'})`);
-                return shouldGenerate;
+            if (!shouldGenerate) {
+                return false;
             }
         }
 
@@ -10048,11 +10638,6 @@ class IntelligentMelodyGenerator {
             console.log(`音域设置无效，无法生成三连音`);
             return false;
         }
-
-        if (useBudget) {
-            console.log('🎯 连音预算模式：跳过额外概率门槛');
-            return true;
-        }
         
         // 如果剩余拍数刚好是整数拍，优先生成三连音以避免零散的小时值
         const isNearWholeBeat = Math.abs(remainingBeats - Math.round(remainingBeats)) < 0.001;
@@ -10067,14 +10652,6 @@ class IntelligentMelodyGenerator {
         const normalTripletChance = this.random.nextFloat() < 0.08; // 降低基础概率到合理范围
         console.log(`🎲 正常三连音随机决策: ${normalTripletChance ? '✅生成' : '❌跳过'} (8%概率, 剩余${remainingBeats}拍)`);
         return normalTripletChance;
-    }
-
-    getRawRhythmFrequency(type) {
-        const rawValue = userSettings?.rhythmFrequencies?.[type];
-        if (typeof rawValue === 'number') {
-            return rawValue;
-        }
-        return getDefaultRhythmFrequency(type);
     }
 
     /**
@@ -10279,13 +10856,13 @@ class IntelligentMelodyGenerator {
             
             // 简化的三连音内部模式 - 更适合初学者
             commonPatterns: [
-                { pattern: ['note', 'note', 'note'], weight: 0.18, description: "三个音符" },
-                { pattern: ['note', 'note', 'rest'], weight: 0.16, description: "两音符+休止符" },
-                { pattern: ['note', 'rest', 'note'], weight: 0.16, description: "音符+休止符+音符" },
-                { pattern: ['rest', 'note', 'note'], weight: 0.16, description: "休止符+两音符" },
-                { pattern: ['note', 'rest', 'rest'], weight: 0.16, description: "音符+两休止符" },
-                { pattern: ['rest', 'rest', 'note'], weight: 0.16, description: "两休止符+音符" },
-                { pattern: ['rest', 'note', 'rest'], weight: 0.16, description: "休止符+音符+休止符" }
+                { pattern: ['note', 'note', 'note'], weight: 0.65, description: "三个音符" },
+                { pattern: ['note', 'note', 'rest'], weight: 0.12, description: "两音符+休止符" },
+                { pattern: ['note', 'rest', 'note'], weight: 0.10, description: "音符+休止符+音符" },
+                { pattern: ['rest', 'note', 'note'], weight: 0.06, description: "休止符+两音符" },
+                { pattern: ['note', 'rest', 'rest'], weight: 0.03, description: "音符+两休止符" },
+                { pattern: ['rest', 'rest', 'note'], weight: 0.02, description: "两休止符+音符" },
+                { pattern: ['rest', 'note', 'rest'], weight: 0.02, description: "休止符+音符+休止符" }
             ],
             
             // 选择连音内部模式（支持不同连音类型）
@@ -10458,7 +11035,14 @@ class IntelligentMelodyGenerator {
                     nextMidi = Math.max(this.rules.range.min, Math.min(this.rules.range.max, nextMidi));
                 }
                 
-                const { step, octave, alter } = this.midiToMusicXML(nextMidi);
+                let preferredAccidental = this.consumeAccidentalPreference(nextMidi);
+                if (typeof lastMidi === 'number' && Math.abs(nextMidi - lastMidi) === 1) {
+                    const directionPreference = nextMidi > lastMidi ? '#' : 'b';
+                    if (!preferredAccidental || preferredAccidental !== directionPreference) {
+                        preferredAccidental = directionPreference;
+                    }
+                }
+                const { step, octave, alter } = this.midiToMusicXML(nextMidi, preferredAccidental);
                 
                 tripletElements.push({
                     type: 'note',
@@ -10526,26 +11110,42 @@ class IntelligentMelodyGenerator {
      */
     selectTripletType(remainingBeats, currentPosition, timeSignature) {
         const availableTypes = [];
-        const allowedDurations = Array.isArray(this.rules.allowedDurations)
-            ? this.rules.allowedDurations
-            : [];
-        const allowedTupletTypes = new Set();
-        if (allowedDurations.includes('triplet')) allowedTupletTypes.add('triplet');
-        if (allowedDurations.includes('duplet')) allowedTupletTypes.add('duplet');
-        if (allowedDurations.includes('quadruplet')) allowedTupletTypes.add('quadruplet');
         
         console.log(`🔍 选择三连音类型: 剩余${remainingBeats}拍, 位置${currentPosition}, 拍号${timeSignature}`);
+        const isCustomTimeSignature = !isBuiltInTimeSignature(timeSignature);
+        const isCompoundCustom = isCustomTimeSignature && isCompoundTimeSignature(timeSignature);
+        const isSimpleCustom = isCustomTimeSignature && !isCompoundCustom;
+        const tupletGroupTolerance = 0.0001;
+        const parsedTimeSignature = isCustomTimeSignature ? parseTimeSignatureString(timeSignature) : null;
+        const groupUnit = parsedTimeSignature ? (4 / parsedTimeSignature.beatType) : null;
+        const groupSize = (parsedTimeSignature && groupUnit)
+            ? (groupUnit * (isCompoundCustom ? 3 : 1))
+            : null;
         
         // 检查每种连音类型是否可以使用
         for (const [typeName, typeInfo] of Object.entries(this.TRIPLET_RULES.types)) {
-            const tupletType = typeInfo.tupletType || 'triplet';
-            if (!allowedTupletTypes.has(tupletType)) {
-                console.log(`   检查${typeName}: ❌${tupletType}未启用`);
-                continue;
-            }
             // 检查是否为6/8拍专用连音类型
             if (typeInfo.allowedTimeSignatures && !typeInfo.allowedTimeSignatures.includes(timeSignature)) {
                 console.log(`   检查${typeName}: ❌不允许在${timeSignature}拍中使用`);
+                continue;
+            }
+            // 🔥 自定义拍号严格限制连音类型：单拍子仅三连音，复拍子仅二/四连音
+            if (isCustomTimeSignature) {
+                if (isSimpleCustom && typeInfo.tupletType !== 'triplet') {
+                    console.log(`   检查${typeName}: ❌自定义单拍子禁止二/四连音`);
+                    continue;
+                }
+                if (isCompoundCustom && !(typeInfo.tupletType === 'duplet' || typeInfo.tupletType === 'quadruplet')) {
+                    console.log(`   检查${typeName}: ❌自定义复拍子禁止三连音`);
+                    continue;
+                }
+            }
+
+            if (typeInfo.tupletType === 'triplet' &&
+                typeInfo.duration === '16th' &&
+                this.rules.allowedDurations.includes('16th') &&
+                this.rules.allowedDurations.includes('triplet')) {
+                console.log(`   检查${typeName}: ❌用户同时启用16分音符与三连音，禁用16分三连音`);
                 continue;
             }
             
@@ -10568,9 +11168,13 @@ class IntelligentMelodyGenerator {
             console.log(`   检查${typeName}: ${canPlace ? '✅可用' : '❌不可用'} (需要${typeInfo.totalBeats}拍, 基础音符${baseNoteType}已启用)`);
             
             if (canPlace) {
-                if (typeof this._tripletBudget === 'number' && this._tripletBudget + 0.001 < typeInfo.totalBeats) {
-                    console.log(`   检查${typeName}: ❌预算不足 (预算${this._tripletBudget.toFixed(3)}拍, 需要${typeInfo.totalBeats}拍)`);
-                    continue;
+                // 🔥 自定义拍号：连音必须完整落在分组边界内（防止跨拍点）
+                if (isCustomTimeSignature && groupSize && Number.isFinite(groupSize)) {
+                    const localPos = ((currentPosition % groupSize) + groupSize) % groupSize;
+                    if (localPos + typeInfo.totalBeats > groupSize + tupletGroupTolerance) {
+                        console.log(`   检查${typeName}: ❌自定义拍号连音跨越分组边界 (位置${localPos.toFixed(3)} + ${typeInfo.totalBeats} > ${groupSize})`);
+                        continue;
+                    }
                 }
                 const weight = this.calculateTripletTypeWeight(typeName, remainingBeats, currentPosition, timeSignature);
                 availableTypes.push({
@@ -11287,6 +11891,16 @@ class IntelligentMelodyGenerator {
                 return null;
             }
         }
+
+        if ((selectedArticulation === 'hammer-on' || selectedArticulation === 'pull-off') && noteIndex > 0) {
+            const prevNote = measureNotes[noteIndex - 1];
+            const prevType = typeof prevNote?.type === 'string' ? prevNote.type : '';
+            const prevIsRest = prevNote?.isRest || prevNote?.type === 'rest' || prevType.includes('rest');
+            if (prevNote && !prevIsRest && prevNote.articulation === 'staccato') {
+                prevNote.articulation = null;
+                console.log(`🚫 移除slur起始音的staccato: 小节${measureIndex + 1}, 音符${noteIndex}`);
+            }
+        }
         
         return selectedArticulation;
     }
@@ -11347,6 +11961,39 @@ class IntelligentMelodyGenerator {
         console.log(`  - pull-off移除: ${pullOffRemoved}个`);
         console.log(`  - 相关的slur连线也将不会生成，因为它们依赖于这些articulation`);
         
+        return measures;
+    }
+
+    removeStaccatoFromSlurStarts(measures) {
+        let removed = 0;
+
+        for (let measureIndex = 0; measureIndex < measures.length; measureIndex++) {
+            const measure = measures[measureIndex];
+            if (!measure || !measure.notes) continue;
+
+            for (let noteIndex = 0; noteIndex < measure.notes.length - 1; noteIndex++) {
+                const note = measure.notes[noteIndex];
+                const nextNote = measure.notes[noteIndex + 1];
+
+                if (!note || !nextNote) continue;
+
+                const noteType = typeof note.type === 'string' ? note.type : '';
+                const noteIsRest = note.isRest || note.type === 'rest' || noteType.includes('rest');
+                if (noteIsRest) continue;
+
+                const nextIsSlurTarget = nextNote.articulation === 'hammer-on' || nextNote.articulation === 'pull-off';
+                if (nextIsSlurTarget && note.articulation === 'staccato') {
+                    note.articulation = null;
+                    removed++;
+                    console.log(`🚫 移除slur起始音的staccato: 小节${measureIndex + 1}, 音符${noteIndex + 1}`);
+                }
+            }
+        }
+
+        if (removed > 0) {
+            console.log(`✅ 已移除${removed}个slur起始音的staccato`);
+        }
+
         return measures;
     }
 
@@ -11493,12 +12140,15 @@ class IntelligentMelodyGenerator {
      * MIDI转MusicXML音名 - 正确处理调号升降
      * 核心原则：只有当音符偏离调号默认值时才写入alter
      */
-    midiToMusicXML(midi) {
+    midiToMusicXML(midi, preferredAccidental = null) {
         let octave = Math.floor(midi / 12) - 1;
         const pitchClass = midi % 12;
         
         // 🎵 使用专业记谱规则获取正确的音名拼写
-        const correctSpelling = PROFESSIONAL_NOTATION_RULES.getCorrectSpelling(pitchClass, this.keySignature);
+        const normalizedPreference = this.normalizeAccidentalPreference(preferredAccidental);
+        const preferredSpelling = this.getPreferredSpelling(pitchClass, normalizedPreference);
+        const forcePreferredSpelling = !!preferredSpelling;
+        const correctSpelling = preferredSpelling || PROFESSIONAL_NOTATION_RULES.getCorrectSpelling(pitchClass, this.keySignature);
         
         // 获取当前调号的默认升降记号
         const keyDefaults = this.getKeyAccidentals(this.keySignature);
@@ -11530,7 +12180,7 @@ class IntelligentMelodyGenerator {
         
         // 根据pitch class确定实际的升降值
         // 对于小调，已经从拼写表获得了正确的音名，不需要再处理
-        if (!isMinorKey) {
+        if (!isMinorKey && !forcePreferredSpelling) {
             switch (pitchClass) {
                 case 0: 
                     // 特殊处理：如果正确拼写已经确定为B#，保持actualAlter=1
@@ -11701,6 +12351,45 @@ class IntelligentMelodyGenerator {
             octave: octave,
             alter: xmlAlter
         };
+    }
+
+    getPreferredSpelling(pitchClass, preferredAccidental) {
+        if (!preferredAccidental) return null;
+        if (preferredAccidental === '#') {
+            const sharpMap = {
+                1: 'C#',
+                3: 'D#',
+                6: 'F#',
+                8: 'G#',
+                10: 'A#'
+            };
+            return sharpMap[pitchClass] || null;
+        }
+        if (preferredAccidental === 'b') {
+            const flatMap = {
+                1: 'Db',
+                3: 'Eb',
+                6: 'Gb',
+                8: 'Ab',
+                10: 'Bb'
+            };
+            return flatMap[pitchClass] || null;
+        }
+        return null;
+    }
+
+    getKeyAccidentalBias(keySignature) {
+        const keyInfo = KEY_SIGNATURES[keySignature];
+        if (!keyInfo) return null;
+        if (Array.isArray(keyInfo.sharps) && keyInfo.sharps.length > 0) return '#';
+        if (Array.isArray(keyInfo.flats) && keyInfo.flats.length > 0) return 'b';
+        return null;
+    }
+
+    normalizeAccidentalPreference(preferredAccidental) {
+        if (!preferredAccidental) return null;
+        const bias = this.getKeyAccidentalBias(this.keySignature);
+        return bias || preferredAccidental;
     }
     
     
@@ -11905,6 +12594,7 @@ class MusicXMLBuilder {
         }
 
         this.config = config;
+        this.divisions = 24;
     }
 
     /**
@@ -11936,6 +12626,11 @@ class MusicXMLBuilder {
                 forceBeamsFor44: function(notes) {
                     console.log(`🔥 使用修复后的beaming重新生成逻辑`);
                     console.log(`🔍 处理${notes.length}个音符:`, notes.map((n, i) => `${i}:${n.duration}`).join(', '));
+                    const normalizePosition = (pos) => {
+                        const rounded = Math.round(pos * 10000) / 10000;
+                        const nearest = Math.round(rounded);
+                        return Math.abs(rounded - nearest) < 0.001 ? nearest : rounded;
+                    };
                     const beamGroups = [];
                     let currentGroup = [];
                     let position = 0;
@@ -11943,13 +12638,13 @@ class MusicXMLBuilder {
 
                     for (let i = 0; i < notes.length; i++) {
                         const note = notes[i];
-                        const cleanPosition = Math.round(position * 10000) / 10000;
+                        const cleanPosition = normalizePosition(position);
                         const noteBeat = Math.floor(cleanPosition) % 4; // 确保拍号在0-3范围内
 
-                        console.log(`  🔍 检查音符${i}: ${note.type}/${note.duration}, 拍${noteBeat}, 位置${position.toFixed(4)}`);
+                        console.log(`  🔍 检查音符${i}: ${note.type}/${note.duration}, 拍${noteBeat}, 位置${position.toFixed(4)} -> ${cleanPosition.toFixed(4)}`);
 
                         // 处理所有可连杆音符（八分、十六分、四分等）
-                        const canBeam = note.type === 'note' && (
+                        const canBeam = note.type === 'note' && !note.isTriplet && (
                             note.duration === 'quarter' || Math.abs(note.beats - 1.0) < 0.001 ||
                             note.duration === 'quarter.' || Math.abs(note.beats - 1.5) < 0.001 ||
                             note.duration === 'eighth' || Math.abs(note.beats - 0.5) < 0.001 ||
@@ -12241,7 +12936,7 @@ class MusicXMLBuilder {
             if (measureIndex === 0) {
                 xml += `
       <attributes>
-        <divisions>4</divisions>
+        <divisions>${this.divisions}</divisions>
         <key>
           <fifths>${keyFifths}</fifths>
           <mode>${keyMode}</mode>
@@ -12640,6 +13335,26 @@ class MusicXMLBuilder {
     /**
      * 构建音符XML
      */
+    getDurationDivisions(duration, beats) {
+        const divisions = this.divisions || 24;
+        if (Number.isFinite(beats) && beats > 0) {
+            return Math.max(1, Math.round(beats * divisions));
+        }
+        const beatsMap = {
+            'whole': 4,
+            'half': 2,
+            'half.': 3,
+            'quarter': 1,
+            'quarter.': 1.5,
+            'eighth': 0.5,
+            'eighth.': 0.75,
+            '16th': 0.25,
+            '32nd': 0.125
+        };
+        const fallbackBeats = beatsMap[duration] || 1;
+        return Math.max(1, Math.round(fallbackBeats * divisions));
+    }
+
     buildNoteXML(note, beamInfo, needsSlurStop = false, prevStemDirection = null, prevSlurPlacement = null, forceSlurStart = false, nextStemDirection = null, tieNumber = null) {
         const { duration, step, octave, alter, isTriplet, tripletType, tripletPosition, tied, tieType, articulation, isAcciaccatura, forceGlissandoStart, needsGlissandoStop, graceNote } = note;
         
@@ -12647,7 +13362,9 @@ class MusicXMLBuilder {
         let fullNoteXML = '';
         
         // 如果有grace note，先生成grace note的XML
-        if (graceNote) {
+        const isTiedContinuation = tied && (tieType === 'continue' || tieType === 'stop');
+        const renderArticulation = articulation && !isTiedContinuation;
+        if (graceNote && !isTiedContinuation) {
             console.log(`🎵 处理附加的grace note: ${graceNote.step}${graceNote.octave} -> ${step}${octave}`);
             fullNoteXML += `
       <note>
@@ -12693,20 +13410,8 @@ class MusicXMLBuilder {
             return graceNoteXML;
         }
         
-        // 时值映射（divisions=4）
-        let durationMap = {
-            'whole': 16,
-            'half': 8,
-            'quarter': 4,
-            'quarter.': 6,
-            'eighth': 2,
-            'eighth.': 3,
-            '16th': 1,
-            '32nd': 0.5
-        };
-        
         // 标准时值计算（三连音通过time-modification处理，不修改duration）
-        let durationValue = durationMap[duration] || 4;
+        let durationValue = this.getDurationDivisions(duration, note.beats);
         
         // 三连音调试信息
         if (isTriplet) {
@@ -12760,8 +13465,19 @@ class MusicXMLBuilder {
         
         // Beam标记（仅适用于非三连音）
         if (beamInfo && !isTriplet) {
-            noteXML += `
+            if (typeof beamInfo === 'string') {
+                noteXML += `
         <beam number="1">${beamInfo}</beam>`;
+            } else if (typeof beamInfo === 'object') {
+                const levels = Object.keys(beamInfo)
+                    .map(key => parseInt(key, 10))
+                    .filter(level => Number.isFinite(level))
+                    .sort((a, b) => a - b);
+                levels.forEach(level => {
+                    noteXML += `
+        <beam number="${level}">${beamInfo[level]}</beam>`;
+                });
+            }
         }
         
         // 自动计算符干方向
@@ -12812,7 +13528,7 @@ class MusicXMLBuilder {
         </time-modification>`;
             
             // 再处理tuplet标记和notations
-            const needsNotations = (tied && tieType) || tripletPosition === 0 || tripletPosition === 2 || needsSlurStop || articulation || forceGlissandoStart || needsGlissandoStop;
+            const needsNotations = (tied && tieType) || tripletPosition === 0 || tripletPosition === 2 || needsSlurStop || renderArticulation || forceGlissandoStart || needsGlissandoStop;
             
             if (needsNotations) {
                 noteXML += `
@@ -12874,7 +13590,7 @@ class MusicXMLBuilder {
                 }
                 
                 // 添加其他articulation标记（glissando、slide-in、slide-out已经在notations中处理了）
-                if (articulation && articulation !== 'slide' && articulation !== 'glissando' && 
+                if (renderArticulation && articulation !== 'slide' && articulation !== 'glissando' && 
                     articulation !== 'slide-in' && articulation !== 'slide-out') {
                     // 对于非slide/glissando的articulation，正常处理
                     noteXML += this.buildArticulationXML(articulation);
@@ -13088,7 +13804,7 @@ class MusicXMLBuilder {
             }
             
             // 添加articulation标记（glissando、slide-in、slide-out已经在notations中处理了）
-            if (articulation && articulation !== 'glissando' && 
+            if (renderArticulation && articulation !== 'glissando' && 
                 articulation !== 'slide-in' && articulation !== 'slide-out') {
                 noteXML += this.buildArticulationXML(articulation);
                 
@@ -13179,7 +13895,7 @@ class MusicXMLBuilder {
             
             noteXML += `
         </notations>`;
-        } else if (articulation || needsSlurStop || forceGlissandoStart || needsGlissandoStop) {
+        } else if (renderArticulation || needsSlurStop || forceGlissandoStart || needsGlissandoStop) {
             // 仅有articulation、需要结束slur或处理glissando的情况
             noteXML += `
         <notations>`;
@@ -13242,7 +13958,7 @@ class MusicXMLBuilder {
             }
             
             // 添加articulation标记（glissando、slide-in、slide-out已经在notations中处理了）
-            if (articulation && articulation !== 'glissando' && 
+            if (renderArticulation && articulation !== 'glissando' && 
                 articulation !== 'slide-in' && articulation !== 'slide-out') {
                 noteXML += this.buildArticulationXML(articulation);
                 // 🔥 第二个slur生成分支：再次严格检查权限
@@ -13418,20 +14134,7 @@ class MusicXMLBuilder {
         const { duration, beats, isTriplet, tripletType, tripletPosition, tripletTotal } = rest;
         
         console.log(`生成休止符XML: duration=${duration}, beats=${beats}, isTriplet=${isTriplet}, clef=${this.config.clef}`);
-        
-        const durationMap = {
-            'whole': 16,
-            'half': 8,
-            'half.': 12,  // 二分附点休止符
-            'quarter': 4,
-            'quarter.': 6,
-            'eighth': 2,
-            'eighth.': 3,
-            '16th': 1,
-            '32nd': 0.5
-        };
-        
-        const durationValue = durationMap[duration] || 4;
+        const durationValue = this.getDurationDivisions(duration, beats);
         
         let restXML = `
       <note>`;
@@ -13557,6 +14260,9 @@ class MusicXMLBuilder {
      */
     getBeamInfo(beamGroups, noteIndex) {
         for (const group of beamGroups) {
+            if (group.beamMap && group.beamMap[noteIndex]) {
+                return group.beamMap[noteIndex];
+            }
             if (Array.isArray(group.notes) && group.notes.includes(noteIndex)) {
                 if (noteIndex === group.notes[0]) {
                     return 'begin';
@@ -15325,7 +16031,7 @@ function mergeTiedQuarterNotesIn44(melody, timeSignature) {
     let mergeCount = 0;
 
     // 🎯 简化助手函数：只检查真正必要的冲突，默认允许合并
-    function shouldMergeBasedOnContext(notes, currentIndex, measureIndex) {
+    function shouldMergeBasedOnContext(notes, currentIndex, measureIndex, measureCriticalBeats) {
         const currentNote = notes[currentIndex];
         const nextNote = notes[currentIndex + 1];
 
@@ -15339,8 +16045,21 @@ function mergeTiedQuarterNotesIn44(melody, timeSignature) {
         const secondNotePos = position + currentNote.beats;
         const beatOfFirst = Math.floor(firstNotePos);
         const beatOfSecond = Math.floor(secondNotePos);
+        const mergedStart = firstNotePos;
+        const mergedEnd = secondNotePos + nextNote.beats;
+        const tolerance = 0.001;
 
         console.log(`  🎯 [简化检查] 小节${measureIndex + 1}: 位置${firstNotePos.toFixed(2)}-${secondNotePos.toFixed(2)}, 拍${beatOfFirst}-${beatOfSecond}`);
+
+        if (Array.isArray(measureCriticalBeats) && measureCriticalBeats.length > 0) {
+            const obscuresCriticalBeat = measureCriticalBeats.some(beat =>
+                beat > mergedStart + tolerance && beat < mergedEnd - tolerance
+            );
+            if (obscuresCriticalBeat) {
+                console.log(`  ⚠️ 合并会遮蔽关键拍点[${measureCriticalBeats.join(', ')}]，保留拆分`);
+                return false;
+            }
+        }
 
         // 规割1：如果在同一拍内且各占0.5拍，应该保持为八分音符beaming
         if (beatOfFirst === beatOfSecond &&
@@ -15370,6 +16089,11 @@ function mergeTiedQuarterNotesIn44(melody, timeSignature) {
         const measure = melody[measureIndex];
         if (!measure || !measure.notes) continue;
 
+        const measureCriticalBeats = RHYTHM_NOTATION_RULES.getCriticalBeatsWithLocalRhythm(
+            measure.notes,
+            timeSignature
+        );
+
         let processedNotes = [];
         let i = 0;
 
@@ -15386,7 +16110,12 @@ function mergeTiedQuarterNotesIn44(melody, timeSignature) {
                 currentNote.midi === nextNote.midi) {
 
                 // 🎯 智能分析：基于上下文决定是否合并
-                const shouldMerge = shouldMergeBasedOnContext(measure.notes, i, measureIndex);
+                const shouldMerge = shouldMergeBasedOnContext(
+                    measure.notes,
+                    i,
+                    measureIndex,
+                    measureCriticalBeats
+                );
                 if (!shouldMerge) {
                     console.log(`  🎵 小节${measureIndex + 1}: 基于上下文分析，不合并这两个音符`);
                     processedNotes.push(currentNote);
@@ -15460,6 +16189,9 @@ function generateMelodyData(measures, keySignature, timeSignature, clef, seed = 
     let melody; // 在外层定义变量
     let generator; // 在外层定义生成器变量
     let originalAllowedRhythms; // 存储原始连音设置
+    if (typeof window !== 'undefined') {
+        window.currentTimeSignature = timeSignature;
+    }
     
     // 🔥 全新思路：6/8拍直接生成完整MusicXML，完全绕过内部数据结构
     if (timeSignature === '6/8') {
@@ -15561,50 +16293,112 @@ function generateMelodyData(measures, keySignature, timeSignature, clef, seed = 
             return scale.includes(midi % 12);
         }
         
-        // 🔥 修复：添加临时记号处理函数 - 与4/4拍保持一致
-        function addAccidentalIfNeeded(midi) {
-            // 根据临时记号概率决定是否添加升降号
-            if (accidentalRate > 0 && random.nextFloat() < accidentalRate) {
-                return addAccidental(midi);
-            }
-            return midi;
+        const chromaticState = { active: false, remaining: 0, direction: 0 };
+        let pendingAccidentalPreference = null;
+        const minorAllowed = tempGenerator.getAllowedMinorPitchClasses(keySignature);
+
+        function resetChromaticRun() {
+            chromaticState.active = false;
+            chromaticState.remaining = 0;
+            chromaticState.direction = 0;
         }
-        
-        function addAccidental(midi) {
-            const accidentalChoices = [];
-            const noteClass = midi % 12;
-            const keySignatureInfo = isNoteAffectedByKeySignature(noteClass, keySignature);
-            
-            // 尝试添加升号（+1半音）
-            const sharpNote = midi + 1;
-            const sharpNoteClass = sharpNote % 12;
-            
-            // 只有在以下情况下才添加升号：
-            // 1. 升号后的音符不超出音域
-            if (sharpNote <= userRange.max) {
-                accidentalChoices.push(sharpNote);
+
+        function getChromaticRunLength() {
+            let maxLen = 2;
+            if (accidentalRate >= 0.75) {
+                maxLen = 4;
+            } else if (accidentalRate >= 0.45) {
+                maxLen = 3;
             }
-            
-            // 尝试添加降号（-1半音）  
-            const flatNote = midi - 1;
-            const flatNoteClass = flatNote % 12;
-            
-            // 只有在以下情况下才添加降号：
-            // 1. 降号后的音符不超出音域
-            if (flatNote >= userRange.min) {
-                accidentalChoices.push(flatNote);
+            return random.nextInt(2, maxLen + 1);
+        }
+
+        function determineChromaticDirection(lastMidi, targetMidi) {
+            if (typeof lastMidi !== 'number') return 1;
+            if (typeof targetMidi !== 'number') {
+                return random.nextFloat() < 0.5 ? 1 : -1;
             }
-            
-            // 如果没有可用的临时记号，返回原音符
-            if (accidentalChoices.length === 0) {
-                console.log(`🎯 6/8拍：音符MIDI ${midi}无需添加临时记号（避免与${keySignature}调号重复）`);
+            const direction = Math.sign(targetMidi - lastMidi);
+            if (direction === 0) {
+                return random.nextFloat() < 0.5 ? 1 : -1;
+            }
+            return direction > 0 ? 1 : -1;
+        }
+
+        function isChromaticStepValid(midi) {
+            if (midi < userRange.min || midi > userRange.max) {
+                return false;
+            }
+            if (minorAllowed && !minorAllowed.has(midi % 12)) {
+                return false;
+            }
+            return true;
+        }
+
+        function queueAccidentalPreference(midi, direction) {
+            const preference = direction > 0 ? '#' : 'b';
+            pendingAccidentalPreference = { midi, preference };
+        }
+
+        function consumeAccidentalPreference(midi) {
+            if (pendingAccidentalPreference) {
+                if (pendingAccidentalPreference.midi === midi) {
+                    const preference = pendingAccidentalPreference.preference;
+                    pendingAccidentalPreference = null;
+                    return preference;
+                }
+                pendingAccidentalPreference = null;
+            }
+            return null;
+        }
+
+        // 🔥 改为半音阶连接逻辑的临时记号处理
+        function addAccidentalIfNeeded(midi, lastMidi = null) {
+            if (!accidentalRate || accidentalRate <= 0) {
+                resetChromaticRun();
                 return midi;
             }
-            
-            // 随机选择升号或降号
-            const selectedNote = accidentalChoices[Math.floor(random.nextFloat() * accidentalChoices.length)];
-            console.log(`🎯 6/8拍：为MIDI ${midi}添加临时记号变为MIDI ${selectedNote}`);
-            return selectedNote;
+            if (typeof lastMidi !== 'number') {
+                resetChromaticRun();
+                return midi;
+            }
+            const interval = Math.abs(midi - lastMidi);
+            const allowStepwiseRun = interval <= 2;
+
+            if (chromaticState.active && chromaticState.remaining > 0) {
+                if (!allowStepwiseRun) {
+                    resetChromaticRun();
+                    return midi;
+                }
+                const nextMidi = lastMidi + chromaticState.direction;
+                if (isChromaticStepValid(nextMidi)) {
+                    chromaticState.remaining -= 1;
+                    if (chromaticState.remaining <= 0) {
+                        resetChromaticRun();
+                    }
+                    queueAccidentalPreference(nextMidi, chromaticState.direction);
+                    return nextMidi;
+                }
+                resetChromaticRun();
+                return midi;
+            }
+
+            if (!allowStepwiseRun || random.nextFloat() >= accidentalRate) {
+                return midi;
+            }
+
+            const direction = determineChromaticDirection(lastMidi, midi);
+            const nextMidi = lastMidi + direction;
+            if (!isChromaticStepValid(nextMidi)) {
+                return midi;
+            }
+
+            const runLength = getChromaticRunLength();
+            chromaticState.active = runLength > 1;
+            chromaticState.remaining = Math.max(0, runLength - 1);
+            chromaticState.direction = direction;
+            queueAccidentalPreference(nextMidi, direction);
+            return nextMidi;
         }
         
         // 智能音符生成函数（基于4/4拍逻辑）
@@ -15715,13 +16509,13 @@ function generateMelodyData(measures, keySignature, timeSignature, clef, seed = 
                 }
                 
                 // 🔥 修复：在返回之前应用临时记号处理 - 与4/4拍保持一致
-                const finalMidi = addAccidentalIfNeeded(selectedMidi);
+                const finalMidi = addAccidentalIfNeeded(selectedMidi, lastMidi);
                 return midiToNoteInfo(finalMidi);
             }
             
             // 应急处理
             const centerMidi = Math.floor((userRange.min + userRange.max) / 2);
-            const finalCenterMidi = addAccidentalIfNeeded(centerMidi);
+            const finalCenterMidi = addAccidentalIfNeeded(centerMidi, lastMidi);
             return midiToNoteInfo(finalCenterMidi);
         }
         
@@ -15742,7 +16536,8 @@ function generateMelodyData(measures, keySignature, timeSignature, clef, seed = 
             
             // 🔥 使用与4/4拍相同的音符拼写逻辑
             // 使用外部已创建的tempGenerator来调用midiToMusicXML方法
-            const result = tempGenerator.midiToMusicXML(midi);
+            const preferredAccidental = consumeAccidentalPreference(midi);
+            const result = tempGenerator.midiToMusicXML(midi, preferredAccidental);
             
             return {
                 midi: midi,
@@ -16138,15 +16933,6 @@ ${measuresXML}  </part>
                 console.log(`   原始: [${originalAllowedRhythms.join(', ')}]`);
                 console.log(`   过滤后: [${filtered68Rhythms.join(', ')}]`);
                 userSettings.allowedRhythms = filtered68Rhythms;
-            } else if (timeSignature === '4/4') {
-                // 4/4拍：允许三连音，禁止二连音/四连音
-                const filtered44Rhythms = originalAllowedRhythms.filter(rhythm =>
-                    rhythm !== 'duplet' && rhythm !== 'quadruplet'
-                );
-                console.log(`🎵 4/4拍连音过滤: 移除duplet/quadruplet，保留triplet`);
-                console.log(`   原始: [${originalAllowedRhythms.join(', ')}]`);
-                console.log(`   过滤后: [${filtered44Rhythms.join(', ')}]`);
-                userSettings.allowedRhythms = filtered44Rhythms;
             } else {
                 // 其他拍号：移除二连音和四连音，保留三连音
                 const filteredOtherRhythms = originalAllowedRhythms.filter(rhythm =>
@@ -16183,21 +16969,8 @@ ${measuresXML}  </part>
         // 生成旋律
         console.log(`🎵 开始生成旋律...`);
         try {
-            const wantsTriplet = timeSignature !== '6/8' &&
-                Array.isArray(userSettings?.allowedRhythms) &&
-                userSettings.allowedRhythms.includes('triplet') &&
-                userSettings?.rhythmFrequencies?.triplet !== 0;
-
             melody = generator.generateMelody();
-
-            if (wantsTriplet) {
-                const hasTriplet = Array.isArray(melody) && melody.some(measure =>
-                    Array.isArray(measure?.notes) && measure.notes.some(note => note && note.isTriplet)
-                );
-                console.log(hasTriplet ? `✅ 旋律生成成功（包含三连音）` : `ℹ️ 本次未包含三连音（符合当前频率设置）`);
-            } else {
-                console.log(`✅ 旋律生成成功`);
-            }
+            console.log(`✅ 旋律生成成功`);
         } catch (error) {
             console.error(`❌ 旋律生成失败:`, error);
             console.error(`❌ 错误详情:`, error.message);
@@ -16602,10 +17375,7 @@ async function generateMelody() {
         
         // 从用户设置的多选列表中随机选择
         const keySignature = getRandomFromArray(userSettings.allowedKeys);
-        const allowedTimeSignatures = Array.isArray(userSettings.allowedTimeSignatures)
-            ? userSettings.allowedTimeSignatures
-            : ['4/4'];
-        let timeSignature = getRandomFromArray(allowedTimeSignatures);
+        const timeSignature = getRandomFromArray(userSettings.allowedTimeSignatures);
         const clef = getRandomFromArray(userSettings.allowedClefs);
         // 🔥 音程跨度处理：现在是单选模式，6/8拍和其他拍号都使用相同的选择值
         const maxJump = userSettings.allowedIntervals[0] || 12; // 单选值
@@ -16617,18 +17387,7 @@ async function generateMelody() {
         
         console.log('🎲 从多选设置随机选择:');
         console.log(`   调号: ${keySignature} (从 ${userSettings.allowedKeys.length} 个选项中选择)`);
-        console.log(`   拍号: ${timeSignature} (从 ${allowedTimeSignatures.length} 个选项中选择)`);
-
-        const tripletEnabled = Array.isArray(userSettings.allowedRhythms) &&
-            userSettings.allowedRhythms.includes('triplet') &&
-            (!userSettings.rhythmFrequencies || userSettings.rhythmFrequencies.triplet !== 0);
-        if (tripletEnabled) {
-            const tripletCapable = allowedTimeSignatures.filter(ts => ts !== '6/8');
-            if (tripletCapable.length > 0) {
-                timeSignature = getRandomFromArray(tripletCapable);
-                console.log(`🎯 三连音已启用，优先选择支持三连音的拍号: ${timeSignature}`);
-            }
-        }
+        console.log(`   拍号: ${timeSignature} (从 ${userSettings.allowedTimeSignatures.length} 个选项中选择)`);
         console.log(`   谱号: ${clef} (从 ${userSettings.allowedClefs.length} 个选项中选择)`);
         console.log(`   最大音程: ${maxJump} (用户选择的单一音程跨度)`);
         
@@ -16869,6 +17628,22 @@ function openRhythmSettings() {
     }
     
     document.getElementById('rhythmModal').style.display = 'flex';
+    syncSelectAllState(
+        'rhythms',
+        [
+            'rhythm-whole',
+            'rhythm-dotted-half',
+            'rhythm-half',
+            'rhythm-dotted-quarter',
+            'rhythm-quarter',
+            'rhythm-eighth',
+            'rhythm-16th',
+            'rhythm-triplet',
+            'rhythm-duplet',
+            'rhythm-quadruplet'
+        ],
+        'button[onclick="selectAllRhythms()"]'
+    );
     
     // 🔄 初始化同步机制
     setTimeout(() => {
@@ -16922,7 +17697,7 @@ function closeRhythmSettingsWithSave() {
         }
         
         const frequencies = {};
-        const rhythmTypes = ['whole', 'dotted-half', 'half', 'dotted-quarter', 'quarter', 'dotted-eighth', 'eighth', '16th', 'triplet', 'duplet', 'quadruplet'];
+        const rhythmTypes = ['dotted', 'whole', 'dotted-half', 'half', 'dotted-quarter', 'quarter', 'dotted-eighth', 'eighth', '16th', 'triplet', 'duplet', 'quadruplet'];
         rhythmTypes.forEach(type => {
             const slider = document.getElementById(`freq-${type}`);
             if (slider) {
@@ -16938,6 +17713,7 @@ function closeRhythmSettingsWithSave() {
     }
     
     document.getElementById('rhythmModal').style.display = 'none';
+    resetSelectAllStates();
 }
 
 /**
@@ -16999,7 +17775,7 @@ function saveRhythmSettings() {
     
     // 收集频率设置 - 🔥 修复：添加缺失的duplet和quadruplet，以及dotted-quarter
     const frequencies = {};
-    const rhythmTypes = ['whole', 'dotted-half', 'half', 'dotted-quarter', 'quarter', 'dotted-eighth', 'eighth', '16th', 'triplet', 'duplet', 'quadruplet'];
+    const rhythmTypes = ['dotted', 'whole', 'dotted-half', 'half', 'dotted-quarter', 'quarter', 'dotted-eighth', 'eighth', '16th', 'triplet', 'duplet', 'quadruplet'];
     rhythmTypes.forEach(type => {
         const slider = document.getElementById(`freq-${type}`);
         if (slider) {
@@ -17099,6 +17875,16 @@ function openArticulationSettings() {
         const modal = document.getElementById('articulationModal');
         if (modal) {
             modal.style.display = 'flex';
+            syncSelectAllState(
+                'basicArticulations',
+                ['art-staccato', 'art-accent', 'art-acciaccatura'],
+                'button[onclick="selectAllBasicArticulations()"]'
+            );
+            syncSelectAllState(
+                'guitarTechniques',
+                ['gtr-hammer', 'gtr-pull', 'gtr-glissando', 'gtr-slide-in', 'gtr-slide-out'],
+                'button[onclick="selectAllGuitarTechniques()"]'
+            );
             console.log('✅ Articulation设置弹窗已打开');
             
             // 🔄 初始化同步机制
@@ -17137,7 +17923,7 @@ function closeArticulationSettingsWithSave() {
     const checkboxGroups = [
         { prefix: 'art-', type: 'basic' },
         { prefix: 'orn-', type: 'ornaments' },
-        { prefix: 'guitar-', type: 'guitar' },
+        { prefix: 'gtr-', type: 'guitar' },
         { prefix: 'strings-', type: 'strings' },
         { prefix: 'bass-', type: 'bass' }
     ];
@@ -17147,7 +17933,8 @@ function closeArticulationSettingsWithSave() {
         const inputs = document.querySelectorAll(`#articulationModal input[id^="${group.prefix}"]`);
         inputs.forEach(input => {
             if (input.checked) {
-                const value = input.id.replace(group.prefix, '');
+                const fallbackValue = input.id.replace(group.prefix, '');
+                const value = (input.value && String(input.value).trim()) ? input.value : fallbackValue;
                 artSettings[group.type].push(value);
                 hasSelection = true;
             }
@@ -17178,6 +17965,7 @@ function closeArticulationSettingsWithSave() {
     }
     
     document.getElementById('articulationModal').style.display = 'none';
+    resetSelectAllStates();
 }
 
 /**
@@ -17214,7 +18002,7 @@ function captureCurrentStates(checkboxIds) {
     const states = {};
     checkboxIds.forEach(id => {
         const checkbox = document.getElementById(id);
-        if (checkbox && checkbox.parentElement && checkbox.parentElement.style.display !== 'none') {
+        if (checkbox && isCheckboxVisible(checkbox)) {
             states[id] = checkbox.checked;
         }
     });
@@ -17243,10 +18031,50 @@ function restorePreviousStates(previousStates) {
 function selectAllCheckboxes(checkboxIds) {
     checkboxIds.forEach(id => {
         const checkbox = document.getElementById(id);
-        if (checkbox && checkbox.parentElement && checkbox.parentElement.style.display !== 'none') {
+        if (checkbox && isCheckboxVisible(checkbox)) {
             checkbox.checked = true;
         }
     });
+}
+
+function deselectAllCheckboxes(checkboxIds) {
+    checkboxIds.forEach(id => {
+        const checkbox = document.getElementById(id);
+        if (checkbox && isCheckboxVisible(checkbox)) {
+            checkbox.checked = false;
+        }
+    });
+}
+
+function isCheckboxVisible(checkbox) {
+    if (!checkbox) return false;
+    const container = checkbox.closest('.checkbox-item') || checkbox.parentElement;
+    if (!container) return true;
+    const style = window.getComputedStyle(container);
+    return style.display !== 'none' && style.visibility !== 'hidden';
+}
+
+function areAllCheckboxesChecked(checkboxIds) {
+    let hasVisible = false;
+    for (const id of checkboxIds) {
+        const checkbox = document.getElementById(id);
+        if (!checkbox || !isCheckboxVisible(checkbox)) {
+            continue;
+        }
+        hasVisible = true;
+        if (!checkbox.checked) {
+            return false;
+        }
+    }
+    return hasVisible;
+}
+
+function syncSelectAllState(stateKey, checkboxIds, buttonSelector) {
+    const state = selectAllStates[stateKey];
+    const allChecked = areAllCheckboxesChecked(checkboxIds);
+    state.isAllSelected = allChecked;
+    state.previousStates = null;
+    updateSelectAllButton(buttonSelector, allChecked);
 }
 
 /**
@@ -17286,9 +18114,14 @@ function toggleSelectAll(stateKey, checkboxIds, buttonSelector, logPrefix) {
         selectAllCheckboxes(checkboxIds);
         state.isAllSelected = true;
     } else {
-        // 第二次点击：恢复之前的状态
-        console.log(`${logPrefix} 恢复到全选前的状态`);
-        restorePreviousStates(state.previousStates);
+        // 第二次点击：恢复之前的状态，或直接取消全选
+        if (state.previousStates) {
+            console.log(`${logPrefix} 恢复到全选前的状态`);
+            restorePreviousStates(state.previousStates);
+        } else {
+            console.log(`${logPrefix} 取消全选`);
+            deselectAllCheckboxes(checkboxIds);
+        }
         state.isAllSelected = false;
         state.previousStates = null;
     }
@@ -17355,7 +18188,10 @@ function selectAllBasicArticulations() {
 function selectAllGuitarTechniques() {
     const guitarIds = [
         'gtr-hammer',
-        'gtr-pull'
+        'gtr-pull',
+        'gtr-glissando',
+        'gtr-slide-in',
+        'gtr-slide-out'
     ];
     
     toggleSelectAll(
@@ -17506,7 +18342,7 @@ function toggleRhythmAdvancedSettings() {
  * 初始化节奏频率滑块事件监听器
  */
 function initializeRhythmFrequencySliders() {
-    const rhythmTypes = ['whole', 'dotted-half', 'half', 'dotted-quarter', 'quarter', 'dotted-eighth', 'eighth', '16th', 'triplet', 'duplet', 'quadruplet'];
+    const rhythmTypes = ['dotted', 'whole', 'dotted-half', 'half', 'dotted-quarter', 'quarter', 'dotted-eighth', 'eighth', '16th', 'triplet', 'duplet', 'quadruplet'];
     
     rhythmTypes.forEach(type => {
         const slider = document.getElementById(`freq-${type}`);
@@ -17553,14 +18389,16 @@ function initializeRhythmFrequencySliders() {
  */
 function resetRhythmFrequencies() {
     const defaultFrequencies = {
+        dotted: 20,
         whole: 10,
         'dotted-half': 15,
         half: 30,
         'dotted-quarter': 35,
         quarter: 50,
+        'dotted-eighth': 25,
         eighth: 40,
         '16th': 20,
-        triplet: 15,
+        triplet: 35,
         duplet: 30,
         quadruplet: 25
     };
@@ -18058,19 +18896,6 @@ function updateRhythmSettingsRealTime() {
         selectedRhythms = selectedRhythms.filter(r => !(r.includes('.') || r.startsWith('dotted-')));
         if (before.length !== selectedRhythms.length) {
             console.log(`🧹 已移除附点时值（因总开关关闭）：从 [${before.join(', ')}] -> [${selectedRhythms.join(', ')}]`);
-        }
-    }
-
-    // ✅ 三连音已启用时，至少需要一个基础音符类型作为载体
-    if (selectedRhythms.includes('triplet')) {
-        const hasTripletBase = selectedRhythms.some(r => r === 'eighth' || r === 'quarter' || r === '16th');
-        if (!hasTripletBase) {
-            selectedRhythms.push('eighth');
-            const eighthCheckbox = document.getElementById('rhythm-eighth');
-            if (eighthCheckbox) {
-                eighthCheckbox.checked = true;
-            }
-            console.log('✅ 三连音已启用，自动补充八分音符作为基础时值');
         }
     }
 
@@ -20862,45 +21687,105 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
     console.log('🎼 [Cantus Firmus风格] 6/8拍旋律生成器');
     console.log(`🎯 临时记号概率: ${(accidentalRate * 100).toFixed(0)}%`);
     
-    // 🔥 修复：添加临时记号处理函数 - 与主6/8拍逻辑保持一致
-    function addAccidentalIfNeeded(midi) {
-        if (accidentalRate > 0 && random.nextFloat() < accidentalRate) {
-            return addAccidental(midi);
-        }
-        return midi;
+    const chromaticState = { active: false, remaining: 0, direction: 0 };
+    let pendingAccidentalPreference = null;
+
+    function resetChromaticRun() {
+        chromaticState.active = false;
+        chromaticState.remaining = 0;
+        chromaticState.direction = 0;
     }
-    
-    function addAccidental(midi) {
-        const accidentalChoices = [];
-        const noteClass = midi % 12;
-        const keySignatureInfo = isNoteAffectedByKeySignature(noteClass, keySignature);
-        
-        // 尝试添加升号（+1半音）
-        const sharpNote = midi + 1;
-        const sharpNoteClass = sharpNote % 12;
-        
-        if (sharpNote <= userRange.max) {
-            accidentalChoices.push(sharpNote);
+
+    function getChromaticRunLength() {
+        let maxLen = 2;
+        if (accidentalRate >= 0.75) {
+            maxLen = 4;
+        } else if (accidentalRate >= 0.45) {
+            maxLen = 3;
         }
-        
-        // 尝试添加降号（-1半音）  
-        const flatNote = midi - 1;
-        const flatNoteClass = flatNote % 12;
-        
-        if (flatNote >= userRange.min) {
-            accidentalChoices.push(flatNote);
+        return random.nextInt(2, maxLen + 1);
+    }
+
+    function determineChromaticDirection(lastMidi, targetMidi) {
+        if (typeof lastMidi !== 'number') return 1;
+        if (typeof targetMidi !== 'number') {
+            return random.nextFloat() < 0.5 ? 1 : -1;
         }
-        
-        // 如果没有可用的临时记号，返回原音符
-        if (accidentalChoices.length === 0) {
-            console.log(`🎯 6/8拍Beat Clarity：音符MIDI ${midi}无需添加临时记号（避免与${keySignature}调号重复）`);
+        const direction = Math.sign(targetMidi - lastMidi);
+        if (direction === 0) {
+            return random.nextFloat() < 0.5 ? 1 : -1;
+        }
+        return direction > 0 ? 1 : -1;
+    }
+
+    function isChromaticStepValid(midi) {
+        return midi >= userRange.min && midi <= userRange.max;
+    }
+
+    function queueAccidentalPreference(midi, direction) {
+        const preference = direction > 0 ? '#' : 'b';
+        pendingAccidentalPreference = { midi, preference };
+    }
+
+    function consumeAccidentalPreference(midi) {
+        if (pendingAccidentalPreference) {
+            if (pendingAccidentalPreference.midi === midi) {
+                const preference = pendingAccidentalPreference.preference;
+                pendingAccidentalPreference = null;
+                return preference;
+            }
+            pendingAccidentalPreference = null;
+        }
+        return null;
+    }
+
+    // 🔥 改为半音阶连接逻辑的临时记号处理
+    function addAccidentalIfNeeded(midi, lastMidi = null) {
+        if (!accidentalRate || accidentalRate <= 0) {
+            resetChromaticRun();
             return midi;
         }
-        
-        // 随机选择升号或降号
-        const selectedNote = accidentalChoices[Math.floor(random.nextFloat() * accidentalChoices.length)];
-        console.log(`🎯 6/8拍Beat Clarity：为MIDI ${midi}添加临时记号变为MIDI ${selectedNote}`);
-        return selectedNote;
+        if (typeof lastMidi !== 'number') {
+            resetChromaticRun();
+            return midi;
+        }
+        const interval = Math.abs(midi - lastMidi);
+        const allowStepwiseRun = interval <= 2;
+
+        if (chromaticState.active && chromaticState.remaining > 0) {
+            if (!allowStepwiseRun) {
+                resetChromaticRun();
+                return midi;
+            }
+            const nextMidi = lastMidi + chromaticState.direction;
+            if (isChromaticStepValid(nextMidi)) {
+                chromaticState.remaining -= 1;
+                if (chromaticState.remaining <= 0) {
+                    resetChromaticRun();
+                }
+                queueAccidentalPreference(nextMidi, chromaticState.direction);
+                return nextMidi;
+            }
+            resetChromaticRun();
+            return midi;
+        }
+
+        if (!allowStepwiseRun || random.nextFloat() >= accidentalRate) {
+            return midi;
+        }
+
+        const direction = determineChromaticDirection(lastMidi, midi);
+        const nextMidi = lastMidi + direction;
+        if (!isChromaticStepValid(nextMidi)) {
+            return midi;
+        }
+
+        const runLength = getChromaticRunLength();
+        chromaticState.active = runLength > 1;
+        chromaticState.remaining = Math.max(0, runLength - 1);
+        chromaticState.direction = direction;
+        queueAccidentalPreference(nextMidi, direction);
+        return nextMidi;
     }
     
     // 🔥 修复调号处理：创建临时生成器用于正确的音符拼写
@@ -20908,7 +21793,8 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
     
     // 定义使用正确调号逻辑的音符信息转换函数
     function midiToNoteInfoWithCorrectSpelling(midi) {
-        const result = tempGenerator.midiToMusicXML(midi);
+        const preferredAccidental = consumeAccidentalPreference(midi);
+        const result = tempGenerator.midiToMusicXML(midi, preferredAccidental);
         return {
             midi: midi,
             step: result.step,
@@ -21564,28 +22450,6 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                 { position: 2.5, duration: 2, type: 'eighth', isStrong: false }       // 第2组: 3拍弱
             ]
         });
-
-        // 二连音模式1变体：第一组二连音包含休止符
-        availablePatterns.push({
-            name: '第一组二连音-休止符在前',
-            rhythm: [
-                { position: 0.0, duration: 3, type: 'eighth-rest', isStrong: true, tuplet: { type: 'duplet', position: 0, total: 2, id: 1 } },
-                { position: 0.75, duration: 3, type: 'eighth', isStrong: false, tuplet: { type: 'duplet', position: 1, total: 2, id: 1 } },
-                { position: 1.5, duration: 2, type: 'eighth', isStrong: true },
-                { position: 2.0, duration: 2, type: 'eighth', isStrong: false },
-                { position: 2.5, duration: 2, type: 'eighth', isStrong: false }
-            ]
-        });
-        availablePatterns.push({
-            name: '第一组二连音-休止符在后',
-            rhythm: [
-                { position: 0.0, duration: 3, type: 'eighth', isStrong: true, tuplet: { type: 'duplet', position: 0, total: 2, id: 1 } },
-                { position: 0.75, duration: 3, type: 'eighth-rest', isStrong: false, tuplet: { type: 'duplet', position: 1, total: 2, id: 1 } },
-                { position: 1.5, duration: 2, type: 'eighth', isStrong: true },
-                { position: 2.0, duration: 2, type: 'eighth', isStrong: false },
-                { position: 2.5, duration: 2, type: 'eighth', isStrong: false }
-            ]
-        });
         
         // 二连音模式2: 第二组二连音
         availablePatterns.push({
@@ -21596,28 +22460,6 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                 { position: 1.0, duration: 2, type: 'eighth', isStrong: false },      // 第1组: 3拍弱
                 { position: 1.5, duration: 3, type: 'eighth', isStrong: true, tuplet: { type: 'duplet', position: 0, total: 2, id: 1 } },  // 第2组: 1拍 (0.75拍实际)
                 { position: 2.25, duration: 3, type: 'eighth', isStrong: false, tuplet: { type: 'duplet', position: 1, total: 2, id: 1 } } // 第2组: 2-3拍 (0.75拍实际)
-            ]
-        });
-
-        // 二连音模式2变体：第二组二连音包含休止符
-        availablePatterns.push({
-            name: '第二组二连音-休止符在前',
-            rhythm: [
-                { position: 0.0, duration: 2, type: 'eighth', isStrong: true },
-                { position: 0.5, duration: 2, type: 'eighth', isStrong: false },
-                { position: 1.0, duration: 2, type: 'eighth', isStrong: false },
-                { position: 1.5, duration: 3, type: 'eighth-rest', isStrong: true, tuplet: { type: 'duplet', position: 0, total: 2, id: 1 } },
-                { position: 2.25, duration: 3, type: 'eighth', isStrong: false, tuplet: { type: 'duplet', position: 1, total: 2, id: 1 } }
-            ]
-        });
-        availablePatterns.push({
-            name: '第二组二连音-休止符在后',
-            rhythm: [
-                { position: 0.0, duration: 2, type: 'eighth', isStrong: true },
-                { position: 0.5, duration: 2, type: 'eighth', isStrong: false },
-                { position: 1.0, duration: 2, type: 'eighth', isStrong: false },
-                { position: 1.5, duration: 3, type: 'eighth', isStrong: true, tuplet: { type: 'duplet', position: 0, total: 2, id: 1 } },
-                { position: 2.25, duration: 3, type: 'eighth-rest', isStrong: false, tuplet: { type: 'duplet', position: 1, total: 2, id: 1 } }
             ]
         });
     }
@@ -21637,32 +22479,6 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                 { position: 2.5, duration: 2, type: 'eighth', isStrong: false }        // 第2组: 3拍弱
             ]
         });
-
-        // 四连音模式1变体：第一组四连音包含休止符
-        availablePatterns.push({
-            name: '第一组四连音-休止符在中',
-            rhythm: [
-                { position: 0.0, duration: 1.5, type: 'eighth', isStrong: true, tuplet: { type: 'quadruplet', position: 0, total: 4, id: 1 } },
-                { position: 0.375, duration: 1.5, type: 'eighth-rest', isStrong: false, tuplet: { type: 'quadruplet', position: 1, total: 4, id: 1 } },
-                { position: 0.75, duration: 1.5, type: 'eighth', isStrong: false, tuplet: { type: 'quadruplet', position: 2, total: 4, id: 1 } },
-                { position: 1.125, duration: 1.5, type: 'eighth', isStrong: false, tuplet: { type: 'quadruplet', position: 3, total: 4, id: 1 } },
-                { position: 1.5, duration: 2, type: 'eighth', isStrong: true },
-                { position: 2.0, duration: 2, type: 'eighth', isStrong: false },
-                { position: 2.5, duration: 2, type: 'eighth', isStrong: false }
-            ]
-        });
-        availablePatterns.push({
-            name: '第一组四连音-休止符在末',
-            rhythm: [
-                { position: 0.0, duration: 1.5, type: 'eighth', isStrong: true, tuplet: { type: 'quadruplet', position: 0, total: 4, id: 1 } },
-                { position: 0.375, duration: 1.5, type: 'eighth', isStrong: false, tuplet: { type: 'quadruplet', position: 1, total: 4, id: 1 } },
-                { position: 0.75, duration: 1.5, type: 'eighth', isStrong: false, tuplet: { type: 'quadruplet', position: 2, total: 4, id: 1 } },
-                { position: 1.125, duration: 1.5, type: 'eighth-rest', isStrong: false, tuplet: { type: 'quadruplet', position: 3, total: 4, id: 1 } },
-                { position: 1.5, duration: 2, type: 'eighth', isStrong: true },
-                { position: 2.0, duration: 2, type: 'eighth', isStrong: false },
-                { position: 2.5, duration: 2, type: 'eighth', isStrong: false }
-            ]
-        });
         
         // 四连音模式2: 第二组四连音
         availablePatterns.push({
@@ -21675,32 +22491,6 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                 { position: 1.875, duration: 1.5, type: 'eighth', isStrong: false, tuplet: { type: 'quadruplet', position: 1, total: 4, id: 1 } }, // 第2组: 2拍 (0.375拍实际)
                 { position: 2.25, duration: 1.5, type: 'eighth', isStrong: false, tuplet: { type: 'quadruplet', position: 2, total: 4, id: 1 } },  // 第2组: 3拍 (0.375拍实际)
                 { position: 2.625, duration: 1.5, type: 'eighth', isStrong: false, tuplet: { type: 'quadruplet', position: 3, total: 4, id: 1 } }  // 第2组: 剩余 (0.375拍实际)
-            ]
-        });
-
-        // 四连音模式2变体：第二组四连音包含休止符
-        availablePatterns.push({
-            name: '第二组四连音-休止符在前',
-            rhythm: [
-                { position: 0.0, duration: 2, type: 'eighth', isStrong: true },
-                { position: 0.5, duration: 2, type: 'eighth', isStrong: false },
-                { position: 1.0, duration: 2, type: 'eighth', isStrong: false },
-                { position: 1.5, duration: 1.5, type: 'eighth-rest', isStrong: true, tuplet: { type: 'quadruplet', position: 0, total: 4, id: 1 } },
-                { position: 1.875, duration: 1.5, type: 'eighth', isStrong: false, tuplet: { type: 'quadruplet', position: 1, total: 4, id: 1 } },
-                { position: 2.25, duration: 1.5, type: 'eighth', isStrong: false, tuplet: { type: 'quadruplet', position: 2, total: 4, id: 1 } },
-                { position: 2.625, duration: 1.5, type: 'eighth', isStrong: false, tuplet: { type: 'quadruplet', position: 3, total: 4, id: 1 } }
-            ]
-        });
-        availablePatterns.push({
-            name: '第二组四连音-休止符在末',
-            rhythm: [
-                { position: 0.0, duration: 2, type: 'eighth', isStrong: true },
-                { position: 0.5, duration: 2, type: 'eighth', isStrong: false },
-                { position: 1.0, duration: 2, type: 'eighth', isStrong: false },
-                { position: 1.5, duration: 1.5, type: 'eighth', isStrong: true, tuplet: { type: 'quadruplet', position: 0, total: 4, id: 1 } },
-                { position: 1.875, duration: 1.5, type: 'eighth', isStrong: false, tuplet: { type: 'quadruplet', position: 1, total: 4, id: 1 } },
-                { position: 2.25, duration: 1.5, type: 'eighth', isStrong: false, tuplet: { type: 'quadruplet', position: 2, total: 4, id: 1 } },
-                { position: 2.625, duration: 1.5, type: 'eighth-rest', isStrong: false, tuplet: { type: 'quadruplet', position: 3, total: 4, id: 1 } }
             ]
         });
     }
@@ -22290,7 +23080,7 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
         }
         
         if (candidates.length === 0) {
-            return addAccidentalIfNeeded(lastMidi); // 最后的备选
+            return addAccidentalIfNeeded(lastMidi, lastMidi); // 最后的备选
         }
         
         // 权重随机选择
@@ -22307,18 +23097,18 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                     const candInterval = Math.abs(candidate.midi - lastMidi);
                     if (candInterval <= maxJump) {
                         console.log(`✅ 6/8拍音程修正：选择符合限制的音符 ${candidate.midi} (${candInterval}半音)`);
-                        return addAccidentalIfNeeded(candidate.midi);
+                        return addAccidentalIfNeeded(candidate.midi, lastMidi);
                     }
                 }
                 // 如果所有候选音符都超限，返回原音符（极端情况）
                 console.warn(`⚠️ 6/8拍无可用候选音符，保持原音 ${lastMidi}`);
-                return addAccidentalIfNeeded(lastMidi);
+                return addAccidentalIfNeeded(lastMidi, lastMidi);
             } else {
                 console.log(`✅ 6/8拍音程合规: ${finalInterval}半音 ≤ ${maxJump}半音`);
             }
         }
         
-        return addAccidentalIfNeeded(selectedNote);
+        return addAccidentalIfNeeded(selectedNote, lastMidi);
     }
     
     // 装饰性十六分音符生成函数 - 理解6/8拍3+3分组
@@ -22338,22 +23128,22 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
         
         switch (decorationType) {
             case 'group_head': // 组头装饰
-                return addAccidentalIfNeeded(generateGroupHeadDecoration(lastMidi, range, maxJump, scale, random));
+                return addAccidentalIfNeeded(generateGroupHeadDecoration(lastMidi, range, maxJump, scale, random), lastMidi);
                 
             case 'subdivision': // 组内细分
-                return addAccidentalIfNeeded(generateSubdivisionDecoration(lastMidi, range, maxJump, scale, groupInfo, random));
+                return addAccidentalIfNeeded(generateSubdivisionDecoration(lastMidi, range, maxJump, scale, groupInfo, random), lastMidi);
                 
             case 'passing_tone': // 经过音
-                return addAccidentalIfNeeded(generatePassingTone(lastMidi, range, maxJump, scale, prevNote, nextNote, random));
+                return addAccidentalIfNeeded(generatePassingTone(lastMidi, range, maxJump, scale, prevNote, nextNote, random), lastMidi);
                 
             case 'neighbor_tone': // 辅助音
-                return addAccidentalIfNeeded(generateNeighborTone(lastMidi, range, maxJump, scale, random));
+                return addAccidentalIfNeeded(generateNeighborTone(lastMidi, range, maxJump, scale, random), lastMidi);
                 
             case 'approach_note': // 趋向音
-                return addAccidentalIfNeeded(generateApproachNote(lastMidi, range, maxJump, scale, nextNote, random));
+                return addAccidentalIfNeeded(generateApproachNote(lastMidi, range, maxJump, scale, nextNote, random), lastMidi);
                 
             default: // 标准级进
-                return addAccidentalIfNeeded(generateStepwiseDecoration(lastMidi, range, maxJump, scale, random));
+                return addAccidentalIfNeeded(generateStepwiseDecoration(lastMidi, range, maxJump, scale, random), lastMidi);
         }
     }
     
@@ -22992,6 +23782,10 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                         currentNote.articulation = 'hammer-on';
                         lastArticulation = 'hammer-on';
                         articulationApplied = true;
+                        if (prevNote.articulation === 'staccato') {
+                            prevNote.articulation = null;
+                            console.log(`🚫 6/8拍移除slur起始音的staccato: 位置${prevNote.position}`);
+                        }
                         console.log(`✅ 6/8拍另一处 Hammer-on: ${prevNote.midi} -> ${currentNote.midi} (位置: ${prevNote.position} -> ${currentNote.position}) - 用户已选择hammer-on`);
                     } else {
                         console.log(`❌ 6/8拍另一处 Hammer-on跳过: 频率控制阻止 (${interval > 0 ? '+' : ''}${interval}半音)`);
@@ -23012,6 +23806,10 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                         currentNote.articulation = 'pull-off';
                         lastArticulation = 'pull-off';
                         articulationApplied = true;
+                        if (prevNote.articulation === 'staccato') {
+                            prevNote.articulation = null;
+                            console.log(`🚫 6/8拍移除slur起始音的staccato: 位置${prevNote.position}`);
+                        }
                         console.log(`✅ 6/8拍另一处 Pull-off: ${prevNote.midi} -> ${currentNote.midi} (位置: ${prevNote.position} -> ${currentNote.position}) - 用户已选择pull-off`);
                     } else {
                         console.log(`❌ 6/8拍另一处 Pull-off跳过: 频率控制阻止 (${interval}半音)`);
@@ -23084,7 +23882,8 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
             }
         } else {
             // 🎵 如果有grace note，先生成grace note的XML
-            if (note.graceNote) {
+            const isTiedContinuation = note.tied && (note.tieType === 'continue' || note.tieType === 'stop');
+            if (note.graceNote && !isTiedContinuation) {
                 console.log(`🎵 生成6/8拍grace note: ${note.graceNote.step}${note.graceNote.octave} -> ${note.step}${note.octave}`);
                 measureXML += `
       <note>
@@ -23201,6 +24000,7 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
         // 🎸 处理articulation和slur
         let hasNotations = false;
         let notationsContent = '';
+        const isTiedContinuation = note.tied && (note.tieType === 'continue' || note.tieType === 'stop');
         
         // 处理连音notations
         if (note.tuplet) {
@@ -23223,7 +24023,7 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
         }
         
         // 处理articulation (包括基本演奏法和吉他技巧)
-        if (!note.isRest && note.articulation) {
+        if (!note.isRest && note.articulation && !isTiedContinuation) {
             hasNotations = true;
             
             // 处理基本演奏法
@@ -23304,7 +24104,8 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
         // 🔥 严格检查下一个音符的articulation权限再生成slur
         if (!note.isRest && index < notes.length - 1) {
             const nextNote = notes[index + 1];
-            if (nextNote && !nextNote.isRest && nextNote.articulation) {
+            const nextIsTiedContinuation = nextNote.tied && (nextNote.tieType === 'continue' || nextNote.tieType === 'stop');
+            if (nextNote && !nextNote.isRest && nextNote.articulation && !nextIsTiedContinuation) {
                 // 检查用户是否允许该articulation
                 const hammerOnAllowed = userSettings.articulations.guitar.includes('hammer-on');
                 const pullOffAllowed = userSettings.articulations.guitar.includes('pull-off');
@@ -23596,32 +24397,6 @@ function createNoteInfo(midi) {
                     weight: dupletWeight,
                     emphasis: 'first_beat_duplet'
                 });
-
-                // 第一大拍二连音（休止符变体）
-                patterns.push({
-                    name: '第一大拍二连音-休止符在前',
-                    pattern: [
-                        { position: 0.0, duration: 0.75, type: 'eighth', isStrongBeat: true, isRest: true, tuplet: {type: 'duplet', number: 1, bracket: true} },
-                        { position: 0.75, duration: 0.75, type: 'eighth', isStrongBeat: false, tuplet: {type: 'duplet', number: 1, bracket: true} },
-                        { position: 1.5, duration: 0.5, type: 'eighth', isStrongBeat: true },
-                        { position: 2.0, duration: 0.5, type: 'eighth', isStrongBeat: false },
-                        { position: 2.5, duration: 0.5, type: 'eighth', isStrongBeat: false }
-                    ],
-                    weight: Math.max(1, Math.floor(dupletWeight * 0.35)),
-                    emphasis: 'first_beat_duplet_rest'
-                });
-                patterns.push({
-                    name: '第一大拍二连音-休止符在后',
-                    pattern: [
-                        { position: 0.0, duration: 0.75, type: 'eighth', isStrongBeat: true, tuplet: {type: 'duplet', number: 1, bracket: true} },
-                        { position: 0.75, duration: 0.75, type: 'eighth', isStrongBeat: false, isRest: true, tuplet: {type: 'duplet', number: 1, bracket: true} },
-                        { position: 1.5, duration: 0.5, type: 'eighth', isStrongBeat: true },
-                        { position: 2.0, duration: 0.5, type: 'eighth', isStrongBeat: false },
-                        { position: 2.5, duration: 0.5, type: 'eighth', isStrongBeat: false }
-                    ],
-                    weight: Math.max(1, Math.floor(dupletWeight * 0.25)),
-                    emphasis: 'first_beat_duplet_rest'
-                });
                 
                 // 第二大拍二连音
                 patterns.push({
@@ -23635,32 +24410,6 @@ function createNoteInfo(midi) {
                     ],
                     weight: dupletWeight,
                     emphasis: 'second_beat_duplet'
-                });
-
-                // 第二大拍二连音（休止符变体）
-                patterns.push({
-                    name: '第二大拍二连音-休止符在前',
-                    pattern: [
-                        { position: 0.0, duration: 0.5, type: 'eighth', isStrongBeat: true },
-                        { position: 0.5, duration: 0.5, type: 'eighth', isStrongBeat: false },
-                        { position: 1.0, duration: 0.5, type: 'eighth', isStrongBeat: false },
-                        { position: 1.5, duration: 0.75, type: 'eighth', isStrongBeat: true, isRest: true, tuplet: {type: 'duplet', number: 1, bracket: true} },
-                        { position: 2.25, duration: 0.75, type: 'eighth', isStrongBeat: false, tuplet: {type: 'duplet', number: 1, bracket: true} }
-                    ],
-                    weight: Math.max(1, Math.floor(dupletWeight * 0.35)),
-                    emphasis: 'second_beat_duplet_rest'
-                });
-                patterns.push({
-                    name: '第二大拍二连音-休止符在后',
-                    pattern: [
-                        { position: 0.0, duration: 0.5, type: 'eighth', isStrongBeat: true },
-                        { position: 0.5, duration: 0.5, type: 'eighth', isStrongBeat: false },
-                        { position: 1.0, duration: 0.5, type: 'eighth', isStrongBeat: false },
-                        { position: 1.5, duration: 0.75, type: 'eighth', isStrongBeat: true, tuplet: {type: 'duplet', number: 1, bracket: true} },
-                        { position: 2.25, duration: 0.75, type: 'eighth', isStrongBeat: false, isRest: true, tuplet: {type: 'duplet', number: 1, bracket: true} }
-                    ],
-                    weight: Math.max(1, Math.floor(dupletWeight * 0.25)),
-                    emphasis: 'second_beat_duplet_rest'
                 });
             }
         }
@@ -23696,36 +24445,6 @@ function createNoteInfo(midi) {
                     weight: quadrupletWeight,
                     emphasis: 'first_beat_quadruplet'
                 });
-
-                // 第一大拍四连音（休止符变体）
-                patterns.push({
-                    name: '第一大拍四连音-单休止符',
-                    pattern: [
-                        { position: 0.0, duration: 0.375, type: 'eighth', isStrongBeat: true, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 0.375, duration: 0.375, type: 'eighth', isStrongBeat: false, isRest: true, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 0.75, duration: 0.375, type: 'eighth', isStrongBeat: false, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 1.125, duration: 0.375, type: 'eighth', isStrongBeat: false, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 1.5, duration: 0.5, type: 'eighth', isStrongBeat: true },
-                        { position: 2.0, duration: 0.5, type: 'eighth', isStrongBeat: false },
-                        { position: 2.5, duration: 0.5, type: 'eighth', isStrongBeat: false }
-                    ],
-                    weight: Math.max(1, Math.floor(quadrupletWeight * 0.35)),
-                    emphasis: 'first_beat_quadruplet_rest'
-                });
-                patterns.push({
-                    name: '第一大拍四连音-末位休止符',
-                    pattern: [
-                        { position: 0.0, duration: 0.375, type: 'eighth', isStrongBeat: true, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 0.375, duration: 0.375, type: 'eighth', isStrongBeat: false, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 0.75, duration: 0.375, type: 'eighth', isStrongBeat: false, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 1.125, duration: 0.375, type: 'eighth', isStrongBeat: false, isRest: true, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 1.5, duration: 0.5, type: 'eighth', isStrongBeat: true },
-                        { position: 2.0, duration: 0.5, type: 'eighth', isStrongBeat: false },
-                        { position: 2.5, duration: 0.5, type: 'eighth', isStrongBeat: false }
-                    ],
-                    weight: Math.max(1, Math.floor(quadrupletWeight * 0.25)),
-                    emphasis: 'first_beat_quadruplet_rest'
-                });
                 
                 // 第二大拍四连音
                 patterns.push({
@@ -23741,36 +24460,6 @@ function createNoteInfo(midi) {
                     ],
                     weight: quadrupletWeight,
                     emphasis: 'second_beat_quadruplet'
-                });
-
-                // 第二大拍四连音（休止符变体）
-                patterns.push({
-                    name: '第二大拍四连音-单休止符',
-                    pattern: [
-                        { position: 0.0, duration: 0.5, type: 'eighth', isStrongBeat: true },
-                        { position: 0.5, duration: 0.5, type: 'eighth', isStrongBeat: false },
-                        { position: 1.0, duration: 0.5, type: 'eighth', isStrongBeat: false },
-                        { position: 1.5, duration: 0.375, type: 'eighth', isStrongBeat: true, isRest: true, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 1.875, duration: 0.375, type: 'eighth', isStrongBeat: false, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 2.25, duration: 0.375, type: 'eighth', isStrongBeat: false, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 2.625, duration: 0.375, type: 'eighth', isStrongBeat: false, tuplet: {type: 'quadruplet', number: 1, bracket: true} }
-                    ],
-                    weight: Math.max(1, Math.floor(quadrupletWeight * 0.35)),
-                    emphasis: 'second_beat_quadruplet_rest'
-                });
-                patterns.push({
-                    name: '第二大拍四连音-末位休止符',
-                    pattern: [
-                        { position: 0.0, duration: 0.5, type: 'eighth', isStrongBeat: true },
-                        { position: 0.5, duration: 0.5, type: 'eighth', isStrongBeat: false },
-                        { position: 1.0, duration: 0.5, type: 'eighth', isStrongBeat: false },
-                        { position: 1.5, duration: 0.375, type: 'eighth', isStrongBeat: true, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 1.875, duration: 0.375, type: 'eighth', isStrongBeat: false, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 2.25, duration: 0.375, type: 'eighth', isStrongBeat: false, tuplet: {type: 'quadruplet', number: 1, bracket: true} },
-                        { position: 2.625, duration: 0.375, type: 'eighth', isStrongBeat: false, isRest: true, tuplet: {type: 'quadruplet', number: 1, bracket: true} }
-                    ],
-                    weight: Math.max(1, Math.floor(quadrupletWeight * 0.25)),
-                    emphasis: 'second_beat_quadruplet_rest'
                 });
             }
         }
@@ -24066,8 +24755,8 @@ function createNoteInfo(midi) {
             
             console.log(`🎯 [Cantus Firmus] 起始音符: MIDI ${startNote} (中央: ${centerMidi})`);
             // 🔥 修复：应用临时记号处理 - 与4/4拍保持一致
-            const finalStartNote = addAccidentalIfNeeded(startNote);
-            return createNoteInfo(finalStartNote);
+            const finalStartNote = addAccidentalIfNeeded(startNote, lastMidi);
+            return midiToNoteInfoWithCorrectSpelling(finalStartNote);
         }
         
         // Cantus Firmus规则：
@@ -24186,8 +24875,8 @@ function createNoteInfo(midi) {
                 // 强制修正到音域内
                 const correctedMidi = Math.min(selectedMidi, userRange.max);
                 console.error(`🔧 修正 MIDI 72 -> ${correctedMidi}`);
-                const finalCorrected72 = addAccidentalIfNeeded(correctedMidi);
-                return createNoteInfo(finalCorrected72);
+                const finalCorrected72 = addAccidentalIfNeeded(correctedMidi, lastMidi);
+                return midiToNoteInfoWithCorrectSpelling(finalCorrected72);
             }
         }
         
@@ -24196,15 +24885,15 @@ function createNoteInfo(midi) {
             console.error(`🚨 [6/8 Cantus Firmus] 音符超出范围: MIDI ${selectedMidi} (音域: ${userRange.min}-${userRange.max})`);
             const correctedMidi = Math.max(userRange.min, Math.min(userRange.max, selectedMidi));
             console.error(`🔧 修正为: MIDI ${correctedMidi}`);
-            const finalCorrectedMidi = addAccidentalIfNeeded(correctedMidi);
-            return createNoteInfo(finalCorrectedMidi);
+            const finalCorrectedMidi = addAccidentalIfNeeded(correctedMidi, lastMidi);
+            return midiToNoteInfoWithCorrectSpelling(finalCorrectedMidi);
         }
         
         console.log(`✅ [Cantus Firmus] 选择音符: MIDI ${selectedMidi} (间距: ${interval}半音, ${isStrongBeat ? '强拍' : '弱拍'})`);
         
         // 🔥 修复：应用临时记号处理 - 与4/4拍保持一致
-        const finalSelectedMidi = addAccidentalIfNeeded(selectedMidi);
-        return createNoteInfo(finalSelectedMidi);
+        const finalSelectedMidi = addAccidentalIfNeeded(selectedMidi, lastMidi);
+        return midiToNoteInfoWithCorrectSpelling(finalSelectedMidi);
     }
     
     // 生成小节XML，包含beaming信息
@@ -24215,19 +24904,15 @@ function createNoteInfo(midi) {
     // 处理每个音符
     selectedPattern.pattern.forEach((noteData, index) => {
         const isEnding = isLastMeasure && index === selectedPattern.pattern.length - 1;
-        const isRest = noteData.isRest === true;
-        let noteInfo = null;
         
-        // 🎼 使用Cantus Firmus风格生成音符（休止符跳过）
-        if (!isRest) {
-            noteInfo = generateCantusFirmusNote(
-                noteData.position, 
-                noteData.isStrongBeat, 
-                lastMidi, 
-                isEnding
-            );
-            lastMidi = noteInfo.midi;
-        }
+        // 🎼 使用Cantus Firmus风格生成音符
+        const noteInfo = generateCantusFirmusNote(
+            noteData.position, 
+            noteData.isStrongBeat, 
+            lastMidi, 
+            isEnding
+        );
+        lastMidi = noteInfo.midi;
         
         // 计算MusicXML时值
         let xmlDuration, xmlType, hasDot = false;
@@ -24277,21 +24962,12 @@ function createNoteInfo(midi) {
         
         // 构建音符XML
         let noteXML = `
-      <note>`;
-        
-        if (isRest) {
-            noteXML += `
-        <rest/>`;
-        } else {
-            noteXML += `
+      <note>
         <pitch>
           <step>${noteInfo.step}</step>
           ${noteInfo.alter ? `<alter>${noteInfo.alter}</alter>` : ''}
           <octave>${noteInfo.octave}</octave>
-        </pitch>`;
-        }
-        
-        noteXML += `
+        </pitch>
         <duration>${xmlDuration}</duration>
         <type>${xmlType}</type>${hasDot ? '\n        <dot/>' : ''}`;
         
@@ -24300,12 +24976,12 @@ function createNoteInfo(midi) {
         let notationsXML = '';
         
         // 添加连音线信息
-        if (!isRest && noteData.tie === 'start') {
+        if (noteData.tie === 'start') {
             noteXML += `\n        <tie type="start"/>`;
             notationsXML += `\n          <tied type="start"/>`;
             hasNotations = true;
             console.log(`🔗 添加连音线开始: 位置${noteData.position}`);
-        } else if (!isRest && noteData.tie === 'stop') {
+        } else if (noteData.tie === 'stop') {
             noteXML += `\n        <tie type="stop"/>`;
             notationsXML += `\n          <tied type="stop"/>`;
             hasNotations = true;
@@ -24448,7 +25124,7 @@ function addBeamingNotations(measureXML, selectedPattern) {
     // 分析节奏模式中的可beam音符位置（八分音符和十六分音符）
     const beamableNotePositions = [];
     selectedPattern.pattern.forEach((noteData, index) => {
-        if (!noteData.isRest && (noteData.type === 'eighth' || noteData.type === 'sixteenth')) {
+        if (noteData.type === 'eighth' || noteData.type === 'sixteenth') {
             beamableNotePositions.push({
                 index: index,
                 position: noteData.position,
@@ -24737,7 +25413,9 @@ function updateRhythmOptionsForTimeSignature(timeSignature) {
     const quadrupletCheckbox = document.getElementById('rhythm-quadruplet');
 
     // 获取高级设置中的频率控制元素
+    const dottedOptionsSection = document.getElementById('dottedOptionsSection');
     const freqWholeItem = document.getElementById('freq-whole-item');
+    const freqDottedItem = document.getElementById('freq-dotted-item');
     const freqDottedHalfItem = document.getElementById('freq-dotted-half-item');
     const freqHalfItem = document.getElementById('freq-half-item');
     const freqDottedQuarterItem = document.getElementById('freq-dotted-quarter-item');
@@ -24748,8 +25426,17 @@ function updateRhythmOptionsForTimeSignature(timeSignature) {
     const freqTripletItem = document.getElementById('freq-triplet-item');
     const freqDupletItem = document.getElementById('freq-duplet-item');
     const freqQuadrupletItem = document.getElementById('freq-quadruplet-item');
+
+    const isCustomTimeSignature = !isBuiltInTimeSignature(timeSignature) && timeSignature !== 'multi';
+    const isCustomCompound = isCustomTimeSignature && isCompoundTimeSignature(timeSignature);
     
     if (timeSignature === '6/8') {
+        if (dottedOptionsSection) {
+            dottedOptionsSection.style.display = 'none';
+        }
+        if (freqDottedItem) {
+            freqDottedItem.style.display = 'none';
+        }
         // 6/8拍：自动替换节奏选项
         console.log('🎵 切换到6/8拍，自动调整节奏选项...');
         const allowDottedNotesCheckbox = document.getElementById('allowDottedNotes');
@@ -24807,6 +25494,9 @@ function updateRhythmOptionsForTimeSignature(timeSignature) {
         }
         
         // 高级设置：隐藏全音符和三连音频率，显示附点二分音符、二连音和四连音频率
+        if (freqDottedItem) {
+            freqDottedItem.style.display = 'none';
+        }
         if (freqWholeItem) {
             freqWholeItem.style.display = 'none';
         }
@@ -24836,6 +25526,12 @@ function updateRhythmOptionsForTimeSignature(timeSignature) {
     } else if (timeSignature === 'multi') {
         // 🔥 多拍号模式：显示所有节奏选项，包括三连音
         console.log('🎵 多拍号模式：显示所有节奏选项，包括三连音');
+        if (dottedOptionsSection) {
+            dottedOptionsSection.style.display = 'block';
+        }
+        if (freqDottedItem) {
+            freqDottedItem.style.display = 'none';
+        }
 
         // 显示所有基本节奏选项
         if (wholeLabel) wholeLabel.style.display = 'flex';
@@ -24854,6 +25550,7 @@ function updateRhythmOptionsForTimeSignature(timeSignature) {
         if (quadrupletLabel) quadrupletLabel.style.display = 'flex';
 
         // 显示所有频率控制
+        if (freqDottedItem) freqDottedItem.style.display = 'none';
         if (freqWholeItem) freqWholeItem.style.display = 'block';
         if (freqDottedHalfItem) freqDottedHalfItem.style.display = 'block';
         if (freqHalfItem) freqHalfItem.style.display = 'block';
@@ -24867,9 +25564,84 @@ function updateRhythmOptionsForTimeSignature(timeSignature) {
         if (freqQuadrupletItem) freqQuadrupletItem.style.display = 'block';
 
         console.log('🎵 多拍号模式：所有节奏选项已显示，包括三连音、二连音、四连音');
+    } else if (isCustomCompound) {
+        console.log('🎵 自定义复拍子模式：保留基础节奏选项，显示二连音/四连音，隐藏三连音');
+        if (dottedOptionsSection) {
+            dottedOptionsSection.style.display = 'block';
+        }
+        if (freqDottedItem) {
+            freqDottedItem.style.display = 'none';
+        }
+
+        // 基础节奏选项：沿用非6/8拍默认显示
+        if (wholeLabel) wholeLabel.style.display = 'flex';
+        if (dottedHalfLabel) dottedHalfLabel.style.display = 'flex';
+        if (halfLabel) halfLabel.style.display = 'flex';
+        if (dottedQuarterLabel) dottedQuarterLabel.style.display = 'flex';
+        if (quarterLabel) quarterLabel.style.display = 'flex';
+        if (dottedEighthLabel) dottedEighthLabel.style.display = 'flex';
+        if (eighthLabel) eighthLabel.style.display = 'flex';
+        if (sixteenthLabel) sixteenthLabel.style.display = 'flex';
+
+        if (tripletLabel && tripletCheckbox && dupletLabel && dupletCheckbox && quadrupletLabel && quadrupletCheckbox) {
+            const wasTripletChecked = tripletCheckbox.checked;
+            tripletLabel.style.display = 'none';
+            dupletLabel.style.display = 'flex';
+            quadrupletLabel.style.display = 'flex';
+
+            if (wasTripletChecked) {
+                tripletCheckbox.checked = false;
+                if (!dupletCheckbox.checked) dupletCheckbox.checked = true;
+                if (!quadrupletCheckbox.checked) quadrupletCheckbox.checked = true;
+                console.log('✅ 自定义复拍子替换：三连音 → 二连音 + 四连音');
+            }
+        }
+
+        // 高级设置：隐藏三连音频率，显示二/四连音频率
+        if (freqWholeItem) {
+            freqWholeItem.style.display = 'block';
+        }
+        if (freqDottedHalfItem) {
+            freqDottedHalfItem.style.display = 'block';
+        }
+        if (freqHalfItem) {
+            freqHalfItem.style.display = 'block';
+        }
+        if (freqDottedQuarterItem) {
+            freqDottedQuarterItem.style.display = 'block';
+        }
+        if (freqQuarterItem) {
+            freqQuarterItem.style.display = 'block';
+        }
+        if (freqDottedEighthItem) {
+            freqDottedEighthItem.style.display = 'block';
+        }
+        if (freqEighthItem) {
+            freqEighthItem.style.display = 'block';
+        }
+        if (freqSixteenthItem) {
+            freqSixteenthItem.style.display = 'block';
+        }
+        if (freqTripletItem) {
+            freqTripletItem.style.display = 'none';
+        }
+        if (freqDupletItem) {
+            freqDupletItem.style.display = 'block';
+        }
+        if (freqQuadrupletItem) {
+            freqQuadrupletItem.style.display = 'block';
+        }
+
+        console.log('🎵 自定义复拍子模式：显示二连音、四连音，隐藏三连音（含频率控制）');
     } else {
         // 其他拍号：显示所有节奏选项，保持用户选择
         console.log(`🎵 切换到${timeSignature}拍，显示所有节奏选项并保持用户选择...`);
+        if (dottedOptionsSection) {
+            dottedOptionsSection.style.display = 'block';
+        }
+        if (freqDottedItem) {
+            freqDottedItem.style.display = timeSignature === '4/4' ? 'block' : 'none';
+        }
 
         // 显示基本节奏选项，但在4/4拍中隐藏具体的附点音符选项
         if (wholeLabel && dottedHalfLabel) {
@@ -24893,43 +25665,26 @@ function updateRhythmOptionsForTimeSignature(timeSignature) {
             }
         }
         
-        // 二连音和四连音 → 三连音的恢复（4/4拍允许三连音）
+        // 二连音和四连音 → 三连音的恢复
         if (tripletLabel && tripletCheckbox && dupletLabel && dupletCheckbox && quadrupletLabel && quadrupletCheckbox) {
-            const isFourFour = timeSignature === '4/4';
             const wasDupletChecked = dupletCheckbox.checked;
             const wasQuadrupletChecked = quadrupletCheckbox.checked;
-            const wasTripletChecked = tripletCheckbox.checked;
-
-            if (isFourFour) {
-                tripletLabel.style.display = 'flex';
-                dupletLabel.style.display = 'none';
-                quadrupletLabel.style.display = 'none';
-
-                if (wasDupletChecked || wasQuadrupletChecked) {
-                    dupletCheckbox.checked = false;
-                    quadrupletCheckbox.checked = false;
-                    if (!tripletCheckbox.checked) {
-                        tripletCheckbox.checked = true;
-                    }
-                    console.log(`✅ 4/4拍：移除二连音/四连音，保留三连音`);
-                } else if (wasTripletChecked) {
-                    console.log(`✅ 4/4拍：保留三连音`);
-                }
-            } else {
-                tripletLabel.style.display = 'flex';
-                dupletLabel.style.display = 'none';
-                quadrupletLabel.style.display = 'none';
-                
-                if (wasDupletChecked || wasQuadrupletChecked) {
-                    dupletCheckbox.checked = false;
-                    quadrupletCheckbox.checked = false;
-                    tripletCheckbox.checked = true;
-                    console.log(`✅ ${timeSignature}拍恢复：二连音 + 四连音 → 三连音`);
-                }
+            tripletLabel.style.display = 'flex';
+            dupletLabel.style.display = 'none';
+            quadrupletLabel.style.display = 'none';
+            
+            if (wasDupletChecked || wasQuadrupletChecked) {
+                dupletCheckbox.checked = false;
+                quadrupletCheckbox.checked = false;
+                tripletCheckbox.checked = true;
+                console.log(`✅ ${timeSignature}拍恢复：二连音 + 四连音 → 三连音`);
             }
         }
         
         // 高级设置：显示频率控制选项，但在标准拍号中隐藏具体的附点音符频率控制
+        if (freqDottedItem) {
+            freqDottedItem.style.display = timeSignature === '4/4' ? 'block' : 'none';
+        }
         if (freqWholeItem) {
             freqWholeItem.style.display = 'block';
         }
@@ -24956,7 +25711,7 @@ function updateRhythmOptionsForTimeSignature(timeSignature) {
         }
         
         if (freqTripletItem) {
-            freqTripletItem.style.display = timeSignature === '6/8' ? 'none' : 'block';
+            freqTripletItem.style.display = 'block';
         }
         if (freqDupletItem) {
             freqDupletItem.style.display = 'none';
@@ -24989,7 +25744,7 @@ function initializeCheckboxSliderSync() {
  * 🎵 初始化节奏复选框同步
  */
 function initializeRhythmCheckboxSync() {
-    const rhythmTypes = ['whole', 'dotted-half', 'half', 'dotted-quarter', 'quarter', 'dotted-eighth', 'eighth', '16th', 'triplet', 'duplet', 'quadruplet'];
+    const rhythmTypes = ['dotted', 'whole', 'dotted-half', 'half', 'dotted-quarter', 'quarter', 'dotted-eighth', 'eighth', '16th', 'triplet', 'duplet', 'quadruplet'];
     
     rhythmTypes.forEach(type => {
         const checkbox = document.getElementById(`rhythm-${type}`);
@@ -25163,6 +25918,7 @@ function initializeArticulationCheckboxSync() {
  */
 function getDefaultRhythmFrequency(type) {
     const defaults = {
+        dotted: 20,
         whole: 10,
         'dotted-half': 15,
         half: 30,
@@ -25171,7 +25927,7 @@ function getDefaultRhythmFrequency(type) {
         'dotted-eighth': 25,   // 🔥 添加缺失的dotted-eighth默认频率
         eighth: 40,
         '16th': 20,
-        triplet: 15,
+        triplet: 35,
         duplet: 30,
         quadruplet: 25
     };
@@ -25324,7 +26080,7 @@ function getDefaultRhythmTier(type) {
         quarter: 2,    // 50% -> 2 (中频率)
         eighth: 2,     // 40% -> 2 (中频率)
         '16th': 1,     // 20% -> 1 (低频率)
-        triplet: 1,    // 15% -> 1 (低频率)
+        triplet: 2,    // 35% -> 2 (中频率)
         duplet: 2,     // 30% -> 2 (中频率)
         quadruplet: 1  // 25% -> 1 (低频率)
     };
@@ -25351,13 +26107,16 @@ function getDefaultArticulationTier(type) {
 function initializeTimeSignatureListeners() {
     console.log('🎵 初始化拍号复选框实时监听器');
     
-    const timeSignatureIds = ['time-2/4', 'time-3/4', 'time-4/4', 'time-6/8'];
+    const timeSignatureIds = ['time-2/4', 'time-3/4', 'time-4/4', 'time-6/8', 'time-custom'];
     
     timeSignatureIds.forEach(id => {
         const checkbox = document.getElementById(id);
         if (checkbox) {
             checkbox.addEventListener('change', function() {
                 console.log(`🎼 拍号复选框变化: ${id} = ${this.checked}`);
+                if (id === 'time-custom') {
+                    updateCustomTimeSignatureFields(this.checked);
+                }
                 
                 // 🔥 移除实时更新逻辑，只在保存时更新节奏选项
                 // 这样可以避免在用户选择过程中频繁切换，确保多拍号模式正常工作
@@ -25394,13 +26153,6 @@ function initializeButtonDisplays() {
     
     // 拍号按钮
     updateButtonDisplay('timeSignatureSettingsBtn', userSettings.allowedTimeSignatures, '拍号');
-    if (Array.isArray(userSettings.allowedTimeSignatures)) {
-        if (userSettings.allowedTimeSignatures.length === 1) {
-            updateRhythmOptionsForTimeSignature(userSettings.allowedTimeSignatures[0]);
-        } else if (userSettings.allowedTimeSignatures.length > 1) {
-            updateRhythmOptionsForTimeSignature('multi');
-        }
-    }
     
     // 音程跨度按钮（单选模式）
     const intervalMap = {
@@ -25442,6 +26194,16 @@ function openKeySettings() {
     });
     
     document.getElementById('keySignatureModal').style.display = 'flex';
+    syncSelectAllState(
+        'majorKeys',
+        ['key-C', 'key-G', 'key-D', 'key-A', 'key-E', 'key-B', 'key-F#', 'key-F', 'key-Bb', 'key-Eb', 'key-Ab', 'key-Db', 'key-Gb'],
+        'button[onclick="selectAllMajorKeys()"]'
+    );
+    syncSelectAllState(
+        'minorKeys',
+        ['key-Am', 'key-Em', 'key-Bm', 'key-F#m', 'key-C#m', 'key-G#m', 'key-D#m', 'key-Dm', 'key-Gm', 'key-Cm', 'key-Fm', 'key-Bbm', 'key-Ebm'],
+        'button[onclick="selectAllMinorKeys()"]'
+    );
 }
 
 /**
@@ -25466,6 +26228,7 @@ function closeKeySettingsWithSave() {
     }
     
     document.getElementById('keySignatureModal').style.display = 'none';
+    resetSelectAllStates();
 }
 
 /**
@@ -25540,6 +26303,79 @@ function selectAllMinorKeys() {
 
 // ====== 🥁 拍号设置弹窗管理 ======
 
+function updateCustomTimeSignatureFields(show) {
+    const section = document.getElementById('customTimeSignatureFields');
+    const beatsInput = document.getElementById('customTimeBeats');
+    const beatTypeSelect = document.getElementById('customTimeBeatValue');
+    if (section) {
+        section.style.display = show ? 'block' : 'none';
+    }
+    if (!show) return;
+    if (beatsInput && (!beatsInput.value || parseInt(beatsInput.value, 10) <= 0)) {
+        beatsInput.value = '5';
+    }
+    if (beatTypeSelect && !beatTypeSelect.value) {
+        beatTypeSelect.value = '4';
+    }
+}
+
+function getCustomTimeSignatureInput() {
+    const beatsInput = document.getElementById('customTimeBeats');
+    const beatTypeSelect = document.getElementById('customTimeBeatValue');
+    const beats = beatsInput ? parseInt(beatsInput.value, 10) : NaN;
+    const beatType = beatTypeSelect ? parseInt(beatTypeSelect.value, 10) : NaN;
+
+    if (!Number.isInteger(beats) || beats <= 0) {
+        return { valid: false, message: '请输入正确的拍数（必须为大于0的整数）' };
+    }
+    if (![2, 4, 8, 16].includes(beatType)) {
+        return { valid: false, message: '拍号单位仅支持 2/4/8/16' };
+    }
+    return { valid: true, value: `${beats}/${beatType}`, beats, beatType };
+}
+
+function findCustomTimeSignature(allowedTimeSignatures) {
+    if (!Array.isArray(allowedTimeSignatures)) return null;
+    return allowedTimeSignatures.find(ts => !isBuiltInTimeSignature(ts)) || null;
+}
+
+function collectTimeSignatureSelection() {
+    const selectedTimeSignatures = [];
+    const timeInputs = document.querySelectorAll('#timeSignatureModal input[type="checkbox"]');
+    const customToggle = document.getElementById('time-custom');
+    const customSelected = customToggle ? customToggle.checked : false;
+
+    timeInputs.forEach(input => {
+        if (!input.checked) return;
+        if (input.value === 'custom') return;
+        selectedTimeSignatures.push(input.value);
+    });
+
+    if (customSelected) {
+        const customInput = getCustomTimeSignatureInput();
+        if (!customInput.valid) {
+            alert(customInput.message);
+            return null;
+        }
+        userSettings.customTimeSignature = customInput.value;
+        if (isBuiltInTimeSignature(customInput.value)) {
+            if (!selectedTimeSignatures.includes(customInput.value)) {
+                selectedTimeSignatures.push(customInput.value);
+            }
+            if (customToggle) {
+                customToggle.checked = false;
+                updateCustomTimeSignatureFields(false);
+            }
+            const builtInCheckbox = document.querySelector(`#timeSignatureModal input[value="${customInput.value}"]`);
+            if (builtInCheckbox) builtInCheckbox.checked = true;
+        } else {
+            selectedTimeSignatures.push(customInput.value);
+        }
+    }
+
+    return selectedTimeSignatures;
+}
+
 /**
  * 打开拍号设置弹窗
  */
@@ -25554,8 +26390,33 @@ function openTimeSignatureSettings() {
     timeInputs.forEach(input => {
         input.checked = allowedTimeSignatures.includes(input.value);
     });
+
+    const customToggle = document.getElementById('time-custom');
+    const customFromSelection = findCustomTimeSignature(allowedTimeSignatures);
+    const customValue = customFromSelection || userSettings.customTimeSignature;
+    if (customToggle) {
+        customToggle.checked = !!customFromSelection;
+        customToggle.onchange = () => {
+            updateCustomTimeSignatureFields(customToggle.checked);
+        };
+        updateCustomTimeSignatureFields(customToggle.checked);
+    }
+    if (customValue) {
+        const parsed = parseTimeSignatureString(customValue);
+        if (parsed) {
+            const beatsInput = document.getElementById('customTimeBeats');
+            const beatTypeSelect = document.getElementById('customTimeBeatValue');
+            if (beatsInput) beatsInput.value = String(parsed.beats);
+            if (beatTypeSelect) beatTypeSelect.value = String(parsed.beatType);
+        }
+    }
     
     document.getElementById('timeSignatureModal').style.display = 'flex';
+    syncSelectAllState(
+        'timeSignatures',
+        ['time-2/4', 'time-3/4', 'time-4/4', 'time-6/8'],
+        'button[onclick="selectAllTimeSignatures()"]'
+    );
 }
 
 /**
@@ -25564,13 +26425,8 @@ function openTimeSignatureSettings() {
 function closeTimeSignatureSettingsWithSave() {
     console.log('❌ 关闭拍号设置弹窗（自动保存）');
     
-    const selectedTimeSignatures = [];
-    const timeInputs = document.querySelectorAll('#timeSignatureModal input[type="checkbox"]');
-    timeInputs.forEach(input => {
-        if (input.checked) {
-            selectedTimeSignatures.push(input.value);
-        }
-    });
+    const selectedTimeSignatures = collectTimeSignatureSelection();
+    if (!selectedTimeSignatures) return;
     
     // 如果有选择，则保存
     if (selectedTimeSignatures.length > 0) {
@@ -25593,6 +26449,7 @@ function closeTimeSignatureSettingsWithSave() {
     }
     
     document.getElementById('timeSignatureModal').style.display = 'none';
+    resetSelectAllStates();
 }
 
 /**
@@ -25610,17 +26467,12 @@ function saveTimeSignatureSettings() {
     console.log('💾 保存拍号设置 - 函数被调用');
 
     try {
-        const selectedTimeSignatures = [];
         const timeInputs = document.querySelectorAll('#timeSignatureModal input[type="checkbox"]');
         console.log(`🔍 找到${timeInputs.length}个拍号复选框`);
 
-        timeInputs.forEach(input => {
-            console.log(`🔍 复选框 ${input.value}: ${input.checked}`);
-            if (input.checked) {
-                selectedTimeSignatures.push(input.value);
-            }
-        });
-
+        const selectedTimeSignatures = collectTimeSignatureSelection();
+        if (!selectedTimeSignatures) return;
+        
         console.log(`🔍 选中的拍号: ${selectedTimeSignatures.join(', ')}`);
 
         if (selectedTimeSignatures.length === 0) {
@@ -25807,6 +26659,11 @@ function openClefSettings() {
     });
     
     document.getElementById('clefModal').style.display = 'flex';
+    syncSelectAllState(
+        'clefs',
+        ['clef-treble', 'clef-bass', 'clef-alto'],
+        'button[onclick="selectAllClefs()"]'
+    );
 }
 
 /**
@@ -25840,6 +26697,7 @@ function closeClefSettingsWithSave() {
     }
     
     document.getElementById('clefModal').style.display = 'none';
+    resetSelectAllStates();
 }
 
 /**
@@ -25958,9 +26816,9 @@ function calculatePreciseRhythmWeight(duration) {
         return 0; // 完全禁用
     }
     
-    // 🔥 使用对数尺度确保精准的频率控制
-    // 频率越高，权重越大，但保持非线性关系以确保真实的百分比分布
-    return Math.max(1, Math.pow(userFreq / 10, 1.2));
+    // 🔥 使用平滑的幂次曲线：保留相对比例，同时压制低频过度放大
+    // 直接使用百分比 (0-100) 进行归一化，避免低频被抬高导致16分音符过多
+    return Math.pow(userFreq / 100, 1.6);
 }
 
 /**
@@ -26000,21 +26858,42 @@ function mapSliderPercentageToTier(sliderValue) {
 }
 
 /**
- * 统一的用户频率获取器 - 支持滑块分档映射
+ * 将任意频率值规范为 0-100 的整数百分比
+ */
+function normalizeFrequencyPercentage(value, fallbackValue = 15) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return fallbackValue;
+    return Math.max(0, Math.min(100, Math.round(numeric)));
+}
+
+/**
+ * 统一的用户频率获取器 - 使用真实百分比
  */
 function getUserFrequency(category, item) {
     let rawValue;
+    let fallbackValue = 15;
     
     if (category === 'rhythm') {
         rawValue = userSettings?.rhythmFrequencies?.[item] ?? getDefaultRhythmFrequency(item);
+        fallbackValue = getDefaultRhythmFrequency(item);
     } else if (category === 'articulation') {
         rawValue = userSettings?.articulations?.frequencies?.[item] ?? getDefaultArticulationFrequency(item);
+        fallbackValue = getDefaultArticulationFrequency(item);
     } else {
-        return 15; // 默认为低频率
+        return fallbackValue; // 默认为低频率
+    }
+
+    let normalized = normalizeFrequencyPercentage(rawValue, fallbackValue);
+    const currentTimeSignature = typeof window !== 'undefined' ? window.currentTimeSignature : null;
+    if (category === 'rhythm' && item.startsWith('dotted-') && currentTimeSignature === '4/4') {
+        const dottedGlobal = normalizeFrequencyPercentage(
+            userSettings?.rhythmFrequencies?.dotted ?? getDefaultRhythmFrequency('dotted'),
+            getDefaultRhythmFrequency('dotted')
+        );
+        normalized = Math.round((normalized * dottedGlobal) / 100);
     }
     
-    // 将滑块百分比值映射到分档系统
-    return mapSliderPercentageToTier(rawValue);
+    return normalized;
 }
 
 /**

@@ -1,5 +1,5 @@
 /*!
- * IC Studio 视奏工具 - 小调音名拼写规范表
+ * Cognote - 小调音名拼写规范表
  * Minor Scale Spelling Standards
  *
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club

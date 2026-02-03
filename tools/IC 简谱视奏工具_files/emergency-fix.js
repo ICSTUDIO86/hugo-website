@@ -1,5 +1,5 @@
 /*!
- * IC Studio 视奏工具 - 紧急修复工具
+ * Cognote - 紧急修复工具
  * Emergency Fix Tool
  * 
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club

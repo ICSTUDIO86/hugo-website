@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<script>
+    (function() {
+      var isFile = location.protocol === 'file:' || location.origin === 'null';
+      if (!isFile) return;
+      try {
+        console.warn('🚫 检测到file://协议，已阻止');
+      } catch (e) {}
+      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
+      document.open();
+      document.write(html);
+      document.close();
+      throw new Error('file-protocol-blocked');
+    })();
+  </script>
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhythm Sight Reading Tool | Cognote</title>
+    <meta name="description" content="Professional rhythm sight-reading tool for timing, syncopation, and rhythmic accuracy. Single-line percussion staff with customizable density, time signatures, and multi-voice practice.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+    <link href="./IC 旋律视奏工具_files/css2" rel="stylesheet">
+
+    <script src="./IC 旋律视奏工具_files/opensheetmusicdisplay.min.js"></script>
+    <link rel="stylesheet" href="IC 节奏视奏工具/rhythm.css">
+    <link rel="stylesheet" href="assets/css/midi-input.css">
+    <script src="IC 节奏视奏工具/rhythm.js?v=20260203" defer></script>
+    <script src="assets/js/midi-input.js?v=1" defer></script>
+    <script src="assets/js/rhythm-challenge-mode.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1 data-i18n="app.title">Cognote - 节奏视奏生成器</h1>
+                    <p data-i18n="app.subtitle">专业级节奏视奏与时间控制训练工具</p>
+                </div>
+                <div class="header-controls">
+                    <div class="function-selector">
+                        <button class="function-btn" id="functionBtn" onclick="toggleFunctionSelector()">
+                            🥁 <span id="currentFunction" data-i18n="app.rhythmMode">节奏视奏</span>
+                        </button>
+                        <div class="function-menu" id="functionMenu">
+                            <div class="function-option" onclick="switchFunction('melody')">
+                                <span class="function-icon">🎵</span>
+                                <span data-i18n="app.melodyMode">旋律视奏</span>
+                            </div>
+                            <div class="function-option" onclick="switchFunction('jianpu')">
+                                <span class="function-icon">🔢</span>
+                                <span data-i18n="app.jianpuMode">简谱视奏</span>
+                            </div>
+                            <div class="function-option" onclick="switchFunction('interval')">
+                                <span class="function-icon">🎼</span>
+                                <span data-i18n="app.intervalMode">音程视奏</span>
+                            </div>
+                            <div class="function-option" onclick="switchFunction('chord')">
+                                <span class="function-icon">🎹</span>
+                                <span data-i18n="app.chordMode">和弦视奏</span>
+                            </div>
+                            <div class="function-option" onclick="switchFunction('rhythm')">
+                                <span class="function-icon">🥁</span>
+                                <span data-i18n="app.rhythmMode">节奏视奏</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-dropdown">
+                        <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">
+                            ⚙️ <span data-i18n="settings.title">设置</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-row">
+                <div class="control-group" style="min-width: 160px;">
+                    <label data-i18n="controls.time">拍号</label>
+                    <button class="btn-secondary" onclick="openTimeSignatureSettings()" id="timeSignatureSettingsBtn" data-i18n="controls.timeSettings">拍号设置</button>
+                </div>
+                <div class="control-group" style="min-width: 160px;">
+                    <label data-i18n="controls.measures">小节数</label>
+                    <div class="radio-group">
+                        <label class="radio-item"><input type="radio" name="measureCount" value="2"> <span data-i18n="controls.measures2">2小节</span></label>
+                        <label class="radio-item"><input type="radio" name="measureCount" value="4" checked> <span data-i18n="controls.measures4">4小节</span></label>
+                        <label class="radio-item"><input type="radio" name="measureCount" value="8"> <span data-i18n="controls.measures8">8小节</span></label>
+                    </div>
+                </div>
+                
+                <div class="control-group" style="min-width: 200px;">
+                    <label data-i18n="controls.mode">模式</label>
+                    <div class="mode-toggle" style="display: flex; align-items: center; gap: 10px;">
+                        <span id="modeLabelFree" data-i18n="mode.free" style="font-size: 14px; opacity: 0.8;">自由</span>
+                        <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                            <input type="checkbox" id="challengeModeToggle" style="opacity: 0; width: 0; height: 0;">
+                            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
+                                <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
+                            </span>
+                        </label>
+                        <span id="modeLabelChallenge" data-i18n="mode.challenge" style="font-size: 14px; opacity: 0.8;">挑战</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-row">
+                <div class="control-group" style="min-width: 180px;">
+                    <label data-i18n="controls.rhythm">节奏设置</label>
+                    <button class="btn-secondary" onclick="openRhythmSettings()" id="rhythmSettingsBtn" data-i18n="controls.rhythm">节奏设置</button>
+                </div>
+                <div class="control-group" style="min-width: 200px;">
+                    <label data-i18n="controls.voices">声部模式</label>
+                    <button class="btn-secondary" onclick="openVoiceSettings()" id="voiceSettingsBtn" data-i18n="controls.voiceSettings">声部设置</button>
+                </div>
+                <div class="control-group metronome-group" style="flex: none; width: 160px;">
+                    <div class="metronome-label-row">
+                        <button class="metronome-settings-btn" id="metronomePatternBtn" onclick="openMetronomePatternSettings()" title="节拍器节奏设置" aria-label="节拍器节奏设置">
+                            ⚙️
+                        </button>
+                        <label for="metronomeBpm" data-i18n="controls.metronome">节拍器</label>
+                    </div>
+                    <div class="metronome-control">
+                        <input type="number" id="metronomeBpm" min="30" max="220" value="80" class="bpm-input-control">
+                        <button class="metronome-play-btn" id="metronomeToggleBtn" title="开始/停止节拍器">
+                            🎵
+                        </button>
+                        <div class="metronome-beat-indicator" id="metronomeBeatIndicator"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-row controls-actions">
+                <div class="button-group">
+                    <div id="challengeCountdownUI" style="display:none; align-items: center; gap:6px; margin-right:10px; padding:6px 10px; border:1px solid var(--border-color); border-radius:999px; background: var(--neutral-white); color: var(--text-color); font-size:14px; line-height:1;">
+                        <span id="challengeCountdownLabel" data-i18n="challenge.preparingLabel" style="opacity:0.7;">准备</span>
+                        <strong id="challengeCountdownValue">10</strong>
+                        <span data-i18n="challenge.seconds" style="opacity:0.7;">秒</span>
+                    </div>
+                    <button class="btn-primary" id="generateBtn" data-i18n="controls.generate">生成节奏</button>
+                    <div id="melody-counter-status"></div>
+                    <button class="btn-secondary" id="previousBtn" data-i18n="controls.previous">上一条</button>
+                    <button class="btn-secondary" id="nextBtn" data-i18n="controls.next">下一条</button>
+                </div>
+                <div class="practice-counter">
+                    <label for="practiceCountValue" data-i18n="controls.practiceCounter">练习计数</label>
+                    <div class="practice-counter-actions">
+                        <span id="practiceCountValue">0</span>
+                        <button class="btn-secondary" id="practiceCountBtn" onclick="incrementPracticeCount()" data-i18n="controls.practiceAdd">+</button>
+                        <button class="btn-secondary" id="practiceResetBtn" onclick="decrementPracticeCount()" data-i18n="controls.practiceReset">-</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <select id="timeSignature" style="display: none;">
+            <option value="2/4">2/4</option>
+            <option value="3/4">3/4</option>
+            <option value="4/4" selected>4/4</option>
+            <option value="6/8">6/8</option>
+            <option value="12/8">12/8</option>
+            <option value="custom" id="customTimeSignatureOption"></option>
+        </select>
+        <select id="voiceMode" style="display: none;">
+            <option value="1" data-i18n="voices.single" selected>单声部</option>
+            <option value="2" data-i18n="voices.double">双声部</option>
+        </select>
+
+        <div class="score-container">
+            <div id="score"></div>
+        </div>
+
+        <!-- Copyright Information -->
+        <div style="
+            padding: 5px 0;
+            text-align: center;
+            font-size: 14px;
+            color: var(--neutral-dark);
+            opacity: 0.7;
+            border-top: 1px solid var(--border-color);
+            margin-top: 7.5px;
+        ">
+            <p style="margin: 0; line-height: 1.5;">
+                <strong>Cognote</strong> - 专业级节奏视奏训练工具
+            </p>
+            <p style="margin: 8px 0 0 0; font-size: 13px; opacity: 0.8;">
+                Copyright © 2025. All rights reserved. Igor Chen -
+                <a href="https://icstudio.club/" target="_blank" style="color: var(--primary-blue); text-decoration: none;">icstudio.club</a>
+            </p>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="settings.title">设置</h3>
+                <button class="close-btn" onclick="closeSettingsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-menu show" id="settingsMenu" style="position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; border: 0; min-width: 0; background: transparent;">
+                    <div class="settings-section">
+                        <div class="settings-section-title" data-i18n="settings.theme">主题</div>
+                        <div class="theme-options">
+                            <div class="theme-option" onclick="setTheme('light')">
+                                <span class="theme-icon">☀️</span>
+                                <span data-i18n="settings.lightMode">浅色模式</span>
+                            </div>
+                            <div class="theme-option" onclick="setTheme('dark')">
+                                <span class="theme-icon">🌙</span>
+                                <span data-i18n="settings.darkMode">深色模式</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <div class="settings-section-title" data-i18n="settings.language">语言</div>
+                        <div class="language-options">
+                            <div class="language-option" onclick="switchLanguage('zh-CN')">简体中文</div>
+                            <div class="language-option" onclick="switchLanguage('zh-TW')">繁體中文</div>
+                            <div class="language-option" onclick="switchLanguage('en')">English</div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" id="midiSettingsSection">
+                        <div class="settings-section-title" data-i18n="settings.midi">MIDI 输入</div>
+                        <div class="midi-settings-row">
+                            <span data-i18n="midi.enable">启用</span>
+                            <label class="toggle-container">
+                                <input type="checkbox" id="midiEnableToggle" class="toggle-input">
+                                <span class="toggle-slider"><span class="toggle-button"></span></span>
+                            </label>
+                        </div>
+                        <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
+                            <label for="midiDeviceSelect" data-i18n="midi.device">设备</label>
+                            <select id="midiDeviceSelect" class="midi-select" disabled>
+                                <option value="">-</option>
+                            </select>
+                        </div>
+                        <div class="midi-status" id="midiStatusText" data-i18n="midi.status.disabled">MIDI 已关闭</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="rhythmSettingsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="modal.rhythm.title">节奏设置</h3>
+                <button class="close-btn" onclick="closeRhythmSettings()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="rhythm-section">
+                    <h4 data-i18n="controls.noteValues">可用符值</h4>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item" id="rhythm-whole-label"><input type="checkbox" id="valueWhole"> <span data-i18n="noteValues.whole">全音符</span></label>
+                        <label class="checkbox-item" id="rhythm-dotted-half-label" style="display: none;"><input type="checkbox" id="valueDottedHalf" value="half."> <span data-i18n="rhythm.dottedHalf">附点二分音符</span></label>
+                        <label class="checkbox-item" id="rhythm-half-label"><input type="checkbox" id="valueHalf" checked> <span data-i18n="noteValues.half">二分音符</span></label>
+                        <label class="checkbox-item" id="rhythm-dotted-quarter-label" style="display: none;"><input type="checkbox" id="valueDottedQuarter" value="quarter."> <span data-i18n="rhythm.dottedQuarter">附点四分音符</span></label>
+                        <label class="checkbox-item" id="rhythm-quarter-label"><input type="checkbox" id="valueQuarter" checked> <span data-i18n="noteValues.quarter">四分音符</span></label>
+                        <label class="checkbox-item" id="rhythm-dotted-eighth-label" style="display: none;"><input type="checkbox" id="valueDottedEighth" value="eighth."> <span data-i18n="rhythm.dottedEighth">附点八分音符</span></label>
+                        <label class="checkbox-item" id="rhythm-eighth-label"><input type="checkbox" id="valueEighth" checked> <span data-i18n="noteValues.eighth">八分音符</span></label>
+                        <label class="checkbox-item" id="rhythm-16th-label"><input type="checkbox" id="valueSixteenth"> <span data-i18n="noteValues.sixteenth">十六分音符</span></label>
+                        <label class="checkbox-item" id="rhythm-triplet-label" style="display: flex;"><input type="checkbox" id="valueTriplet"> <span data-i18n="noteValues.triplet">三连音</span></label>
+                        <label class="checkbox-item" id="rhythm-duplet-label" style="display: none;"><input type="checkbox" id="valueDuplet"> <span data-i18n="noteValues.duplet">二连音</span></label>
+                        <label class="checkbox-item" id="rhythm-quadruplet-label" style="display: none;"><input type="checkbox" id="valueQuadruplet"> <span data-i18n="noteValues.quadruplet">四连音</span></label>
+                    </div>
+                </div>
+                <div class="rhythm-section" id="dottedOptionsSection" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--info-border);">
+                    <h4 style="margin-bottom: 15px;" data-i18n="rhythm.dottedOptions">附点音符选项</h4>
+                    <label class="checkbox-item" style="align-items: flex-start;">
+                        <input type="checkbox" id="allowDottedNotes" value="dotted" checked>
+                        <span data-i18n="rhythm.allowDotted">允许附点音符 (根据已选节奏自动生成附点版本)</span>
+                    </label>
+                    <p style="font-size: 0.85rem; color: var(--neutral-dark); margin: 8px 0 0;" data-i18n="rhythm.dottedDesc">勾选后将自动为已选择的节奏类型生成附点版本</p>
+                    <p style="font-size: 0.85rem; color: var(--neutral-dark); margin: 4px 0 0;" data-i18n="rhythm.dottedExample">例如：勾选四分音符+附点音符 → 可生成四分音符和附点四分音符</p>
+                </div>
+                <div class="rhythm-section" style="margin-top: 18px;">
+                    <h4 data-i18n="controls.advancedSettings">高级设置</h4>
+                    <p style="font-size: 0.9rem; color: var(--neutral-dark); margin-bottom: 12px;" data-i18n="controls.frequencyDesc">调整各节奏单位在节奏中的出现频率</p>
+                    <div id="rhythmAdvancedSettings" style="display: none; margin-top: 12px;">
+                        <div class="rhythm-frequency-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="frequency-item" id="freq-dotted-item" style="display: none;">
+                                <label for="freq-dotted" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="rhythm.freq.dottedOverall">附点音符总体频率:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="range" id="freq-dotted" min="0" max="100" value="20" style="flex: 1;">
+                                    <span id="freq-dotted-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">20%</span>
+                                </div>
+                            </div>
+                            <div class="frequency-item" id="freq-whole-item">
+                                <label for="freq-whole" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="frequency.whole">全音符频率:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="range" id="freq-whole" min="0" max="100" value="20" style="flex: 1;">
+                                    <span id="freq-whole-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">20%</span>
+                                </div>
+                            </div>
+                            <div class="frequency-item" id="freq-dotted-half-item" style="display: none;">
+                                <label for="freq-dotted-half" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="rhythm.freq.dottedHalf">附点二分音符频率:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="range" id="freq-dotted-half" min="0" max="100" value="12" style="flex: 1;">
+                                    <span id="freq-dotted-half-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">12%</span>
+                                </div>
+                            </div>
+                            <div class="frequency-item" id="freq-half-item">
+                                <label for="freq-half" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="frequency.half">二分音符频率:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="range" id="freq-half" min="0" max="100" value="8" style="flex: 1;">
+                                    <span id="freq-half-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">8%</span>
+                                </div>
+                            </div>
+                            <div class="frequency-item" id="freq-dotted-quarter-item" style="display: none;">
+                                <label for="freq-dotted-quarter" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="rhythm.freq.dottedQuarter">附点四分音符频率:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="range" id="freq-dotted-quarter" min="0" max="100" value="60" style="flex: 1;">
+                                    <span id="freq-dotted-quarter-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">60%</span>
+                                </div>
+                            </div>
+                            <div class="frequency-item" id="freq-quarter-item">
+                                <label for="freq-quarter" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="frequency.quarter">四分音符频率:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="range" id="freq-quarter" min="0" max="100" value="25" style="flex: 1;">
+                                    <span id="freq-quarter-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">25%</span>
+                                </div>
+                            </div>
+                            <div class="frequency-item" id="freq-dotted-eighth-item" style="display: none;">
+                                <label for="freq-dotted-eighth" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="rhythm.freq.dottedEighth">附点八分音符频率:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="range" id="freq-dotted-eighth" min="0" max="100" value="25" style="flex: 1;">
+                                    <span id="freq-dotted-eighth-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">25%</span>
+                                </div>
+                            </div>
+                            <div class="frequency-item" id="freq-eighth-item">
+                                <label for="freq-eighth" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="frequency.eighth">八分音符频率:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="range" id="freq-eighth" min="0" max="100" value="15" style="flex: 1;">
+                                    <span id="freq-eighth-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">15%</span>
+                                </div>
+                            </div>
+                            <div class="frequency-item" id="freq-sixteenth-item">
+                                <label for="freq-16th" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="frequency.sixteenth">十六分音符频率:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="range" id="freq-16th" min="0" max="100" value="6" style="flex: 1;">
+                                    <span id="freq-16th-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">6%</span>
+                                </div>
+                            </div>
+                            <div class="frequency-item" id="freq-triplet-item">
+                                <label for="freq-triplet" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="frequency.triplet">三连音频率:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="range" id="freq-triplet" min="0" max="100" value="35" style="flex: 1;">
+                                    <span id="freq-triplet-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">35%</span>
+                                </div>
+                            </div>
+                            <div class="frequency-item" id="freq-duplet-item" style="display: none;">
+                                <label for="freq-duplet" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="frequency.duplet">二连音频率:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="range" id="freq-duplet" min="0" max="100" value="25" style="flex: 1;">
+                                    <span id="freq-duplet-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">25%</span>
+                                </div>
+                            </div>
+                            <div class="frequency-item" id="freq-quadruplet-item" style="display: none;">
+                                <label for="freq-quadruplet" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="frequency.quadruplet">四连音频率:</label>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="range" id="freq-quadruplet" min="0" max="100" value="20" style="flex: 1;">
+                                    <span id="freq-quadruplet-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">20%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-buttons" style="margin-top: 18px;">
+                    <button class="btn-secondary" onclick="toggleRhythmAdvancedSettings()" id="rhythmAdvancedBtn" data-i18n="button.advanced">高级设置</button>
+                    <button class="btn-primary" onclick="saveRhythmSettings()" data-i18n="button.save">保存设置</button>
+                    <button class="btn-secondary" onclick="closeRhythmSettings()" data-i18n="button.cancel">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="timeSignatureModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="modal.timeSignature.title">拍号设置</h3>
+                <button class="close-btn" onclick="closeTimeSignatureSettings()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="rhythm-section">
+                    <h4 data-i18n="modal.timeSignature.selection">拍号选项</h4>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item">
+                            <input type="radio" name="timeSignatureOption" value="2/4">
+                            <span data-i18n="time.2-4">2/4 拍</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" name="timeSignatureOption" value="3/4">
+                            <span data-i18n="time.3-4">3/4 拍</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" name="timeSignatureOption" value="4/4" checked>
+                            <span data-i18n="time.4-4">4/4 拍</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" name="timeSignatureOption" value="6/8">
+                            <span data-i18n="time.6-8">6/8 拍</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" name="timeSignatureOption" value="12/8">
+                            <span data-i18n="time.12-8">12/8 拍</span>
+                        </label>
+                        <label class="checkbox-item" style="display: none;">
+                            <input type="radio" name="timeSignatureOption" value="custom" id="time-custom">
+                            <span data-i18n="time.custom">自定义</span>
+                        </label>
+                    </div>
+                    <div id="customTimeSignatureFields" style="display: none; margin-top: 12px; padding: 12px; border: 1px dashed var(--border-color); border-radius: 10px; background: var(--neutral-white);">
+                        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <label for="customTimeBeats" style="min-width: 80px;" data-i18n="time.custom.beats">拍数</label>
+                            <input type="number" id="customTimeBeats" min="1" step="1" value="5" style="width: 90px;">
+                            <label for="customTimeBeatValue" style="min-width: 80px;" data-i18n="time.custom.denominator">单位</label>
+                            <select id="customTimeBeatValue" style="min-width: 120px;">
+                                <option value="2">2</option>
+                                <option value="4" selected>4</option>
+                                <option value="8">8</option>
+                                <option value="16">16</option>
+                            </select>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 12px; color: var(--neutral-dark);" data-i18n="time.custom.hint">示例：5/4、7/4、5/8、7/8</div>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn-primary" onclick="saveTimeSignatureSettings()" data-i18n="button.save">保存设置</button>
+                    <button class="btn-secondary" onclick="closeTimeSignatureSettings()" data-i18n="button.cancel">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="voiceSettingsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="modal.voice.title">声部设置</h3>
+                <button class="close-btn" onclick="closeVoiceSettings()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="rhythm-section">
+                    <h4 data-i18n="modal.voice.selection">声部模式</h4>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item">
+                            <input type="radio" name="voiceOption" value="1">
+                            <span data-i18n="voices.single">单声部</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" name="voiceOption" value="2">
+                            <span data-i18n="voices.double">双声部</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-section" id="ostinatoSettingsSection" style="display: none;">
+                    <div class="settings-section-title" data-i18n="settings.ostinato">Ostinato</div>
+                    <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
+                        <label for="ostinatoVoiceSelect" data-i18n="ostinato.voice">Ostinato 声部</label>
+                        <select id="ostinatoVoiceSelect" class="midi-select">
+                            <option value="none" data-i18n="ostinato.none">无</option>
+                            <option value="1" data-i18n="ostinato.voice1">声部 1</option>
+                            <option value="2" data-i18n="ostinato.voice2">声部 2</option>
+                        </select>
+                    </div>
+                    <div id="ostinatoConfigFields">
+                        <div class="metronome-pattern-row">
+                            <div class="control-group metronome-pattern-toggle-group" style="flex: 1; min-width: 160px;">
+                                <div class="toggle-container">
+                                    <input type="checkbox" id="ostinatoPatternEnable" class="toggle-input">
+                                    <label for="ostinatoPatternEnable" class="toggle-slider">
+                                        <span class="toggle-button"></span>
+                                    </label>
+                                </div>
+                                <label for="ostinatoPatternEnable" data-i18n="metronomePattern.enable">启用自定义节奏</label>
+                            </div>
+                            <div class="control-group" style="flex: 1; min-width: 180px;">
+                                <label data-i18n="metronomePattern.subdivision">细分</label>
+                                <select id="ostinatoPatternSubdivision" class="metronome-pattern-select">
+                                    <option value="1" data-i18n="metronomePattern.subdivision.beat">每拍1下</option>
+                                    <option value="2" data-i18n="metronomePattern.subdivision.eighth">每拍2分 (八分)</option>
+                                    <option value="3" data-i18n="metronomePattern.subdivision.triplet">每拍3分 (三连)</option>
+                                    <option value="4" data-i18n="metronomePattern.subdivision.sixteenth">每拍4分 (十六分)</option>
+                                </select>
+                            </div>
+                            <div class="control-group" style="flex: 1; min-width: 140px;">
+                                <label data-i18n="metronomePattern.bars">小节数</label>
+                                <select id="ostinatoPatternBars" class="metronome-pattern-select">
+                                    <option value="1" data-i18n="metronomePattern.bars.1">1小节</option>
+                                    <option value="2" data-i18n="metronomePattern.bars.2">2小节</option>
+                                    <option value="4" data-i18n="metronomePattern.bars.4">4小节</option>
+                                </select>
+                            </div>
+                            <div class="metronome-pattern-info">
+                                <span data-i18n="metronomePattern.timeSig">当前拍号</span>
+                                <strong id="ostinatoPatternTimeSig">4/4</strong>
+                            </div>
+                        </div>
+
+                        <div class="metronome-pattern-grid" id="ostinatoPatternGrid"></div>
+                        <p class="modal-hint" data-i18n="metronomePattern.hint">点击方格启用/静音节拍</p>
+
+                        <div class="modal-buttons">
+                            <button class="btn-secondary" type="button" onclick="resetOstinatoPattern()" data-i18n="metronomePattern.resetBeats">重置为每拍</button>
+                            <button class="btn-secondary" type="button" onclick="clearOstinatoPattern()" data-i18n="metronomePattern.clear">全部静音</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn-primary" onclick="saveVoiceSettings()" data-i18n="button.save">保存设置</button>
+                    <button class="btn-secondary" onclick="closeVoiceSettings()" data-i18n="button.cancel">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="challengeModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="modal.challenge.title">挑战模式</h3>
+                <button class="close-btn" onclick="closeChallengeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="control-row">
+                    <div class="control-group">
+                        <label for="challengeModeToggleModal" data-i18n="challenge.modeToggle">挑战模式</label>
+                        <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                            <input type="checkbox" id="challengeModeToggleModal" style="opacity: 0; width: 0; height: 0;">
+                            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
+                                <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label for="challengeCalibrationToggle" data-i18n="challenge.calibration">输入校准</label>
+                        <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                            <input type="checkbox" id="challengeCalibrationToggle" style="opacity: 0; width: 0; height: 0;">
+                            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
+                                <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label for="challengePrepTime" data-i18n="challenge.prepTime">准备时间（秒）</label>
+                        <input type="number" id="challengePrepTime" min="0" max="60" step="1" value="10">
+                    </div>
+                    <div class="control-group">
+                        <label for="challengeBPM" data-i18n="challenge.bpm">BPM</label>
+                        <input type="number" id="challengeBPM" min="40" max="240" step="1" value="80">
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-group">
+                        <label for="challengeCursorToggle" data-i18n="challenge.cursor">光标</label>
+                        <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                            <input type="checkbox" id="challengeCursorToggle" checked style="opacity: 0; width: 0; height: 0;">
+                            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
+                                <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label for="challengeMetronomeToggle" data-i18n="challenge.metronome">节拍器</label>
+                        <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                            <input type="checkbox" id="challengeMetronomeToggle" checked style="opacity: 0; width: 0; height: 0;">
+                            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
+                                <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label for="challengeHideToggle" data-i18n="challenge.hide">隐藏</label>
+                        <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                            <input type="checkbox" id="challengeHideToggle" checked style="opacity: 0; width: 0; height: 0;">
+                            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
+                                <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <p class="modal-hint">
+                    <span data-i18n="challenge.cursorHint">光标开关：光标用于提示当前应演奏的位置，count-in结束后出现并随节奏跳动。</span>
+                    <span data-i18n="challenge.hideHint" style="display: block; margin-top: 6px;">隐藏开关：开启后，系统在进入下一小节时会自动遮挡上一小节，仅保留当前阅读区。</span>
+                </p>
+                <div class="modal-buttons">
+                    <button class="btn-secondary" onclick="cancelChallengeSetup()" data-i18n="button.cancel">取消</button>
+                    <button class="btn-primary" onclick="confirmChallengeSetup()" data-i18n="button.start">开始</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="metronomePatternModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="modal.metronomePattern.title">节拍器节奏型</h3>
+                <button class="close-btn" onclick="closeMetronomePatternSettings()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="metronome-pattern-row">
+                    <div class="control-group metronome-pattern-toggle-group" style="flex: 1; min-width: 160px;">
+                        <div class="toggle-container">
+                            <input type="checkbox" id="metronomePatternEnable" class="toggle-input">
+                            <label for="metronomePatternEnable" class="toggle-slider">
+                                <span class="toggle-button"></span>
+                            </label>
+                        </div>
+                        <label for="metronomePatternEnable" data-i18n="metronomePattern.enable">启用自定义节奏</label>
+                    </div>
+                    <div class="control-group" style="flex: 1; min-width: 180px;">
+                        <label data-i18n="metronomePattern.subdivision">细分</label>
+                        <select id="metronomePatternSubdivision" class="metronome-pattern-select">
+                            <option value="1" data-i18n="metronomePattern.subdivision.beat">每拍1下</option>
+                            <option value="2" data-i18n="metronomePattern.subdivision.eighth">每拍2分 (八分)</option>
+                            <option value="3" data-i18n="metronomePattern.subdivision.triplet">每拍3分 (三连)</option>
+                            <option value="4" data-i18n="metronomePattern.subdivision.sixteenth">每拍4分 (十六分)</option>
+                        </select>
+                    </div>
+                    <div class="control-group" style="flex: 1; min-width: 140px;">
+                        <label data-i18n="metronomePattern.bars">小节数</label>
+                        <select id="metronomePatternBars" class="metronome-pattern-select">
+                            <option value="1" data-i18n="metronomePattern.bars.1">1小节</option>
+                            <option value="2" data-i18n="metronomePattern.bars.2">2小节</option>
+                            <option value="4" data-i18n="metronomePattern.bars.4">4小节</option>
+                        </select>
+                    </div>
+                    <div class="metronome-pattern-info">
+                        <span data-i18n="metronomePattern.timeSig">当前拍号</span>
+                        <strong id="metronomePatternTimeSig">4/4</strong>
+                    </div>
+                </div>
+
+                <div class="metronome-pattern-grid" id="metronomePatternGrid"></div>
+                <p class="modal-hint" data-i18n="metronomePattern.hint">点击方格启用/静音节拍</p>
+
+                <div class="modal-buttons">
+                    <button class="btn-secondary" onclick="resetMetronomePattern()" data-i18n="metronomePattern.resetBeats">重置为每拍</button>
+                    <button class="btn-secondary" onclick="clearMetronomePattern()" data-i18n="metronomePattern.clear">全部静音</button>
+                    <button class="btn-primary" onclick="saveMetronomePatternSettingsAndClose()" data-i18n="button.saveOnly">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/trial-limiter.js?v=20250909"></script>
+    <script src="/js/advanced-trial-protection.js?v=20250920"></script>
+    <script src="/js/melody-counter-system.js?v=20250920"></script>
+    <script src="/js/integrated-trial-manager.js?v=20250920"></script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 ---
-title: "IC 视奏工具"
+title: "Cognote"
 slug: /sight-reading-tool/
 description: 专业级视奏旋律生成器，助力音乐学习者快速提升读谱技能！
 image: images/sight-reading-tool.png
@@ -22,14 +22,14 @@ tags:
   - 吉他视奏
   - 数字音乐教学
 keywords: "视奏练习,五线谱学习,音乐教育工具,乐谱生成器,读谱训练,视奏软件,音乐学习app,吉他视奏,数字音乐教学,AI音乐教育,sight reading,sight reading generator,sight reading practice,sight reading tool,sight reading software,music education,sheet music practice,music theory tool,sight reading app,ear training,solfege practice,music sight reading,professional sight reading"
-author: "IC Studio"
+author: "Cognote"
 date: "2024-09-01"
 draft: false
 ---
 
-# IC Studio - 专业级视奏旋律生成器
+# Cognote - 专业级视奏旋律生成器
 
-![IC Studio 视奏完整界面](/images/sight-reading-tool-interface.png)
+![Cognote 视奏完整界面](/images/sight-reading-tool-interface.png)
 
 > 点击这里[免费试用](/tools/sight-reading-generator.html)
 
@@ -41,7 +41,7 @@ draft: false
 
 - **完全自定义**：支持调号、音域、节奏类型、音程跨度、临时记号等多维度个性化设置。
 
-![IC Studio 视奏工具完整界面](/images/sight-reading-tool-full-interface.png)
+![Cognote完整界面](/images/sight-reading-tool-full-interface.png)
 
 ## 专业功能
 - **24 个大小调支持**：涵盖所有常见调性，以及小调中的**自然小调**、**和声小调**与**旋律小调**的变化处理。  
@@ -1129,7 +1129,7 @@ function showPaymentSuccessPopup(accessCode, orderData) {
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                         <span style="color: #666;">产品：</span>
-                        <span>${orderData.product_name || 'IC Studio 视奏工具'}</span>
+                        <span>${orderData.product_name || 'Cognote'}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                         <span style="color: #666;">验证时间：</span>
@@ -1292,7 +1292,7 @@ function goToSightReadingTool() {
 
 // 确保所有功能在DOM加载后就绪
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 IC Studio 视奏工具页面初始化开始...');
+    console.log('🔧 Cognote页面初始化开始...');
     
     // 检查关键元素
     const input = document.getElementById('access-code-input');

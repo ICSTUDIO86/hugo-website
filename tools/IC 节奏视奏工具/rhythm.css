@@ -1,0 +1,301 @@
+@import url("../IC 旋律视奏工具_files/apple-ui-styles.css");
+
+:root {
+    --primary-blue: #ff4fa3;
+    --secondary-blue: #ff8fc9;
+    --accent-orange: #ff6fb5;
+    --accent-purple: #ff8ad1;
+    --card-shadow-focus: rgba(255, 79, 163, 0.2);
+}
+
+[data-theme="dark"] {
+    --primary-blue: #ff6fb5;
+    --secondary-blue: #ff9fd4;
+    --accent-orange: #ff8fc9;
+    --accent-purple: #ffb0df;
+    --card-shadow-focus: rgba(255, 111, 181, 0.3);
+}
+
+/* Rhythm tool specific tweaks */
+
+.rhythm-voice-note {
+    font-size: 0.85rem;
+    color: var(--neutral-dark);
+}
+
+.controls .control-row.controls-actions {
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+.container {
+    border-top: 8px solid rgba(255, 79, 163, 0.45);
+}
+
+.header {
+    background: rgba(0, 123, 255, 0.02);
+}
+
+[data-theme="dark"] .header {
+    background: rgba(0, 123, 255, 0.02) !important;
+}
+
+.score-container {
+    background: rgba(0, 123, 255, 0.02);
+}
+
+[data-theme="dark"] .score-container {
+    background: rgba(0, 123, 255, 0.02) !important;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: var(--primary-blue);
+}
+
+.checkbox-item input[type="checkbox"],
+.radio-item input[type="radio"] {
+    accent-color: var(--primary-blue);
+}
+
+#density {
+    accent-color: var(--primary-blue);
+}
+
+#density::-webkit-slider-thumb {
+    border: 4px solid var(--primary-blue) !important;
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.08),
+        0 4px 16px rgba(255, 79, 163, 0.12);
+}
+
+#density::-webkit-slider-thumb:hover {
+    border-color: #e64594 !important;
+    box-shadow: 0 4px 16px rgba(255, 79, 163, 0.3);
+}
+
+#density::-moz-range-thumb {
+    border: 2px solid var(--primary-blue) !important;
+    box-shadow: 0 1px 3px rgba(255, 79, 163, 0.18);
+}
+
+#rhythmAdvancedSettings input[type="range"]::-webkit-slider-thumb {
+    background: #ffffff !important;
+    border: 4px solid var(--primary-blue) !important;
+    box-shadow:
+        0 0 0 1px rgba(255, 79, 163, 0.25),
+        0 2px 8px rgba(0, 0, 0, 0.08),
+        0 4px 16px rgba(255, 79, 163, 0.12) !important;
+}
+
+#rhythmAdvancedSettings input[type="range"]::-webkit-slider-thumb:hover {
+    border-color: #e64594 !important;
+    box-shadow:
+        0 0 0 1px rgba(255, 79, 163, 0.35),
+        0 4px 16px rgba(255, 79, 163, 0.3) !important;
+}
+
+#rhythmAdvancedSettings input[type="range"]::-webkit-slider-thumb:active {
+    border-color: #cf3f88 !important;
+}
+
+#rhythmAdvancedSettings input[type="range"]::-moz-range-thumb {
+    background: #ffffff !important;
+    border: 2px solid var(--primary-blue) !important;
+    box-shadow:
+        0 0 0 1px rgba(255, 79, 163, 0.25),
+        0 1px 3px rgba(255, 79, 163, 0.18) !important;
+}
+
+
+.toggle-input:checked + .toggle-slider {
+    background: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.toggle-input:checked + .toggle-slider .toggle-button {
+    background: var(--primary-blue);
+}
+
+.btn-primary {
+    background: var(--primary-blue);
+    border-color: var(--primary-blue);
+    box-shadow: 0 3px 6px rgba(255, 79, 163, 0.3);
+}
+
+.btn-primary:hover {
+    background: #e64594;
+    border-color: #e64594;
+    box-shadow: 0 8px 24px rgba(255, 79, 163, 0.35);
+}
+
+.btn-primary:active {
+    box-shadow: 0 4px 16px rgba(255, 79, 163, 0.25);
+}
+
+.metronome-pattern-step.beat-start {
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+}
+
+.metronome-pattern-step.active,
+.metronome-pattern-step.active.beat-start {
+    background: var(--primary-blue);
+    color: #ffffff;
+    border-color: var(--primary-blue);
+    box-shadow: 0 3px 6px rgba(255, 79, 163, 0.3);
+}
+
+.metronome-pattern-step.bar-start {
+    box-shadow: inset 0 0 0 2px rgba(255, 79, 163, 0.35);
+}
+
+.metronome-pattern-step.active.bar-start {
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), 0 6px 16px rgba(255, 79, 163, 0.45);
+}
+
+.function-btn {
+    box-shadow: 0 2px 8px rgba(255, 79, 163, 0.3);
+}
+
+.function-btn:hover {
+    background: #e64594;
+    border-color: #e64594;
+    box-shadow: 0 4px 16px rgba(255, 79, 163, 0.4);
+}
+
+.function-btn:active {
+    background: #cf3f88;
+    box-shadow: 0 2px 8px rgba(255, 79, 163, 0.3);
+}
+
+.function-option:hover,
+.function-option:focus {
+    background: rgba(255, 79, 163, 0.12);
+    color: #b33677;
+}
+
+.function-option:active {
+    background: #e64594;
+    color: #ffffff;
+}
+
+#score:focus-within {
+    box-shadow:
+        0 4px 24px var(--card-shadow-focus),
+        0 12px 48px rgba(255, 79, 163, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.modal {
+    background: rgba(18, 10, 20, 0.45) !important;
+    backdrop-filter: blur(16px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+}
+
+/* Challenge modal switches need absolute positioning to override modal * rule */
+#challengeModal .switch input {
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+#challengeModal .switch .slider {
+    position: absolute !important;
+    inset: 0 !important;
+    cursor: pointer;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+#challengeModal .switch .slider .slider-button {
+    position: absolute !important;
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: #ffffff;
+    transition: 0.4s;
+    border-radius: 50%;
+    transform: translateX(0px);
+}
+
+#challengeModal .modal-hint {
+    font-size: 0.9rem;
+    color: var(--secondary-text);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.modal-header {
+    border-top: 14px solid rgba(255, 79, 163, 0.5) !important;
+}
+
+.beat-center-lines {
+    pointer-events: none;
+}
+
+.beat-center-line {
+    stroke: var(--primary-blue);
+    stroke-width: 1.2;
+    opacity: 0.22;
+}
+
+.five-line-staff-lines {
+    pointer-events: none;
+}
+
+.five-line-staff-line {
+    stroke: rgba(30, 30, 30, 0.55);
+    stroke-width: 1;
+}
+
+.ostinato-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.ostinato-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.ostinato-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 8px;
+}
+
+.ostinato-pattern {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--neutral-soft);
+    min-height: 42px;
+    border: 1px dashed var(--border-color);
+}
+
+.ostinato-chip {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--primary-blue);
+    color: var(--neutral-white);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ostinato-chip.rest {
+    background: var(--neutral-dark);
+}

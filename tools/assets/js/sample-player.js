@@ -5,6 +5,7 @@
   - Schedules relative to an external AudioContext’s time for seamless integration
 */
 (function(){
+  const VOLUME_BOOST = 2;
   class ICSamplePlayer {
     constructor(opts = {}) {
       const meta = (typeof document !== 'undefined') ? document.querySelector('meta[name="ic-sample-root"]') : null;
@@ -100,7 +101,7 @@
       // Optimized ADSR envelope for seamless, connected playback (zero gap)
       const a = 0.002;   // Attack: 2ms (快速起音)
       const d = 0.05;    // Decay: 50ms (短衰减到 sustain)
-      const s = gain;    // Sustain level
+      const s = gain * VOLUME_BOOST;    // Sustain level
       const r = 0.001;   // Release: 1ms (极短平滑过渡，避免 click 但几乎无空白)
 
       const t0 = startTime;
@@ -158,10 +159,30 @@
         const rate = Math.pow(2, semis/12);
         const clone = el.cloneNode();
         clone.preload = 'auto';
-        clone.volume = Math.max(0.01, Math.min(1, gain));
         clone.playbackRate = rate; // varispeed (pitch + time change)
+        const canUseWebAudio = /^blob:|^data:/i.test(clone.src || '');
+        let useWebAudio = false;
+        if (canUseWebAudio) {
+          try {
+            this.ctx.resume().catch(()=>{});
+            const mediaSource = this.ctx.createMediaElementSource(clone);
+            const g = this.ctx.createGain();
+            g.gain.value = Math.max(0.01, gain * VOLUME_BOOST);
+            mediaSource.connect(g).connect(this.outputGain);
+            clone.volume = 1;
+            useWebAudio = true;
+          } catch (e) {
+            console.warn('media element source failed, fallback to element volume:', e);
+          }
+        }
+        if (!useWebAudio) {
+          clone.volume = Math.max(0.01, Math.min(1, gain * VOLUME_BOOST));
+        }
         const start = () => {
           try { clone.currentTime = 0; } catch(_) {}
+          if (useWebAudio && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(()=>{});
+          }
           clone.play().catch(()=>{});
           // stop after duration (approximate)
           setTimeout(() => { try { clone.pause(); clone.src=''; } catch(_){} }, Math.max(50, durationSec*1000));
@@ -176,6 +197,7 @@
 
     async loadFromFileList(fileList) {
       // Allow user to select a folder of .ogg samples when opening via file://
+      this.buffers.clear();
       this.mediaElems.clear();
       const byName = new Map();
       for (const f of fileList) {
@@ -183,6 +205,24 @@
         byName.set(f.name.replace(/\.ogg$/i, ''), f);
       }
       const map = this._buildSampleMap();
+      for (const r of map) {
+        const f = byName.get(r.name) || byName.get(r.name.replace('#','%23'));
+        if (f) {
+          try {
+            const arr = await f.arrayBuffer();
+            const buf = await this.ctx.decodeAudioData(arr);
+            this.buffers.set(r.midi, buf);
+          } catch (e) {
+            console.warn('decodeAudioData failed for', f.name, e);
+          }
+        }
+      }
+      if (this.buffers.size > 0) {
+        this.useMediaElement = false;
+        this.ready = true;
+        console.log('✅ ICSamplePlayer loaded buffers from folder:', this.buffers.size);
+        return true;
+      }
       for (const r of map) {
         const f = byName.get(r.name) || byName.get(r.name.replace('#','%23'));
         if (f) {
@@ -194,7 +234,7 @@
       }
       this.useMediaElement = true;
       this.ready = this.mediaElems.size > 0;
-      console.log('✅ ICSamplePlayer loaded from folder:', this.mediaElems.size);
+      console.log('✅ ICSamplePlayer loaded media elements from folder:', this.mediaElems.size);
       return this.ready;
     }
   }

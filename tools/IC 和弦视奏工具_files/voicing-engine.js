@@ -1,5 +1,5 @@
 /*!
- * IC Studio - 专业Voicing引擎
+ * Cognote - 专业Voicing引擎
  * Professional Voicing Engine
  *
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club

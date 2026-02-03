@@ -1,5 +1,5 @@
 /*!
- * IC Studio - 增强功能和声系统
+ * Cognote - 增强功能和声系统
  * Enhanced Functional Harmony System
  *
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club

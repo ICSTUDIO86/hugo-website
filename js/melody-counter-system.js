@@ -96,90 +96,6 @@ class MelodyCounterSystem {
     this.cachedFingerprint = null; // 缓存设备指纹以提升性能
     this.lastOnlineTime = Date.now(); // 最后在线时间
     this.heartbeatInterval = null; // 心跳定时器
-    this.toolTrialLimit = 10;
-    this.activeToolId = this.detectToolId();
-  }
-
-  detectToolId() {
-    const path = (window.location.pathname || '').toLowerCase();
-    const toolMatches = [
-      { id: 'melody-generator', match: 'melody-generator' },
-      { id: 'interval-generator', match: 'interval-generator' },
-      { id: 'chord-generator', match: 'chord-generator' },
-      { id: 'jianpu-generator', match: 'jianpu-generator' }
-    ];
-
-    for (const tool of toolMatches) {
-      if (path.includes(tool.match)) {
-        return tool.id;
-      }
-    }
-
-    return null;
-  }
-
-  isToolTrialMode() {
-    return Boolean(this.activeToolId);
-  }
-
-  getToolStorageKey() {
-    if (!this.activeToolId) return null;
-    return `ic_tool_trial_usage_${this.activeToolId}`;
-  }
-
-  getToolUsageCount() {
-    const key = this.getToolStorageKey();
-    if (!key) return null;
-    const raw = localStorage.getItem(key);
-    const parsed = parseInt(raw || '0', 10);
-    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
-  }
-
-  setToolUsageCount(count) {
-    const key = this.getToolStorageKey();
-    if (!key) return;
-    const safeCount = Math.max(0, parseInt(count || '0', 10) || 0);
-    localStorage.setItem(key, safeCount.toString());
-  }
-
-  getToolTrialStatus(action = 'check') {
-    if (!this.isToolTrialMode()) return null;
-    const limit = this.toolTrialLimit;
-    let used = this.getToolUsageCount();
-    if (used === null) return null;
-
-    if (action === 'increment') {
-      const wasAllowed = used < limit;
-      if (wasAllowed) {
-        used += 1;
-        this.setToolUsageCount(used);
-      }
-      const remaining = Math.max(0, limit - used);
-      return {
-        success: true,
-        allowed: wasAllowed,
-        expired: used >= limit,
-        used,
-        total: limit,
-        remaining,
-        message: used >= limit ? '试用次数已用完' : `剩余 ${remaining} 次`,
-        toolId: this.activeToolId,
-        isToolTrial: true
-      };
-    }
-
-    const remaining = Math.max(0, limit - used);
-    return {
-      success: true,
-      allowed: used < limit,
-      expired: used >= limit,
-      used,
-      total: limit,
-      remaining,
-      message: used >= limit ? '试用次数已用完' : `剩余 ${remaining} 次`,
-      toolId: this.activeToolId,
-      isToolTrial: true
-    };
   }
 
   // 生成设备指纹（与服务端保持一致）
@@ -1231,14 +1147,6 @@ class MelodyCounterSystem {
       return fullAccessResult;
     }
 
-    if (this.isToolTrialMode()) {
-      const toolStatus = this.getToolTrialStatus(action);
-      if (toolStatus) {
-        this.currentStatus = toolStatus;
-        return toolStatus;
-      }
-    }
-
     // 本地开发模式
     if (this.isLocalDevelopment()) {
       console.log(`🏠 本地开发模式: [${action}]`);
@@ -1859,21 +1767,6 @@ class MelodyCounterSystem {
     try {
       console.log('🔄 后台验证开始...', isPrivateBrowsing ? '[无痕模式]' : '[正常模式]');
 
-      if (this.isToolTrialMode()) {
-        const result = await this.requestMelodyGeneration('increment');
-        this.showCounterStatus(result);
-        this.updateGenerateButton(result);
-        this.currentStatus = result;
-
-        if (result.expired && !result.hasFullAccess) {
-          setTimeout(() => {
-            this.showPurchasePrompt();
-          }, 1000);
-        }
-
-        return;
-      }
-
       if (isPrivateBrowsing) {
         // 无痕浏览模式：本地计数
         const newCount = this.incrementPrivateBrowsingUsage();
@@ -1949,19 +1842,6 @@ class MelodyCounterSystem {
       // 🔥 优先检查：如果用户已被识别为完整版（init()中已设置），直接返回
       if (this.currentStatus && this.currentStatus.hasFullAccess) {
         console.log('✅ 完整版用户，跳过后台初始化（已在init()中完成）');
-        return;
-      }
-
-      if (this.isToolTrialMode()) {
-        const status = await this.requestMelodyGeneration('check');
-        this.showCounterStatus(status);
-        this.updateGenerateButton(status);
-        this.currentStatus = status;
-
-        if (status.expired && !status.hasFullAccess) {
-          this.showPurchasePrompt();
-        }
-
         return;
       }
 
@@ -2046,19 +1926,6 @@ class MelodyCounterSystem {
   async preloadUserStatus() {
     try {
       console.log('⚡ 预加载用户状态中...');
-
-      if (this.isToolTrialMode()) {
-        const status = await this.requestMelodyGeneration('check');
-        this.currentStatus = status;
-        this.showCounterStatus(status);
-        this.updateGenerateButton(status);
-
-        if (status.expired && !status.hasFullAccess) {
-          this.showPurchasePrompt();
-        }
-
-        return;
-      }
 
       // 检测无痕模式
       const isPrivateBrowsing = await this.isLikelyPrivateBrowsing();
@@ -2299,36 +2166,24 @@ class MelodyCounterSystem {
         // 非完整版用户：立即显示默认状态，防止延迟期间绕过限制
         console.log('🔄 非完整版用户，立即显示默认试用状态');
 
-        const toolStatus = this.isToolTrialMode() ? this.getToolTrialStatus('check') : null;
+        // ⚡ 立即启动状态预加载（并行执行，不等待）
+        console.log('⚡ 启动状态预加载（异步）...');
+        this.preloadUserStatus();
 
-        if (toolStatus) {
-          this.currentStatus = toolStatus;
-          this.showCounterStatus(toolStatus);
-          this.updateGenerateButton(toolStatus);
+        // 设置默认状态（假设有试用次数，实际状态将由预加载更新）
+        this.currentStatus = {
+          success: true,
+          allowed: true,
+          expired: false,
+          used: 0,
+          total: 20,
+          remaining: 20,
+          message: '加载中...'
+        };
 
-          if (toolStatus.expired) {
-            this.showPurchasePrompt();
-          }
-        } else {
-          // ⚡ 立即启动状态预加载（并行执行，不等待）
-          console.log('⚡ 启动状态预加载（异步）...');
-          this.preloadUserStatus();
-
-          // 设置默认状态（假设有试用次数，实际状态将由预加载更新）
-          this.currentStatus = {
-            success: true,
-            allowed: true,
-            expired: false,
-            used: 0,
-            total: 20,
-            remaining: 20,
-            message: '加载中...'
-          };
-
-          // 立即显示默认状态
-          this.showCounterStatus(this.currentStatus);
-          this.updateGenerateButton(this.currentStatus);
-        }
+        // 立即显示默认状态
+        this.showCounterStatus(this.currentStatus);
+        this.updateGenerateButton(this.currentStatus);
       }
 
       // 立即包装生成函数，确保用户可以立即使用（但受到currentStatus限制）

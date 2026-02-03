@@ -237,23 +237,80 @@ class IntegratedTrialManager {
     console.log('🎉 完整版用户，已隐藏购买界面');
   }
 
-  // 拦截旋律生成函数（已禁用 - melody-counter-system 处理）
+  // 拦截旋律生成函数
   interceptMelodyGeneration() {
-    // ⚠️ 此方法已禁用
-    // melody-counter-system.js 已经实现了更优化的乐观更新机制
-    // 避免重复包装导致冲突和性能问题
+    // 寻找原始的生成函数
+    const possibleFunctions = [
+      'generateMelody',
+      'window.generateMelody',
+      'generateMusic',
+      'createMelody'
+    ];
 
-    console.log('ℹ️ 函数拦截已禁用 - 由 melody-counter-system 统一处理');
-    console.log('✅ 集成管理器专注于状态检查和显示');
+    for (const funcName of possibleFunctions) {
+      let func = null;
 
-    // 检查 melodyCounterSystem 是否已就绪
-    if (window.melodyCounterSystem && window.melodyCounterSystem.initialized) {
-      console.log('✅ melody-counter-system 已接管函数包装（支持乐观更新）');
-      return true;
-    } else {
-      console.warn('⚠️ melody-counter-system 未就绪');
-      return false;
+      try {
+        if (funcName.startsWith('window.')) {
+          func = window[funcName.substring(7)];
+        } else {
+          func = window[funcName];
+        }
+      } catch (e) {
+        continue;
+      }
+
+      if (typeof func === 'function') {
+        console.log(`🎯 找到旋律生成函数: ${funcName}`);
+
+        const originalFunc = func;
+        const self = this;
+
+        // 创建拦截函数
+        const interceptedFunc = async function(...args) {
+          console.log('🎵 旋律生成请求拦截');
+
+          // 检查试用状态
+          const status = await self.checkTrialStatus();
+
+          if (!status.allowed && !status.hasFullAccess) {
+            console.log('🚫 试用限制，阻止生成');
+            self.displayTrialStatus(status);
+
+            // 显示限制消息
+            alert(status.message || '试用已结束，请购买完整版继续使用');
+            return false;
+          }
+
+          // 记录使用
+          if (!status.hasFullAccess) {
+            const recordResult = await self.recordMelodyGeneration();
+            if (!recordResult.success) {
+              console.log('🚫 记录失败，阻止生成');
+              alert(recordResult.message || '无法记录使用，请稍后重试');
+              return false;
+            }
+          }
+
+          // 调用原始函数
+          console.log('✅ 允许生成旋律');
+          return originalFunc.apply(this, args);
+        };
+
+        // 替换函数
+        if (funcName.startsWith('window.')) {
+          window[funcName.substring(7)] = interceptedFunc;
+        } else {
+          window[funcName] = interceptedFunc;
+        }
+
+        console.log(`✅ 已拦截函数: ${funcName}`);
+        return true;
+      }
     }
+
+    console.warn('⚠️ 未找到旋律生成函数进行拦截');
+    return false;
   }
 
   // 初始化集成管理器

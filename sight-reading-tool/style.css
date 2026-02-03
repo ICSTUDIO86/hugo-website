@@ -1,9 +1,9 @@
 /**
- * IC Studio Sight Reading Tool - Standalone Page
+ * Cognote Sight Reading Tool - Standalone Page
  * 完全独立的页面样式，不受 Hugo 配置影响
  * 基于 sight-play-pro 的设计系统
  *
- * Author: IC Studio
+ * Author: Cognote
  * Version: 2.0.0
  * Date: 2025-10-10
  */
@@ -364,14 +364,45 @@ body {
   margin: 0 auto;
 }
 
+.product-scroll {
+  overflow: hidden;
+  padding: 0 1.5rem 1.5rem;
+  position: relative;
+}
+
+.product-track {
+  display: flex;
+  gap: 0;
+  width: max-content;
+  animation: product-loop 42s linear infinite;
+}
+
+.product-scroll:hover .product-track,
+.product-scroll:focus-within .product-track {
+  animation-play-state: paused;
+}
+
 .product-grid {
-  display: grid;
-  gap: 3rem;
-  max-width: 1000px;
+  display: flex;
+  gap: 2rem;
+  padding-right: 2rem;
   margin: 0 auto;
+  width: max-content;
+}
+
+.product-grid[aria-hidden="true"] {
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-track {
+    animation: none;
+  }
 }
 
 .product-card {
+  flex: 0 0 clamp(280px, 85vw, 520px);
   background: hsl(var(--card));
   border-radius: 1.5rem;
   overflow: hidden;
@@ -401,16 +432,22 @@ body {
   border-color: hsl(0 80% 60% / 0.3);
 }
 
+.product-card-teal {
+  border-color: hsl(330 85% 65% / 0.35);
+}
+
 .product-card-inner {
-  display: grid;
-  gap: 1.5rem;
-  padding: 2rem;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+  padding: 2.5rem;
 }
 
 @media (min-width: 768px) {
   .product-card-inner {
-    grid-template-columns: repeat(2, 1fr);
+    padding: 3rem;
   }
 }
 
@@ -419,6 +456,15 @@ body {
   font-weight: 700;
   margin-bottom: 1rem;
   transition: color 0.3s ease;
+}
+
+.product-text {
+  max-width: 520px;
+  order: 1 !important;
+}
+
+.product-showcase .product-text {
+  display: none;
 }
 
 .product-card:hover .product-text h3 {
@@ -430,9 +476,15 @@ body {
   line-height: 1.6;
 }
 
+.product-showcase .product-text p {
+  display: none;
+}
+
 .product-image {
   border-radius: 0.75rem;
   overflow: hidden;
+  width: min(100%, 560px);
+  order: 2 !important;
 }
 
 .product-image img {
@@ -907,6 +959,15 @@ body {
   }
   50% {
     transform: translateY(-5px);
+  }
+}
+
+@keyframes product-loop {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
   }
 }
 

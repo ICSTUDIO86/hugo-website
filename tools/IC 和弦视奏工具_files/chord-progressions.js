@@ -1,5 +1,5 @@
 /*!
- * IC Studio - 和弦进行生成器
+ * Cognote - 和弦进行生成器
  * Chord Progressions Generator with Markov Chains
  *
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club
