@@ -110,7 +110,37 @@
 
             // 准备显示数据
             console.log('📋 订单数据详情:', orderData);
-            const orderNumber = orderData?.out_trade_no || orderData?.order_id || 'IC' + Date.now().toString().substr(-8);
+            const orderNumber = (
+                orderData?.order_info?.out_trade_no ||
+                orderData?.order_info?.order_id ||
+                orderData?.order_info?.order_no ||
+                orderData?.order_info?.trade_no ||
+                orderData?.order_info?.alipay_trade_no ||
+                orderData?.order_info?.zpay_trade_no ||
+                orderData?.out_trade_no ||
+                orderData?.order_id ||
+                orderData?.order_no ||
+                orderData?.trade_no ||
+                orderData?.alipay_trade_no ||
+                orderData?.zpay_trade_no ||
+                'IC' + Date.now().toString().substr(-8)
+            );
+            const displayOrderNumber = (
+                orderData?.order_info?.out_trade_no ||
+                orderData?.order_info?.order_id ||
+                orderData?.order_info?.order_no ||
+                orderData?.order_info?.trade_no ||
+                orderData?.order_info?.alipay_trade_no ||
+                orderData?.order_info?.zpay_trade_no ||
+                orderData?.out_trade_no ||
+                orderData?.order_id ||
+                orderData?.order_no ||
+                orderData?.trade_no ||
+                orderData?.alipay_trade_no ||
+                orderData?.zpay_trade_no ||
+                '暂无'
+            );
+            const productName = orderData?.product_name || 'Cognote';
             const paymentAmount = orderData?.money || orderData?.amount || '1.00';
 
             const successHtml = `
@@ -139,7 +169,7 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                         <span style="color: #666;">产品：</span>
-                        <span>${orderData.product_name || 'IC Studio 视奏工具'}</span>
+                        <span>${productName}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                         <span style="color: #666;">验证时间：</span>
@@ -147,7 +177,7 @@
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span style="color: #666;">订单号：</span>
-                        <span style="font-family: monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">${(orderData.order_info?.out_trade_no) || (orderData.order_info?.order_id) || orderData.out_trade_no || orderData.order_id || orderData.orderId || '暂无'}</span>
+                        <span style="font-family: monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">${displayOrderNumber}</span>
                     </div>
                 </div>
 
