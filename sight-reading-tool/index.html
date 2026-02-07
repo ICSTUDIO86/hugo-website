@@ -167,6 +167,487 @@
     }
   </style>
 
+  <style>
+    :root {
+      --single-products-bg: radial-gradient(1200px 600px at 10% 0%, #fff7ed 0%, #fef3c7 35%, #ffffff 100%);
+      --single-products-ink: #1f2937;
+      --single-products-muted: #6b7280;
+      --single-products-card: rgba(255, 255, 255, 0.92);
+      --single-products-border: rgba(148, 163, 184, 0.25);
+      --single-products-accent: #f97316;
+      --single-products-accent-2: #10b981;
+      --single-products-accent-3: #0ea5e9;
+    }
+
+    .single-products-section {
+      position: relative;
+      padding: 96px 0;
+      background: var(--single-products-bg);
+      overflow: hidden;
+    }
+
+    .single-products-section::before,
+    .single-products-section::after {
+      content: '';
+      position: absolute;
+      width: 480px;
+      height: 480px;
+      border-radius: 50%;
+      filter: blur(0px);
+      opacity: 0.2;
+      z-index: 0;
+    }
+
+    .single-products-section::before {
+      background: #fdba74;
+      top: -180px;
+      left: -140px;
+    }
+
+    .single-products-section::after {
+      background: #93c5fd;
+      bottom: -200px;
+      right: -120px;
+    }
+
+    .single-products-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .single-products-header {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .single-products-title {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 700;
+      color: var(--single-products-ink);
+      letter-spacing: -0.02em;
+    }
+
+    .single-products-subtitle {
+      font-size: 16px;
+      color: var(--single-products-muted);
+      max-width: 720px;
+      line-height: 1.7;
+    }
+
+    .single-products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+    }
+
+    .single-product-card {
+      background: var(--single-products-card);
+      border: 1px solid var(--single-products-border);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      backdrop-filter: blur(6px);
+    }
+
+    .single-product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 30px 70px rgba(15, 23, 42, 0.14);
+    }
+
+    .single-product-image {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 18px;
+      background: #ffffff;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .single-product-image img {
+      width: 60%;
+      height: 60%;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 18px rgba(15, 23, 42, 0.25));
+    }
+
+    .single-product-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--single-products-ink);
+      margin: 0;
+      text-align: left;
+    }
+
+    .single-product-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .single-product-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--single-products-accent);
+      letter-spacing: 0.02em;
+    }
+
+    .single-product-try {
+      font-size: 13px;
+      color: var(--single-products-accent-3);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .single-product-try:hover {
+      text-decoration: underline;
+    }
+
+    .single-product-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .single-pay-btn {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 40px;
+      width: 100%;
+    }
+
+    .single-pay-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .single-pay-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+    }
+
+    .single-pay-alipay {
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      color: #fff;
+    }
+
+    .single-pay-wechat {
+      background: linear-gradient(135deg, #34d399, #10b981);
+      color: #fff;
+    }
+
+    .single-product-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #334155;
+      background: rgba(15, 23, 42, 0.06);
+      padding: 6px 10px;
+      border-radius: 999px;
+      width: fit-content;
+    }
+
+    .single-products-note {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .payment-mode-toggle {
+      display: inline-flex;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.08);
+      padding: 6px;
+      border-radius: 999px;
+      margin-top: 20px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .payment-mode-toggle button {
+      border: none;
+      background: transparent;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 14px;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .payment-mode-toggle button.active {
+      background: #0f172a;
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2);
+      border: 1px solid rgba(15, 23, 42, 0.25);
+    }
+
+    .payment-mode-panel {
+      display: none;
+      margin-top: 24px;
+    }
+
+    .payment-mode-panel.is-active {
+      display: block;
+    }
+
+    .single-products-grid.compact {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .single-payment-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+      padding: 20px;
+    }
+
+    .single-payment-modal {
+      width: min(920px, 100%);
+      background: #fff;
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 30px 80px rgba(15, 23, 42, 0.4);
+      display: grid;
+      gap: 20px;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .single-payment-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .single-payment-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .single-payment-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin: 6px 0 0 0;
+    }
+
+    .single-payment-close {
+      border: none;
+      background: rgba(148, 163, 184, 0.2);
+      color: #0f172a;
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .single-payment-body {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) 1.2fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .single-payment-qr {
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 16px;
+      display: grid;
+      place-items: center;
+      min-height: 220px;
+    }
+
+    .single-payment-qr img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+    }
+
+    .single-payment-info {
+      display: grid;
+      gap: 12px;
+      font-size: 14px;
+      color: #334155;
+    }
+
+    .single-payment-info strong {
+      color: #0f172a;
+    }
+
+    .single-payment-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .single-payment-link {
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .single-payment-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+      font-size: 13px;
+      color: #334155;
+    }
+
+    .single-toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 10px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3);
+      font-size: 14px;
+      z-index: 10002;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+    }
+
+    .single-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .single-loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10002;
+      color: #fff;
+      font-size: 16px;
+      letter-spacing: 0.02em;
+    }
+
+    .single-method-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+      padding: 20px;
+    }
+
+    .single-method-modal {
+      width: min(420px, 100%);
+      background: #fff;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35);
+      display: grid;
+      gap: 16px;
+    }
+
+    .single-method-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .single-method-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin: 0;
+    }
+
+    .single-method-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .single-method-btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      color: #fff;
+      background: #1a8cff;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .single-method-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+    }
+
+    .single-method-btn.wechat {
+      background: #10b981;
+    }
+
+    .single-method-btn.cancel {
+      background: #e2e8f0;
+      color: #0f172a;
+      grid-column: span 2;
+    }
+
+    @media (max-width: 900px) {
+      .single-payment-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .single-toast {
+        right: 16px;
+        left: 16px;
+        text-align: center;
+      }
+    }
+  </style>
+
   <!-- JSON-LD Structured Data -->
   <script type="application/ld+json">
   {
@@ -721,64 +1202,128 @@
             <span data-i18n="payment.titleSuffix">之旅</span>
           </h2>
           <div class="payment-price">
-            ⚡ <strong data-i18n="payment.price">128.00¥</strong> —— <span data-i18n="payment.priceText">支持网页版以及电脑软件</span>
+            <span class="payment-price-line" data-payment-price-line>⚡ <strong data-i18n="payment.price">128.00¥</strong> —— <span data-i18n="payment.priceText">支持网页版以及电脑软件</span></span>
+          </div>
+          <div class="payment-mode-toggle" role="tablist" aria-label="购买方式选择">
+            <button type="button" class="active" data-payment-mode="bundle" data-i18n="payment.mode.bundle">完整版</button>
+            <button type="button" data-payment-mode="single" data-i18n="payment.mode.single">单件购买</button>
           </div>
         </div>
 
-        <div class="payment-grid">
-          <!-- 左侧：支付选项 -->
-          <div class="payment-card">
-            <h3 data-i18n="payment.cardTitle">解锁视奏工具</h3>
-            <p data-i18n="payment.refundPolicy">支持 7 天无理由退款</p>
+        <div class="payment-mode-panel is-active" data-payment-panel="bundle">
+          <div class="payment-grid">
+            <!-- 左侧：支付选项 -->
+            <div class="payment-card">
+              <h3 data-i18n="payment.cardTitle">解锁你的音乐潜能</h3>
+              <p data-i18n="payment.refundPolicy">支持 7 天无理由退款</p>
 
-            <a href="/tools/melody-generator.html" target="_blank" class="btn btn-outline" style="display: block; margin-bottom: 1.25rem; text-align: center; font-size: 0.9375rem; padding: 0.875rem;" data-i18n="payment.btnFreeTrial">
-              免费试用
-            </a>
+              <a href="/tools/melody-generator.html" target="_blank" class="btn btn-outline" style="display: block; margin-bottom: 1.25rem; text-align: center; font-size: 0.9375rem; padding: 0.875rem;" data-i18n="payment.btnFreeTrial">
+                免费试用
+              </a>
 
-            <div class="payment-buttons">
-              <button id="zpay-btn" onclick="window.createZPayment()" class="payment-button payment-button-alipay" data-i18n="payment.btnAlipay">
-                支付宝支付
-              </button>
-              <button id="wxpay-btn" onclick="window.createWxPayment()" class="payment-button payment-button-wechat" data-i18n="payment.btnWechat">
-                微信支付
-              </button>
-            </div>
-
-            <div class="access-code-section">
-              <h4 data-i18n="payment.accessCodeTitle">🔑 已有访问码？立即使用</h4>
-              <div class="access-code-input-group">
-                <input
-                  type="text"
-                  id="access-code-input"
-                  class="access-code-input"
-                  placeholder="Enter your access code"
-                  data-i18n-placeholder="payment.accessCodePlaceholder"
-                  maxlength="12"
-                  oninput="handleInputChange()"
-                  onkeyup="handleInputChange()"
-                >
-                <button
-                  id="verify-btn"
-                  class="access-code-button"
-                  onclick="handleVerifyClick()"
-                  data-i18n="payment.btnVerify"
-                >
-                  验证
+              <div class="payment-buttons">
+                <button id="zpay-btn" onclick="window.createZPayment()" class="payment-button payment-button-alipay" data-i18n="payment.btnAlipay">
+                  支付宝支付
+                </button>
+                <button id="wxpay-btn" onclick="window.createWxPayment()" class="payment-button payment-button-wechat" data-i18n="payment.btnWechat">
+                  微信支付
                 </button>
               </div>
-              <div id="verify-result" class="verify-result"></div>
+
+              <div class="access-code-section">
+                <h4 data-i18n="payment.accessCodeTitle">🔑 已有访问码？立即使用</h4>
+                <div class="access-code-input-group">
+                  <input
+                    type="text"
+                    id="access-code-input"
+                    class="access-code-input"
+                    placeholder="Enter Access Code"
+                    data-i18n-placeholder="payment.accessCodePlaceholder"
+                    oninput="handleInputChange()"
+                    onkeyup="handleInputChange()"
+                  >
+                  <button
+                    id="verify-btn"
+                    class="access-code-button"
+                    onclick="handleVerifyClick()"
+                    data-i18n="payment.btnVerify"
+                  >
+                    验证
+                  </button>
+                </div>
+                <div id="verify-result" class="verify-result"></div>
+              </div>
+            </div>
+
+            <!-- 右侧：Gumroad -->
+            <div class="gumroad-wrapper">
+              <iframe
+                src="https://icstudio3.gumroad.com/l/sight-reading-tools"
+                frameborder="0"
+                width="100%"
+                height="100%"
+                style="border: 0; min-height: 500px;">
+              </iframe>
             </div>
           </div>
+        </div>
 
-          <!-- 右侧：Gumroad -->
-          <div class="gumroad-wrapper">
-            <iframe
-              src="https://icstudio3.gumroad.com/l/sight-reading-tools"
-              frameborder="0"
-              width="100%"
-              height="100%"
-              style="border: 0; min-height: 500px;">
-            </iframe>
+        <div class="payment-mode-panel" data-payment-panel="single">
+          <div class="single-products-grid compact">
+            <article class="single-product-card" data-product-id="melody" data-product-name="Cognote 旋律视奏" data-product-price="68">
+              <div class="single-product-image">
+                <img src="/tools/assets/icon/cognote.png" alt="Cognote">
+              </div>
+              <h3 class="single-product-title" data-i18n="payment.singleProducts.melody">Cognote 旋律视奏</h3>
+              <span class="single-product-price" data-price-label style="display:none;">价格待定</span>
+              <div class="single-product-actions">
+                <button class="single-pay-btn single-pay-alipay" data-pay-type="buy">购买</button>
+              </div>
+            </article>
+
+            <article class="single-product-card" data-product-id="jianpu" data-product-name="Cognote 简谱视奏" data-product-price="58">
+              <div class="single-product-image">
+                <img src="/tools/assets/icon/cognote.png" alt="Cognote">
+              </div>
+              <h3 class="single-product-title" data-i18n="payment.singleProducts.jianpu">Cognote 简谱视奏</h3>
+              <span class="single-product-price" data-price-label style="display:none;">价格待定</span>
+              <div class="single-product-actions">
+                <button class="single-pay-btn single-pay-alipay" data-pay-type="buy">购买</button>
+              </div>
+            </article>
+
+            <article class="single-product-card" data-product-id="rhythm" data-product-name="Cognote 节奏视奏" data-product-price="38">
+              <div class="single-product-image">
+                <img src="/tools/assets/icon/cognote.png" alt="Cognote">
+              </div>
+              <h3 class="single-product-title" data-i18n="payment.singleProducts.rhythm">Cognote 节奏视奏</h3>
+              <span class="single-product-price" data-price-label style="display:none;">价格待定</span>
+              <div class="single-product-actions">
+                <button class="single-pay-btn single-pay-alipay" data-pay-type="buy">购买</button>
+              </div>
+            </article>
+
+            <article class="single-product-card" data-product-id="chord" data-product-name="Cognote 和弦视奏" data-product-price="48">
+              <div class="single-product-image">
+                <img src="/tools/assets/icon/cognote.png" alt="Cognote">
+              </div>
+              <h3 class="single-product-title" data-i18n="payment.singleProducts.chord">Cognote 和弦视奏</h3>
+              <span class="single-product-price" data-price-label style="display:none;">价格待定</span>
+              <div class="single-product-actions">
+                <button class="single-pay-btn single-pay-alipay" data-pay-type="buy">购买</button>
+              </div>
+            </article>
+
+            <article class="single-product-card" data-product-id="interval" data-product-name="Cognote 音程视奏" data-product-price="48">
+              <div class="single-product-image">
+                <img src="/tools/assets/icon/cognote.png" alt="Cognote">
+              </div>
+              <h3 class="single-product-title" data-i18n="payment.singleProducts.interval">Cognote 音程视奏</h3>
+              <span class="single-product-price" data-price-label style="display:none;">价格待定</span>
+              <div class="single-product-actions">
+                <button class="single-pay-btn single-pay-alipay" data-pay-type="buy">购买</button>
+              </div>
+            </article>
           </div>
         </div>
       </div>
@@ -940,18 +1485,185 @@
   <script src="https://imgcache.qq.com/qcloud/cloudbase-js-sdk/1.5.0/cloudbase.full.js"></script>
 
   <!-- 支付系统脚本 - 延迟加载优化 -->
-  <script defer src="/js/payment-success-handler.js?v=20250909"></script>
+  <script defer src="/js/payment-success-handler.js?v=20250909-3"></script>
   <script defer src="/js/advanced-trial-protection.js?v=20250920"></script>
   <script defer src="/js/trial-limiter.js?v=20250909"></script>
   <script defer src="/js/cloudbase-api.js?v=20250909"></script>
   <script defer src="/js/payment-state-manager.js?v=20250909"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <script defer src="/js/new-refund-handler.js?v=2.0.0"></script>
+  <script defer src="/js/unified-refund-handler.js?v=1.0.4"></script>
   <script defer src="/js/zpay-simple.js?v=1.0.9"></script>
   <script defer src="/js/alipay-lookup.js?v=1.0.1"></script>
+  <script defer src="/js/single-product-config.js?v=1.0.0"></script>
+  <script defer src="/js/single-product-access.js?v=1.0.0"></script>
+  <script defer src="/js/single-product-payment.js?v=1.0.0"></script>
 
   <!-- 内联 JavaScript 函数 -->
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof window.performAlipayLookup !== 'function') return;
+
+      const originalPerform = window.performAlipayLookup;
+
+      window.performAlipayLookup = async function() {
+        const input = document.getElementById('alipay-account-input');
+        const resultDiv = document.getElementById('alipay-lookup-result');
+
+        if (!input || !resultDiv) {
+          console.error('❌ 找不到必要的页面元素');
+          return;
+        }
+
+        const orderNumber = input.value.trim();
+
+        if (!orderNumber) {
+          resultDiv.innerHTML = '<div style="color: #e74c3c; padding: 10px; background: #ffeaa7; border-radius: 8px; font-size: 14px;">❌ 请输入订单号</div>';
+          return;
+        }
+
+        const isMerchantOrder = /^ICS?\d{17}$/.test(orderNumber);
+        const isAlipayTrade = /^\d{28}$/.test(orderNumber);
+
+        if (!isMerchantOrder && !isAlipayTrade) {
+          resultDiv.innerHTML = '<div style="color: #e74c3c; padding: 10px; background: #ffeaa7; border-radius: 8px; font-size: 14px;">❌ 请输入有效的订单号格式<br><small>商家订单号：IC/ICS开头的号码；支付宝交易号：28位数字</small></div>';
+          return;
+        }
+
+        resultDiv.innerHTML = '<div style="color: #3498db; padding: 15px; background: #f0f9ff; border-radius: 8px; text-align: center; font-size: 14px;">🔄 正在查找相关记录...</div>';
+
+        try {
+          const requestBody = {};
+          if (isMerchantOrder) {
+            requestBody.order_no = orderNumber;
+          } else {
+            requestBody.zpay_trade_no = orderNumber;
+          }
+
+          const SINGLE_LOOKUP_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findSingleAccessCodeByOrderNo';
+          const FULL_LOOKUP_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findAccessCodeProxy';
+
+          async function fetchLookup(endpoint) {
+            const response = await fetch(endpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(requestBody)
+            });
+            return await response.json();
+          }
+
+          let actualResult;
+
+          try {
+            actualResult = await fetchLookup(SINGLE_LOOKUP_ENDPOINT);
+            console.log('🔍 单件查找结果:', actualResult);
+          } catch (singleError) {
+            console.warn('⚠️ 单件查找失败，尝试完整版:', singleError);
+            actualResult = null;
+          }
+
+          const shouldFallback = !actualResult || (actualResult && actualResult.success === false && (
+            actualResult.code === 'ORDER_NOT_FOUND' ||
+            /未找到/.test(actualResult.error || '')
+          ));
+
+          if (shouldFallback) {
+            actualResult = await fetchLookup(FULL_LOOKUP_ENDPOINT);
+            console.log('🔍 完整版查找结果:', actualResult);
+          }
+
+          if (actualResult && actualResult.success && actualResult.result) {
+            const orderInfo = actualResult.result.order_info;
+            const accessCode = actualResult.result.access_code;
+
+            const resultHtml = `
+                <div style="background: #f0fff4; border: 1px solid #9ae6b4; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-weight: 600; color: #2f855a;">访问码信息</span>
+                        <span style="font-size: 12px; color: #666;">${new Date(orderInfo.created_time).toLocaleDateString()}</span>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <strong style="color: #333;">访问码：</strong>
+                        <span style="font-family: monospace; background: #e6fffa; padding: 4px 8px; border-radius: 4px; border: 1px solid #81e6d9;">${accessCode}</span>
+                        <button onclick="copyToClipboard('${accessCode}')" style="margin-left: 8px; background: #38a169; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">复制</button>
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>产品：</strong>${orderInfo.product_name}
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>金额：</strong>¥${orderInfo.amount}
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>支付时间：</strong>${new Date(orderInfo.payment_time).toLocaleString()}
+                    </div>
+                    <div style="margin-bottom: 5px;">
+                        <strong>商家订单号：</strong><span style="font-family: monospace; font-size: 12px;">${orderInfo.merchant_order_no}</span>
+                    </div>
+                    ${orderInfo.alipay_trade_no ? `<div style="margin-bottom: 5px;"><strong>订单号：</strong><span style="font-family: monospace; font-size: 12px;">${orderInfo.alipay_trade_no}</span></div>` : ''}
+                </div>
+            `;
+
+            resultDiv.innerHTML = `
+                <div style="color: #22c55e; padding: 15px; background: #f0fff4; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 600;">
+                    🎉 访问码找回成功
+                </div>
+                ${resultHtml}
+                <div style="margin-top: 15px; padding: 15px; background: #e6fffa; border-radius: 8px; border: 1px solid #81e6d9; text-align: center;">
+                    <p style="margin: 0; color: #2d3748; font-size: 14px;">${actualResult.result.usage_tip}</p>
+                </div>
+            `;
+          } else {
+            const errorMessage = actualResult.error || '未找到相关记录';
+            resultDiv.innerHTML = `
+                <div style="color: #f59e0b; padding: 20px; background: #fffbeb; border: 1px solid #fbbf24; border-radius: 8px; text-align: center;">
+                    <div style="margin-bottom: 15px; font-size: 48px;">😔</div>
+                    <div style="font-weight: 600; margin-bottom: 10px;">${errorMessage}</div>
+                    <div style="font-size: 14px; color: #92400e; line-height: 1.5;">
+                        可能的原因：<br/>
+                        • 订单号输入有误<br/>
+                        • 订单不存在或已退款<br/>
+                        • 订单状态异常
+                    </div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #fbbf24;">
+                        <strong>联系客服：</strong><br/>
+                        📧 service@icstudio.club
+                    </div>
+                </div>
+            `;
+          }
+        } catch (error) {
+          console.error('查找失败:', error);
+          resultDiv.innerHTML = `
+              <div style="color: #e74c3c; padding: 15px; background: #fee; border: 1px solid #fecaca; border-radius: 8px; text-align: center;">
+                  ❌ 查找失败，请稍后重试<br/>
+                  <small style="color: #666;">错误信息：${error.message}</small>
+              </div>
+          `;
+        }
+      };
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const removeMaxLength = () => {
+        const refundInput = document.getElementById('refund-access-code-input');
+        if (refundInput) {
+          refundInput.removeAttribute('maxlength');
+        }
+      };
+
+      removeMaxLength();
+
+      const observer = new MutationObserver(() => {
+        removeMaxLength();
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    });
+
     // ========== 访问码验证相关函数 ==========
     function handleInputChange() {
       const input = document.getElementById('access-code-input');
@@ -960,7 +1672,9 @@
       if (!input || !btn) return;
 
       const code = input.value.trim();
-      const isValid = code.length >= 11 && code.length <= 12 && /^[A-Z0-9]+$/.test(code);
+      const isFullCode = code.length >= 11 && code.length <= 12 && /^[A-Z0-9]+$/.test(code);
+      const isSingleCode = /^(MEL|JPU|RHY|CHD|INT)[A-Z0-9]{12}$/.test(code);
+      const isValid = isFullCode || isSingleCode;
 
       btn.dataset.valid = isValid;
       btn.classList.toggle('active', isValid);
@@ -977,7 +1691,7 @@
       const isValid = button.dataset.valid === 'true';
 
       if (!isValid) {
-        resultDiv.innerHTML = '<span style="color: #e74c3c;">❌ 请输入有效的11-12位访问码</span>';
+        resultDiv.innerHTML = '<span style="color: #e74c3c;">❌ 请输入有效访问码</span>';
         return;
       }
 
@@ -1082,7 +1796,30 @@
     document.addEventListener('DOMContentLoaded', function() {
       console.log('✅ Cognote 视奏工具页面已加载');
       handleInputChange();
+      initPaymentModeToggle();
     });
+
+    function initPaymentModeToggle() {
+      const toggleButtons = document.querySelectorAll('[data-payment-mode]');
+      const panels = document.querySelectorAll('[data-payment-panel]');
+      const priceLine = document.querySelector('[data-payment-price-line]');
+
+      if (!toggleButtons.length || !panels.length) return;
+
+      toggleButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const mode = btn.dataset.paymentMode;
+
+          toggleButtons.forEach((item) => item.classList.toggle('active', item === btn));
+          panels.forEach((panel) => {
+            panel.classList.toggle('is-active', panel.dataset.paymentPanel === mode);
+          });
+          if (priceLine) {
+            priceLine.style.display = mode === 'single' ? 'none' : '';
+          }
+        });
+      });
+    }
 
     // ========== Header 菜单和搜索功能 ==========
     function toggleMenu() {

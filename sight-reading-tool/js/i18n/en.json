@@ -90,14 +90,25 @@
     "price": "¥128.00",
     "priceText": "Supports web version and desktop software",
 
-    "cardTitle": "Unlock Sight Reading Tools",
+    "cardTitle": "Unlock Your Music Potential",
+    "singleProducts": {
+      "melody": "Cognote Melody Sight-Reading",
+      "jianpu": "Cognote Jianpu Sight-Reading",
+      "rhythm": "Cognote Rhythm Sight-Reading",
+      "chord": "Cognote Chord Sight-Reading",
+      "interval": "Cognote Interval Sight-Reading"
+    },
+    "mode": {
+      "bundle": "Complete Edition",
+      "single": "Single Purchase"
+    },
     "refundPolicy": "7-day no-questions-asked refund policy",
     "btnFreeTrial": "Free Trial",
     "btnAlipay": "Alipay Payment",
     "btnWechat": "WeChat Payment",
 
     "accessCodeTitle": "🔑 Already Have an Access Code? Use It Now",
-    "accessCodePlaceholder": "Enter access code (11-12 digits)",
+    "accessCodePlaceholder": "Enter Access Code",
     "btnVerify": "Verify"
   },
 

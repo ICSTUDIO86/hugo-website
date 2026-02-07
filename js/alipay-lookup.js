@@ -143,22 +143,41 @@ async function performAlipayLookup() {
             requestBody.zpay_trade_no = orderNumber;
         }
         
-        // 调用代理云函数（HTTP方式）
-        const response = await fetch('https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findAccessCodeProxy', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody)
-        });
+        const SINGLE_LOOKUP_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findSingleAccessCodeByOrderNo';
+        const FULL_LOOKUP_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findAccessCodeProxy';
+
+        async function fetchLookup(endpoint) {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+            return await response.json();
+        }
+
+        let actualResult;
+
+        try {
+            actualResult = await fetchLookup(SINGLE_LOOKUP_ENDPOINT);
+            console.log('🔍 单件查找结果:', actualResult);
+        } catch (singleError) {
+            console.warn('⚠️ 单件查找失败，尝试完整版:', singleError);
+            actualResult = null;
+        }
+
+        const shouldFallback = !actualResult || (actualResult && actualResult.success === false && (
+            actualResult.code === 'ORDER_NOT_FOUND' ||
+            /未找到/.test(actualResult.error || '')
+        ));
+
+        if (shouldFallback) {
+            actualResult = await fetchLookup(FULL_LOOKUP_ENDPOINT);
+            console.log('🔍 完整版查找结果:', actualResult);
+        }
         
-        const result = await response.json();
-        console.log('🔍 查找结果:', result);
-        
-        // 处理代理函数返回格式
-        let actualResult = result;
-        
-        if (actualResult.success && actualResult.result) {
+        if (actualResult && actualResult.success && actualResult.result) {
             // 显示找到的访问码
             const orderInfo = actualResult.result.order_info;
             const accessCode = actualResult.result.access_code;

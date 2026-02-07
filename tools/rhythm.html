@@ -34,7 +34,7 @@
     <script src="./IC 旋律视奏工具_files/opensheetmusicdisplay.min.js"></script>
     <link rel="stylesheet" href="IC 节奏视奏工具/rhythm.css">
     <link rel="stylesheet" href="assets/css/midi-input.css">
-    <script src="IC 节奏视奏工具/rhythm.js?v=20260203" defer></script>
+    <script src="IC 节奏视奏工具/rhythm.js?v=20260205-3" defer></script>
     <script src="assets/js/midi-input.js?v=1" defer></script>
     <script src="assets/js/rhythm-challenge-mode.js" defer></script>
 </head>
@@ -654,9 +654,9 @@
         </div>
     </div>
 
-    <script src="/js/trial-limiter.js?v=20250909"></script>
-    <script src="/js/advanced-trial-protection.js?v=20250920"></script>
-    <script src="/js/melody-counter-system.js?v=20250920"></script>
-    <script src="/js/integrated-trial-manager.js?v=20250920"></script>
+    <script>
+      window.IC_SINGLE_TOOL_ID = 'rhythm';
+    </script>
+    <script defer src="/js/tool-access-loader.js?v=1.0.2"></script>
 </body>
 </html>

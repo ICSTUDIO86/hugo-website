@@ -54,6 +54,27 @@
         });
     };
 
+    function hasOrderNumber(data) {
+        if (!data) return false;
+        const candidates = [
+            data?.order_info?.out_trade_no,
+            data?.order_info?.order_id,
+            data?.order_info?.order_no,
+            data?.order_info?.trade_no,
+            data?.order_info?.alipay_trade_no,
+            data?.order_info?.zpay_trade_no,
+            data?.order_info?.orderId,
+            data?.out_trade_no,
+            data?.order_id,
+            data?.order_no,
+            data?.trade_no,
+            data?.alipay_trade_no,
+            data?.zpay_trade_no,
+            data?.orderId
+        ];
+        return candidates.some((value) => !!value);
+    }
+
     // 统一的支付成功处理函数 - 暴露到全局
     window.showUnifiedPaymentSuccess = function(accessCode, source = 'unified', orderInfo = null) {
         // 先移除任何现有的界面
@@ -74,7 +95,7 @@
 
         // 获取订单详细信息
         async function getOrderInfo() {
-            if (orderInfo) {
+            if (orderInfo && hasOrderNumber(orderInfo)) {
                 return orderInfo;
             }
 
@@ -96,18 +117,30 @@
                 if (result.success && result.data) {
                     console.log('✅ 订单信息获取成功');
                     // 从checkOrder API返回的数据结构中提取订单信息
-                    const orderInfo = result.data.order_info || {};
-                    return {
-                        ...orderInfo,
-                        amount: result.data.amount || orderInfo.amount,
-                        product_name: result.data.product_name || orderInfo.product_name
+                    const orderInfoFromApi = result.data.order_info || {};
+                    const orderIdFromApi = result.data.orderId || result.data.order_id || result.data.orderNo || null;
+                    const merged = {
+                        ...(orderInfo && typeof orderInfo === 'object' ? orderInfo : {}),
+                        ...orderInfoFromApi,
+                        amount: result.data.amount || orderInfoFromApi.amount,
+                        product_name: result.data.product_name || orderInfoFromApi.product_name
                     };
+                    if (!merged.orderId && orderIdFromApi) {
+                        merged.orderId = orderIdFromApi;
+                    }
+                    if (!merged.order_info && Object.keys(orderInfoFromApi).length > 0) {
+                        merged.order_info = orderInfoFromApi;
+                    }
+                    if (merged.order_info && !merged.order_info.orderId && orderIdFromApi) {
+                        merged.order_info.orderId = orderIdFromApi;
+                    }
+                    return merged;
                 }
             } catch (error) {
                 console.log('⚠️ 获取订单信息失败:', error);
             }
 
-            return null;
+            return orderInfo || null;
         }
 
         // 异步创建和显示支付成功界面
@@ -124,12 +157,14 @@
                 orderData?.order_info?.trade_no ||
                 orderData?.order_info?.alipay_trade_no ||
                 orderData?.order_info?.zpay_trade_no ||
+                orderData?.order_info?.orderId ||
                 orderData?.out_trade_no ||
                 orderData?.order_id ||
                 orderData?.order_no ||
                 orderData?.trade_no ||
                 orderData?.alipay_trade_no ||
                 orderData?.zpay_trade_no ||
+                orderData?.orderId ||
                 'IC' + Date.now().toString().substr(-8)
             );
             const displayOrderNumber = (
@@ -139,12 +174,14 @@
                 orderData?.order_info?.trade_no ||
                 orderData?.order_info?.alipay_trade_no ||
                 orderData?.order_info?.zpay_trade_no ||
+                orderData?.order_info?.orderId ||
                 orderData?.out_trade_no ||
                 orderData?.order_id ||
                 orderData?.order_no ||
                 orderData?.trade_no ||
                 orderData?.alipay_trade_no ||
                 orderData?.zpay_trade_no ||
+                orderData?.orderId ||
                 '暂无'
             );
             const productName = orderData?.product_name || 'Cognote';

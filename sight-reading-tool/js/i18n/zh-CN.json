@@ -83,14 +83,25 @@
     "price": "128.00¥",
     "priceText": "支持网页版以及电脑软件",
 
-    "cardTitle": "解锁视奏工具",
+    "cardTitle": "解锁你的音乐潜能",
+    "singleProducts": {
+      "melody": "Cognote 旋律视奏",
+      "jianpu": "Cognote 简谱视奏",
+      "rhythm": "Cognote 节奏视奏",
+      "chord": "Cognote 和弦视奏",
+      "interval": "Cognote 音程视奏"
+    },
+    "mode": {
+      "bundle": "完整版",
+      "single": "单件购买"
+    },
     "refundPolicy": "支持 7 天无理由退款",
     "btnFreeTrial": "免费试用",
     "btnAlipay": "支付宝支付",
     "btnWechat": "微信支付",
 
     "accessCodeTitle": "🔑 已有访问码？立即使用",
-    "accessCodePlaceholder": "输入访问码(11-12位)",
+    "accessCodePlaceholder": "输入访问码",
     "btnVerify": "验证"
   },
 

@@ -596,6 +596,8 @@
         return { starts, totalBeats: beats * (4 / beatType) };
     }
 
+    const SHARED_LANGUAGE_KEY = 'ic-sight-reading-lang';
+    const LEGACY_LANGUAGE_KEY = 'preferredLanguage';
     let currentLanguage = 'zh-CN';
     let currentTheme = localStorage.getItem('preferredTheme') || 'light';
 
@@ -1119,11 +1121,15 @@
 
     function switchLanguage(lang) {
         currentLanguage = lang;
-        localStorage.setItem('preferredLanguage', lang);
+        localStorage.setItem(SHARED_LANGUAGE_KEY, lang);
+        localStorage.setItem(LEGACY_LANGUAGE_KEY, lang);
         applyTranslations();
         closeSettings();
         if (window.__icMidi && typeof window.__icMidi.refreshStatus === 'function') {
             window.__icMidi.refreshStatus();
+        }
+        if (window.ICStudioSync && typeof window.ICStudioSync.syncLanguage === 'function') {
+            window.ICStudioSync.syncLanguage(lang, 'rhythm-tool');
         }
     }
 
@@ -1132,16 +1138,95 @@
         localStorage.setItem('preferredTheme', theme);
         document.documentElement.setAttribute('data-theme', theme);
         closeSettings();
+        if (window.ICStudioSync && typeof window.ICStudioSync.syncTheme === 'function') {
+            window.ICStudioSync.syncTheme(theme, 'rhythm-tool');
+        }
+    }
+
+    function syncLanguageFromStorage() {
+        let savedLanguage = null;
+        try {
+            savedLanguage = localStorage.getItem(SHARED_LANGUAGE_KEY) || localStorage.getItem(LEGACY_LANGUAGE_KEY);
+        } catch (_) {
+            savedLanguage = null;
+        }
+        if (!savedLanguage || savedLanguage === currentLanguage) return;
+        if (!translations[savedLanguage]) return;
+        currentLanguage = savedLanguage;
+        applyTranslations();
+        if (window.__icMidi && typeof window.__icMidi.refreshStatus === 'function') {
+            window.__icMidi.refreshStatus();
+        }
     }
 
     function initializePreferences() {
-        const savedLanguage = localStorage.getItem('preferredLanguage');
-        if (savedLanguage && translations[savedLanguage]) {
-            currentLanguage = savedLanguage;
-        }
+        syncLanguageFromStorage();
         document.documentElement.setAttribute('data-theme', currentTheme);
         applyTranslations();
     }
+
+    window.addEventListener('storage', (event) => {
+        if (!event || (event.key !== SHARED_LANGUAGE_KEY && event.key !== LEGACY_LANGUAGE_KEY)) return;
+        if (!event.newValue) return;
+        syncLanguageFromStorage();
+    });
+
+    window.ICStudioSync = window.ICStudioSync || {
+        tools: new Set(),
+        registerTool: function(toolName, callbacks) {
+            this.tools.add({
+                name: toolName,
+                onThemeChange: callbacks.onThemeChange,
+                onLanguageChange: callbacks.onLanguageChange
+            });
+        },
+        syncTheme: function(newTheme, fromTool) {
+            this.tools.forEach(tool => {
+                if (tool.name !== fromTool && tool.onThemeChange) {
+                    try {
+                        tool.onThemeChange(newTheme);
+                    } catch (_) {}
+                }
+            });
+        },
+        syncLanguage: function(newLanguage, fromTool) {
+            this.tools.forEach(tool => {
+                if (tool.name !== fromTool && tool.onLanguageChange) {
+                    try {
+                        tool.onLanguageChange(newLanguage);
+                    } catch (_) {}
+                }
+            });
+        }
+    };
+
+    window.ICStudioSync.registerTool('rhythm-tool', {
+        onThemeChange: function(newTheme) {
+            if (currentTheme !== newTheme) {
+                currentTheme = newTheme;
+                document.documentElement.setAttribute('data-theme', currentTheme);
+            }
+        },
+        onLanguageChange: function(newLanguage) {
+            if (currentLanguage !== newLanguage && translations[newLanguage]) {
+                currentLanguage = newLanguage;
+                applyTranslations();
+                if (window.__icMidi && typeof window.__icMidi.refreshStatus === 'function') {
+                    window.__icMidi.refreshStatus();
+                }
+            }
+        }
+    });
+
+    window.addEventListener('focus', () => {
+        syncLanguageFromStorage();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            syncLanguageFromStorage();
+        }
+    });
 
     function toggleSettings() {
         const modal = document.getElementById('settingsModal');
