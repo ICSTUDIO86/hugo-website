@@ -8,8 +8,7 @@
       try {
         console.warn('🚫 检测到file://协议，已阻止');
       } catch (e) {}
-      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
+      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
       document.open();
       document.write(html);
       document.close();
@@ -19,18 +18,14 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    
-    <link rel="icon" type="image/png" href="/tools/assets/icon/cognote.png?v=20260204">
-    
-    <link rel="shortcut icon" type="image/png" href="/tools/assets/icon/cognote.png?v=20260204">
-<link rel="icon" type="image/svg+xml" href="/tools/assets/icon/cognote.svg?v=20260204">
-    <link rel="apple-touch-icon" href="/tools/assets/icon/cognote.png?v=20260204">
-<!-- Primary SEO Meta Tags -->
+    <!-- Primary SEO Meta Tags -->
     <title>Chord Sight Reading Tool | Cognote - Harmony Training & Chord Recognition</title>
     <meta name="description" content="Professional chord sight reading and harmony training tool online. Practice chord recognition with triads, seventh chords, extended chords, and inversions. Features customizable range, multiple voicings, real-time piano audio playback, standard music notation. Free 20 trials. Perfect for pianists, guitarists, jazz musicians developing chord reading and harmony skills. | 专业和弦视奏与和声训练工具，支持三和弦、七和弦、延伸和弦、转位，自定义音域、多种和弦配置，实时钢琴音频。">
     <meta name="keywords" content="chord sight reading, chord recognition, harmony training, chord reading practice, jazz chords, chord inversions, seventh chords, extended chords, voicing practice, piano chords, guitar chords, music theory chords, chord identification, harmonic analysis, chord progression practice, free chord trainer, online chord tool, chord exercises, 和弦视奏, 和弦识别, 和声训练, 七和弦, 转位和弦, 爵士和弦, 钢琴和弦, 吉他和弦, IC 视奏工具, Cognote">
     <meta name="author" content="Igor Chen - Cognote">
     <link rel="canonical" href="https://icstudio.club/tools/chord-generator.html">
+    <link rel="icon" type="image/svg+xml" href="assets/icon/cognote.svg">
+    <link rel="icon" type="image/png" href="assets/icon/cognote.png">
 
     <!-- Open Graph / Facebook / WeChat -->
     <meta property="og:type" content="website">
@@ -162,6 +157,7 @@
     </script>
     <link rel="stylesheet" href="./IC 和弦视奏工具_files/chord-responsive-styles.css">
 
+    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="container">

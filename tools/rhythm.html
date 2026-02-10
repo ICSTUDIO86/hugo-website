@@ -8,24 +8,19 @@
       try {
         console.warn('🚫 检测到file://协议，已阻止');
       } catch (e) {}
-      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
+      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
       document.open();
       document.write(html);
       document.close();
       throw new Error('file-protocol-blocked');
     })();
   </script>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <link rel="icon" type="image/png" href="/tools/assets/icon/cognote.png?v=20260204">
-    
-    <link rel="shortcut icon" type="image/png" href="/tools/assets/icon/cognote.png?v=20260204">
-<link rel="icon" type="image/svg+xml" href="/tools/assets/icon/cognote.svg?v=20260204">
-    <link rel="apple-touch-icon" href="/tools/assets/icon/cognote.png?v=20260204">
-<title>Rhythm Sight Reading Tool | Cognote</title>
+    <title>Rhythm Sight Reading Tool | Cognote</title>
     <meta name="description" content="Professional rhythm sight-reading tool for timing, syncopation, and rhythmic accuracy. Single-line percussion staff with customizable density, time signatures, and multi-voice practice.">
+    <link rel="icon" type="image/svg+xml" href="assets/icon/cognote.svg">
+    <link rel="icon" type="image/png" href="assets/icon/cognote.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com/">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
@@ -34,9 +29,10 @@
     <script src="./IC 旋律视奏工具_files/opensheetmusicdisplay.min.js"></script>
     <link rel="stylesheet" href="IC 节奏视奏工具/rhythm.css">
     <link rel="stylesheet" href="assets/css/midi-input.css">
-    <script src="IC 节奏视奏工具/rhythm.js?v=20260205-3" defer></script>
+    <script src="IC 节奏视奏工具/rhythm.js?v=20260203" defer></script>
     <script src="assets/js/midi-input.js?v=1" defer></script>
     <script src="assets/js/rhythm-challenge-mode.js" defer></script>
+    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="container">
@@ -140,7 +136,7 @@
             </div>
 
             <div class="control-row controls-actions">
-                <div class="button-group">
+                <div class="buttons">
                     <div id="challengeCountdownUI" style="display:none; align-items: center; gap:6px; margin-right:10px; padding:6px 10px; border:1px solid var(--border-color); border-radius:999px; background: var(--neutral-white); color: var(--text-color); font-size:14px; line-height:1;">
                         <span id="challengeCountdownLabel" data-i18n="challenge.preparingLabel" style="opacity:0.7;">准备</span>
                         <strong id="challengeCountdownValue">10</strong>
@@ -148,15 +144,20 @@
                     </div>
                     <button class="btn-primary" id="generateBtn" data-i18n="controls.generate">生成节奏</button>
                     <div id="melody-counter-status"></div>
-                    <button class="btn-secondary" id="previousBtn" data-i18n="controls.previous">上一条</button>
-                    <button class="btn-secondary" id="nextBtn" data-i18n="controls.next">下一条</button>
-                </div>
-                <div class="practice-counter">
-                    <label for="practiceCountValue" data-i18n="controls.practiceCounter">练习计数</label>
-                    <div class="practice-counter-actions">
-                        <span id="practiceCountValue">0</span>
-                        <button class="btn-secondary" id="practiceCountBtn" onclick="incrementPracticeCount()" data-i18n="controls.practiceAdd">+</button>
-                        <button class="btn-secondary" id="practiceResetBtn" onclick="decrementPracticeCount()" data-i18n="controls.practiceReset">-</button>
+                    <div class="button-group">
+                        <button class="btn-secondary" id="previousBtn" data-i18n="controls.previous">上一条</button>
+                        <button class="btn-secondary" id="nextBtn" data-i18n="controls.next">下一条</button>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-secondary" id="playRhythmBtn" onclick="directPlayTest()" data-i18n="controls.play">播放</button>
+                    </div>
+                    <div class="practice-counter">
+                        <label for="practiceCountValue" data-i18n="controls.practiceCounter">练习计数</label>
+                        <div class="practice-counter-actions">
+                            <span id="practiceCountValue">0</span>
+                            <button class="btn-secondary" id="practiceCountBtn" onclick="incrementPracticeCount()" data-i18n="controls.practiceAdd">+</button>
+                            <button class="btn-secondary" id="practiceResetBtn" onclick="decrementPracticeCount()" data-i18n="controls.practiceReset">-</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -168,6 +169,7 @@
             <option value="4/4" selected>4/4</option>
             <option value="6/8">6/8</option>
             <option value="12/8">12/8</option>
+            <option value="multi">multi</option>
             <option value="custom" id="customTimeSignatureOption"></option>
         </select>
         <select id="voiceMode" style="display: none;">
@@ -396,27 +398,27 @@
                     <h4 data-i18n="modal.timeSignature.selection">拍号选项</h4>
                     <div class="checkbox-grid">
                         <label class="checkbox-item">
-                            <input type="radio" name="timeSignatureOption" value="2/4">
+                            <input type="checkbox" name="timeSignatureOption" value="2/4" id="time-2/4">
                             <span data-i18n="time.2-4">2/4 拍</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" name="timeSignatureOption" value="3/4">
+                            <input type="checkbox" name="timeSignatureOption" value="3/4" id="time-3/4">
                             <span data-i18n="time.3-4">3/4 拍</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" name="timeSignatureOption" value="4/4" checked>
+                            <input type="checkbox" name="timeSignatureOption" value="4/4" id="time-4/4" checked>
                             <span data-i18n="time.4-4">4/4 拍</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" name="timeSignatureOption" value="6/8">
+                            <input type="checkbox" name="timeSignatureOption" value="6/8" id="time-6/8">
                             <span data-i18n="time.6-8">6/8 拍</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" name="timeSignatureOption" value="12/8">
+                            <input type="checkbox" name="timeSignatureOption" value="12/8" id="time-12/8">
                             <span data-i18n="time.12-8">12/8 拍</span>
                         </label>
-                        <label class="checkbox-item" style="display: none;">
-                            <input type="radio" name="timeSignatureOption" value="custom" id="time-custom">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="timeSignatureOption" value="custom" id="time-custom">
                             <span data-i18n="time.custom">自定义</span>
                         </label>
                     </div>
@@ -594,6 +596,10 @@
                     <span data-i18n="challenge.cursorHint">光标开关：光标用于提示当前应演奏的位置，count-in结束后出现并随节奏跳动。</span>
                     <span data-i18n="challenge.hideHint" style="display: block; margin-top: 6px;">隐藏开关：开启后，系统在进入下一小节时会自动遮挡上一小节，仅保留当前阅读区。</span>
                 </p>
+                <div id="challengeCalibrationHint" class="calibration-hint" style="display: none; margin-top: 12px;">
+                    <div id="challengeCalibrationGuide"></div>
+                    <div id="challengeCalibrationStatus" class="midi-status" style="margin-top: 6px;"></div>
+                </div>
                 <div class="modal-buttons">
                     <button class="btn-secondary" onclick="cancelChallengeSetup()" data-i18n="button.cancel">取消</button>
                     <button class="btn-primary" onclick="confirmChallengeSetup()" data-i18n="button.start">开始</button>
@@ -654,9 +660,6 @@
         </div>
     </div>
 
-    <script>
-      window.IC_SINGLE_TOOL_ID = 'rhythm';
-    </script>
     <script defer src="/js/tool-access-loader.js?v=1.0.2"></script>
 </body>
 </html>

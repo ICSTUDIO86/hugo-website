@@ -8,8 +8,7 @@
       try {
         console.warn('🚫 检测到file://协议，已阻止');
       } catch (e) {}
-      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
+      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
       document.open();
       document.write(html);
       document.close();
@@ -19,18 +18,14 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    
-    <link rel="icon" type="image/png" href="/tools/assets/icon/cognote.png?v=20260204">
-    
-    <link rel="shortcut icon" type="image/png" href="/tools/assets/icon/cognote.png?v=20260204">
-<link rel="icon" type="image/svg+xml" href="/tools/assets/icon/cognote.svg?v=20260204">
-    <link rel="apple-touch-icon" href="/tools/assets/icon/cognote.png?v=20260204">
-<!-- Primary SEO Meta Tags -->
+    <!-- Primary SEO Meta Tags -->
     <title>Jianpu Sight Reading Generator | Cognote - Professional Music Practice Tool</title>
     <meta name="description" content="Professional online sight reading tool for numbered notation (jianpu) practice. Generate random melodies with the same engine as the staff version, customize range, time signatures, rhythms, and keys. Render clean red-themed jianpu instantly. | 专业在线简谱视奏训练工具，复用旋律生成引擎，支持自定义音域、拍号、节奏、调号，红色主题的简谱渲染。">
     <meta name="keywords" content="jianpu, numbered notation, sight reading, melody generator, sight reading tool, music practice, 简谱, 简谱视奏, 视奏工具, 旋律生成器, 视奏训练, 乐谱生成, 音乐理论, 节奏练习, 听力训练, IC 视奏工具, Cognote">
     <meta name="author" content="Igor Chen - Cognote">
     <link rel="canonical" href="https://icstudio.club/tools/jianpu-generator.html">
+    <link rel="icon" type="image/svg+xml" href="assets/icon/cognote.svg">
+    <link rel="icon" type="image/png" href="assets/icon/cognote.png">
 
     <!-- Open Graph / Facebook / WeChat -->
     <meta property="og:type" content="website">
@@ -475,6 +470,7 @@
     <link rel="prefetch" href="melody-generator.html">
     <link rel="prefetch" href="interval-generator.html">
     <link rel="prefetch" href="chord-generator.html">
+    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
 </head>
 <body class="jianpu-theme">
     <div class="container">
@@ -1413,7 +1409,7 @@
                             <input type="checkbox" id="time-6/8" value="6/8">
                             <span data-i18n="time.6-8">6/8 拍</span>
                         </label>
-                        <label class="checkbox-item" style="display: none;">
+                        <label class="checkbox-item">
                             <input type="checkbox" id="time-custom" value="custom">
                             <span data-i18n="time.custom">自定义</span>
                         </label>

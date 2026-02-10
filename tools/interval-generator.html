@@ -8,8 +8,7 @@
       try {
         console.warn('🚫 检测到file://协议，已阻止');
       } catch (e) {}
-      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
+      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
       document.open();
       document.write(html);
       document.close();
@@ -19,18 +18,14 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    
-    <link rel="icon" type="image/png" href="/tools/assets/icon/cognote.png?v=20260204">
-    
-    <link rel="shortcut icon" type="image/png" href="/tools/assets/icon/cognote.png?v=20260204">
-<link rel="icon" type="image/svg+xml" href="/tools/assets/icon/cognote.svg?v=20260204">
-    <link rel="apple-touch-icon" href="/tools/assets/icon/cognote.png?v=20260204">
-<!-- Primary SEO Meta Tags -->
+    <!-- Primary SEO Meta Tags -->
     <title>Interval Training Tool | Cognote - Ear Training & Pitch Recognition</title>
     <meta name="description" content="Professional interval training and ear training tool online. Practice interval recognition with customizable range, harmonic/melodic intervals, all interval types (m2-M13). Features real-time piano audio playback, standard music notation. Free 20 trials. Perfect for musicians developing relative pitch, ear training, and sight reading intervals. | 专业音程训练与听力训练工具，支持自定义音域、和声/旋律音程、所有音程类型（小二度-大十三度），实时钢琴音频。">
     <meta name="keywords" content="interval training, ear training, interval recognition, pitch training, music ear training, interval exercises, harmonic intervals, melodic intervals, relative pitch, perfect pitch training, music theory intervals, sight reading intervals, interval identification, aural training, music theory tool, free ear training, online interval trainer, interval practice, 音程训练, 听力训练, 音程识别, 相对音感, 音程练习, 和声音程, 旋律音程, IC 视奏工具, Cognote">
     <meta name="author" content="Igor Chen - Cognote">
     <link rel="canonical" href="https://icstudio.club/tools/interval-generator.html">
+    <link rel="icon" type="image/svg+xml" href="assets/icon/cognote.svg">
+    <link rel="icon" type="image/png" href="assets/icon/cognote.png">
 
     <!-- Open Graph / Facebook / WeChat -->
     <meta property="og:type" content="website">
@@ -163,6 +158,7 @@
         } catch(_) {}
       });
     </script>
+    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="container">

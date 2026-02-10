@@ -3,6 +3,10 @@
     const toggleId = cfg.toggleId || 'midiEnableToggle';
     const selectId = cfg.selectId || 'midiDeviceSelect';
     const statusId = cfg.statusId || 'midiStatusText';
+    const storageKeys = {
+        enabled: cfg.storageEnabledKey || 'ic_midi_enabled',
+        device: cfg.storageDeviceKey || 'ic_midi_device'
+    };
 
     const state = {
         enabled: false,
@@ -15,6 +19,7 @@
         statusKey: 'midi.status.disabled',
         statusDevice: ''
     };
+    let suppressStorageWrite = false;
 
     function getLang(){
         if (typeof cfg.getLanguage === 'function') return cfg.getLanguage();
@@ -60,6 +65,34 @@
         statusEl.textContent = formatStatus(key, deviceName);
         statusEl.classList.remove('ok', 'warn', 'error');
         if (tone) statusEl.classList.add(tone);
+    }
+
+    function readStoredEnabled(){
+        try {
+            const raw = localStorage.getItem(storageKeys.enabled);
+            return raw === '1' || raw === 'true';
+        } catch(_) {
+            return false;
+        }
+    }
+
+    function writeStoredEnabled(next){
+        if (suppressStorageWrite) return;
+        try { localStorage.setItem(storageKeys.enabled, next ? '1' : '0'); } catch(_) {}
+    }
+
+    function readStoredDevice(){
+        try {
+            return localStorage.getItem(storageKeys.device) || '';
+        } catch(_) {
+            return '';
+        }
+    }
+
+    function writeStoredDevice(id){
+        if (suppressStorageWrite) return;
+        if (!id) return;
+        try { localStorage.setItem(storageKeys.device, id); } catch(_) {}
     }
 
     function notifyConnection(connected, input){
@@ -286,6 +319,7 @@
             state.input = input;
             input.onmidimessage = handleMIDIMessage;
             setStatus('midi.status.connected', 'ok', input.name || input.manufacturer || 'MIDI');
+            writeStoredDevice(input.id);
             notifyConnection(true, input);
         } else {
             setStatus('midi.status.nodevice', 'warn');
@@ -330,6 +364,7 @@
             selectEl.value = inputs[0].id;
             state.selectedId = inputs[0].id;
         }
+        writeStoredDevice(state.selectedId);
         if (state.enabled) connectInputById(selectEl.value);
     }
 
@@ -344,6 +379,7 @@
             const toggleEl = document.getElementById(toggleId);
             if (toggleEl) toggleEl.checked = false;
             state.enabled = false;
+            writeStoredEnabled(false);
         }
     }
 
@@ -356,8 +392,10 @@
         }
     }
 
-    function setEnabled(next){
+    function setEnabled(next, options){
+        const persist = !(options && options.persist === false);
         state.enabled = next;
+        if (persist) writeStoredEnabled(next);
         const selectEl = document.getElementById(selectId);
         if (!next) {
             disconnectInput();
@@ -389,12 +427,40 @@
             notifyConnection(false, null);
             return;
         }
+        const storedDevice = readStoredDevice();
+        if (storedDevice) state.selectedId = storedDevice;
+
         toggleEl.addEventListener('change', () => setEnabled(toggleEl.checked));
         selectEl.addEventListener('change', () => {
             state.selectedId = selectEl.value;
+            writeStoredDevice(state.selectedId);
             if (state.enabled) connectInputById(selectEl.value);
         });
         setStatus('midi.status.disabled', '');
+
+        const storedEnabled = readStoredEnabled();
+        if (storedEnabled) {
+            toggleEl.checked = true;
+            setEnabled(true);
+        }
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === storageKeys.enabled) {
+                const desired = readStoredEnabled();
+                if (toggleEl.checked !== desired) toggleEl.checked = desired;
+                suppressStorageWrite = true;
+                setEnabled(desired, { persist: false });
+                suppressStorageWrite = false;
+            }
+            if (event.key === storageKeys.device) {
+                state.selectedId = event.newValue || '';
+                if (state.enabled && state.access && state.selectedId) {
+                    connectInputById(state.selectedId);
+                } else if (state.enabled && state.access) {
+                    populateDeviceList();
+                }
+            }
+        });
     }
 
     document.addEventListener('DOMContentLoaded', init);

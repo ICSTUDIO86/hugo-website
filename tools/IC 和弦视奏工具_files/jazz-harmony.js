@@ -1,5 +1,5 @@
 /*!
- * Cognote - 爵士和声模块
+ * IC Studio - 爵士和声模块
  * Jazz Harmony Advanced Module
  *
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club

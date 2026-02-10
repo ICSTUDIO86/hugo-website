@@ -29,6 +29,22 @@
     flex-wrap: wrap;
 }
 
+#score {
+    position: relative;
+}
+
+.calibration-hint {
+    margin: 12px 28px 0;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: rgba(0, 123, 255, 0.05);
+    color: var(--neutral-dark);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
 body.modal-open {
     overflow: hidden;
 }
@@ -298,4 +314,14 @@ input[type="radio"] {
 
 .ostinato-chip.rest {
     background: var(--neutral-dark);
+}
+
+#score svg .midi-judge-correct {
+    fill: #16a34a !important;
+    stroke: #16a34a !important;
+}
+
+#score svg .midi-judge-wrong {
+    fill: #dc2626 !important;
+    stroke: #dc2626 !important;
 }

@@ -1,11 +1,11 @@
 /**
- * Cognote 钢琴和声引擎
+ * IC Studio 钢琴和声引擎
  * Piano Harmony Engine - 完全独立的钢琴和声生成系统
  *
  * 与吉他系统完全隔离，专门为钢琴演奏设计
  *
  * @version 1.0.0
- * @author Cognote
+ * @author IC Studio
  */
 
 class PianoHarmonyEngine {

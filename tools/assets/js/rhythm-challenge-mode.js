@@ -8,6 +8,9 @@
   const hideToggleEl = document.getElementById('challengeHideToggle');
   const calibrationToggleEl = document.getElementById('challengeCalibrationToggle');
   const modalModeToggleEl = document.getElementById('challengeModeToggleModal');
+  const calibrationHintEl = document.getElementById('challengeCalibrationHint');
+  const calibrationGuideEl = document.getElementById('challengeCalibrationGuide');
+  const calibrationStatusEl = document.getElementById('challengeCalibrationStatus');
 
   const svgns = 'http://www.w3.org/2000/svg';
   const CURSOR_WIDTH = 12;
@@ -16,6 +19,7 @@
   const CURSOR_FILL_OPACITY = 0.25;
   const CURSOR_STROKE_OPACITY = 0.4;
   const CURSOR_RADIUS = 4;
+  const NOTEHEAD_SELECTOR = 'g.vf-notehead, .vf-notehead, use[href*="notehead" i]';
 
   const state = {
     active: false,
@@ -42,6 +46,7 @@
     activeSvg: null,
     voiceLineYs: null,
     audioCtx: null,
+    anchorAudioCtx: null,
     cursorEnabled: true,
     metronomeEnabled: true,
     hideEnabled: true,
@@ -49,10 +54,61 @@
     lastBeatTimeMs: 0,
     anchorPerf: null,
     anchorAcTime: null,
-    anchorPerfStart: null
+    anchorPerfStart: null,
+    judgeEvents: [],
+    judgeIndex: 0,
+    judgeStartSec: 0,
+    judgeTimerId: null,
+    judgeWindowSec: 0.08,
+    judgedElements: new Set(),
+    tieStartByGroup: new Map(),
+    debugStats: {
+      matchedCurrent: 0,
+      matchedNext: 0,
+      handoffToNext: 0,
+      blockedLookaheadByPendingCurrent: 0
+    }
   };
 
   function $(id){ return document.getElementById(id); }
+
+  function getTranslation(key, fallback){
+    try {
+      const cfg = window.IC_MIDI_CONFIG || {};
+      const packs = cfg.translations || null;
+      const lang = typeof cfg.getLanguage === 'function' ? cfg.getLanguage() : 'zh-CN';
+      if (packs && packs[lang] && packs[lang][key]) return packs[lang][key];
+      if (packs && packs['zh-CN'] && packs['zh-CN'][key]) return packs['zh-CN'][key];
+    } catch(_) {}
+    return fallback || key;
+  }
+
+  function setCalibrationStatus(status){
+    if (!calibrationStatusEl) return;
+    calibrationStatusEl.classList.remove('ok', 'error');
+    if (!status){
+      calibrationStatusEl.textContent = '';
+      return;
+    }
+    const label = status === 'correct'
+      ? getTranslation('challenge.calibration.correct', 'Correct')
+      : getTranslation('challenge.calibration.wrong', 'Wrong');
+    calibrationStatusEl.textContent = label;
+    calibrationStatusEl.classList.add(status === 'correct' ? 'ok' : 'error');
+  }
+
+  function updateCalibrationHintUI(){
+    if (!calibrationHintEl || !calibrationGuideEl) return;
+    if (!state.calibrationEnabled){
+      calibrationHintEl.style.display = 'none';
+      setCalibrationStatus(null);
+      return;
+    }
+    const voiceMode = parseInt(getVoiceMode(), 10) || 1;
+    const key = voiceMode > 1 ? 'challenge.calibration.hintDual' : 'challenge.calibration.hintSingle';
+    calibrationGuideEl.textContent = getTranslation(key, calibrationGuideEl.textContent || '');
+    calibrationHintEl.style.display = 'block';
+  }
 
   function getOsmdInstance(){
     return window.__rhythmOsmd || window.osmd || null;
@@ -77,19 +133,20 @@
     }
   }
 
-  function applyCalibrationAuto(connected){
+  function applyCalibrationAuto(){
     if (!calibrationToggleEl) return;
-    if (!connected){
-      if (calibrationToggleEl.checked){
-        calibrationToggleEl.checked = false;
-        updateToggleVisual(calibrationToggleEl);
-      }
-      state.calibrationEnabled = false;
-      state.calibrationOffsetSec = 0;
+    state.calibrationEnabled = !!calibrationToggleEl.checked;
+    if (!state.calibrationEnabled) {
+      stopJudgeTimeline();
       clearJudgeStyles();
+      updateCalibrationHintUI();
       return;
     }
-    state.calibrationEnabled = !!calibrationToggleEl.checked;
+    if (state.active){
+      const bpmVal = Math.max(40, Math.min(240, parseInt(($('challengeBPM')?.value || '80'), 10)));
+      startJudgeTimeline(bpmVal);
+    }
+    updateCalibrationHintUI();
   }
 
   function getCurrentRhythmXML(){
@@ -585,7 +642,9 @@
       const measureStarts = [];
       const measureTotals = [];
       let absQN = 0;
+      let noteIndex = 0;
       const tieOpenByVoice = new Map();
+      let nextTieGroupId = 1;
       for (let mi = 0; mi < measures.length; mi += 1){
         const m = measures[mi];
         const attr = m.querySelector('attributes');
@@ -620,6 +679,8 @@
           }
           if (tag !== 'note') continue;
           const n = node;
+          const currentNoteIndex = noteIndex;
+          noteIndex += 1;
           const isRest = !!n.querySelector('rest');
           const durEl = n.querySelector('duration');
           const durDiv = durEl ? Math.max(0, parseInt(durEl.textContent || '0', 10) || 0) : 0;
@@ -638,6 +699,7 @@
           const hasStop = ties.includes('stop');
           const voiceEl = n.querySelector('voice');
           const voiceKey = voiceEl ? (voiceEl.textContent || '').trim() : '1';
+          const voiceNum = parseInt(voiceKey, 10) || 1;
           let pitchKey = null;
           if (!isRest){
             const pitch = n.querySelector('pitch');
@@ -653,35 +715,53 @@
               if (step || octave) pitchKey = `unp|${step}|${octave}`;
             }
           }
-          let openSet = tieOpenByVoice.get(voiceKey);
-          if (!openSet){
-            openSet = new Set();
-            tieOpenByVoice.set(voiceKey, openSet);
+          let openMap = tieOpenByVoice.get(voiceKey);
+          if (!openMap){
+            openMap = new Map();
+            tieOpenByVoice.set(voiceKey, openMap);
           }
           const startQNAbs = absQN + (posDiv / divisions);
           const startQNInMeasure = (posDiv / divisions);
+          const buildEvent = (tieType, tieGroup) => ({
+            measure: mi,
+            posBeats: startQNInMeasure,
+            absBeats: startQNAbs,
+            durBeats: durQN,
+            isRest: false,
+            voice: voiceNum,
+            noteIndex: currentNoteIndex,
+            tieType: tieType || null,
+            tieGroup: tieGroup || null
+          });
 
           if (!isChord && !isRest){
             if (hasStop && !hasStart){
-              // tie end: no new event
-              if (pitchKey && openSet.has(pitchKey)) openSet.delete(pitchKey);
+              const groupId = pitchKey ? (openMap.get(pitchKey) || null) : null;
+              events.push(buildEvent('stop', groupId));
+              if (pitchKey && groupId) openMap.delete(pitchKey);
             } else if (hasStart && hasStop){
-              // tie continuation: keep open, no event
-              if (pitchKey && !openSet.has(pitchKey)) openSet.add(pitchKey);
-            } else if (hasStart){
-              if (pitchKey){
-                if (!openSet.has(pitchKey)) {
-                  events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: startQNAbs, durBeats: durQN, isRest: false });
-                  openSet.add(pitchKey);
-                }
-              } else {
-                events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: startQNAbs, durBeats: durQN, isRest: false });
+              let groupId = pitchKey ? (openMap.get(pitchKey) || null) : null;
+              if (!groupId) {
+                groupId = `v${voiceKey}-t${nextTieGroupId++}`;
+                if (pitchKey) openMap.set(pitchKey, groupId);
               }
+              events.push(buildEvent('continue', groupId));
+            } else if (hasStart){
+              let groupId = pitchKey ? (openMap.get(pitchKey) || null) : null;
+              if (!groupId) {
+                groupId = `v${voiceKey}-t${nextTieGroupId++}`;
+              }
+              if (pitchKey){
+                openMap.set(pitchKey, groupId);
+              } else {
+                groupId = null;
+              }
+              events.push(buildEvent('start', groupId));
             } else {
-              events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: startQNAbs, durBeats: durQN, isRest: false });
+              events.push(buildEvent(null, null));
             }
           } else {
-            if (pitchKey && hasStop && !hasStart && openSet.has(pitchKey)) openSet.delete(pitchKey);
+            if (pitchKey && hasStop && !hasStart && openMap.has(pitchKey)) openMap.delete(pitchKey);
           }
           if (!isChord) posDiv += durDiv;
         }
@@ -818,6 +898,754 @@
       }
     }
     return map;
+  }
+
+  function getNotePaintTarget(el){
+    if (!el) return null;
+    const isRestLike = node => !!(node && node.closest && node.closest('g.vf-rest, [class*="rest" i], use[href*="rest" i]'));
+    if (isRestLike(el)) return null;
+    if (el.matches && el.matches('use[href*="notehead" i]')) return el;
+    if (el.matches && el.matches('.vf-notehead, g.vf-notehead')) {
+      const tag = el.tagName ? el.tagName.toLowerCase() : '';
+      if (tag === 'path' || tag === 'ellipse' || tag === 'circle') return el;
+    }
+    const head = el.closest('g.vf-notehead, .vf-notehead');
+    if (head && !isRestLike(head)) {
+      const concrete = head.querySelector('use[href*="notehead" i], :scope > path, :scope > ellipse, :scope > circle');
+      if (concrete) return concrete;
+      const headTag = head.tagName ? head.tagName.toLowerCase() : '';
+      if (headTag === 'path' || headTag === 'ellipse' || headTag === 'circle') return head;
+      return null;
+    }
+    const owner = el.closest('g.vf-stavenote, g.vf-note');
+    if (!owner || isRestLike(owner)) return null;
+    const ownerHead = owner.querySelector('g.vf-notehead, .vf-notehead, use[href*="notehead" i]');
+    if (!ownerHead) return null;
+    if (ownerHead.matches && ownerHead.matches('use[href*="notehead" i]')) return ownerHead;
+    const concrete = ownerHead.querySelector
+      ? ownerHead.querySelector('use[href*="notehead" i], :scope > path, :scope > ellipse, :scope > circle')
+      : null;
+    return concrete || null;
+  }
+
+  function isRestLikePaintElement(el){
+    if (!el || !el.closest) return false;
+    if (el.closest('g.vf-rest, [class*="rest" i], use[href*="rest" i]')) return true;
+    const note = el.closest('g.vf-stavenote, g.vf-note');
+    if (!note) return false;
+    const hasHead = !!note.querySelector('g.vf-notehead, .vf-notehead, use[href*="notehead" i], [class*="notehead" i]');
+    return !hasHead;
+  }
+
+  function collectNoteheadElementsByMeasure(){
+    const map = new Map();
+    const svg = scoreEl ? scoreEl.querySelector('svg') : null;
+    if (!svg || !state.measureRects || !state.measureRects.length) return map;
+    const svgBBox = svg.getBoundingClientRect();
+    const headsAll = Array.from(svg.querySelectorAll(NOTEHEAD_SELECTOR));
+    const seen = new Set();
+    for (let mi = 0; mi < state.measureRects.length; mi += 1){
+      const mr = state.measureRects[mi];
+      const list = [];
+      headsAll.forEach(el => {
+        const target = getNotePaintTarget(el);
+        if (!target || seen.has(target)) return;
+        const r = target.getBoundingClientRect ? target.getBoundingClientRect() : null;
+        if (!r || r.width <= 0 || r.height <= 0) return;
+        const cx = r.left - svgBBox.left + r.width / 2;
+        const cy = r.top - svgBBox.top + r.height / 2;
+        if (cx >= mr.x && cx <= mr.x + mr.width && cy >= mr.y && cy <= mr.y + mr.height){
+          seen.add(target);
+          list.push({ el: target, x: cx, y: cy });
+        }
+      });
+      list.sort((a,b)=> (a.x - b.x) || (a.y - b.y));
+      map.set(mi, list);
+    }
+    return map;
+  }
+
+  function collectAllNoteheadElements(){
+    const svg = scoreEl ? scoreEl.querySelector('svg') : null;
+    if (!svg) return [];
+    const svgBBox = svg.getBoundingClientRect();
+    const list = [];
+    const seen = new Set();
+    svg.querySelectorAll(NOTEHEAD_SELECTOR).forEach(el => {
+      const target = getNotePaintTarget(el);
+      if (!target || seen.has(target)) return;
+      const r = target.getBoundingClientRect ? target.getBoundingClientRect() : null;
+      if (!r || r.width <= 0 || r.height <= 0) return;
+      const x = r.left - svgBBox.left + r.width / 2;
+      const y = r.top - svgBBox.top + r.height / 2;
+      seen.add(target);
+      list.push({ el: target, x, y });
+    });
+    return list;
+  }
+
+  function resolveEventElements(ev){
+    if (!ev) return [];
+    if (Array.isArray(ev.elements) && ev.elements.length) return ev.elements;
+    const mr = state.measureRects && state.measureRects[ev.measure];
+    const total = ev.measureTotal != null ? ev.measureTotal : (state.beatsPerMeasure || 4);
+    let targetX = ev.targetX;
+    if (!targetX && mr && typeof ev.posBeats === 'number') {
+      targetX = mr.x + (ev.posBeats / Math.max(0.0001, total)) * mr.width;
+    }
+    let chosen = null;
+    if (mr) {
+      const elementsByMeasure = collectNoteheadElementsByMeasure();
+      const list = elementsByMeasure.get(ev.measure) || [];
+      if (list.length){
+        const snapTol = Math.max(8, mr.width * 0.06);
+        const pool = isFinite(targetX)
+          ? list.filter(item => Math.abs(item.x - targetX) <= snapTol)
+          : list;
+        const finalPool = pool.length ? pool : list;
+        if (ev.voice && ev.voice > 1){
+          if (ev.voice === 1){
+            finalPool.forEach(item => { if (!chosen || item.y < chosen.y) chosen = item; });
+          } else if (ev.voice === 2){
+            finalPool.forEach(item => { if (!chosen || item.y > chosen.y) chosen = item; });
+          }
+        }
+        if (!chosen){
+          finalPool.forEach(item => {
+            const d = isFinite(targetX) ? Math.abs(item.x - targetX) : 0;
+            if (!chosen || d < chosen.d) chosen = { ...item, d };
+          });
+        }
+      }
+    }
+    if (chosen && chosen.el) {
+      ev.elements = [chosen.el];
+      return ev.elements;
+    }
+    return [];
+  }
+
+  function computeJudgeWindowSec(bpm){
+    const beatSec = 60 / Math.max(1, bpm || 80);
+    const win = beatSec * 0.22;
+    return Math.max(0.07, Math.min(0.26, win));
+  }
+
+  function getJudgeWindowByIndex(index){
+    const base = state.judgeWindowSec || 0.08;
+    if (index === 0) {
+      return {
+        early: Math.min(0.28, base + 0.1),
+        late: Math.min(0.32, base + 0.14)
+      };
+    }
+    return { early: base, late: base };
+  }
+
+  function buildJudgeTimeline(bpm){
+    const timeline = parseTimelineFromXML();
+    const events = (timeline && timeline.events) ? timeline.events.filter(ev => !ev.isRest) : [];
+    if (!events.length) return [];
+    const secPerQuarter = 60 / Math.max(1, bpm || 80);
+    const measureTotals = Array.isArray(timeline.measureTotals) ? timeline.measureTotals : [];
+    const elementsByMeasure = collectNoteheadElementsByMeasure();
+    const voiceMode = parseInt(getVoiceMode(), 10) || 1;
+    const EVENT_KEY_EPS = 1e-4;
+
+    const toFixedKey = (value) => {
+      const num = Number(value);
+      if (!isFinite(num)) return '0.000000';
+      return num.toFixed(6);
+    };
+    const makeEventKey = (measure, absBeats, voice) =>
+      `${Number(measure) || 0}|${toFixedKey(absBeats)}|${Number(voice) || 1}`;
+
+    const buildOsmdCandidateMap = () => {
+      const map = new Map();
+      try {
+        const osmdInst = getOsmdInstance();
+        const measures = osmdInst && osmdInst.GraphicSheet && Array.isArray(osmdInst.GraphicSheet.MeasureList)
+          ? osmdInst.GraphicSheet.MeasureList
+          : null;
+        const scale = getOSMDUnitScale();
+        if (!measures || !measures.length || !scale) return map;
+
+        for (let mi = 0; mi < measures.length; mi += 1){
+          const gm = measures[mi] && measures[mi][0];
+          if (!gm || !gm.staffEntries) continue;
+          const heads = elementsByMeasure.get(mi) || [];
+          if (!heads.length) continue;
+          const mr = state.measureRects && state.measureRects[mi];
+          const xTol = mr ? Math.max(10, mr.width * 0.06) : 24;
+          const yTol = mr ? Math.max(14, mr.height * 1.1) : 42;
+
+          gm.staffEntries.forEach(se => {
+            const voiceEntries = se.graphicalVoiceEntries || se.GraphicalVoiceEntries || [];
+            voiceEntries.forEach(ve => {
+              const notes = ve.notes || ve.Notes || [];
+              notes.forEach(note => {
+                const sourceNote = note && (note.sourceNote || note.SourceNote);
+                if (!sourceNote || sourceNote.isRestFlag) return;
+                const bb = note.boundingBox;
+                if (!bb || !bb.absolutePosition || !bb.size) return;
+                const pve = sourceNote.voiceEntry || sourceNote.ParentVoiceEntry || null;
+                const sourceMeasure = sourceNote.sourceMeasure || sourceNote.SourceMeasure || null;
+                const measureAbsWhole = sourceMeasure
+                  ? (sourceMeasure.absoluteTimestamp?.RealValue
+                    ?? sourceMeasure.absoluteTimestamp?.realValue
+                    ?? sourceMeasure.AbsoluteTimestamp?.RealValue
+                    ?? 0)
+                  : 0;
+                const entryTsWhole = pve
+                  ? (pve.timestamp?.RealValue
+                    ?? pve.timestamp?.realValue
+                    ?? pve.Timestamp?.RealValue
+                    ?? 0)
+                  : 0;
+                const absBeats = (measureAbsWhole + entryTsWhole) * 4;
+                const voice = pve
+                  ? (pve.parentVoice?.voiceId ?? pve.ParentVoice?.VoiceId ?? 1)
+                  : 1;
+
+                const xSvg = (bb.absolutePosition.x + bb.size.width * 0.5) * scale;
+                const ySvg = (bb.absolutePosition.y + bb.size.height * 0.5) * scale;
+                const pos = osmdToScorePx(xSvg, ySvg);
+                if (!isFinite(pos.x) || !isFinite(pos.y)) return;
+
+                const scored = heads.map(item => {
+                  const dx = Math.abs(item.x - pos.x);
+                  const dy = Math.abs(item.y - pos.y);
+                  const d = Math.hypot(dx, dy * 0.6);
+                  return { el: item.el, x: item.x, y: item.y, dx, dy, d };
+                }).sort((a,b) => a.d - b.d);
+
+                const near = scored.filter(item => item.dx <= xTol && item.dy <= yTol);
+                const candidates = (near.length ? near : scored.slice(0, 3)).map(item => ({
+                  el: item.el,
+                  x: item.x,
+                  y: item.y,
+                  d: item.d
+                }));
+                if (!candidates.length) return;
+
+                const key = makeEventKey(mi, absBeats, voice);
+                const existing = map.get(key) || [];
+                candidates.forEach(candidate => {
+                  if (!existing.some(item => item.el === candidate.el)) {
+                    existing.push(candidate);
+                  }
+                });
+                existing.sort((a,b) => (a.d - b.d) || (a.x - b.x) || (a.y - b.y));
+                map.set(key, existing);
+              });
+            });
+          });
+        }
+      } catch(_) {}
+      return map;
+    };
+
+    const osmdCandidatesByKey = buildOsmdCandidateMap();
+
+    const sorted = events.slice().sort((a,b)=> (a.absBeats - b.absBeats) || (a.measure - b.measure) || (a.posBeats - b.posBeats));
+    const judgeEvents = [];
+    let globalIndex = 0;
+    const lastXByVoice = new Map();
+    const usedAbsByMeasure = new Map();
+    const SHARED_EVENT_EPS = EVENT_KEY_EPS;
+    for (const ev of sorted){
+      const mr = state.measureRects && state.measureRects[ev.measure];
+      const total = measureTotals[ev.measure] != null ? measureTotals[ev.measure] : (state.beatsPerMeasure || 4);
+      const targetX = mr ? (mr.x + (ev.posBeats / Math.max(0.0001, total)) * mr.width) : 0;
+      const list = elementsByMeasure.get(ev.measure) || [];
+      const assignmentList = list;
+      let usedAbsByElement = usedAbsByMeasure.get(ev.measure);
+      if (!usedAbsByElement){
+        usedAbsByElement = new Map();
+        usedAbsByMeasure.set(ev.measure, usedAbsByElement);
+      }
+      let chosen = null;
+      const logicalVoice = ev.voice || 1;
+
+      const osmdKey = makeEventKey(ev.measure, ev.absBeats, logicalVoice);
+      const osmdCandidates = (osmdCandidatesByKey.get(osmdKey) || []).map(item => ({
+        ...item,
+        usedAbs: usedAbsByElement.get(item.el)
+      }));
+
+      const pickCandidate = (candidateList, useTargetXBias) => {
+        if (!candidateList.length) return null;
+        const freePool = candidateList.filter(item => item.usedAbs == null);
+        const sharedPool = candidateList.filter(item =>
+          item.usedAbs != null && Math.abs(item.usedAbs - ev.absBeats) <= SHARED_EVENT_EPS
+        );
+        const assignablePool = freePool.length ? freePool : (sharedPool.length ? sharedPool : candidateList);
+
+        let best = null;
+        const yValues = assignablePool.map(item => item.y).filter(y => Number.isFinite(y));
+        const ySpread = yValues.length > 1 ? (Math.max(...yValues) - Math.min(...yValues)) : 0;
+        const canUseVerticalVoiceHint = voiceMode > 1 && logicalVoice && ySpread >= 2;
+        if (canUseVerticalVoiceHint){
+          if (logicalVoice === 1){
+            assignablePool.forEach(item => {
+              if (!best || item.y < best.y) best = item;
+            });
+          } else if (logicalVoice === 2){
+            assignablePool.forEach(item => {
+              if (!best || item.y > best.y) best = item;
+            });
+          }
+        }
+        if (!best){
+          assignablePool.forEach(item => {
+            const reusedDifferentMoment = item.usedAbs != null && Math.abs(item.usedAbs - ev.absBeats) > SHARED_EVENT_EPS;
+            const penalty = reusedDifferentMoment ? 1000 : 0;
+            const distanceToTargetX = isFinite(targetX) && isFinite(item.x) ? Math.abs(item.x - targetX) : 0;
+            const geometric = isFinite(item.d) ? item.d : 0;
+            const score = geometric + (useTargetXBias ? (distanceToTargetX * 0.35) : 0) + penalty;
+            if (!best || score < best.score) {
+              best = { ...item, score };
+            }
+          });
+        }
+        return best;
+      };
+
+      chosen = pickCandidate(osmdCandidates, false);
+      if (assignmentList.length){
+        const listWithUsage = assignmentList.map(item => ({
+          ...item,
+          usedAbs: usedAbsByElement.get(item.el)
+        }));
+        const snapTol = mr ? Math.max(6, mr.width * 0.045) : 10;
+        const near = listWithUsage.filter(item => Math.abs(item.x - targetX) <= snapTol);
+        const pool = near.length ? near : listWithUsage;
+        const lastX = lastXByVoice.get(logicalVoice);
+        const minX = Number.isFinite(lastX) ? (lastX - 2) : -Infinity;
+        const monoPool = pool.filter(item => item.x >= minX);
+        const activePool = monoPool.length ? monoPool : pool;
+        if (!chosen){
+          chosen = pickCandidate(activePool, true);
+        }
+        if (chosen && chosen.el) {
+          const prevAbs = usedAbsByElement.get(chosen.el);
+          if (prevAbs == null || Math.abs(prevAbs - ev.absBeats) <= SHARED_EVENT_EPS) {
+            usedAbsByElement.set(chosen.el, ev.absBeats);
+          }
+          if (Number.isFinite(chosen.x)) {
+            lastXByVoice.set(logicalVoice, chosen.x);
+          }
+        }
+      }
+      const el = chosen && chosen.el ? chosen.el : null;
+      judgeEvents.push({
+        timeSec: ev.absBeats * secPerQuarter,
+        voice: logicalVoice,
+        judged: false,
+        elements: el ? [el] : [],
+        tieType: ev.tieType || null,
+        tieGroup: ev.tieGroup || null,
+        measure: ev.measure,
+        posBeats: ev.posBeats,
+        absBeats: ev.absBeats,
+        targetX,
+        measureTotal: total,
+        globalIndex,
+        noteIndex: typeof ev.noteIndex === 'number' ? ev.noteIndex : null
+      });
+      globalIndex += 1;
+    }
+    const grouped = [];
+    const EPS = 1e-4;
+    judgeEvents.forEach(ev => {
+      const last = grouped[grouped.length - 1];
+      const target = {
+        voice: ev.voice || 1,
+        judged: false,
+        elements: Array.isArray(ev.elements) ? ev.elements.slice() : [],
+        tieType: ev.tieType || null,
+        tieGroup: ev.tieGroup || null
+      };
+      if (last && Math.abs(last.timeSec - ev.timeSec) <= EPS) {
+        last.targets.push(target);
+        last.elements = last.targets.flatMap(t => t.elements || []);
+        if (last.measure == null && ev.measure != null) last.measure = ev.measure;
+        if (last.posBeats == null && ev.posBeats != null) last.posBeats = ev.posBeats;
+        if (last.absBeats == null && ev.absBeats != null) last.absBeats = ev.absBeats;
+        if (last.targetX == null && ev.targetX != null) last.targetX = ev.targetX;
+        if (last.measureTotal == null && ev.measureTotal != null) last.measureTotal = ev.measureTotal;
+        return;
+      }
+      grouped.push({
+        timeSec: ev.timeSec,
+        judged: false,
+        targets: [target],
+        elements: target.elements.slice(),
+        measure: ev.measure != null ? ev.measure : null,
+        posBeats: ev.posBeats != null ? ev.posBeats : null,
+        absBeats: ev.absBeats != null ? ev.absBeats : null,
+        targetX: ev.targetX != null ? ev.targetX : null,
+        measureTotal: ev.measureTotal != null ? ev.measureTotal : null
+      });
+    });
+    const normalized = grouped.map(ev => {
+      const targets = (Array.isArray(ev.targets) ? ev.targets : []).map(target => ({
+        ...target,
+        elements: Array.isArray(target.elements) ? target.elements : []
+      }));
+      return {
+        ...ev,
+        targets,
+        elements: targets.flatMap(target => target.elements || []),
+        judged: targets.length === 0 ? true : targets.every(target => !!target.judged)
+      };
+    }).filter(ev => ev.targets.length > 0);
+    return normalized;
+  }
+
+  function getJudgeNowSec(){
+    if (state.anchorAudioCtx && state.anchorAcTime != null) {
+      return state.anchorAudioCtx.currentTime - state.anchorAcTime;
+    }
+    if (state.anchorPerfStart != null){
+      return (performance.now() - state.anchorPerfStart) / 1000;
+    }
+    return 0;
+  }
+
+  function markJudgeTarget(target, status){
+    if (!target || target.judged) return;
+    target.judged = true;
+    target.status = status === 'correct' ? 'correct' : 'wrong';
+    const cls = status === 'correct' ? 'midi-judge-correct' : 'midi-judge-wrong';
+    const els = Array.isArray(target.elements) ? target.elements : [];
+    els.forEach(el => {
+      const target = getNotePaintTarget(el);
+      if (!target) return;
+      target.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+      target.classList.add(cls);
+      state.judgedElements.add(target);
+    });
+    sanitizeJudgePaintTargets();
+  }
+
+  function sanitizeJudgePaintTargets(){
+    const svg = scoreEl ? scoreEl.querySelector('svg') : null;
+    if (!svg) return;
+    const marked = svg.querySelectorAll('.midi-judge-correct, .midi-judge-wrong');
+    marked.forEach(el => {
+      const isRestLike = isRestLikePaintElement(el);
+      const status = el.classList.contains('midi-judge-correct') ? 'correct'
+        : (el.classList.contains('midi-judge-wrong') ? 'wrong' : null);
+      if (isRestLike) {
+        el.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+        state.judgedElements.delete(el);
+        return;
+      }
+      const canonical = getNotePaintTarget(el);
+      if (!canonical) {
+        el.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+        state.judgedElements.delete(el);
+        return;
+      }
+      if (canonical !== el) {
+        el.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+        state.judgedElements.delete(el);
+        if (status) {
+          canonical.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+          canonical.classList.add(status === 'correct' ? 'midi-judge-correct' : 'midi-judge-wrong');
+          state.judgedElements.add(canonical);
+        }
+      }
+    });
+  }
+
+  function markJudgeTieGroup(tieGroup, status){
+    if (!tieGroup) return;
+    const events = Array.isArray(state.judgeEvents) ? state.judgeEvents : [];
+    events.forEach(ev => {
+      const targets = Array.isArray(ev.targets) && ev.targets.length
+        ? ev.targets
+        : [{ judged: !!ev.judged, elements: resolveEventElements(ev), voice: ev.voice || 1, tieType: ev.tieType || null, tieGroup: ev.tieGroup || null }];
+      targets.forEach(target => {
+        if (!target.judged && target.tieGroup === tieGroup) {
+          markJudgeTarget(target, status);
+        }
+      });
+      ev.judged = targets.every(target => !!target.judged);
+    });
+  }
+
+  function markJudgeEvent(ev, status){
+    if (!ev) return;
+    const targets = Array.isArray(ev.targets) && ev.targets.length
+      ? ev.targets
+      : [{ judged: !!ev.judged, elements: resolveEventElements(ev), voice: ev.voice || 1 }];
+    targets.forEach(target => {
+      if (!target.judged) markJudgeTarget(target, status);
+      if (target.tieType === 'start' && target.tieGroup) {
+        markJudgeTieGroup(target.tieGroup, status);
+      }
+    });
+    ev.judged = targets.every(target => !!target.judged);
+    sanitizeJudgePaintTargets();
+  }
+
+  function rebuildTieGroupIndex(){
+    const map = new Map();
+    const fallback = new Map();
+    const events = Array.isArray(state.judgeEvents) ? state.judgeEvents : [];
+    events.forEach(ev => {
+      const targets = Array.isArray(ev.targets) ? ev.targets : [];
+      targets.forEach(target => {
+        if (!target || !target.tieGroup) return;
+        const group = target.tieGroup;
+        if (!fallback.has(group)) fallback.set(group, target);
+        if (target.tieType === 'start' && !map.has(group)) {
+          map.set(group, target);
+        }
+      });
+    });
+    fallback.forEach((target, group) => {
+      if (!map.has(group)) map.set(group, target);
+    });
+    state.tieStartByGroup = map;
+  }
+
+  function resolveTieFollowerTargetsForEvent(ev){
+    if (!ev || !Array.isArray(ev.targets) || !ev.targets.length) return;
+    ev.targets.forEach(target => {
+      if (!target || target.judged) return;
+      if (!target.tieGroup || target.tieType === 'start') return;
+      const anchor = state.tieStartByGroup && state.tieStartByGroup.get(target.tieGroup);
+      if (!anchor || !anchor.judged) return;
+      const status = anchor.status === 'correct' ? 'correct' : 'wrong';
+      markJudgeTarget(target, status);
+    });
+    ev.judged = ev.targets.every(target => !!target.judged);
+  }
+
+  function startJudgeTimeline(bpm){
+    stopJudgeTimeline();
+    if (!state.calibrationEnabled) return;
+    state.debugStats = {
+      matchedCurrent: 0,
+      matchedNext: 0,
+      handoffToNext: 0,
+      blockedLookaheadByPendingCurrent: 0
+    };
+    state.judgeEvents = buildJudgeTimeline(bpm);
+    rebuildTieGroupIndex();
+    state.judgeIndex = 0;
+    state.judgeStartSec = 0;
+    state.judgeWindowSec = computeJudgeWindowSec(bpm);
+    clearJudgeStyles();
+    if (!state.judgeEvents.length) return;
+    state.judgeTimerId = setInterval(() => {
+      if (!state.calibrationEnabled || !state.active) return;
+      const nowSec = getJudgeNowSec();
+      while (state.judgeIndex < state.judgeEvents.length) {
+        const ev = state.judgeEvents[state.judgeIndex];
+        resolveTieFollowerTargetsForEvent(ev);
+        if (ev.judged) { state.judgeIndex += 1; continue; }
+        const w = getJudgeWindowByIndex(state.judgeIndex);
+        const targetCount = Array.isArray(ev.targets) ? ev.targets.length : 1;
+        const overdueLate = w.late + (state.judgeIndex === 0 ? 0.18 : 0) + (targetCount > 1 ? 0.08 : 0);
+        if (nowSec > ev.timeSec + overdueLate) {
+          markJudgeEvent(ev, 'wrong');
+          state.judgeIndex += 1;
+          continue;
+        }
+        break;
+      }
+    }, 60);
+  }
+
+  function stopJudgeTimeline(){
+    if (state.judgeTimerId) { clearInterval(state.judgeTimerId); state.judgeTimerId = null; }
+    state.judgeEvents = [];
+    state.judgeIndex = 0;
+    state.tieStartByGroup = new Map();
+  }
+
+  function mapMidiToVoice(midi, voiceMode){
+    if (voiceMode <= 1) return 1;
+    const pc = ((midi % 12) + 12) % 12;
+    if (pc === 0) return 2; // C/Do -> lower voice
+    if (pc === 7) return 1; // G/Sol -> upper voice
+    return null;
+  }
+
+  function handleCalibrationInput(voice){
+    if (!state.active || !state.calibrationEnabled) return;
+    const events = state.judgeEvents || [];
+    if (!events.length) return;
+    const nowSec = getJudgeNowSec();
+    const getOverdueLate = (index, ev) => {
+      const w = getJudgeWindowByIndex(index);
+      const targetCount = Array.isArray(ev?.targets) ? ev.targets.length : 1;
+      const extraFirst = index === 0 ? 0.18 : 0;
+      const extraChord = targetCount > 1 ? 0.08 : 0;
+      return Math.max(w.late + extraFirst + extraChord, index === 0 ? 0.35 : w.late);
+    };
+    const advanceIndex = () => {
+      while (state.judgeIndex < events.length) {
+        const ev = events[state.judgeIndex];
+        resolveTieFollowerTargetsForEvent(ev);
+        if (!ev || !ev.judged) break;
+        state.judgeIndex += 1;
+      }
+    };
+    const getEventWindowInfo = (index, ev) => {
+      const w = getJudgeWindowByIndex(index);
+      const targetCount = Array.isArray(ev?.targets) ? ev.targets.length : 1;
+      let late = w.late + (targetCount > 1 ? 0.08 : 0);
+      if (index === 0) late = Math.max(late + 0.18, 0.35);
+      const delta = nowSec - ev.timeSec;
+      const inWindow = delta >= -w.early && delta <= late;
+      return { early: w.early, late, delta, inWindow };
+    };
+    const hydrateTargetElements = (ev, target) => {
+      if (!target || !Array.isArray(target.elements)) return;
+      if (target.elements.length > 0) return;
+      const resolved = resolveEventElements({
+        measure: ev.measure,
+        posBeats: ev.posBeats,
+        absBeats: ev.absBeats,
+        targetX: ev.targetX,
+        measureTotal: ev.measureTotal,
+        voice: target.voice || 1,
+        elements: []
+      });
+      if (Array.isArray(resolved) && resolved.length) {
+        target.elements = resolved;
+      }
+    };
+    const getTargetsForEvent = ev => {
+      return Array.isArray(ev.targets) && ev.targets.length
+        ? ev.targets
+        : [{ judged: !!ev.judged, elements: resolveEventElements(ev), voice: ev.voice || 1 }];
+    };
+    const pickMatchForEvent = ev => {
+      resolveTieFollowerTargetsForEvent(ev);
+      const targets = getTargetsForEvent(ev);
+      let match = null;
+      let hasVoicePending = false;
+      targets.forEach(target => {
+        if (!target || target.judged) return;
+        if (target.tieGroup && target.tieType && target.tieType !== 'start') return;
+        if (voice != null && target.voice != null && voice !== target.voice) return;
+        hasVoicePending = true;
+        hydrateTargetElements(ev, target);
+        if (!match) match = target;
+      });
+      return { targets, match, hasVoicePending };
+    };
+    const applyMatchedTarget = (idx, ev, targets, match, source) => {
+      markJudgeTarget(match, 'correct');
+      if (match.tieType === 'start' && match.tieGroup) {
+        markJudgeTieGroup(match.tieGroup, 'correct');
+      }
+      ev.judged = targets.every(target => !!target.judged);
+      if (source === 'next' || source === 'next-handoff') {
+        state.debugStats.matchedNext += 1;
+        if (source === 'next-handoff') state.debugStats.handoffToNext += 1;
+      } else {
+        state.debugStats.matchedCurrent += 1;
+      }
+      setCalibrationStatus('correct');
+      if (ev.judged && idx === state.judgeIndex) {
+        state.judgeIndex += 1;
+      }
+      advanceIndex();
+    };
+
+    while (state.judgeIndex < events.length && nowSec > events[state.judgeIndex].timeSec + getOverdueLate(state.judgeIndex, events[state.judgeIndex])) {
+      markJudgeEvent(events[state.judgeIndex], 'wrong');
+      state.judgeIndex += 1;
+      advanceIndex();
+    }
+
+    if (state.judgeIndex >= events.length) return;
+
+    let currentIdx = state.judgeIndex;
+    let currentEv = events[currentIdx];
+    if (!currentEv) return;
+    resolveTieFollowerTargetsForEvent(currentEv);
+    if (currentEv.judged) {
+      advanceIndex();
+      if (state.judgeIndex >= events.length) return;
+      currentIdx = state.judgeIndex;
+      currentEv = events[currentIdx];
+      if (!currentEv) return;
+    }
+
+    const currentWindow = getEventWindowInfo(currentIdx, currentEv);
+    const currentPick = pickMatchForEvent(currentEv);
+    if (currentWindow.inWindow && currentPick.match) {
+      const nextIdx = currentIdx + 1;
+      const nextEv = nextIdx < events.length ? events[nextIdx] : null;
+      if (currentPick.hasVoicePending && nextEv && !nextEv.judged) {
+        const nextWindow = getEventWindowInfo(nextIdx, nextEv);
+        const nextPick = pickMatchForEvent(nextEv);
+        const currentScore = Math.abs(currentWindow.delta);
+        const nextScore = Math.abs(nextWindow.delta);
+        const inLateHalf = currentWindow.delta > Math.max(0.02, currentWindow.late * 0.5);
+        const nextClearlyCloser = nextWindow.inWindow && nextPick.match && (nextScore + 0.025 < currentScore);
+        if (inLateHalf && nextClearlyCloser) {
+          applyMatchedTarget(nextIdx, nextEv, nextPick.targets, nextPick.match, 'next-handoff');
+          return;
+        }
+      }
+      applyMatchedTarget(currentIdx, currentEv, currentPick.targets, currentPick.match, 'current');
+      return;
+    }
+
+    // Prevent stealing adjacent notes: only look ahead when current slot has no pending target for this voice.
+    if (!currentPick.hasVoicePending) {
+      const nextIdx = currentIdx + 1;
+      const nextEv = nextIdx < events.length ? events[nextIdx] : null;
+      if (nextEv && !nextEv.judged) {
+        const nextWindow = getEventWindowInfo(nextIdx, nextEv);
+        const nextPick = pickMatchForEvent(nextEv);
+        if (nextWindow.inWindow && nextPick.match) {
+          applyMatchedTarget(nextIdx, nextEv, nextPick.targets, nextPick.match, 'next');
+          return;
+        }
+      }
+    } else {
+      state.debugStats.blockedLookaheadByPendingCurrent += 1;
+    }
+
+    if (currentWindow.inWindow && currentPick.hasVoicePending) {
+      setCalibrationStatus('wrong');
+      return;
+    }
+
+    setCalibrationStatus('wrong');
+  }
+
+  function isEditableElement(target){
+    if (!target) return false;
+    const tag = target.tagName ? target.tagName.toLowerCase() : '';
+    return tag === 'input' || tag === 'textarea' || tag === 'select' || target.isContentEditable;
+  }
+
+  function playKeyboardDrumPreview(key){
+    const normalized = String(key || '').toLowerCase();
+    if (normalized !== 'f' && normalized !== 'j') return;
+    if (typeof window.__icRhythmPlayKeyboardDrum === 'function') {
+      try {
+        window.__icRhythmPlayKeyboardDrum(normalized);
+        return;
+      } catch(_) {}
+    }
+    const cfg = window.IC_MIDI_CONFIG || null;
+    if (cfg && typeof cfg.noteOn === 'function') {
+      // F => kick (C / lower voice), J => snare (G / upper voice)
+      const midi = normalized === 'f' ? 60 : 67;
+      try { cfg.noteOn(midi, 110); } catch(_) {}
+    }
   }
 
   function mapEventsToPositions(timeline){
@@ -1077,6 +1905,12 @@
     }
     jumpEvents.sort((a,b)=> a.time - b.time || a.x - b.x);
     const firstEventTime = jumpEvents.length ? jumpEvents[0].time : null;
+    const lastEventTime = jumpEvents.length ? jumpEvents[jumpEvents.length - 1].time : null;
+    const lastMeasureEndSec = measures.length ? measures[measures.length - 1].endSec : null;
+    const roundEndSec = Math.max(
+      isFinite(lastEventTime) ? lastEventTime : 0,
+      isFinite(lastMeasureEndSec) ? lastMeasureEndSec : 0
+    );
     if (state.cursor1El) state.cursor1El.setAttribute('opacity', '0');
 
     let prevMeasure = -1;
@@ -1091,7 +1925,6 @@
       if (firstEventTime != null && firstEventTime > acNow){
         if (state.cursor1El) state.cursor1El.setAttribute('opacity', '0');
       }
-      const lastTime = jumpEvents[jumpEvents.length - 1].time;
       jumpEvents.forEach(ev => {
         const delayMs = Math.max(0, (ev.time - acNow) * 1000);
         const tid = setTimeout(() => {
@@ -1103,7 +1936,7 @@
         }, Math.round(delayMs));
         state.jumpTimeouts.push(tid);
       });
-      finishAtEnd(lastTime, acNow, true);
+      finishAtEnd(roundEndSec, acNow, true);
       return;
     }
 
@@ -1134,7 +1967,7 @@
         prevMeasure = ev.measure;
       }
       applyCursorAt(ev.x, ev.y1, ev.y2, ev.measure);
-      if (nowSec > (jumpEvents[jumpEvents.length - 1].time + 0.2)){
+      if (nowSec > (roundEndSec + 0.2)){
         state.rafId = null;
         finishChallengeRound();
         return;
@@ -1148,13 +1981,34 @@
     const wrap = $('challengeCountdownUI');
     const val = $('challengeCountdownValue');
     if (!wrap || !val) return;
+    const label = $('challengeCountdownLabel');
+    const unit = wrap.querySelector('[data-i18n="challenge.seconds"]');
+    if (label) label.textContent = getTranslation('challenge.preparingLabel', 'Ready');
+    if (unit) unit.style.display = '';
     wrap.style.display = 'inline-flex';
     val.textContent = String(seconds);
   }
 
+  function updateCountInUI(beat, total){
+    const wrap = $('challengeCountdownUI');
+    const val = $('challengeCountdownValue');
+    if (!wrap || !val) return;
+    const label = $('challengeCountdownLabel');
+    const unit = wrap.querySelector('[data-i18n="challenge.seconds"]');
+    if (label) label.textContent = getTranslation('challenge.countInLabel', 'Count In');
+    if (unit) unit.style.display = 'none';
+    wrap.style.display = 'inline-flex';
+    const safeBeat = Math.max(1, Math.min(total || beat, beat));
+    val.textContent = String(safeBeat);
+  }
+
   function hideCountdownUI(){
     const wrap = $('challengeCountdownUI');
-    if (wrap) wrap.style.display = 'none';
+    if (wrap) {
+      const unit = wrap.querySelector('[data-i18n="challenge.seconds"]');
+      if (unit) unit.style.display = '';
+      wrap.style.display = 'none';
+    }
   }
 
   async function ensureScoreReady(){
@@ -1191,12 +2045,22 @@
   }
 
   async function waitForNoteheadsReady(maxWaitMs){
+    const hasAnyEntries = map => {
+      if (!map || typeof map.forEach !== 'function') return false;
+      let total = 0;
+      map.forEach(list => {
+        if (Array.isArray(list)) total += list.length;
+      });
+      return total > 0;
+    };
     const t0 = Date.now();
     while (Date.now() - t0 < maxWaitMs){
+      const elementsByMeasure = collectNoteheadElementsByMeasure();
+      if (hasAnyEntries(elementsByMeasure)) return elementsByMeasure;
       const headMap = collectNoteheadCentersByMeasure();
-      if (headMap && headMap.size) return headMap;
+      if (hasAnyEntries(headMap)) return headMap;
       const domMap = collectNoteheadCentersByMeasureDom();
-      if (domMap && domMap.size) return domMap;
+      if (hasAnyEntries(domMap)) return domMap;
       await new Promise(r => setTimeout(r, 80));
     }
     return null;
@@ -1606,7 +2470,7 @@
     } catch(_) {}
   }
 
-  function startChallengeMetronome(bpm){
+  function startChallengeMetronome(bpm, startDelaySec){
     if (!state.metronomeEnabled) return;
     if (state.metronomeTimerId) { clearInterval(state.metronomeTimerId); state.metronomeTimerId = null; }
     const tsInfo = getTimeSignatureInfo();
@@ -1637,15 +2501,65 @@
       }
       stepIndex += 1;
     }
-    tick();
-    state.metronomeTimerId = setInterval(tick, stepSec * 1000);
+    const run = () => {
+      tick();
+      state.metronomeTimerId = setInterval(tick, stepSec * 1000);
+    };
+    const delayMs = Math.max(0, Math.round((startDelaySec || 0) * 1000));
+    if (delayMs > 0){
+      state.metronomeTimerId = setTimeout(run, delayMs);
+    } else {
+      run();
+    }
   }
 
   function stopChallengeMetronome(){
     if (state.metronomeTimerId){
       clearInterval(state.metronomeTimerId);
+      clearTimeout(state.metronomeTimerId);
       state.metronomeTimerId = null;
     }
+  }
+
+  function runChallengeCountIn(bpm, beatsPerMeasure){
+    const totalBeats = Math.max(1, beatsPerMeasure || 4);
+    const tsInfo = getTimeSignatureInfo();
+    const beatSec = (60 / Math.max(1, bpm || 80)) * (4 / Math.max(1, tsInfo.den || 4));
+    const ac = state.anchorAudioCtx || state.audioCtx || null;
+    const startAt = ac ? (ac.currentTime + 0.06) : 0;
+
+    return new Promise(resolve => {
+      let beat = 1;
+      const tick = () => {
+        if (!state.active) {
+          hideCountdownUI();
+          resolve(false);
+          return;
+        }
+        const isStrong = tsInfo.is68 ? (beat === 1 || beat === 4) : (beat === 1);
+        ensureClickAudio();
+        try { playClick(isStrong); } catch(_) {}
+        updateCountInUI(beat, totalBeats);
+        if (beat >= totalBeats){
+          const finishMs = Math.max(40, Math.round(beatSec * 1000));
+          state.countInTimerId = setTimeout(() => {
+            state.countInTimerId = null;
+            hideCountdownUI();
+            resolve(true);
+          }, finishMs);
+          return;
+        }
+        beat += 1;
+        state.countInTimerId = setTimeout(tick, Math.max(40, Math.round(beatSec * 1000)));
+      };
+
+      if (ac) {
+        const delayMs = Math.max(0, Math.round((startAt - ac.currentTime) * 1000));
+        state.countInTimerId = setTimeout(tick, delayMs);
+      } else {
+        tick();
+      }
+    });
   }
 
   function getChallengeSettings(){
@@ -1693,7 +2607,6 @@
     if (metronomeToggle) settings.metronomeEnabled = metronomeToggle.checked;
     if (hideToggle) settings.hideEnabled = hideToggle.checked;
     if (calibrationToggle) settings.calibrationEnabled = calibrationToggle.checked;
-    if (!isMidiConnected()) settings.calibrationEnabled = false;
     return settings;
   }
 
@@ -1748,36 +2661,19 @@
     ensureOverlay();
     clearHideLayer();
 
-    let remaining = Math.max(0, prepSec | 0);
-    if (remaining > 0){
-      updateCountdownUI(remaining);
-      state.countdownTimerId = setInterval(()=>{
-        remaining -= 1;
-        if (remaining <= 0){
-          clearInterval(state.countdownTimerId);
-          state.countdownTimerId = null;
-          hideCountdownUI();
-          if (state.metronomeEnabled) startChallengeMetronome(bpm);
-          const met = (typeof window.getMetronomeState === 'function') ? window.getMetronomeState() : null;
-          const ac = met && met.audioContext ? met.audioContext : null;
-          if (ac){
-            state.anchorAcTime = ac.currentTime + 0.02;
-            state.anchorPerfStart = performance.now();
-          } else {
-            state.anchorAcTime = null;
-            state.anchorPerfStart = performance.now();
-          }
-          state.anchorPerf = null;
-          waitForRhythmXML(1200).then(()=>waitForNoteheadsReady(1600)).then(()=>startJumpCursor(bpm));
-        } else {
-          updateCountdownUI(remaining);
-        }
-      }, 1000);
-    } else {
-      hideCountdownUI();
-      if (state.metronomeEnabled) startChallengeMetronome(bpm);
+    const kickoffRound = async () => {
+      await waitForRhythmXML(1200);
+      await waitForNoteheadsReady(1600);
+      if (!state.active) return;
+
+      const tsInfo = getTimeSignatureInfo();
+      const countInBeats = Math.max(1, tsInfo.beats || state.beatsPerMeasure || 4);
+      await runChallengeCountIn(bpm, countInBeats);
+      if (!state.active) return;
+
       const met = (typeof window.getMetronomeState === 'function') ? window.getMetronomeState() : null;
       const ac = met && met.audioContext ? met.audioContext : null;
+      state.anchorAudioCtx = ac || null;
       if (ac){
         state.anchorAcTime = ac.currentTime + 0.02;
         state.anchorPerfStart = performance.now();
@@ -1786,9 +2682,44 @@
         state.anchorPerfStart = performance.now();
       }
       state.anchorPerf = null;
-      await waitForRhythmXML(1200);
-      await waitForNoteheadsReady(1600);
+
+      const calibrationToggle = $('challengeCalibrationToggle');
+      if (calibrationToggle) {
+        state.calibrationEnabled = !!calibrationToggle.checked;
+      }
+      if (state.calibrationEnabled) {
+        for (let attempt = 0; attempt <= 4; attempt += 1) {
+          try {
+            const refreshed = sampleBestMeasureRects();
+            if (Array.isArray(refreshed) && refreshed.length) {
+              state.measureRects = refreshed;
+            }
+          } catch(_) {}
+          startJudgeTimeline(bpm);
+          const hasEvents = Array.isArray(state.judgeEvents) && state.judgeEvents.length > 0;
+          if (hasEvents || attempt === 4) break;
+          await new Promise(r => setTimeout(r, 80));
+        }
+      }
+      if (state.metronomeEnabled) startChallengeMetronome(bpm, 0.02);
       startJumpCursor(bpm);
+    };
+
+    let remaining = Math.max(0, prepSec | 0);
+    if (remaining > 0){
+      updateCountdownUI(remaining);
+      state.countdownTimerId = setInterval(() => {
+        remaining -= 1;
+        if (remaining <= 0){
+          clearInterval(state.countdownTimerId);
+          state.countdownTimerId = null;
+          kickoffRound();
+        } else {
+          updateCountdownUI(remaining);
+        }
+      }, 1000);
+    } else {
+      kickoffRound();
     }
 
     state.activeSvg = scoreEl.querySelector('svg');
@@ -1813,15 +2744,27 @@
     }
     if (state.loopTimerId){ clearTimeout(state.loopTimerId); state.loopTimerId = null; }
     if (state.countdownTimerId){ clearInterval(state.countdownTimerId); state.countdownTimerId = null; }
+    if (state.countInTimerId){ clearTimeout(state.countInTimerId); state.countInTimerId = null; }
     if (state.observer){ try { state.observer.disconnect(); } catch(_){} state.observer = null; }
     if (state.resizeHandler){ window.removeEventListener('resize', state.resizeHandler); state.resizeHandler = null; }
     state.anchorPerf = null;
     state.anchorAcTime = null;
     state.anchorPerfStart = null;
+    state.anchorAudioCtx = null;
     stopChallengeMetronome();
+    stopJudgeTimeline();
+    clearJudgeStyles();
     clearOverlay();
     clearHideLayer();
     hideCountdownUI();
+  }
+
+  function handleMidiNoteOn(midi){
+    if (!state.active || !state.calibrationEnabled) return;
+    const voiceMode = parseInt(getVoiceMode(), 10) || 1;
+    const voice = mapMidiToVoice(midi, voiceMode);
+    if (voiceMode > 1 && !voice) return;
+    handleCalibrationInput(voice);
   }
 
   function openChallengeModal(){
@@ -1847,10 +2790,6 @@
     if (cursorToggle && !hasPref) cursorToggle.checked = true;
     if (metronomeToggle && !hasPref) metronomeToggle.checked = true;
     if (hideToggle && !hasPref) hideToggle.checked = true;
-    if (calibrationToggle && !isMidiConnected()) {
-      calibrationToggle.checked = false;
-      state.calibrationEnabled = false;
-    }
     updateToggleVisual(toggleEl);
     updateToggleVisual(cursorToggleEl);
     updateToggleVisual(metronomeToggleEl);
@@ -1858,6 +2797,8 @@
     updateToggleVisual(calibrationToggleEl);
     if (calibrationToggleEl && !calibrationToggleEl.checked) clearJudgeStyles();
     updateToggleVisual(modalModeToggleEl);
+    if (calibrationToggle) state.calibrationEnabled = !!calibrationToggle.checked;
+    updateCalibrationHintUI();
     if (modal) modal.style.display = 'flex';
   }
 
@@ -1924,6 +2865,13 @@
   }
 
   function clearJudgeStyles(){
+    if (state.judgedElements && state.judgedElements.size){
+      state.judgedElements.forEach(el => {
+        el.classList.remove('midi-judge-wrong', 'midi-judge-correct');
+      });
+      state.judgedElements.clear();
+      return;
+    }
     const svg = scoreEl ? scoreEl.querySelector('svg') : null;
     if (!svg) return;
     const nodes = svg.querySelectorAll('.midi-judge-wrong, .midi-judge-correct');
@@ -1950,7 +2898,18 @@
   if (hideToggleEl) hideToggleEl.addEventListener('change', ()=>updateToggleVisual(hideToggleEl));
   if (calibrationToggleEl) calibrationToggleEl.addEventListener('change', ()=>{
     updateToggleVisual(calibrationToggleEl);
-    if (!calibrationToggleEl.checked) clearJudgeStyles();
+    state.calibrationEnabled = !!calibrationToggleEl.checked;
+    if (!state.calibrationEnabled) {
+      stopJudgeTimeline();
+      clearJudgeStyles();
+      updateCalibrationHintUI();
+      return;
+    }
+    if (state.active) {
+      const bpmVal = Math.max(40, Math.min(240, parseInt(($('challengeBPM')?.value || '80'), 10)));
+      startJudgeTimeline(bpmVal);
+    }
+    updateCalibrationHintUI();
   });
   if (modalModeToggleEl){
     modalModeToggleEl.addEventListener('change', ()=>{
@@ -1975,6 +2934,20 @@
     });
   }
 
+  document.addEventListener('keydown', event => {
+    if (!state.active || !state.calibrationEnabled) return;
+    if (event.repeat || isEditableElement(event.target)) return;
+    const key = (event.key || '').toLowerCase();
+    if (key !== 'f' && key !== 'j') return;
+    const voiceMode = parseInt(getVoiceMode(), 10) || 1;
+    playKeyboardDrumPreview(key);
+    const voice = voiceMode > 1 ? (key === 'f' ? 2 : 1) : 1;
+    handleCalibrationInput(voice);
+  });
+
+  const voiceModeEl = $('voiceMode');
+  if (voiceModeEl) voiceModeEl.addEventListener('change', updateCalibrationHintUI);
+
   window.addEventListener('ic-midi-connection', (ev) => {
     const connected = !!(ev && ev.detail && ev.detail.connected);
     applyCalibrationAuto(connected);
@@ -1992,6 +2965,46 @@
   window.getOSMDMeasureRects = getOSMDMeasureRects;
   window.stopChallenge = stopChallenge;
   window.__icChallenge = {
-    isActive: () => state.active
+    isActive: () => state.active,
+    handleMidiNoteOn,
+    debugSnapshot: () => {
+      const events = Array.isArray(state.judgeEvents) ? state.judgeEvents : [];
+      const elementAbsMap = new Map();
+      let emptyTargets = 0;
+      let emptyElements = 0;
+      events.forEach(ev => {
+        const targets = Array.isArray(ev.targets) ? ev.targets : [];
+        if (!targets.length) emptyTargets += 1;
+        targets.forEach(target => {
+          const els = Array.isArray(target.elements) ? target.elements : [];
+          if (!els.length) emptyElements += 1;
+          els.forEach(el => {
+            const abs = Number(ev.absBeats);
+            const arr = elementAbsMap.get(el) || [];
+            if (isFinite(abs)) arr.push(abs);
+            elementAbsMap.set(el, arr);
+          });
+        });
+      });
+      let crossTimeReuse = 0;
+      elementAbsMap.forEach(absArr => {
+        const uniq = [];
+        absArr.forEach(v => {
+          if (!uniq.some(x => Math.abs(x - v) <= 1e-4)) uniq.push(v);
+        });
+        if (uniq.length > 1) crossTimeReuse += 1;
+      });
+      return {
+        active: !!state.active,
+        calibrationEnabled: !!state.calibrationEnabled,
+        judgeIndex: state.judgeIndex,
+        judgeEvents: events.length,
+        emptyTargets,
+        emptyElements,
+        crossTimeReuse,
+        debugStats: { ...state.debugStats },
+        currentEvent: events[state.judgeIndex] || null
+      };
+    }
   };
 })();

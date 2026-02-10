@@ -1,5 +1,5 @@
 /*!
- * Cognote - 专业级视奏旋律生成器
+ * IC Studio 视奏工具 - 专业级视奏旋律生成器
  * Professional Music Sight-Reading Tool - Final Version
  * 
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club
@@ -274,7 +274,8 @@ let userSettings = {
             staccato: 20,
             accent: 15,
             acciaccatura: 10,
-            slur: 15  // 统一的击勾弦(slur)频率控制
+            slur: 15,  // 统一的击勾弦(slur)频率控制
+            slide: 10  // 统一的Slide频率控制（glissando/slide-in/slide-out）
         }
     }
 };
@@ -404,6 +405,91 @@ function shouldGenerateDirectionalSlur(interval, randomGenerator = null) {
     }
     
     return shouldGenerate;
+}
+
+const SLIDE_ARTICULATION_TYPES = ['glissando', 'slide-in', 'slide-out'];
+const MAX_SLIDES_PER_MELODY = 2;
+const SLIDE_UNLIMITED_THRESHOLD = 60;
+
+function isSlideArticulationType(type) {
+    return SLIDE_ARTICULATION_TYPES.includes(type);
+}
+
+function mapSlideFrequencyToExpectedSlides(slideFrequency) {
+    const normalized = normalizeFrequencyPercentage(slideFrequency, 10);
+    // 目标：
+    // 10% -> 平均每条0.5个slide（约每两条出现1个）
+    // 高频率时提升单条旋律内slide数量（>=60%时进入不限数量模式）
+    return Math.max(0, normalized / 20);
+}
+
+function sampleSlideBudget(expectedSlides, randomGenerator = null) {
+    const boundedExpected = Math.max(0, Math.min(MAX_SLIDES_PER_MELODY, expectedSlides));
+    const whole = Math.floor(boundedExpected);
+    const fraction = boundedExpected - whole;
+    const randomValue = randomGenerator ? randomGenerator.nextFloat() : Math.random();
+    const sampled = whole + (randomValue < fraction ? 1 : 0);
+    return Math.max(0, Math.min(MAX_SLIDES_PER_MELODY, sampled));
+}
+
+function getEnabledSlideTypes() {
+    const selected = userSettings?.articulations?.guitar;
+    if (!Array.isArray(selected)) return [];
+    return SLIDE_ARTICULATION_TYPES.filter(type => selected.includes(type));
+}
+
+function createSlideAssignmentState(randomGenerator = null) {
+    const enabledTypes = getEnabledSlideTypes();
+    const slideFrequency = getUserFrequency('articulation', 'slide');
+    const expectedSlides = mapSlideFrequencyToExpectedSlides(slideFrequency);
+    const hasSlideEnabled = enabledTypes.length > 0 && slideFrequency > 0;
+    const isUnlimited = hasSlideEnabled && slideFrequency >= SLIDE_UNLIMITED_THRESHOLD;
+    const slideBudget = !hasSlideEnabled
+        ? 0
+        : (isUnlimited ? Number.POSITIVE_INFINITY : sampleSlideBudget(expectedSlides, randomGenerator));
+
+    return {
+        enabledTypes,
+        slideFrequency,
+        expectedSlides,
+        slideBudget,
+        isUnlimited,
+        consumedCount: 0,
+        consumedTypes: []
+    };
+}
+
+function getSlideInOutChance(slideFrequency, isLongNote, slideType = 'slide-in') {
+    const normalized = normalizeFrequencyPercentage(slideFrequency, 10);
+    if (normalized <= 0) return 0;
+
+    const ratio = normalized / 100;
+    const curvedRatio = Math.pow(ratio, 1.35);
+    const minChance = slideType === 'slide-out' ? 0.1 : 0.09;
+    const maxChance = slideType === 'slide-out' ? 0.96 : 0.94;
+    const baseChance = minChance + (maxChance - minChance) * curvedRatio;
+    const longNoteBoost = isLongNote ? 0.06 : 0;
+
+    return Math.max(0, Math.min(1, baseChance + longNoteBoost));
+}
+
+function canAssignSlideWithState(state, requestedType) {
+    if (!state || !isSlideArticulationType(requestedType)) return false;
+    if ((state.slideBudget || 0) <= 0) return false;
+    if (!state.isUnlimited && (state.consumedCount || 0) >= state.slideBudget) return false;
+    return Array.isArray(state.enabledTypes) && state.enabledTypes.includes(requestedType);
+}
+
+function consumeSlideWithState(state, requestedType) {
+    if (!canAssignSlideWithState(state, requestedType)) {
+        return false;
+    }
+    state.consumedCount = (state.consumedCount || 0) + 1;
+    if (!Array.isArray(state.consumedTypes)) {
+        state.consumedTypes = [];
+    }
+    state.consumedTypes.push(requestedType);
+    return true;
 }
 
 /**
@@ -2947,6 +3033,7 @@ class IntelligentMelodyGenerator {
             direction: 0
         };
         this._pendingAccidentalPreference = null;
+        this.slideAssignmentState = null;
 
         // 首先初始化音阶
         this.scale = KEY_SCALES[keySignature] || KEY_SCALES['C']; // 如果调号无效，默认使用C大调
@@ -3105,6 +3192,8 @@ class IntelligentMelodyGenerator {
         let lastDirection = 0; // -1下行, 0平行, 1上行
         let consecutiveJumps = 0;
         let measureDirectionChanges = 0;
+        this.slideAssignmentState = createSlideAssignmentState(this.random);
+        console.log(`🎚️ Slide频率控制: ${this.slideAssignmentState.slideFrequency}% -> 期望${this.slideAssignmentState.expectedSlides.toFixed(2)}个, ${this.slideAssignmentState.isUnlimited ? '不限数量模式' : `本条预算${this.slideAssignmentState.slideBudget}个`}`);
         
         for (let measureIndex = 0; measureIndex < this.measures; measureIndex++) {
             console.log(`\\n--- 生成第${measureIndex + 1}小节 ---`);
@@ -3162,10 +3251,52 @@ class IntelligentMelodyGenerator {
         const cadenceAligned = this.enforceFinalChordTone(melody);
         const sanitizedMelody = this.sanitizeArticulations(cadenceAligned);
         const slurSafeMelody = this.removeStaccatoFromSlurStarts(sanitizedMelody);
+        const glissSanitizedMelody = this.sanitizeGlissandoPairs(slurSafeMelody);
+        const glissReadyMelody = this.ensureAtLeastOneGlissando(glissSanitizedMelody);
+        const pairSafeMelody = this.sanitizeTwoNoteArticulationConflicts(glissReadyMelody);
+        const nonConsecutiveSlideMelody = this.sanitizeConsecutiveSlides(pairSafeMelody);
+        const slideLimitedMelody = this.enforceSlideLimitPerMelody(nonConsecutiveSlideMelody);
         
         console.log(`✅ 旋律生成完成: ${this.stats.noteCount}音符 ${this.stats.restCount}休止 休止比例${(this.stats.restRatio*100).toFixed(1)}%`);
         
-        return slurSafeMelody;
+        return slideLimitedMelody;
+    }
+
+    canAssignSlideArticulation(type) {
+        return canAssignSlideWithState(this.slideAssignmentState, type);
+    }
+
+    consumeSlideArticulation(type) {
+        return consumeSlideWithState(this.slideAssignmentState, type);
+    }
+
+    enforceSlideLimitPerMelody(measures) {
+        if (!Array.isArray(measures)) return measures;
+        if (this.slideAssignmentState?.isUnlimited) {
+            return measures;
+        }
+
+        let slideCount = 0;
+        let removed = 0;
+
+        measures.forEach(measure => {
+            if (!measure || !Array.isArray(measure.notes)) return;
+            measure.notes.forEach(note => {
+                if (!note || note.type !== 'note' || !isSlideArticulationType(note.articulation)) return;
+                if (slideCount < MAX_SLIDES_PER_MELODY) {
+                    slideCount++;
+                    return;
+                }
+                note.articulation = null;
+                removed++;
+            });
+        });
+
+        if (removed > 0) {
+            console.log(`🚫 已限制为每条旋律最多${MAX_SLIDES_PER_MELODY}个slide，移除额外slide数量: ${removed}`);
+        }
+
+        return measures;
     }
 
     /**
@@ -3743,15 +3874,53 @@ class IntelligentMelodyGenerator {
                     alter: alter,
                     midi: nextMidi
                 };
+
+                // 普通Slide需要连接“前一个音符 -> 当前音符”。
+                // 生成阶段还拿不到“下一个音符”，因此在这里回填到前一个相邻音符。
+                let glissAssignedToPrevious = false;
+                const previousElement = notes.length > 0 ? notes[notes.length - 1] : null;
+                const prePreviousElement = notes.length > 1 ? notes[notes.length - 2] : null;
+                const wouldCreateConsecutiveSlide =
+                    prePreviousElement &&
+                    prePreviousElement.type === 'note' &&
+                    isSlideArticulationType(prePreviousElement.articulation);
+                if (
+                    userSettings.articulations.enabled &&
+                    this.clef === 'treble' &&
+                    Array.isArray(userSettings.articulations.guitar) &&
+                    userSettings.articulations.guitar.includes('glissando') &&
+                    this.canAssignSlideArticulation('glissando') &&
+                    previousElement &&
+                    previousElement.type === 'note' &&
+                    typeof previousElement.midi === 'number' &&
+                    !previousElement.articulation &&
+                    !wouldCreateConsecutiveSlide
+                ) {
+                    const interval = Math.abs(noteObject.midi - previousElement.midi);
+                    if (interval >= 1 && interval <= 12) {
+                    const linkChance = interval <= 2 ? 0.18 : 0.35;
+                    if (this.random.nextFloat() < linkChance) {
+                        previousElement.articulation = 'glissando';
+                        if (this.consumeSlideArticulation('glissando')) {
+                            glissAssignedToPrevious = true;
+                            console.log(`🎸 回填Glissando: ${previousElement.midi} -> ${noteObject.midi} (音程${interval}半音)`);
+                        } else {
+                            previousElement.articulation = null;
+                        }
+                    }
+                }
+                }
                 
                 // 为音符选择合适的articulation
-                const articulation = this.selectArticulation(
-                    noteObject, 
-                    notes.filter(n => n.type === 'note').length, // 当前音符索引
-                    notes.filter(n => n.type === 'note'), // 只考虑音符，不包括休止符
-                    measureIndex,
-                    this.clef
-                );
+                const articulation = glissAssignedToPrevious
+                    ? null
+                    : this.selectArticulation(
+                        noteObject, 
+                        notes.filter(n => n.type === 'note').length, // 当前音符索引
+                        notes.filter(n => n.type === 'note'), // 只考虑音符，不包括休止符
+                        measureIndex,
+                        this.clef
+                    );
                 
                 // 处理acciaccatura - 如果选中了acciaccatura，生成实际的装饰音符
                 if (articulation === 'acciaccatura') {
@@ -11624,14 +11793,16 @@ class IntelligentMelodyGenerator {
         // 检查当前音符是否是前一个音符slur的结束点
         if (noteIndex > 0) {
             const prevNote = measureNotes[noteIndex - 1];
-            if (prevNote && prevNote.articulation && 
-                ['hammer-on', 'pull-off'].includes(prevNote.articulation)) {
+            if (prevNote && prevNote.articulation &&
+                ['hammer-on', 'pull-off', 'glissando'].includes(prevNote.articulation)) {
                 hasSlurConnection = true;
-                console.log(`🚫 音符${noteIndex}已经是前一个音符${prevNote.articulation}的slur结束点，跳过articulation选择`);
+                console.log(`🚫 音符${noteIndex}已参与前一个音符${prevNote.articulation}的双音技巧，跳过articulation选择`);
             }
         }
         
         // 检查当前音符是否会产生slur到下一个音符的逻辑将在articulation选择过程中处理
+        const previousNoteHasSlide =
+            noteIndex > 0 && isSlideArticulationType(measureNotes[noteIndex - 1]?.articulation);
         
         // === 基本演奏法规则 ===
         // 🔥 使用优先级系统：一旦选择了一个articulation，就停止检查其他
@@ -11795,37 +11966,49 @@ class IntelligentMelodyGenerator {
             // Glissando (/) - 连接两个音符的滑音，适用于较大音程
             // 强制禁止跨小节：不在第一个和最后一个音符使用
             // glissando标记应该放在起始音符上，连接到下一个音符
-            if (!selectedArticulation && artSettings.guitar.includes('glissando') && !isLastNote && noteIndex < measureNotes.length - 1) {
+            if (!selectedArticulation && !previousNoteHasSlide && artSettings.guitar.includes('glissando') && this.canAssignSlideArticulation('glissando') && !isLastNote && noteIndex < measureNotes.length - 1) {
                 const nextNote = measureNotes[noteIndex + 1];
                 if (nextNote && nextNote.type === 'note' && nextNote.midi) {
                     const interval = Math.abs(nextNote.midi - note.midi);
-                    // 滑音适用于3-12半音的音程（小三度到八度）
-                    const isSuitableForSlide = interval >= 3 && interval <= 12;
+                    const isDifferentPitch = interval >= 1;
+                    // 普通slide只要求连接两个不同音高；小音程降低概率，大音程提高概率
+                    const isReasonableRange = interval <= 12;
+                    const glissChance = interval <= 2 ? 0.55 : 0.9;
                     
-                    if (isSuitableForSlide && this.random.nextFloat() < 0.95) {
+                    if (isDifferentPitch && isReasonableRange && this.random.nextFloat() < glissChance) {
                         selectedArticulation = 'glissando';
                         console.log(`✅ 选择吉他技巧: Glissando: ${note.midi} -> ${nextNote.midi} (音程：${interval}半音)`);
                     }
                 }
             }
+
+            const slideFrequency = this.slideAssignmentState?.slideFrequency ?? getUserFrequency('articulation', 'slide');
             
             // Slide In (/↗) - 乐句开头或重拍，制造进入感
-            if (!selectedArticulation && artSettings.guitar.includes('slide-in')) {
+            if (!selectedArticulation && !previousNoteHasSlide && artSettings.guitar.includes('slide-in') && this.canAssignSlideArticulation('slide-in')) {
+                const noteBeats = typeof note.beats === 'number' ? note.beats : this.durationToBeats(note.duration || 'quarter');
+                const isQuarterOrLonger = noteBeats >= 1;
+                const isLongNote = noteBeats > 1;
                 const isEntryPoint = isFirstNote || (isStrongBeat && this.random.nextFloat() < 0.5);
+                const slideInChance = getSlideInOutChance(slideFrequency, isLongNote, 'slide-in');
                 
-                if (isEntryPoint && this.random.nextFloat() < 0.1) {
+                if (isQuarterOrLonger && isEntryPoint && this.random.nextFloat() < slideInChance) {
                     selectedArticulation = 'slide-in';
-                    console.log(`✅ 选择吉他技巧: slide-in`);
+                    console.log(`✅ 选择吉他技巧: slide-in (beats=${noteBeats})`);
                 }
             }
             
             // Slide Out (↘\) - 乐句结尾，作为收尾装饰
-            if (!selectedArticulation && artSettings.guitar.includes('slide-out')) {
+            if (!selectedArticulation && !previousNoteHasSlide && artSettings.guitar.includes('slide-out') && this.canAssignSlideArticulation('slide-out')) {
+                const noteBeats = typeof note.beats === 'number' ? note.beats : this.durationToBeats(note.duration || 'quarter');
+                const isQuarterOrLonger = noteBeats >= 1;
+                const isLongNote = noteBeats > 1;
                 const isEndingPoint = isLastNote || (noteIndex >= measureNotes.length - 2);
+                const slideOutChance = getSlideInOutChance(slideFrequency, isLongNote, 'slide-out');
                 
-                if (isEndingPoint && this.random.nextFloat() < 0.12) {
+                if (isQuarterOrLonger && isEndingPoint && this.random.nextFloat() < slideOutChance) {
                     selectedArticulation = 'slide-out';
-                    console.log(`✅ 选择吉他技巧: slide-out`);
+                    console.log(`✅ 选择吉他技巧: slide-out (beats=${noteBeats})`);
                 }
             }
         }
@@ -11861,6 +12044,12 @@ class IntelligentMelodyGenerator {
                 window.articulationCounter.total++;
                 window.articulationCounter.perTwoMeasures++;
                 console.log(`✅ 频率允许: 小节${measureIndex+1}添加${selectedArticulation} - 当前两小节组: ${window.articulationCounter.perTwoMeasures}/2`);
+            }
+        }
+        if (selectedArticulation && isSlideArticulationType(selectedArticulation)) {
+            if (!this.consumeSlideArticulation(selectedArticulation)) {
+                console.log(`🚫 Slide预算阻止: ${selectedArticulation}`);
+                selectedArticulation = null;
             }
         }
         if (selectedArticulation) {
@@ -11992,6 +12181,204 @@ class IntelligentMelodyGenerator {
 
         if (removed > 0) {
             console.log(`✅ 已移除${removed}个slur起始音的staccato`);
+        }
+
+        return measures;
+    }
+
+    ensureAtLeastOneGlissando(measures) {
+        if (!Array.isArray(measures) || measures.length === 0) {
+            return measures;
+        }
+
+        if (!userSettings?.articulations?.enabled) {
+            return measures;
+        }
+
+        if (this.clef !== 'treble') {
+            return measures;
+        }
+
+        const guitarTechniques = Array.isArray(userSettings?.articulations?.guitar)
+            ? userSettings.articulations.guitar
+            : [];
+
+        if (!guitarTechniques.includes('glissando')) {
+            return measures;
+        }
+
+        const hasSlide = measures.some(measure =>
+            Array.isArray(measure?.notes) &&
+            measure.notes.some(note => note?.type === 'note' && isSlideArticulationType(note.articulation))
+        );
+
+        if (hasSlide) {
+            return measures;
+        }
+
+        if (!this.canAssignSlideArticulation('glissando')) {
+            return measures;
+        }
+
+        for (let measureIndex = 0; measureIndex < measures.length; measureIndex++) {
+            const measure = measures[measureIndex];
+            if (!Array.isArray(measure?.notes)) continue;
+
+            for (let noteIndex = 0; noteIndex < measure.notes.length - 1; noteIndex++) {
+                const current = measure.notes[noteIndex];
+                const next = measure.notes[noteIndex + 1];
+                const currentHasArticulation = !!current?.articulation;
+                const nextHasArticulation = !!next?.articulation;
+
+                if (
+                    current?.type === 'note' &&
+                    next?.type === 'note' &&
+                    typeof current.midi === 'number' &&
+                    typeof next.midi === 'number' &&
+                    current.midi !== next.midi &&
+                    Math.abs(next.midi - current.midi) <= 12 &&
+                    !currentHasArticulation &&
+                    !nextHasArticulation
+                ) {
+                    current.articulation = 'glissando';
+                    this.consumeSlideArticulation('glissando');
+                    console.log(`🎸 Glissando保底补齐: 小节${measureIndex + 1} 音符${noteIndex + 1} (${current.midi} -> ${next.midi})`);
+                    return measures;
+                }
+            }
+        }
+
+        return measures;
+    }
+
+    sanitizeGlissandoPairs(measures) {
+        if (!Array.isArray(measures) || measures.length === 0) {
+            return measures;
+        }
+
+        let removed = 0;
+
+        for (let measureIndex = 0; measureIndex < measures.length; measureIndex++) {
+            const measure = measures[measureIndex];
+            if (!Array.isArray(measure?.notes)) continue;
+
+            for (let noteIndex = 0; noteIndex < measure.notes.length; noteIndex++) {
+                const current = measure.notes[noteIndex];
+                if (current?.type !== 'note' || current.articulation !== 'glissando') {
+                    continue;
+                }
+
+                const next = measure.notes[noteIndex + 1];
+                const isValid =
+                    next?.type === 'note' &&
+                    typeof current.midi === 'number' &&
+                    typeof next.midi === 'number' &&
+                    current.midi !== next.midi &&
+                    Math.abs(next.midi - current.midi) <= 12;
+
+                if (!isValid) {
+                    current.articulation = null;
+                    current.forceGlissandoStart = false;
+                    if (next && next.type === 'note') {
+                        next.needsGlissandoStop = false;
+                    }
+                    removed++;
+                    console.log(`🚫 移除无效glissando: 小节${measureIndex + 1} 音符${noteIndex + 1}`);
+                }
+            }
+        }
+
+        if (removed > 0) {
+            console.log(`✅ 已清理${removed}个无效glissando（必须连接相邻不同音高）`);
+        }
+
+        return measures;
+    }
+
+    sanitizeTwoNoteArticulationConflicts(measures) {
+        if (!Array.isArray(measures) || measures.length === 0) {
+            return measures;
+        }
+
+        let removed = 0;
+
+        for (let measureIndex = 0; measureIndex < measures.length; measureIndex++) {
+            const measure = measures[measureIndex];
+            if (!Array.isArray(measure?.notes)) continue;
+
+            for (let noteIndex = 0; noteIndex < measure.notes.length - 1; noteIndex++) {
+                const current = measure.notes[noteIndex];
+                const next = measure.notes[noteIndex + 1];
+                if (current?.type !== 'note' || next?.type !== 'note') continue;
+
+                const currentArt = current.articulation;
+                const nextArt = next.articulation;
+                const nextIsSlurType = nextArt === 'hammer-on' || nextArt === 'pull-off';
+                const currentIsSlurType = currentArt === 'hammer-on' || currentArt === 'pull-off';
+
+                // 同一对相邻音符上只保留一种双音技巧，避免slide与hammer/pull叠加
+                if (currentArt === 'glissando' && nextIsSlurType) {
+                    next.articulation = null;
+                    removed++;
+                    console.log(`🚫 清理冲突技巧: 小节${measureIndex + 1} 音符${noteIndex + 2} 的${nextArt}与前一音glissando冲突`);
+                    continue;
+                }
+
+                if (currentIsSlurType && nextArt === 'glissando') {
+                    next.articulation = null;
+                    removed++;
+                    console.log(`🚫 清理冲突技巧: 小节${measureIndex + 1} 音符${noteIndex + 2} 的glissando与前一音${currentArt}冲突`);
+                }
+            }
+        }
+
+        if (removed > 0) {
+            console.log(`✅ 双音技巧冲突清理完成: 移除${removed}个冲突articulation`);
+        }
+
+        return measures;
+    }
+
+    sanitizeConsecutiveSlides(measures) {
+        if (!Array.isArray(measures) || measures.length === 0) {
+            return measures;
+        }
+
+        let removed = 0;
+        let previousPlayableNote = null;
+
+        for (let measureIndex = 0; measureIndex < measures.length; measureIndex++) {
+            const measure = measures[measureIndex];
+            if (!Array.isArray(measure?.notes)) continue;
+
+            for (let noteIndex = 0; noteIndex < measure.notes.length; noteIndex++) {
+                const current = measure.notes[noteIndex];
+                if (!current || current.type !== 'note') {
+                    previousPlayableNote = null;
+                    continue;
+                }
+
+                const currentIsSlide = isSlideArticulationType(current.articulation);
+                const prevIsSlide =
+                    previousPlayableNote &&
+                    previousPlayableNote.type === 'note' &&
+                    isSlideArticulationType(previousPlayableNote.articulation);
+
+                if (currentIsSlide && prevIsSlide) {
+                    const removedType = current.articulation;
+                    current.articulation = null;
+                    current.forceGlissandoStart = false;
+                    current.needsGlissandoStop = false;
+                    removed++;
+                    console.log(`🚫 移除连续slide: 小节${measureIndex + 1} 音符${noteIndex + 1} 的${removedType}`);
+                }
+
+                previousPlayableNote = current;
+            }
+        }
+
+        if (removed > 0) {
+            console.log(`✅ 连续slide清理完成: 移除${removed}个连续slide（不允许相邻音符连续slide）`);
         }
 
         return measures;
@@ -12909,6 +13296,8 @@ class MusicXMLBuilder {
         }
         const tieNumberByFlatIndex = {};
         let tieCounter = 1;
+        const slurNumberByFlatIndex = {};
+        let slurCounter = 1;
         
         // 生成每个小节
         let prevNoteHadSlurStart = false; // 记录前一个音符是否开启了slur
@@ -12999,8 +13388,8 @@ class MusicXMLBuilder {
                             let valid = true;
                             
                             if (note.tieType === 'start') {
-                                // 只检查同一小节内的下一个音符
-                                valid = !!(next && next.type === 'note' && next.tied && (next.tieType === 'continue' || next.tieType === 'stop') && next.midi === note.midi);
+                                // 只允许相邻两音 tie：start 后必须紧跟 stop
+                                valid = !!(next && next.type === 'note' && next.tied && next.tieType === 'stop' && next.midi === note.midi);
                                 
                                 // 如果是小节最后一个音符，一定无效
                                 if (i === measureData.notes.length - 1) {
@@ -13008,8 +13397,8 @@ class MusicXMLBuilder {
                                     valid = false;
                                 }
                             } else if (note.tieType === 'stop') {
-                                // 只检查同一小节内的前一个音符
-                                valid = !!(prev && prev.type === 'note' && prev.tied && (prev.tieType === 'start' || prev.tieType === 'continue') && prev.midi === note.midi);
+                                // 只允许相邻两音 tie：stop 前必须紧邻 start
+                                valid = !!(prev && prev.type === 'note' && prev.tied && prev.tieType === 'start' && prev.midi === note.midi);
                                 
                                 // 如果是小节第一个音符，一定无效
                                 if (i === 0) {
@@ -13017,15 +13406,9 @@ class MusicXMLBuilder {
                                     valid = false;
                                 }
                             } else if (note.tieType === 'continue') {
-                                // continue类型必须在小节中间
-                                if (i === 0 || i === measureData.notes.length - 1) {
-                                    console.log(`❌ 强制移除跨小节tie: 小节${measureIndex + 1}边界音符的tie continue`);
-                                    valid = false;
-                                } else {
-                                    const hasValidPrev = !!(prev && prev.type === 'note' && prev.tied && (prev.tieType === 'start' || prev.tieType === 'continue') && prev.midi === note.midi);
-                                    const hasValidNext = !!(next && next.type === 'note' && next.tied && (next.tieType === 'continue' || next.tieType === 'stop') && next.midi === note.midi);
-                                    valid = hasValidPrev && hasValidNext;
-                                }
+                                // 明确禁止跨越多个音符的tie链
+                                console.log(`❌ 强制移除跨多音符tie: 小节${measureIndex + 1} 位置${i} tie continue`);
+                                valid = false;
                             }
                             if (!valid) {
                                 console.warn(`❌ 移除无效tie: 小节${measureIndex + 1} 位置${i} tieType=${note.tieType}`);
@@ -13073,10 +13456,24 @@ class MusicXMLBuilder {
                         if (note.articulation === 'glissando') {
                             if (i < measureData.notes.length - 1) {
                                 const nextNote = measureData.notes[i + 1];
-                                if (nextNote && nextNote.type === 'note') {
+                                const isValidGlissPair =
+                                    nextNote &&
+                                    nextNote.type === 'note' &&
+                                    typeof note.midi === 'number' &&
+                                    typeof nextNote.midi === 'number' &&
+                                    nextNote.midi !== note.midi &&
+                                    Math.abs(nextNote.midi - note.midi) <= 12;
+
+                                if (isValidGlissPair) {
                                     forceGlissandoStart = true;
                                     console.log(`🎸 当前音符有glissando，开始glissando连接到下一个音符`);
+                                } else {
+                                    note.articulation = null;
+                                    console.log(`🚫 清除无效glissando（必须连接相邻不同音高）`);
                                 }
+                            } else {
+                                note.articulation = null;
+                                console.log(`🚫 清除无效glissando（小节末尾无后续音符）`);
                             }
                         }
                         
@@ -13169,6 +13566,19 @@ class MusicXMLBuilder {
                         emitNote.forceGlissandoStart = forceGlissandoStart;
                         emitNote.needsGlissandoStop = needsGlissandoStop;
                         
+                        const flatIdx = indexMap.get(`${measureIndex}:${i}`);
+                        const currentSlurNumber = (() => {
+                            if (forceSlurStart) {
+                                const num = slurCounter++;
+                                slurNumberByFlatIndex[flatIdx] = num;
+                                return num;
+                            }
+                            if (needsSlurStop && flatIdx > 0) {
+                                return slurNumberByFlatIndex[flatIdx - 1] || null;
+                            }
+                            return null;
+                        })();
+
                         const result = this.buildNoteXML(
                             emitNote,
                             beamInfo,
@@ -13180,36 +13590,21 @@ class MusicXMLBuilder {
                             (() => {
                                 // 为有效的相邻tie分配并传递一个严格配对的编号，避免OSMD错误配对
                                 if (!(emitNote.tied && emitNote.tieType)) return null;
-                                const flatIdx = indexMap.get(`${measureIndex}:${i}`);
                                 if (emitNote.tieType === 'start') {
                                     const num = tieCounter++;
                                     tieNumberByFlatIndex[flatIdx] = num;
                                     return num;
                                 }
-                                if (emitNote.tieType === 'continue' || emitNote.tieType === 'stop') {
-                                    // 修复跨小节tie numbering: 更安全地查找前一个tie的编号
-                                    let prevNum = null;
-                                    if (flatIdx > 0) {
-                                        prevNum = tieNumberByFlatIndex[flatIdx - 1];
-                                        // 如果前一个位置没有tie number，向前查找最近的tied音符
-                                        if (!prevNum) {
-                                            for (let searchIdx = flatIdx - 1; searchIdx >= 0; searchIdx--) {
-                                                const searchNote = flatNotes[searchIdx]?.event;
-                                                if (searchNote && searchNote.tied && (searchNote.tieType === 'start' || searchNote.tieType === 'continue')) {
-                                                    prevNum = tieNumberByFlatIndex[searchIdx];
-                                                    if (prevNum) break;
-                                                }
-                                                // 如果遇到非tied音符，停止搜索
-                                                if (searchNote && searchNote.type === 'note' && !searchNote.tied) break;
-                                            }
-                                        }
+                                if (emitNote.tieType === 'stop') {
+                                    const num = flatIdx > 0 ? tieNumberByFlatIndex[flatIdx - 1] : null;
+                                    if (num) {
+                                        tieNumberByFlatIndex[flatIdx] = num;
                                     }
-                                    const num = prevNum || tieCounter++;
-                                    tieNumberByFlatIndex[flatIdx] = num;
-                                    return num;
+                                    return num || null;
                                 }
                                 return null;
-                            })()
+                            })(),
+                            currentSlurNumber
                         );
                         xml += result.xml;
                         
@@ -13355,8 +13750,9 @@ class MusicXMLBuilder {
         return Math.max(1, Math.round(fallbackBeats * divisions));
     }
 
-    buildNoteXML(note, beamInfo, needsSlurStop = false, prevStemDirection = null, prevSlurPlacement = null, forceSlurStart = false, nextStemDirection = null, tieNumber = null) {
+    buildNoteXML(note, beamInfo, needsSlurStop = false, prevStemDirection = null, prevSlurPlacement = null, forceSlurStart = false, nextStemDirection = null, tieNumber = null, slurNumber = null) {
         const { duration, step, octave, alter, isTriplet, tripletType, tripletPosition, tied, tieType, articulation, isAcciaccatura, forceGlissandoStart, needsGlissandoStop, graceNote } = note;
+        const slurNumberAttr = slurNumber ? ` number="${slurNumber}"` : ' number="2"';
         
         // 构建最终的XML，可能包含grace note和主音符
         let fullNoteXML = '';
@@ -13572,7 +13968,7 @@ class MusicXMLBuilder {
                     // 如果有placement信息，添加到slur标签
                     const placementAttr = prevSlurPlacement ? ` placement="${prevSlurPlacement}"` : '';
                     noteXML += `
-          <slur type="stop" number="2"${placementAttr}/>`;
+          <slur type="stop"${slurNumberAttr}${placementAttr}/>`;
                 }
                 
                 // 如果当前音符有slide，需要开始glissando (现在在notations内处理)
@@ -13682,12 +14078,12 @@ class MusicXMLBuilder {
                         } else if (articulation === 'hammer-on' && hammerOnAllowed && interval > 0) {
                             // 只允许上行hammer-on生成slur
                             noteXML += `
-          <slur type="start" number="2"${slurPlacement}/>`;
+          <slur type="start"${slurNumberAttr}${slurPlacement}/>`;
                             console.log(`✅ ALLOWED: hammer-on slur generated for ascending interval ${interval}`);
                         } else if (articulation === 'pull-off' && pullOffAllowed && interval < 0) {
                             // 只允许下行pull-off生成slur
                             noteXML += `
-          <slur type="start" number="2"${slurPlacement}/>`;
+          <slur type="start"${slurNumberAttr}${slurPlacement}/>`;
                             console.log(`✅ ALLOWED: pull-off slur generated for descending interval ${interval}`);
                         } else {
                             console.log(`🚫 BLOCKED: slur blocked - articulation=${articulation}, interval=${interval}, hammerOnAllowed=${hammerOnAllowed}, pullOffAllowed=${pullOffAllowed}`);
@@ -13718,19 +14114,14 @@ class MusicXMLBuilder {
                 // 如果有placement信息，添加到slur标签
                 const placementAttr = prevSlurPlacement ? ` placement="${prevSlurPlacement}"` : '';
                 noteXML += `
-          <slur type="stop" number="2"${placementAttr}/>`;
+          <slur type="stop"${slurNumberAttr}${placementAttr}/>`;
             }
             
             // OSMD限制：glissando不被支持，保留标签用于未来兼容性
             if (forceGlissandoStart) {
                 noteXML += `
           <glissando type="start" line-type="solid" number="1"/>`;
-                // 添加文本提示
-                noteXML += `
-          <technical>
-            <string>gliss.</string>
-          </technical>`;
-                console.log(`⚠️ OSMD不支持glissando，已添加文本标记'gliss.'作为提示`);
+                console.log(`⚠️ OSMD不稳定支持glissando，已保留glissando标签`);
             }
             
             if (needsGlissandoStop) {
@@ -13741,37 +14132,18 @@ class MusicXMLBuilder {
             
             // OSMD不支持slide-in/slide-out的glissando渲染
             if (articulation === 'slide-in') {
-                // 保留标签用于未来兼容性
-                noteXML += `
-          <glissando type="stop" line-type="solid" number="2"/>`;
-                // 添加文本提示
-                noteXML += `
-          <technical>
-            <string>slide in</string>
-          </technical>`;
-                console.log(`⚠️ OSMD不支持slide-in glissando，使用文本提示`);
+                // Slide-in使用自定义渲染层，避免单端glissando触发解析兼容问题
+                console.log(`🎸 Slide-in: 由自定义渲染层绘制，不写入单端glissando标签`);
             } else if (articulation === 'slide-out') {
-                // 保留标签用于未来兼容性
-                noteXML += `
-          <glissando type="start" line-type="solid" number="2"/>`;
-                // 添加文本提示
-                noteXML += `
-          <technical>
-            <string>slide out</string>
-          </technical>`;
-                console.log(`⚠️ OSMD不支持slide-out glissando，使用文本提示`);
+                // Slide-out使用自定义渲染层，避免单端glissando触发解析兼容问题
+                console.log(`🎸 Slide-out: 由自定义渲染层绘制，不写入单端glissando标签`);
             }
             
             // OSMD限制：glissando不被支持，保留标签用于未来兼容性
             if (forceGlissandoStart) {
                 noteXML += `
           <glissando type="start" line-type="solid" number="1"/>`;
-                // 添加文本提示
-                noteXML += `
-          <technical>
-            <string>gliss.</string>
-          </technical>`;
-                console.log(`⚠️ OSMD不支持glissando，已添加文本标记'gliss.'作为提示`);
+                console.log(`⚠️ OSMD不稳定支持glissando，已保留glissando标签`);
             }
             
             if (needsGlissandoStop) {
@@ -13782,25 +14154,11 @@ class MusicXMLBuilder {
             
             // OSMD不支持slide-in/slide-out的glissando渲染
             if (articulation === 'slide-in') {
-                // 保留标签用于未来兼容性
-                noteXML += `
-          <glissando type="stop" line-type="solid" number="2"/>`;
-                // 添加文本提示
-                noteXML += `
-          <technical>
-            <string>slide in</string>
-          </technical>`;
-                console.log(`⚠️ OSMD不支持slide-in glissando，使用文本提示`);
+                // Slide-in使用自定义渲染层，避免单端glissando触发解析兼容问题
+                console.log(`🎸 Slide-in: 由自定义渲染层绘制，不写入单端glissando标签`);
             } else if (articulation === 'slide-out') {
-                // 保留标签用于未来兼容性
-                noteXML += `
-          <glissando type="start" line-type="solid" number="2"/>`;
-                // 添加文本提示
-                noteXML += `
-          <technical>
-            <string>slide out</string>
-          </technical>`;
-                console.log(`⚠️ OSMD不支持slide-out glissando，使用文本提示`);
+                // Slide-out使用自定义渲染层，避免单端glissando触发解析兼容问题
+                console.log(`🎸 Slide-out: 由自定义渲染层绘制，不写入单端glissando标签`);
             }
             
             // 添加articulation标记（glissando、slide-in、slide-out已经在notations中处理了）
@@ -13878,12 +14236,12 @@ class MusicXMLBuilder {
                     } else if (articulation === 'hammer-on' && hammerOnAllowed && interval > 0) {
                         // 只允许上行hammer-on生成slur
                         noteXML += `
-          <slur type="start" number="2"${slurPlacement}/>`;
+          <slur type="start"${slurNumberAttr}${slurPlacement}/>`;
                         console.log(`✅ ALLOWED: hammer-on slur generated in branch3 for ascending interval ${interval}`);
                     } else if (articulation === 'pull-off' && pullOffAllowed && interval < 0) {
                         // 只允许下行pull-off生成slur
                         noteXML += `
-          <slur type="start" number="2"${slurPlacement}/>`;
+          <slur type="start"${slurNumberAttr}${slurPlacement}/>`;
                         console.log(`✅ ALLOWED: pull-off slur generated in branch3 for descending interval ${interval}`);
                     } else {
                         console.log(`🚫 BLOCKED: slur blocked in branch3 - articulation=${articulation}, interval=${interval}`);
@@ -13906,55 +14264,29 @@ class MusicXMLBuilder {
                 // 如果有placement信息，添加到slur标签
                 const placementAttr = prevSlurPlacement ? ` placement="${prevSlurPlacement}"` : '';
                 noteXML += `
-          <slur type="stop" number="2"${placementAttr}/>`;
+          <slur type="stop"${slurNumberAttr}${placementAttr}/>`;
             }
             
-            // Glissando实现 - 使用多种方法确保兼容性
+            // Glissando实现：仅使用标准glissando，避免额外slur造成误判
             if (forceGlissandoStart) {
-                // 方法1: 标准glissando标签
                 noteXML += `
           <glissando type="start" line-type="solid" number="1"/>`;
                 console.log(`🎸 添加标准glissando start标签 (number=1)`);
-                
-                // 方法2: 备用slur模拟（如果glissando不被支持）
-                noteXML += `
-          <slur type="start" number="4" placement="below"/>`;
-                console.log(`🎸 备用方案: 添加特殊slur模拟glissando (number=4, placement=below)`);
             }
             
             if (needsGlissandoStop) {
-                // 对应的结束标签
                 noteXML += `
           <glissando type="stop" line-type="solid" number="1"/>`;
                 console.log(`🎸 添加标准glissando stop标签 (number=1)`);
-                
-                // 备用slur结束
-                noteXML += `
-          <slur type="stop" number="4"/>`;
-                console.log(`🎸 备用方案: 添加slur stop (number=4)`);
             }
             
             // Slide-in/slide-out实现 - 含备用方案
             if (articulation === 'slide-in') {
-                // slide-in: 从不确定音高滑入当前音符，在当前音符结束滑音
-                noteXML += `
-          <glissando type="stop" line-type="solid" number="2"/>`;
-                console.log(`🎸 Slide-in: 添加glissando stop标签 (number=2)`);
-                
-                // 备用方案：使用特殊标记的slur
-                noteXML += `
-          <slur type="stop" number="5" placement="below"/>`;
-                console.log(`🎸 Slide-in备用: 添加特殊slur stop (number=5)`);
+                // slide-in: 由渲染后自定义图层绘制，避免单端标签兼容问题
+                console.log(`🎸 Slide-in: 使用自定义渲染层绘制`);
             } else if (articulation === 'slide-out') {
-                // slide-out: 从当前音符滑向不确定音高，在当前音符开始滑音
-                noteXML += `
-          <glissando type="start" line-type="solid" number="2"/>`;
-                console.log(`🎸 Slide-out: 添加glissando start标签 (number=2)`);
-                
-                // 备用方案：使用特殊标记的slur  
-                noteXML += `
-          <slur type="start" number="5" placement="below"/>`;
-                console.log(`🎸 Slide-out备用: 添加特殊slur start (number=5)`);
+                // slide-out: 由渲染后自定义图层绘制，避免单端标签兼容问题
+                console.log(`🎸 Slide-out: 使用自定义渲染层绘制`);
             }
             
             // 添加articulation标记（glissando、slide-in、slide-out已经在notations中处理了）
@@ -14013,7 +14345,7 @@ class MusicXMLBuilder {
                         console.log(`🚫 FORCED BLOCK: pull-off slur被强制阻止在branch2！`);
                     } else {
                         noteXML += `
-          <slur type="start" number="2"${slurPlacement}/>`;
+          <slur type="start"${slurNumberAttr}${slurPlacement}/>`;
                     }
                 } else if (forceSlurStart && !slurAllowed) {
                     console.log(`🔒 buildNoteXML第二分支: ${articulation}不被允许，跳过slur生成`);
@@ -14448,6 +14780,229 @@ function annotateMusicXML(musicXML, melodyData, options = {}) {
     });
 }
 
+function flattenMelodyNotesForSlide(melodyData) {
+    const flattened = [];
+    if (!melodyData || !Array.isArray(melodyData.melody)) {
+        return flattened;
+    }
+
+    melodyData.melody.forEach((measure, measureIndex) => {
+        if (!measure || !Array.isArray(measure.notes)) return;
+        measure.notes.forEach((note, noteIndex) => {
+            if (!note || note.type !== 'note') return;
+            flattened.push({ note, measureIndex, noteIndex });
+        });
+    });
+
+    return flattened;
+}
+
+function getOSMDGraphicalNotePoints() {
+    try {
+        if (typeof osmd === 'undefined' || !osmd || !osmd.GraphicSheet) {
+            return [];
+        }
+
+        const graphicSheet = osmd.GraphicSheet;
+        const measureList = graphicSheet.measureList || graphicSheet.MeasureList || [];
+        const unitToPx = (
+            osmd.EngravingRules && typeof osmd.EngravingRules.UnitInPixels === 'number' && osmd.EngravingRules.UnitInPixels > 0
+        ) ? osmd.EngravingRules.UnitInPixels * (osmd.zoom || 1) : (10 * (osmd.zoom || 1));
+
+        const points = [];
+
+        for (let measureIndex = 0; measureIndex < measureList.length; measureIndex++) {
+            const bucket = measureList[measureIndex];
+            const graphicalMeasures = Array.isArray(bucket) ? bucket : [bucket];
+
+            for (const graphicalMeasure of graphicalMeasures) {
+                if (!graphicalMeasure) continue;
+
+                const staffEntries = graphicalMeasure.staffEntries || graphicalMeasure.StaffEntries || [];
+                for (const staffEntry of staffEntries) {
+                    const voiceEntries = staffEntry.graphicalVoiceEntries || staffEntry.GraphicalVoiceEntries || [];
+                    let pickedPoint = null;
+
+                    for (const voiceEntry of voiceEntries) {
+                        const graphicalNotes = voiceEntry.notes || voiceEntry.Notes || [];
+                        for (const graphicalNote of graphicalNotes) {
+                            const sourceNote = graphicalNote.sourceNote || graphicalNote.SourceNote;
+                            if (!sourceNote) continue;
+
+                            const isRest = sourceNote.isRestFlag === true || sourceNote.pitch == null;
+                            if (isRest) continue;
+
+                            const noteLength = sourceNote.length || sourceNote.Length;
+                            const realValue = noteLength && (noteLength.realValue ?? noteLength.RealValue);
+                            if (typeof realValue === 'number' && realValue <= 0) continue; // 忽略grace等零时值音符
+
+                            const bbox = graphicalNote.boundingBox || graphicalNote.BoundingBox ||
+                                graphicalNote.PositionAndShape || graphicalNote.positionAndShape;
+                            const abs = bbox && (bbox.absolutePosition || bbox.AbsolutePosition || bbox.position || bbox.Position);
+                            if (!abs) continue;
+                            const size = bbox && (bbox.size || bbox.Size || bbox.extent || bbox.Extent);
+
+                            const x = (abs.x ?? abs.X ?? 0) * unitToPx;
+                            const yBase = (abs.y ?? abs.Y ?? 0) * unitToPx;
+                            const heightValue = size ? (size.height ?? size.y ?? size.Y) : 0;
+                            const y = yBase + ((typeof heightValue === 'number' && heightValue > 0) ? (heightValue * unitToPx * 0.5) : 0);
+
+                            if (!pickedPoint || x < pickedPoint.x) {
+                                pickedPoint = { x, y, measureIndex };
+                            }
+                        }
+                    }
+
+                    if (pickedPoint) {
+                        points.push(pickedPoint);
+                    }
+                }
+            }
+        }
+
+        return points;
+    } catch (error) {
+        console.warn('⚠️ 获取OSMD音符坐标失败:', error);
+        return [];
+    }
+}
+
+function clearCustomSlideLayer(scoreDiv) {
+    const svg = scoreDiv ? scoreDiv.querySelector('svg') : null;
+    if (!svg) return;
+    const oldLayer = svg.querySelector('g[data-custom-slide-layer="true"]');
+    if (oldLayer) oldLayer.remove();
+}
+
+function buildCustomSlideSegments(melodyData, notePoints) {
+    const noteEntries = flattenMelodyNotesForSlide(melodyData);
+    if (!noteEntries.length || !notePoints.length) {
+        return [];
+    }
+
+    const mappedCount = Math.min(noteEntries.length, notePoints.length);
+    if (mappedCount < noteEntries.length) {
+        console.warn(`⚠️ Slide映射不完整: 旋律音符=${noteEntries.length}, 可用坐标=${notePoints.length}`);
+    }
+
+    const mapped = [];
+    for (let i = 0; i < mappedCount; i++) {
+        mapped.push({ note: noteEntries[i].note, point: notePoints[i] });
+    }
+
+    const segments = [];
+    for (let i = 0; i < mapped.length; i++) {
+        const current = mapped[i];
+        const articulation = current.note.articulation;
+        if (!articulation) continue;
+
+        if (articulation === 'glissando') {
+            const next = mapped[i + 1];
+            if (!next) continue;
+
+            const forwardDistance = next.point.x - current.point.x;
+            if (forwardDistance < 12) continue; // 避免跨行或反向连接导致错误线条
+
+            const x1 = current.point.x + 6;
+            const y1 = current.point.y;
+            const x2 = next.point.x - 6;
+            const y2 = next.point.y;
+
+            segments.push({
+                type: 'glissando',
+                d: `M ${x1.toFixed(2)} ${y1.toFixed(2)} L ${x2.toFixed(2)} ${y2.toFixed(2)}`
+            });
+            continue;
+        }
+
+        if (articulation === 'slide-in') {
+            const x2 = current.point.x - 2;
+            const y2 = current.point.y;
+            const x1 = x2 - 22;
+            const y1 = y2 + 10;
+
+            segments.push({
+                type: 'slide-in',
+                d: `M ${x1.toFixed(2)} ${y1.toFixed(2)} L ${x2.toFixed(2)} ${y2.toFixed(2)}`
+            });
+            continue;
+        }
+
+        if (articulation === 'slide-out') {
+            const x1 = current.point.x + 2;
+            const y1 = current.point.y;
+            const x2 = x1 + 22;
+            const y2 = y1 + 10;
+
+            segments.push({
+                type: 'slide-out',
+                d: `M ${x1.toFixed(2)} ${y1.toFixed(2)} L ${x2.toFixed(2)} ${y2.toFixed(2)}`
+            });
+        }
+    }
+
+    return segments;
+}
+
+function drawCustomSlideSegments(segments) {
+    const scoreDiv = document.getElementById('score');
+    if (!scoreDiv) return;
+
+    const svg = scoreDiv.querySelector('svg');
+    if (!svg) return;
+
+    clearCustomSlideLayer(scoreDiv);
+    if (!segments.length) return;
+
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const layer = document.createElementNS(svgNS, 'g');
+    layer.setAttribute('data-custom-slide-layer', 'true');
+    layer.setAttribute('class', 'custom-slide-layer');
+    layer.setAttribute('pointer-events', 'none');
+
+    segments.forEach((segment) => {
+        const path = document.createElementNS(svgNS, 'path');
+        path.setAttribute('d', segment.d);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', '#1f2933');
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('stroke-linejoin', 'round');
+
+        if (segment.type === 'glissando') {
+            path.setAttribute('stroke-width', '1.4');
+        } else {
+            path.setAttribute('stroke-width', '1.6');
+            path.setAttribute('stroke-dasharray', 'none');
+        }
+
+        layer.appendChild(path);
+    });
+
+    svg.appendChild(layer);
+}
+
+function renderCustomSlideOverlays(melodyData) {
+    const scoreDiv = document.getElementById('score');
+    if (!scoreDiv) return;
+
+    clearCustomSlideLayer(scoreDiv);
+
+    const noteEntries = flattenMelodyNotesForSlide(melodyData);
+    const hasSlideArticulation = noteEntries.some(({ note }) =>
+        note.articulation === 'glissando' ||
+        note.articulation === 'slide-in' ||
+        note.articulation === 'slide-out'
+    );
+
+    if (!hasSlideArticulation) return;
+
+    const notePoints = getOSMDGraphicalNotePoints();
+    const segments = buildCustomSlideSegments(melodyData, notePoints);
+    drawCustomSlideSegments(segments);
+
+    console.log(`🎸 自定义Slide渲染完成: ${segments.length}条`);
+}
+
 // ====== OSMD渲染系统 ======
 async function initOSMD() {
     try {
@@ -14838,6 +15393,8 @@ async function renderScore(melodyData) {
         // 渲染
         osmd.render();
         console.log('✅ OSMD渲染完成');
+        renderCustomSlideOverlays(melodyData);
+        setTimeout(() => renderCustomSlideOverlays(melodyData), 80);
 
         // 🔒 立即检查并应用隐藏状态（避免闪现）
         if (typeof isMelodyHidden !== 'undefined' && isMelodyHidden) {
@@ -16743,6 +17300,8 @@ function generateMelodyData(measures, keySignature, timeSignature, clef, seed = 
         
         let currentMidi = null; // 第一个音符将由智能函数选择
         let measuresXML = '';
+        const slideAssignmentState68 = createSlideAssignmentState(random);
+        console.log(`🎚️ 6/8 Slide频率控制: ${slideAssignmentState68.slideFrequency}% -> 期望${slideAssignmentState68.expectedSlides.toFixed(2)}个, ${slideAssignmentState68.isUnlimited ? '不限数量模式' : `本条预算${slideAssignmentState68.slideBudget}个`}`);
         
         for (let m = 1; m <= measures; m++) {
             measuresXML += `    <measure number="${m}">`;
@@ -16787,7 +17346,8 @@ function generateMelodyData(measures, keySignature, timeSignature, clef, seed = 
                 needsPhraseBreathe,
                 clef,
                 keySignature, // 🔥 传递调号参数
-                accidentalRate // 🔥 修复：传递临时记号概率参数
+                accidentalRate, // 🔥 修复：传递临时记号概率参数
+                slideAssignmentState68
             );
             measuresXML += measureXML.xml;
             currentMidi = measureXML.lastMidi;
@@ -17819,15 +18379,24 @@ function openArticulationSettings() {
                 frequencies: {
                     staccato: 20,
                     accent: 15,
-                    acciaccatura: 12,
-                    hammer: 15,
-                    pull: 15
+                    acciaccatura: 10,
+                    slur: 15,
+                    slide: 10
                 }
             };
         }
         
         // 恢复当前设置到UI
         const artSettings = userSettings.articulations;
+        const requiredFreqTypes = ['staccato', 'accent', 'acciaccatura', 'slur', 'slide'];
+        if (!artSettings.frequencies || typeof artSettings.frequencies !== 'object') {
+            artSettings.frequencies = {};
+        }
+        requiredFreqTypes.forEach(type => {
+            if (artSettings.frequencies[type] === undefined) {
+                artSettings.frequencies[type] = getDefaultArticulationFrequency(type);
+            }
+        });
     
         // 🔥 安全检查DOM元素并恢复设置
         const elementsToCheck = [
@@ -17950,11 +18519,14 @@ function closeArticulationSettingsWithSave() {
                              artSettings.bass.length > 0;
         
         const frequencies = {};
-        const artTypes = ['staccato', 'accent', 'acciaccatura', 'hammer', 'pull'];
+        const artTypes = ['staccato', 'accent', 'acciaccatura', 'slur', 'slide'];
         artTypes.forEach(type => {
-            const slider = document.getElementById(`freq-art-${type}`);
+            const slider = document.getElementById(`freq-${type}`);
             if (slider) {
                 frequencies[type] = parseInt(slider.value);
+            } else {
+                const existingValue = userSettings?.articulations?.frequencies?.[type];
+                frequencies[type] = normalizeFrequencyPercentage(existingValue, getDefaultArticulationFrequency(type));
             }
         });
         
@@ -18276,7 +18848,7 @@ function saveArticulationSettings() {
     
     // 🔥 智能收集频率设置 - 优先使用实时更新的值，滑块值作为后备
     const frequencies = {};
-    const articulationTypes = ['staccato', 'accent', 'acciaccatura', 'slur'];  // 使用slur代替hammer和pull
+    const articulationTypes = ['staccato', 'accent', 'acciaccatura', 'slur', 'slide'];  // slur+slide均为统一控制项
     articulationTypes.forEach(type => {
         // 优先使用userSettings中已存在的实时更新值
         if (userSettings.articulations && 
@@ -18438,7 +19010,7 @@ function toggleArticulationAdvancedSettings() {
  * 初始化演奏法频率滑块事件监听器
  */
 function initializeArticulationFrequencySliders() {
-    const articulationTypes = ['staccato', 'accent', 'acciaccatura', 'slur'];
+    const articulationTypes = ['staccato', 'accent', 'acciaccatura', 'slur', 'slide'];
     
     articulationTypes.forEach(type => {
         const slider = document.getElementById(`freq-${type}`);
@@ -18449,11 +19021,7 @@ function initializeArticulationFrequencySliders() {
         if (type === 'staccato') checkboxId = 'art-staccato';
         else if (type === 'accent') checkboxId = 'art-accent';
         else if (type === 'acciaccatura') checkboxId = 'art-acciaccatura';
-        else if (type === 'slur') {
-            // slur控制hammer和pull两个复选框
-            const hammerCheckbox = document.getElementById('gtr-hammer');
-            const pullCheckbox = document.getElementById('gtr-pull');
-            
+        else if (type === 'slur' || type === 'slide') {
             if (slider && valueSpan) {
                 // 移除现有监听器防止重复绑定
                 slider.removeEventListener('input', slider._handler);
@@ -18466,7 +19034,11 @@ function initializeArticulationFrequencySliders() {
                     // 🔥 修复：移除错误的自动同步机制
                     // slur滑块不应该控制复选框状态，而是相反
                     // 复选框状态应该由用户手动控制，滑块只是设置频率
-                    console.log(`🎯 更新slur频率为: ${frequency}%`);
+                    if (type === 'slur') {
+                        console.log(`🎯 更新slur频率为: ${frequency}%`);
+                    } else {
+                        console.log(`🎯 更新slide频率为: ${frequency}%`);
+                    }
                     
                     // 更新userSettings中的频率设置
                     if (!userSettings.articulations) {
@@ -18534,7 +19106,8 @@ function resetArticulationFrequencies() {
         staccato: 20,
         accent: 15,
         acciaccatura: 10,
-        slur: 15  // 🔥 使用统一的击勾弦频率控制
+        slur: 15,  // 🔥 使用统一的击勾弦频率控制
+        slide: 10  // 🔥 统一控制普通slide/slide-in/slide-out
     };
     
     // 🔥 更新userSettings中的频率设置
@@ -19215,9 +19788,9 @@ document.addEventListener('DOMContentLoaded', function() {
             frequencies: {
                 staccato: 20,
                 accent: 15,
-                acciaccatura: 12,
-                hammer: 15,
-                pull: 15
+                acciaccatura: 10,
+                slur: 15,
+                slide: 10
             }
         };
     }
@@ -19234,8 +19807,9 @@ document.addEventListener('DOMContentLoaded', function() {
         userSettings.articulations.frequencies = {
             staccato: 20,
             accent: 15,
-            acciaccatura: 12,
-            slur: 15  // 统一的击勾弦频率控制
+            acciaccatura: 10,
+            slur: 15,  // 统一的击勾弦频率控制
+            slide: 10  // 统一的Slide频率控制
         };
     }
     
@@ -19330,11 +19904,8 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCustomRange();
     updateRhythmSettingsRealTime(); // 初始化节奏设置
     
-    // 🔥 优化的击勾弦(slur)频率控制系统
-    console.log('🎸 开始初始化 slur 频率控制器...');
-    
-    const slurSlider = document.getElementById('freq-slur');
-    const slurValueDisplay = document.getElementById('freq-slur-value');
+    // 🔥 优化的吉他技巧频率控制系统
+    console.log('🎸 开始初始化 slur/slide 频率控制器...');
     
     // 🔥 确保frequencies对象存在且有正确的初始值
     if (!userSettings.articulations.frequencies) {
@@ -19342,32 +19913,35 @@ document.addEventListener('DOMContentLoaded', function() {
             staccato: 20,
             accent: 15,
             acciaccatura: 10,
-            slur: 15  // 统一的击勾弦频率控制
+            slur: 15,
+            slide: 10
         };
         console.log('🔧 重新初始化 frequencies 对象');
     }
-    
-    if (slurSlider && slurValueDisplay) {
-        // 设置初始值
-        const initialSlurValue = userSettings.articulations.frequencies.slur || 15;
-        slurSlider.value = initialSlurValue;
-        slurValueDisplay.textContent = initialSlurValue + '%';
-        
-        // 添加事件监听器
-        slurSlider.addEventListener('input', function() {
+
+    ['slur', 'slide'].forEach(type => {
+        const slider = document.getElementById(`freq-${type}`);
+        const valueDisplay = document.getElementById(`freq-${type}-value`);
+        if (!slider || !valueDisplay) {
+            console.log(`❌ ${type}滑块或显示元素未找到`);
+            return;
+        }
+        const initialValue = userSettings.articulations.frequencies[type] ?? getDefaultArticulationFrequency(type);
+        slider.value = initialValue;
+        valueDisplay.textContent = `${initialValue}%`;
+
+        slider.removeEventListener('input', slider._initHandler);
+        slider._initHandler = function() {
             const value = parseInt(this.value);
-            slurValueDisplay.textContent = value + '%';
-            userSettings.articulations.frequencies.slur = value;
-            
-            console.log(`🎸 击勾弦频率更新: ${value}%`);
-        });
-        
-        console.log(`✅ 击勾弦滑块初始化完成: ${initialSlurValue}%`);
-    } else {
-        console.log('❌ 击勾弦滑块或显示元素未找到');
-    }
-    
-    console.log('🎸 击勾弦频率控制器初始化完成!');
+            valueDisplay.textContent = `${value}%`;
+            userSettings.articulations.frequencies[type] = value;
+            console.log(`🎸 ${type}频率更新: ${value}%`);
+        };
+        slider.addEventListener('input', slider._initHandler);
+        console.log(`✅ ${type}滑块初始化完成: ${initialValue}%`);
+    });
+
+    console.log('🎸 吉他技巧频率控制器初始化完成!');
     console.log('📊 当前频率设置:', userSettings.articulations.frequencies);
     
     // 🔥 移除旧的错误的timeSignature元素监听器代码
@@ -21683,9 +22257,10 @@ function update68Info(stats) {
  * 🔥 全新简化版：6/8拍十六分音符生成器
  * 抛弃所有复杂逻辑，使用直接有效的方法
  */
-function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, userRange, maxJump, isLastMeasure, random, needsPhraseBreathe = false, clef = 'treble', keySignature = 'C', accidentalRate = 0) {
+function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, userRange, maxJump, isLastMeasure, random, needsPhraseBreathe = false, clef = 'treble', keySignature = 'C', accidentalRate = 0, slideAssignmentState = null) {
     console.log('🎼 [Cantus Firmus风格] 6/8拍旋律生成器');
     console.log(`🎯 临时记号概率: ${(accidentalRate * 100).toFixed(0)}%`);
+    const activeSlideState = slideAssignmentState || createSlideAssignmentState(random);
     
     const chromaticState = { active: false, remaining: 0, direction: 0 };
     let pendingAccidentalPreference = null;
@@ -22786,6 +23361,19 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
         }
     }
     
+    const durationToBeats6_8 = (duration) => {
+        switch (duration) {
+            case 'whole': return 4;
+            case 'half': return 2;
+            case 'quarter': return 1;
+            case 'eighth': return 0.5;
+            case '16th': return 0.25;
+            default: return 0;
+        }
+    };
+    const totalPlayableNotesInPattern = selectedPattern.rhythm.filter(item => !item.type.includes('rest')).length;
+    let generatedPlayableNoteCount = 0;
+
     selectedPattern.rhythm.forEach((rhythmNote, index) => {
         // 检查是否为休止符类型
         if (rhythmNote.type.includes('rest')) {
@@ -22804,6 +23392,9 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
             return; // 跳过音符生成
         }
         
+        const noteSequenceIndex = generatedPlayableNoteCount;
+        generatedPlayableNoteCount++;
+
         let nextMidi;
         
         if (index === 0) {
@@ -22836,6 +23427,7 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
             octave: noteInfo.octave,
             alter: noteInfo.alter,
             duration: rhythmNote.duration,
+            beats: durationToBeats6_8(rhythmNote.duration),
             type: rhythmNote.type,
             dots: rhythmNote.dots || null,
             midi: nextMidi,
@@ -22848,6 +23440,40 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
         if (userSettings.articulations && userSettings.articulations.enabled) {
             // 创建一个临时的音符列表来调用selectArticulation
             const currentNotes = notes.filter(n => !n.isRest); // 只包含音符，不包含休止符
+            let glissAssignedToPrevious = false;
+
+            // 6/8拍普通Slide回填：当前音符生成时，把slide标记回填到前一个相邻音符
+            const prevGeneratedNote = currentNotes.length > 0 ? currentNotes[currentNotes.length - 1] : null;
+            const prePrevGeneratedNote = currentNotes.length > 1 ? currentNotes[currentNotes.length - 2] : null;
+            const wouldCreateConsecutiveSlide =
+                prePrevGeneratedNote &&
+                prePrevGeneratedNote.type === 'note' &&
+                isSlideArticulationType(prePrevGeneratedNote.articulation);
+            if (
+                clef === 'treble' &&
+                Array.isArray(userSettings.articulations.guitar) &&
+                userSettings.articulations.guitar.includes('glissando') &&
+                canAssignSlideWithState(activeSlideState, 'glissando') &&
+                prevGeneratedNote &&
+                prevGeneratedNote.type === 'note' &&
+                typeof prevGeneratedNote.midi === 'number' &&
+                !prevGeneratedNote.articulation &&
+                !wouldCreateConsecutiveSlide
+            ) {
+                const interval = Math.abs(noteObject.midi - prevGeneratedNote.midi);
+                if (interval >= 1 && interval <= 12) {
+                    const linkChance = interval <= 2 ? 0.16 : 0.32;
+                    if (random.nextFloat() < linkChance) {
+                        prevGeneratedNote.articulation = 'glissando';
+                        if (consumeSlideWithState(activeSlideState, 'glissando')) {
+                            glissAssignedToPrevious = true;
+                            console.log(`🎸 6/8拍回填Glissando: ${prevGeneratedNote.midi} -> ${noteObject.midi} (音程${interval}半音)`);
+                        } else {
+                            prevGeneratedNote.articulation = null;
+                        }
+                    }
+                }
+            }
             
             console.log(`🎸 6/8拍articulation检查: 当前音符索引=${currentNotes.length}, MIDI=${nextMidi}`);
             
@@ -22869,14 +23495,16 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                     // 检查当前音符是否是前一个音符slur的结束点
                     if (noteIndex > 0) {
                         const prevNote = measureNotes[noteIndex - 1];
-                        if (prevNote && !prevNote.isRest && prevNote.articulation && 
-                            ['hammer-on', 'pull-off'].includes(prevNote.articulation)) {
+                        if (prevNote && !prevNote.isRest && prevNote.articulation &&
+                            ['hammer-on', 'pull-off', 'glissando'].includes(prevNote.articulation)) {
                             hasSlurConnection = true;
-                            console.log(`🚫 6/8拍：音符${noteIndex}已经是前一个音符${prevNote.articulation}的slur结束点，跳过articulation选择`);
+                            console.log(`🚫 6/8拍：音符${noteIndex}已参与前一个音符${prevNote.articulation}的双音技巧，跳过articulation选择`);
                         }
                     }
                     
                     // 6/8拍：当前音符是否会产生slur的逻辑将在articulation选择过程中处理
+                    const previousNoteHasSlide =
+                        noteIndex > 0 && isSlideArticulationType(measureNotes[noteIndex - 1]?.articulation);
                     
                     if (hasSlurConnection) {
                         console.log(`🚫 6/8拍跳过articulation选择：音符${noteIndex}已经有slur连接`);
@@ -22927,6 +23555,30 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                                 }
                             }
                         }
+
+                        // Slide In/Out（6/8拍）：优先落在四分及以上时值
+                        const noteBeats = typeof note.beats === 'number' ? note.beats : durationToBeats6_8(note.duration || 'quarter');
+                        const isQuarterOrLonger = noteBeats >= 1;
+                        const isLongNote = noteBeats > 1;
+                        const isEntryPoint = noteSequenceIndex === 0;
+                        const isEndingPoint = noteSequenceIndex >= Math.max(0, totalPlayableNotesInPattern - 2);
+                        const slideFrequency = activeSlideState?.slideFrequency ?? getUserFrequency('articulation', 'slide');
+
+                        if (!selectedArticulation && !previousNoteHasSlide && artSettings.guitar.includes('slide-in') && canAssignSlideWithState(activeSlideState, 'slide-in')) {
+                            const slideInChance = getSlideInOutChance(slideFrequency, isLongNote, 'slide-in');
+                            if (isQuarterOrLonger && isEntryPoint && this.random.nextFloat() < slideInChance) {
+                                selectedArticulation = 'slide-in';
+                                console.log(`✅ 6/8拍选择吉他技巧: slide-in (beats=${noteBeats})`);
+                            }
+                        }
+
+                        if (!selectedArticulation && !previousNoteHasSlide && artSettings.guitar.includes('slide-out') && canAssignSlideWithState(activeSlideState, 'slide-out')) {
+                            const slideOutChance = getSlideInOutChance(slideFrequency, isLongNote, 'slide-out');
+                            if (isQuarterOrLonger && isEndingPoint && this.random.nextFloat() < slideOutChance) {
+                                selectedArticulation = 'slide-out';
+                                console.log(`✅ 6/8拍选择吉他技巧: slide-out (beats=${noteBeats})`);
+                            }
+                        }
                     }
                     
                     // 🔥 6/8拍频率控制 - 每两小节内最多2个articulation
@@ -22974,18 +23626,26 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                             }
                         }
                     }
+                    if (selectedArticulation && isSlideArticulationType(selectedArticulation)) {
+                        if (!consumeSlideWithState(activeSlideState, selectedArticulation)) {
+                            console.log(`🚫 6/8拍Slide预算阻止: ${selectedArticulation}`);
+                            selectedArticulation = null;
+                        }
+                    }
                     
                     return selectedArticulation;
                 }
             };
             
-            const articulation = tempContext.selectArticulation(
-                noteObject,
-                currentNotes.length,
-                [...currentNotes, noteObject], // 包含当前音符的列表
-                0, // 6/8拍函数通常用于单个小节
-                clef
-            );
+            const articulation = glissAssignedToPrevious
+                ? null
+                : tempContext.selectArticulation(
+                    noteObject,
+                    currentNotes.length,
+                    [...currentNotes, noteObject], // 包含当前音符的列表
+                    0, // 6/8拍函数通常用于单个小节
+                    clef
+                );
             
             if (articulation) {
                 noteObject.articulation = articulation;
@@ -23821,13 +24481,16 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                 // 避免跨小节：使用简单但有效的检查
                 if (!articulationApplied && userSettings.articulations.guitar.includes('glissando') && 
                          Math.abs(interval) >= 3 && Math.abs(interval) <= 12 && 
+                         canAssignSlideWithState(activeSlideState, 'glissando') &&
                          lastArticulation !== 'glissando' && // 不能连续两个glissando
                          i < notes.length - 1 && // 确保不是最后一个音符
                          random.nextFloat() < 0.95) { // 提高概率以便测试
-                    currentNote.articulation = 'glissando';
-                    lastArticulation = 'glissando';
-                    articulationApplied = true;
-                    console.log(`🎸 6/8拍 Glissando: ${prevNote.midi} -> ${currentNote.midi} (位置: ${prevNote.position} -> ${currentNote.position}, 音程: ${interval}半音) - 用户已选择glissando`);
+                    if (consumeSlideWithState(activeSlideState, 'glissando')) {
+                        currentNote.articulation = 'glissando';
+                        lastArticulation = 'glissando';
+                        articulationApplied = true;
+                        console.log(`🎸 6/8拍 Glissando: ${prevNote.midi} -> ${currentNote.midi} (位置: ${prevNote.position} -> ${currentNote.position}, 音程: ${interval}半音) - 用户已选择glissando`);
+                    }
                 }
                 // 如果没有添加articulation，检查是否需要重置lastArticulation
                 if (!articulationApplied && !currentNote.articulation) {
@@ -24073,7 +24736,7 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                     
                     // 只有在hammer-on被允许时才生成slur结束标记
                     notationsContent += `
-          <slur type="stop" number="2"/>`;
+          <slur type="stop" number="${index}"/>`;
                     console.log(`✅ 6/8拍hammer-on slur stop: 音符${index} (MIDI ${note.midi})`);
                 } else {
                     console.log(`🔒 6/8拍hammer-on被禁止，不生成slur stop`);
@@ -24091,7 +24754,7 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                     
                     // 只有在pull-off被允许时才生成slur结束标记
                     notationsContent += `
-          <slur type="stop" number="2"/>`;
+          <slur type="stop" number="${index}"/>`;
                     console.log(`✅ 6/8拍pull-off slur stop: 音符${index} (MIDI ${note.midi})`);
                 } else {
                     console.log(`🔒 6/8拍pull-off被禁止，不生成slur stop`);
@@ -24157,12 +24820,12 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                     } else if (nextNote.articulation === 'hammer-on' && hammerOnAllowed && interval68 > 0) {
                         // 只允许上行hammer-on生成slur
                         notationsContent += `
-          <slur type="start" number="2"/>`;
+          <slur type="start" number="${index + 1}"/>`;
                         console.log(`✅ ALLOWED: 6/8拍hammer-on slur generated for ascending interval ${interval68}`);
                     } else if (nextNote.articulation === 'pull-off' && pullOffAllowed && interval68 < 0) {
                         // 只允许下行pull-off生成slur
                         notationsContent += `
-          <slur type="start" number="2"/>`;
+          <slur type="start" number="${index + 1}"/>`;
                         console.log(`✅ ALLOWED: 6/8拍pull-off slur generated for descending interval ${interval68}`);
                     } else {
                         console.log(`🚫 BLOCKED: 6/8拍slur blocked - articulation=${nextNote.articulation}, interval=${interval68}`);
@@ -25911,6 +26574,58 @@ function initializeArticulationCheckboxSync() {
         hammerCheckbox.addEventListener('change', hammerCheckbox._syncHandler);
         pullCheckbox.addEventListener('change', pullCheckbox._syncHandler);
     }
+
+    // 🎸 Slide技巧同步 - glissando/slide-in/slide-out 共同控制 slide 频率
+    const glissCheckbox = document.getElementById('gtr-glissando');
+    const slideInCheckbox = document.getElementById('gtr-slide-in');
+    const slideOutCheckbox = document.getElementById('gtr-slide-out');
+    const slideSlider = document.getElementById('freq-slide');
+    const slideValueSpan = document.getElementById('freq-slide-value');
+
+    if (glissCheckbox && slideInCheckbox && slideOutCheckbox && slideSlider && slideValueSpan) {
+        const handleSlideCheckboxChange = function() {
+            const anySlideChecked = glissCheckbox.checked || slideInCheckbox.checked || slideOutCheckbox.checked;
+
+            if (!anySlideChecked) {
+                slideSlider.value = 0;
+                slideValueSpan.textContent = '0%';
+
+                if (!userSettings.articulations) {
+                    userSettings.articulations = { frequencies: {} };
+                }
+                if (!userSettings.articulations.frequencies) {
+                    userSettings.articulations.frequencies = {};
+                }
+                userSettings.articulations.frequencies.slide = 0;
+                console.log('🔄 所有slide技巧取消勾选：slide频率自动设为 0%');
+            } else if (parseInt(slideSlider.value) === 0) {
+                const defaultFreq = getDefaultArticulationFrequency('slide');
+                slideSlider.value = defaultFreq;
+                slideValueSpan.textContent = `${defaultFreq}%`;
+
+                if (!userSettings.articulations) {
+                    userSettings.articulations = { frequencies: {} };
+                }
+                if (!userSettings.articulations.frequencies) {
+                    userSettings.articulations.frequencies = {};
+                }
+                userSettings.articulations.frequencies.slide = defaultFreq;
+                console.log(`🔄 启用slide技巧：slide频率自动恢复为 ${defaultFreq}%`);
+            }
+        };
+
+        glissCheckbox.removeEventListener('change', glissCheckbox._slideSyncHandler);
+        slideInCheckbox.removeEventListener('change', slideInCheckbox._slideSyncHandler);
+        slideOutCheckbox.removeEventListener('change', slideOutCheckbox._slideSyncHandler);
+
+        glissCheckbox._slideSyncHandler = handleSlideCheckboxChange;
+        slideInCheckbox._slideSyncHandler = handleSlideCheckboxChange;
+        slideOutCheckbox._slideSyncHandler = handleSlideCheckboxChange;
+
+        glissCheckbox.addEventListener('change', glissCheckbox._slideSyncHandler);
+        slideInCheckbox.addEventListener('change', slideInCheckbox._slideSyncHandler);
+        slideOutCheckbox.addEventListener('change', slideOutCheckbox._slideSyncHandler);
+    }
 }
 
 /**
@@ -26062,9 +26777,10 @@ function getDefaultArticulationFrequency(type) {
         staccato: 20,
         accent: 15,
         acciaccatura: 10,
-        slur: 15
+        slur: 15,
+        slide: 10
     };
-    return defaults[type] || 15;
+    return defaults[type] ?? 15;
 }
 
 /**
@@ -26096,7 +26812,8 @@ function getDefaultArticulationTier(type) {
         staccato: 1,      // 20% -> 1 (低频率)
         accent: 1,        // 15% -> 1 (低频率)
         acciaccatura: 0,  // 10% -> 0 (禁用)
-        slur: 1          // 15% -> 1 (低频率)
+        slur: 1,          // 15% -> 1 (低频率)
+        slide: 0          // 10% -> 0 (最低档)
     };
     return defaults[type] ?? 1; // 默认为低频率
 }

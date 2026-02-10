@@ -1,5 +1,5 @@
 /*!
- * Cognote 和弦生成器 - 小调拼写规范模块
+ * IC Studio 和弦生成器 - 小调拼写规范模块
  * Minor Key Spelling Standards for Chord Generator
  *
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club

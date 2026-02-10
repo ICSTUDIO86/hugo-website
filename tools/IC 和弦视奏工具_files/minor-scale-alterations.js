@@ -1,5 +1,5 @@
 /*!
- * Cognote 和弦生成器 - 小调变体音处理模块
+ * IC Studio 和弦生成器 - 小调变体音处理模块
  * Minor Scale Alterations Module for Chord Generator
  *
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club

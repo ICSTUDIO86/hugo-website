@@ -1,11 +1,11 @@
 /**
- * Cognote 钢琴设置管理器
+ * IC Studio 钢琴设置管理器
  * Piano Settings Manager - 完全独立的钢琴设置系统
  *
  * 管理钢琴专用的所有配置，与吉他设置完全分离
  *
  * @version 1.0.0
- * @author Cognote
+ * @author IC Studio
  */
 
 class PianoSettingsManager {

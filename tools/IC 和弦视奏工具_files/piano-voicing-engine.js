@@ -1,11 +1,11 @@
 /**
- * Cognote 钢琴Voicing引擎
+ * IC Studio 钢琴Voicing引擎
  * Piano Voicing Engine - 完全独立的钢琴voicing生成系统
  *
  * 专门为钢琴演奏优化的voicing算法，与吉他系统完全分离
  *
  * @version 1.0.0
- * @author Cognote
+ * @author IC Studio
  */
 
 class PianoVoicingEngine {

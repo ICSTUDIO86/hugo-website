@@ -1,11 +1,11 @@
 /**
- * Cognote 钢琴和弦进行生成器
+ * IC Studio 钢琴和弦进行生成器
  * Piano Chord Progression Generator - 完全独立的钢琴和弦进行生成系统
  *
  * 专门为钢琴设计的和弦进行生成器，与吉他系统完全分离
  *
  * @version 1.0.0
- * @author Cognote
+ * @author IC Studio
  */
 
 class PianoChordProgressionGenerator {

@@ -1,5 +1,5 @@
 /*!
- * Cognote - 专业级视奏旋律生成器
+ * IC Studio 视奏工具 - 专业级视奏旋律生成器
  * Professional Music Sight-Reading Tool - Final Version
  * 
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club
@@ -280,7 +280,7 @@ let userSettings = {
 };
 
 const BUILTIN_TIME_SIGNATURES = ['2/4', '3/4', '4/4', '6/8'];
-const SHOW_CUSTOM_TIME_SIGNATURE = false;
+const SHOW_CUSTOM_TIME_SIGNATURE = true;
 
 function parseTimeSignatureString(ts) {
     if (typeof ts !== 'string') return null;
@@ -4188,6 +4188,9 @@ class IntelligentMelodyGenerator {
         
         // 🎵 休止符合并规则 - 将正拍内的连续休止符合并
         notes = this.mergeRestsByBeats(notes);
+
+        // 🎵 四分音符拍点内相邻休止符合并规则
+        notes = this.mergeAdjacentRestsInQuarterBeats(notes);
         
         // 🎵 二分音符拍点内相邻休止符合并规则
         notes = this.mergeAdjacentRestsInHalfBeats(notes);
@@ -5029,6 +5032,105 @@ class IntelligentMelodyGenerator {
     }
 
     /**
+     * 四分音符拍点内相邻休止符合并规则
+     * 仅在单个四分拍内部合并相邻休止符，不跨越拍点
+     */
+    mergeAdjacentRestsInQuarterBeats(notes) {
+        if (this.timeSignature !== '4/4') {
+            console.log(`🎵 [四分拍休止符合并] 仅支持4/4拍，当前: ${this.timeSignature}`);
+            return notes;
+        }
+
+        console.log(`🎵 [四分拍休止符合并] 开始处理，原始音符数量: ${notes.length}`);
+
+        const beatRegions = [
+            { start: 0, end: 1, name: '第1拍' },
+            { start: 1, end: 2, name: '第2拍' },
+            { start: 2, end: 3, name: '第3拍' },
+            { start: 3, end: 4, name: '第4拍' }
+        ];
+
+        let mergedNotes = [...notes];
+        let hasChanges = true;
+        let iterations = 0;
+        const maxIterations = 10;
+
+        while (hasChanges && iterations < maxIterations) {
+            hasChanges = false;
+            iterations++;
+            console.log(`🎵 [四分拍休止符合并] 第${iterations}次迭代`);
+
+            for (const region of beatRegions) {
+                const regionResult = this.mergeAdjacentRestsInQuarterRegion(mergedNotes, region);
+                if (regionResult.hasChanges) {
+                    mergedNotes = regionResult.notes;
+                    hasChanges = true;
+                    console.log(`  ✅ ${region.name}内相邻休止符被合并`);
+                    break;
+                }
+            }
+        }
+
+        console.log(`🎵 [四分拍休止符合并] 完成，音符数量: ${notes.length} → ${mergedNotes.length}`);
+        return mergedNotes;
+    }
+
+    /**
+     * 在单个四分拍区域内合并相邻休止符（要求完全落在该拍内）
+     */
+    mergeAdjacentRestsInQuarterRegion(notes, region) {
+        let currentPos = 0;
+        const regionNotes = [];
+        const tolerance = 0.001;
+
+        for (let i = 0; i < notes.length; i++) {
+            const note = notes[i];
+            const noteStart = currentPos;
+            const noteEnd = currentPos + note.beats;
+
+            if (noteStart >= region.start - tolerance && noteEnd <= region.end + tolerance) {
+                regionNotes.push({
+                    index: i,
+                    note: note,
+                    start: noteStart,
+                    end: noteEnd
+                });
+            }
+
+            currentPos = noteEnd;
+        }
+
+        if (regionNotes.length < 2) {
+            return { hasChanges: false, notes: notes };
+        }
+
+        for (let i = 0; i < regionNotes.length - 1; i++) {
+            const current = regionNotes[i];
+            const next = regionNotes[i + 1];
+
+            if (current.note.type === 'rest' && next.note.type === 'rest' &&
+                Math.abs(current.end - next.start) < tolerance) {
+
+                const totalBeats = current.note.beats + next.note.beats;
+                const mergedDuration = this.beatsToRestDuration(totalBeats);
+
+                if (mergedDuration) {
+                    const mergedRest = {
+                        type: 'rest',
+                        duration: mergedDuration,
+                        beats: totalBeats
+                    };
+                    const mergedNotes = [...notes];
+                    mergedNotes.splice(current.index, 2, mergedRest);
+                    return { hasChanges: true, notes: mergedNotes };
+                }
+            }
+        }
+
+        return { hasChanges: false, notes: notes };
+    }
+
+    /**
      * 3/4拍专用的休止符合并规则 - 基于拍点层级智能合并
      */
     mergeRestsByBeatsFor3_4(notes) {
@@ -5448,6 +5550,19 @@ class IntelligentMelodyGenerator {
             // 附点二分音符（全小节）
             { start: 0, end: 3, type: 'dotted-half' }
         ];
+    }
+
+    getBeatStructure(timeSignature) {
+        if (typeof RHYTHM_NOTATION_RULES?.getBeatStructure === 'function') {
+            return RHYTHM_NOTATION_RULES.getBeatStructure(timeSignature);
+        }
+        const parsed = parseTimeSignatureString(timeSignature);
+        const beatsPerMeasure = parsed ? parsed.beats : 4;
+        return {
+            beatsPerMeasure,
+            strongBeats: [0],
+            subdivisions: []
+        };
     }
 
     // 通用拍点层级生成
@@ -9218,8 +9333,13 @@ class IntelligentMelodyGenerator {
      * 核心规则：同一四分音符拍内的八分音符必须连杆
      */
     generateBeams(notes, currentBeatLevel = null, timeSignatureOverride = null) {
-        const timeSignature = timeSignatureOverride || this.rules.timeSignature || '4/4';
-        console.log(`🎼 generateBeams 被调用 - 拍号: ${timeSignature}, 音符数: ${notes.length}`);
+        const rawTimeSignature = timeSignatureOverride || this.rules.timeSignature || '4/4';
+        if (!isBuiltInTimeSignature(rawTimeSignature) && rawTimeSignature !== 'multi') {
+            console.log(`🎼 generateBeams 被调用 - 自定义拍号: ${rawTimeSignature}, 音符数: ${notes.length}`);
+            return this.generateBeamsForCustomTimeSignature(notes, rawTimeSignature);
+        }
+        const timeSignature = getBeamingReferenceTimeSignature(rawTimeSignature);
+        console.log(`🎼 generateBeams 被调用 - 拍号: ${rawTimeSignature} (beaming使用 ${timeSignature}), 音符数: ${notes.length}`);
 
         // 根据拍号选择合适的beaming方法
         if (timeSignature === '4/4') {
@@ -9230,11 +9350,86 @@ class IntelligentMelodyGenerator {
             return this.generateBeamsFor3_4(notes);
         } else if (timeSignature === '2/4') {
             console.log(`使用2/4拍legacy beaming逻辑`);
-            return this.generateBeamsLegacy(notes, currentBeatLevel);
+            return this.generateBeamsLegacy(notes, currentBeatLevel, timeSignature);
         } else {
             console.log(`使用通用legacy beaming逻辑`);
-            return this.generateBeamsLegacy(notes, currentBeatLevel);
+            return this.generateBeamsLegacy(notes, currentBeatLevel, timeSignature);
         }
+    }
+
+    /**
+     * 自定义拍号 beaming 规则：
+     * 同一拍点内的符尾必须整体连在一起，休止符/拍点边界中断
+     */
+    generateBeamsForCustomTimeSignature(notes, timeSignature) {
+        const parsed = parseTimeSignatureString(timeSignature);
+        if (!parsed) return [];
+
+        const unit = 4 / parsed.beatType; // 拍号分母单位对应的拍值（以四分音符为1拍）
+        const isCompound = isCompoundTimeSignature(timeSignature);
+        const groupSize = unit * (isCompound ? 3 : 1);
+        const tolerance = 0.0001;
+
+        console.log(`🎼 自定义拍号beaming: ${timeSignature} ${isCompound ? 'compound' : 'simple'}, 分组大小=${groupSize}拍`);
+
+        const beamGroups = [];
+        const noteMeta = [];
+        let position = 0;
+
+        // 预计算音符位置与可beam属性
+        for (let i = 0; i < notes.length; i++) {
+            const note = notes[i];
+            const start = position;
+            const end = position + note.beats;
+            const beamLevel = BEAMING_RULES.basicRules.beamLevels[note.duration] || 0;
+            const isBeamable = note.type === 'note' && !note.isTriplet &&
+                note.duration !== 'whole' && note.duration !== 'half' && note.duration !== 'half.' &&
+                beamLevel >= 1;
+
+            noteMeta.push({
+                index: i,
+                start,
+                end,
+                note,
+                isBeamable
+            });
+
+            position = end;
+        }
+
+        // 逐分组收集beamable连续序列
+        let groupStart = 0;
+        const measureLength = position;
+        while (groupStart < measureLength - tolerance) {
+            const groupEnd = Math.min(measureLength, groupStart + groupSize);
+            const inGroup = noteMeta.filter(item =>
+                item.start >= groupStart - tolerance &&
+                item.end <= groupEnd + tolerance
+            );
+
+            let currentRun = [];
+            const flushRun = () => {
+                if (currentRun.length >= 2) {
+                    this.addBeamGroup(beamGroups, currentRun, notes);
+                    console.log(`  ✅ 自定义拍号beam组: [${currentRun.map(i => i + 1).join(', ')}], 区间[${groupStart}, ${groupEnd})`);
+                }
+                currentRun = [];
+            };
+
+            for (const item of inGroup) {
+                if (!item.isBeamable) {
+                    flushRun();
+                    continue;
+                }
+                currentRun.push(item.index);
+            }
+            flushRun();
+
+            groupStart = groupEnd;
+        }
+
+        console.log(`🎼 自定义拍号beaming完成: ${beamGroups.length}个beam组`);
+        return beamGroups;
     }
     
     /**
@@ -9839,11 +10034,12 @@ class IntelligentMelodyGenerator {
     /**
      * 传统连杆生成逻辑（用于非4/4拍号）
      */
-    generateBeamsLegacy(notes, currentBeatLevel = null) {
+    generateBeamsLegacy(notes, currentBeatLevel = null, timeSignatureOverride = null) {
         const beamGroups = [];
         let currentGroup = [];
         let currentPosition = 0;
-        const timeSignature = this.rules.timeSignature || '4/4';
+        const rawTimeSignature = timeSignatureOverride || this.rules.timeSignature || '4/4';
+        const timeSignature = getBeamingReferenceTimeSignature(rawTimeSignature);
         
         for (let i = 0; i < notes.length; i++) {
             const note = notes[i];
@@ -16674,6 +16870,75 @@ ${measuresXML}  </part>
         console.error(`❌ generateMelodyData 错误:`, error);
         console.error(`❌ 错误堆栈:`, error.stack);
         throw error; // 重新抛出错误以便上层处理
+    }
+
+    // Guard: when accidentals are disabled in a major key, force all notes to stay in-scale.
+    if (generator && generator.rules && generator.rules.accidentalRate === 0) {
+        const keyLower = (keySignature || '').toLowerCase();
+        const isMinorKey = keyLower.endsWith('m');
+        if (!isMinorKey) {
+            const scale = KEY_SCALES[keySignature] || KEY_SCALES['C'] || [0, 2, 4, 5, 7, 9, 11];
+            const scaleSet = new Set(scale);
+            const scaleNotes = typeof generator.getScaleNotesInRange === 'function'
+                ? generator.getScaleNotesInRange()
+                : (() => {
+                    const notes = [];
+                    for (let octave = Math.floor(generator.rules.range.min / 12); octave <= Math.floor(generator.rules.range.max / 12); octave++) {
+                        for (let i = 0; i < scale.length; i++) {
+                            const midi = octave * 12 + scale[i];
+                            if (midi >= generator.rules.range.min && midi <= generator.rules.range.max) notes.push(midi);
+                        }
+                    }
+                    return notes;
+                })();
+            const snapToScale = (midi) => {
+                const pc = ((midi % 12) + 12) % 12;
+                if (scaleSet.has(pc)) return midi;
+                if (!scaleNotes.length) return midi;
+                let best = scaleNotes[0];
+                let bestDist = Math.abs(best - midi);
+                for (let i = 1; i < scaleNotes.length; i++) {
+                    const candidate = scaleNotes[i];
+                    const dist = Math.abs(candidate - midi);
+                    if (dist < bestDist || (dist === bestDist && candidate < best)) {
+                        best = candidate;
+                        bestDist = dist;
+                    }
+                }
+                return best;
+            };
+            let corrections = 0;
+            melody.forEach(measure => {
+                if (!measure || !Array.isArray(measure.notes)) return;
+                measure.notes.forEach(note => {
+                    if (note && note.type === 'note' && typeof note.midi === 'number') {
+                        const corrected = snapToScale(note.midi);
+                        if (corrected !== note.midi) {
+                            const correctedInfo = generator.midiToMusicXML(corrected);
+                            note.midi = corrected;
+                            note.step = correctedInfo.step;
+                            note.octave = correctedInfo.octave;
+                            note.alter = correctedInfo.alter;
+                            corrections++;
+                        }
+                        if (note.graceNote && typeof note.graceNote.midi === 'number') {
+                            const graceCorrected = snapToScale(note.graceNote.midi);
+                            if (graceCorrected !== note.graceNote.midi) {
+                                const graceInfo = generator.midiToMusicXML(graceCorrected);
+                                note.graceNote.midi = graceCorrected;
+                                note.graceNote.step = graceInfo.step;
+                                note.graceNote.octave = graceInfo.octave;
+                                note.graceNote.alter = graceInfo.alter;
+                                corrections++;
+                            }
+                        }
+                    }
+                });
+            });
+            if (corrections > 0) {
+                console.log(`✅ Major-key in-scale enforcement applied: ${corrections} corrections`);
+            }
+        }
     }
     
     // 调试：检查生成的旋律是否包含调外音符

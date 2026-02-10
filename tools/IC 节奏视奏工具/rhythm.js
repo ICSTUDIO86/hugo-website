@@ -16,12 +16,37 @@
             beatIndex: 0,
             stepIndex: 0,
             isRunning: false,
-            audioCtx: null
+            audioCtx: null,
+            outputGain: null,
+            nextTime: 0,
+            startedByPlayback: false
+        },
+        playback: {
+            audioCtx: null,
+            outputGain: null,
+            isPlaying: false,
+            stopTimer: null,
+            noiseBuffer: null,
+            countInTimer: null,
+            countInActive: false,
+            countInState: null,
+            countInUiTimers: []
+        },
+        calibration: {
+            enabled: false,
+            active: false,
+            startTime: 0,
+            events: [],
+            index: 0,
+            windowSec: 0.08,
+            judgedElements: new Set()
         },
         restAlignObserver: null,
         restAlignLock: false,
         lastSettings: null,
-        customTimeSignature: null
+        lastVoices: null,
+        customTimeSignature: null,
+        allowedTimeSignatures: ['4/4']
     };
     const rhythmHistory = [];
     let currentHistoryIndex = -1;
@@ -39,6 +64,7 @@
     };
 
     const metronomePatternStorageKey = 'ic_rhythm_metronome_pattern';
+    const calibrationStorageKey = 'ic_rhythm_calibration_enabled';
     const patternSubdivisionOptions = [1, 2, 3, 4];
     const patternBarsOptions = [1, 2, 4];
     let metronomePattern = {
@@ -75,6 +101,7 @@
             'settings.darkMode': '深色模式',
             'settings.language': '语言',
             'settings.midi': 'MIDI 输入',
+            'settings.calibration': '输入校准',
             'midi.enable': '启用',
             'midi.device': '设备',
             'midi.status.unsupported': '当前浏览器不支持 MIDI',
@@ -83,6 +110,8 @@
             'midi.status.connected': '已连接: {device}',
             'midi.status.disconnected': '设备已断开',
             'midi.status.disabled': 'MIDI 已关闭',
+            'calibration.enable': '启用',
+            'calibration.hint': '校准模式：单声部只判断节奏不看音高；双声部时 MIDI 的 Do 视为低声部、Sol 视为高声部。无 MIDI 也可用键盘 F（底鼓/低声部）/ J（军鼓/高声部）输入。',
             'settings.ostinato': 'Ostinato',
             'ostinato.voice': 'Ostinato 声部',
             'ostinato.none': '无',
@@ -122,6 +151,8 @@
             'controls.practiceCounter': '练习计数',
             'controls.practiceAdd': '+',
             'controls.practiceReset': '-',
+            'controls.play': '播放',
+            'controls.stop': '停止',
             'modal.rhythm.title': '节奏设置',
             'modal.timeSignature.title': '拍号设置',
             'modal.timeSignature.selection': '拍号选项',
@@ -138,7 +169,12 @@
             'challenge.calibration': '输入校准',
             'challenge.cursorHint': '光标开关：光标用于提示当前应演奏的位置，count-in结束后出现并随节奏跳动。',
             'challenge.hideHint': '隐藏开关：开启后，系统在进入下一小节时会自动遮挡上一小节，仅保留当前阅读区。',
+            'challenge.calibration.hintSingle': '校准模式（单声部）：任意音高均可，只判断节奏。',
+            'challenge.calibration.hintDual': '校准模式（双声部）：MIDI 的 Do 为低声部、Sol 为高声部；无 MIDI 可用键盘 F（底鼓/低声部）/ J（军鼓/高声部）输入。',
+            'challenge.calibration.correct': '校准正确',
+            'challenge.calibration.wrong': '校准错误',
             'challenge.preparingLabel': '准备',
+            'challenge.countInLabel': 'Count In',
             'challenge.seconds': '秒',
             'time.2-4': '2/4 拍',
             'time.3-4': '3/4 拍',
@@ -227,6 +263,7 @@
             'settings.darkMode': '深色模式',
             'settings.language': '語言',
             'settings.midi': 'MIDI 輸入',
+            'settings.calibration': '輸入校準',
             'midi.enable': '啟用',
             'midi.device': '裝置',
             'midi.status.unsupported': '目前瀏覽器不支援 MIDI',
@@ -235,6 +272,8 @@
             'midi.status.connected': '已連接: {device}',
             'midi.status.disconnected': '裝置已斷開',
             'midi.status.disabled': 'MIDI 已關閉',
+            'calibration.enable': '啟用',
+            'calibration.hint': '校準模式：單聲部只判斷節奏不看音高；雙聲部時 MIDI 的 Do 視為低聲部、Sol 視為高聲部。未連接 MIDI 也可用鍵盤 F（底鼓/低聲部）/ J（軍鼓/高聲部）輸入。',
             'settings.ostinato': 'Ostinato',
             'ostinato.voice': 'Ostinato 聲部',
             'ostinato.none': '無',
@@ -274,6 +313,8 @@
             'controls.practiceCounter': '練習計數',
             'controls.practiceAdd': '+',
             'controls.practiceReset': '-',
+            'controls.play': '播放',
+            'controls.stop': '停止',
             'modal.rhythm.title': '節奏設置',
             'modal.timeSignature.title': '拍號設置',
             'modal.timeSignature.selection': '拍號選項',
@@ -290,7 +331,12 @@
             'challenge.calibration': '輸入校準',
             'challenge.cursorHint': '光標開關：光標用於提示當前應演奏的位置，count-in 結束後出現並隨節奏跳動。',
             'challenge.hideHint': '隱藏開關：開啟後，系統在進入下一小節時會自動遮擋上一小節，僅保留當前閱讀區。',
+            'challenge.calibration.hintSingle': '校準模式（單聲部）：任意音高皆可，只判斷節奏。',
+            'challenge.calibration.hintDual': '校準模式（雙聲部）：MIDI 的 Do 為低聲部、Sol 為高聲部；未連接 MIDI 也可用鍵盤 F（底鼓/低聲部）/ J（軍鼓/高聲部）輸入。',
+            'challenge.calibration.correct': '校準正確',
+            'challenge.calibration.wrong': '校準錯誤',
             'challenge.preparingLabel': '準備',
+            'challenge.countInLabel': 'Count In',
             'challenge.seconds': '秒',
             'time.2-4': '2/4 拍',
             'time.3-4': '3/4 拍',
@@ -379,6 +425,7 @@
             'settings.darkMode': 'Dark Mode',
             'settings.language': 'Language',
             'settings.midi': 'MIDI Input',
+            'settings.calibration': 'Input Calibration',
             'midi.enable': 'Enable',
             'midi.device': 'Device',
             'midi.status.unsupported': 'MIDI is not supported in this browser',
@@ -387,6 +434,8 @@
             'midi.status.connected': 'Connected: {device}',
             'midi.status.disconnected': 'Device disconnected',
             'midi.status.disabled': 'MIDI is off',
+            'calibration.enable': 'Enable',
+            'calibration.hint': 'Calibration: in single voice, timing is judged without pitch; in two-voice mode, MIDI C = low voice and G = high voice. Without MIDI, use F (kick/low) / J (snare/high) on the keyboard.',
             'settings.ostinato': 'Ostinato',
             'ostinato.voice': 'Ostinato Voice',
             'ostinato.none': 'None',
@@ -426,6 +475,8 @@
             'controls.practiceCounter': 'Practice Counter',
             'controls.practiceAdd': '+',
             'controls.practiceReset': '-',
+            'controls.play': 'Play',
+            'controls.stop': 'Stop',
             'modal.rhythm.title': 'Rhythm Settings',
             'modal.timeSignature.title': 'Time Signature Settings',
             'modal.timeSignature.selection': 'Time Signature Options',
@@ -442,7 +493,12 @@
             'challenge.calibration': 'Input Calibration',
             'challenge.cursorHint': 'Cursor: shows the current position; appears after count-in and moves with the rhythm.',
             'challenge.hideHint': 'Hide: when enabled, previous measures are masked as you advance.',
+            'challenge.calibration.hintSingle': 'Calibration (single voice): any pitch is accepted; timing only.',
+            'challenge.calibration.hintDual': 'Calibration (two voices): MIDI C = low voice, G = high voice; without MIDI use F (kick/low) / J (snare/high).',
+            'challenge.calibration.correct': 'Correct',
+            'challenge.calibration.wrong': 'Wrong',
             'challenge.preparingLabel': 'Ready',
+            'challenge.countInLabel': 'Count In',
             'challenge.seconds': 's',
             'time.2-4': '2/4 Time',
             'time.3-4': '3/4 Time',
@@ -518,8 +574,8 @@
         }
     };
 
-    const SHOW_CUSTOM_TIME_SIGNATURE = false;
-    const BUILTIN_TIME_SIGNATURES = ['2/4', '3/4', '4/4', '6/8', '12/8'];
+    const SHOW_CUSTOM_TIME_SIGNATURE = true;
+    const BUILTIN_TIME_SIGNATURES = ['2/4', '3/4', '4/4', '6/8'];
 
     function parseTimeSignatureString(ts) {
         if (typeof ts !== 'string') return null;
@@ -596,8 +652,6 @@
         return { starts, totalBeats: beats * (4 / beatType) };
     }
 
-    const SHARED_LANGUAGE_KEY = 'ic-sight-reading-lang';
-    const LEGACY_LANGUAGE_KEY = 'preferredLanguage';
     let currentLanguage = 'zh-CN';
     let currentTheme = localStorage.getItem('preferredTheme') || 'light';
 
@@ -714,8 +768,9 @@
 
     function restartMetronomeIfRunning() {
         if (state.metronome.isRunning) {
+            const startedByPlayback = state.metronome.startedByPlayback;
             stopMetronome();
-            startMetronome();
+            startMetronome(undefined, startedByPlayback);
         }
     }
 
@@ -1106,6 +1161,17 @@
         }
     }
 
+    function getTranslation(key) {
+        const pack = translations[currentLanguage] || translations['zh-CN'];
+        return pack[key] || (translations['zh-CN'] && translations['zh-CN'][key]) || key;
+    }
+
+    function updatePlayButtonState(isPlaying) {
+        const btn = document.getElementById('playRhythmBtn');
+        if (!btn) return;
+        btn.textContent = getTranslation(isPlaying ? 'controls.stop' : 'controls.play');
+    }
+
     function applyTranslations() {
         const elements = document.querySelectorAll('[data-i18n]');
         const langPack = translations[currentLanguage] || translations['zh-CN'];
@@ -1117,18 +1183,18 @@
         });
         updateMetronomePatternUI();
         updateOstinatoPatternUI();
+        updatePlayButtonState(state.playback.isPlaying);
     }
 
     function switchLanguage(lang) {
         currentLanguage = lang;
-        localStorage.setItem(SHARED_LANGUAGE_KEY, lang);
-        localStorage.setItem(LEGACY_LANGUAGE_KEY, lang);
+        localStorage.setItem('preferredLanguage', lang);
         applyTranslations();
         closeSettings();
         if (window.__icMidi && typeof window.__icMidi.refreshStatus === 'function') {
             window.__icMidi.refreshStatus();
         }
-        if (window.ICStudioSync && typeof window.ICStudioSync.syncLanguage === 'function') {
+        if (window.ICStudioSync) {
             window.ICStudioSync.syncLanguage(lang, 'rhythm-tool');
         }
     }
@@ -1138,95 +1204,27 @@
         localStorage.setItem('preferredTheme', theme);
         document.documentElement.setAttribute('data-theme', theme);
         closeSettings();
-        if (window.ICStudioSync && typeof window.ICStudioSync.syncTheme === 'function') {
+        if (window.ICStudioSync) {
             window.ICStudioSync.syncTheme(theme, 'rhythm-tool');
         }
     }
 
-    function syncLanguageFromStorage() {
-        let savedLanguage = null;
-        try {
-            savedLanguage = localStorage.getItem(SHARED_LANGUAGE_KEY) || localStorage.getItem(LEGACY_LANGUAGE_KEY);
-        } catch (_) {
-            savedLanguage = null;
-        }
-        if (!savedLanguage || savedLanguage === currentLanguage) return;
-        if (!translations[savedLanguage]) return;
-        currentLanguage = savedLanguage;
-        applyTranslations();
-        if (window.__icMidi && typeof window.__icMidi.refreshStatus === 'function') {
-            window.__icMidi.refreshStatus();
-        }
-    }
-
     function initializePreferences() {
-        syncLanguageFromStorage();
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage && translations[savedLanguage]) {
+            currentLanguage = savedLanguage;
+        }
         document.documentElement.setAttribute('data-theme', currentTheme);
         applyTranslations();
     }
 
-    window.addEventListener('storage', (event) => {
-        if (!event || (event.key !== SHARED_LANGUAGE_KEY && event.key !== LEGACY_LANGUAGE_KEY)) return;
-        if (!event.newValue) return;
-        syncLanguageFromStorage();
-    });
-
-    window.ICStudioSync = window.ICStudioSync || {
-        tools: new Set(),
-        registerTool: function(toolName, callbacks) {
-            this.tools.add({
-                name: toolName,
-                onThemeChange: callbacks.onThemeChange,
-                onLanguageChange: callbacks.onLanguageChange
-            });
-        },
-        syncTheme: function(newTheme, fromTool) {
-            this.tools.forEach(tool => {
-                if (tool.name !== fromTool && tool.onThemeChange) {
-                    try {
-                        tool.onThemeChange(newTheme);
-                    } catch (_) {}
-                }
-            });
-        },
-        syncLanguage: function(newLanguage, fromTool) {
-            this.tools.forEach(tool => {
-                if (tool.name !== fromTool && tool.onLanguageChange) {
-                    try {
-                        tool.onLanguageChange(newLanguage);
-                    } catch (_) {}
-                }
-            });
-        }
-    };
-
-    window.ICStudioSync.registerTool('rhythm-tool', {
-        onThemeChange: function(newTheme) {
-            if (currentTheme !== newTheme) {
-                currentTheme = newTheme;
-                document.documentElement.setAttribute('data-theme', currentTheme);
-            }
-        },
-        onLanguageChange: function(newLanguage) {
-            if (currentLanguage !== newLanguage && translations[newLanguage]) {
-                currentLanguage = newLanguage;
-                applyTranslations();
-                if (window.__icMidi && typeof window.__icMidi.refreshStatus === 'function') {
-                    window.__icMidi.refreshStatus();
-                }
-            }
-        }
-    });
-
-    window.addEventListener('focus', () => {
-        syncLanguageFromStorage();
-    });
-
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-            syncLanguageFromStorage();
-        }
-    });
+    function initializeCalibrationSettings() {
+        // Calibration is handled in challenge modal only.
+        state.calibration.enabled = false;
+        writeCalibrationPreference(false);
+        updateCalibrationToggleUI();
+        updateCalibrationHint();
+    }
 
     function toggleSettings() {
         const modal = document.getElementById('settingsModal');
@@ -1376,6 +1374,48 @@
         return { valid: true, value: `${beats}/${beatType}`, beats, beatType };
     }
 
+    function findCustomTimeSignature(allowedTimeSignatures) {
+        if (!Array.isArray(allowedTimeSignatures)) return null;
+        return allowedTimeSignatures.find(ts => !isBuiltInTimeSignature(ts)) || null;
+    }
+
+    function collectTimeSignatureSelection() {
+        const selectedTimeSignatures = [];
+        const timeInputs = document.querySelectorAll('#timeSignatureModal input[type="checkbox"]');
+        const customToggle = document.getElementById('time-custom');
+        const customSelected = customToggle ? customToggle.checked : false;
+
+        timeInputs.forEach(input => {
+            if (!input.checked) return;
+            if (input.value === 'custom') return;
+            selectedTimeSignatures.push(input.value);
+        });
+
+        if (customSelected && SHOW_CUSTOM_TIME_SIGNATURE) {
+            const customInput = getCustomTimeSignatureInput();
+            if (!customInput.valid) {
+                alert(customInput.message);
+                return null;
+            }
+            state.customTimeSignature = customInput.value;
+            if (isBuiltInTimeSignature(customInput.value)) {
+                if (!selectedTimeSignatures.includes(customInput.value)) {
+                    selectedTimeSignatures.push(customInput.value);
+                }
+                if (customToggle) {
+                    customToggle.checked = false;
+                    updateCustomTimeSignatureFields(false);
+                }
+                const builtInCheckbox = document.querySelector(`#timeSignatureModal input[value="${customInput.value}"]`);
+                if (builtInCheckbox) builtInCheckbox.checked = true;
+            } else {
+                selectedTimeSignatures.push(customInput.value);
+            }
+        }
+
+        return selectedTimeSignatures;
+    }
+
     function ensureCustomTimeSignatureOption(select) {
         if (!select) return null;
         let option = document.getElementById('customTimeSignatureOption');
@@ -1400,52 +1440,38 @@
 
     function openTimeSignatureSettings() {
         const modal = document.getElementById('timeSignatureModal');
-        const select = document.getElementById('timeSignature');
-        if (select) {
-            const current = select.value;
-            if (isBuiltInTimeSignature(current)) {
-                const radio = document.querySelector(`input[name="timeSignatureOption"][value="${current}"]`);
-                if (radio) radio.checked = true;
-                updateCustomTimeSignatureFields(false);
-                const parsed = parseTimeSignatureString(state.customTimeSignature || '');
-                if (parsed) {
-                    const beatsInput = document.getElementById('customTimeBeats');
-                    const beatTypeSelect = document.getElementById('customTimeBeatValue');
-                    if (beatsInput) beatsInput.value = String(parsed.beats);
-                    if (beatTypeSelect) beatTypeSelect.value = String(parsed.beatType);
-                }
-            } else {
-                if (!SHOW_CUSTOM_TIME_SIGNATURE) {
-                    select.value = '4/4';
-                    const fallbackRadio = document.querySelector('input[name="timeSignatureOption"][value="4/4"]');
-                    if (fallbackRadio) fallbackRadio.checked = true;
-                    updateCustomTimeSignatureFields(false);
-                } else {
-                const customRadio = document.getElementById('time-custom');
-                if (customRadio) {
-                    customRadio.checked = true;
-                    updateCustomTimeSignatureFields(true);
-                }
-                const parsed = parseTimeSignatureString(current || state.customTimeSignature || '');
-                if (parsed) {
-                    const beatsInput = document.getElementById('customTimeBeats');
-                    const beatTypeSelect = document.getElementById('customTimeBeatValue');
-                    if (beatsInput) beatsInput.value = String(parsed.beats);
-                    if (beatTypeSelect) beatTypeSelect.value = String(parsed.beatType);
-                }
-                }
-            }
-        }
-        const customRadio = document.getElementById('time-custom');
-        if (customRadio) {
+        const allowedTimeSignatures = Array.isArray(state.allowedTimeSignatures) && state.allowedTimeSignatures.length
+            ? state.allowedTimeSignatures
+            : ['4/4'];
+
+        const timeInputs = document.querySelectorAll('#timeSignatureModal input[type="checkbox"]');
+        timeInputs.forEach(input => {
+            input.checked = allowedTimeSignatures.includes(input.value);
+        });
+
+        const customToggle = document.getElementById('time-custom');
+        const customFromSelection = findCustomTimeSignature(allowedTimeSignatures);
+        const customValue = customFromSelection || state.customTimeSignature;
+        if (customToggle) {
             if (SHOW_CUSTOM_TIME_SIGNATURE) {
-                customRadio.onchange = () => updateCustomTimeSignatureFields(customRadio.checked);
-                updateCustomTimeSignatureFields(customRadio.checked);
+                customToggle.checked = !!customFromSelection;
+                customToggle.onchange = () => updateCustomTimeSignatureFields(customToggle.checked);
+                updateCustomTimeSignatureFields(customToggle.checked);
             } else {
-                customRadio.checked = false;
+                customToggle.checked = false;
                 updateCustomTimeSignatureFields(false);
             }
         }
+        if (customValue) {
+            const parsed = parseTimeSignatureString(customValue);
+            if (parsed) {
+                const beatsInput = document.getElementById('customTimeBeats');
+                const beatTypeSelect = document.getElementById('customTimeBeatValue');
+                if (beatsInput) beatsInput.value = String(parsed.beats);
+                if (beatTypeSelect) beatTypeSelect.value = String(parsed.beatType);
+            }
+        }
+
         if (modal) {
             showModal(modal);
         }
@@ -1459,34 +1485,35 @@
     }
 
     function saveTimeSignatureSettings() {
-        const selected = document.querySelector('input[name="timeSignatureOption"]:checked');
         const select = document.getElementById('timeSignature');
-        if (selected && select) {
-            if (selected.value === 'custom') {
-                if (!SHOW_CUSTOM_TIME_SIGNATURE) {
-                    select.value = '4/4';
+        const selectedTimeSignatures = collectTimeSignatureSelection();
+        if (!selectedTimeSignatures) return;
+        if (selectedTimeSignatures.length === 0) {
+            alert('请至少选择一个拍号！');
+            return;
+        }
+
+        state.allowedTimeSignatures = selectedTimeSignatures;
+
+        if (select) {
+            if (selectedTimeSignatures.length === 1) {
+                const single = selectedTimeSignatures[0];
+                if (isBuiltInTimeSignature(single)) {
+                    select.value = single;
                 } else {
-                const customInput = getCustomTimeSignatureInput();
-                if (!customInput.valid) {
-                    alert(customInput.message);
-                    return;
-                }
-                if (isBuiltInTimeSignature(customInput.value)) {
-                    select.value = customInput.value;
-                } else {
-                    setCustomTimeSignatureValue(select, customInput.value);
-                }
+                    setCustomTimeSignatureValue(select, single);
                 }
             } else {
-                select.value = selected.value;
+                select.value = 'multi';
             }
             updateRhythmOptionsForTimeSignature(select.value);
         }
+
         closeTimeSignatureSettings();
     }
 
     function updateRhythmOptionsForTimeSignature(timeSignature) {
-        if (!SHOW_CUSTOM_TIME_SIGNATURE && !isBuiltInTimeSignature(timeSignature)) {
+        if (!SHOW_CUSTOM_TIME_SIGNATURE && !isBuiltInTimeSignature(timeSignature) && timeSignature !== 'multi') {
             timeSignature = '4/4';
         }
         const wholeLabel = document.getElementById('rhythm-whole-label');
@@ -1527,59 +1554,17 @@
         const freqDupletItem = document.getElementById('freq-duplet-item');
         const freqQuadrupletItem = document.getElementById('freq-quadruplet-item');
 
-        const isCompound = RHYTHM_NOTATION_RULES.isCompoundTimeSignature(timeSignature);
-        if (timeSignature === '6/8') {
-            if (dottedOptionsSection) dottedOptionsSection.style.display = 'none';
-            if (freqDottedItem) freqDottedItem.style.display = 'none';
+        const isMulti = timeSignature === 'multi';
+        const multiHasCompound = isMulti && Array.isArray(state.allowedTimeSignatures)
+            ? state.allowedTimeSignatures.some(ts => RHYTHM_NOTATION_RULES.isCompoundTimeSignature(ts))
+            : false;
+        const isCompound = !isMulti && RHYTHM_NOTATION_RULES.isCompoundTimeSignature(timeSignature);
+        const showDottedToggle = !(isCompound || multiHasCompound);
 
-            if (wholeLabel) wholeLabel.style.display = 'none';
-            if (dottedHalfLabel) dottedHalfLabel.style.display = 'flex';
-            if (wholeCheckbox && wholeCheckbox.checked) {
-                wholeCheckbox.checked = false;
-                if (dottedHalfCheckbox) dottedHalfCheckbox.checked = allowDotted;
-            }
-
-            if (halfLabel) halfLabel.style.display = 'none';
-            if (dottedQuarterLabel) dottedQuarterLabel.style.display = 'flex';
-            if (halfCheckbox && halfCheckbox.checked) {
-                halfCheckbox.checked = false;
-                if (dottedQuarterCheckbox) dottedQuarterCheckbox.checked = allowDotted;
-            }
-
-            if (quarterLabel) quarterLabel.style.display = 'flex';
-            if (eighthLabel) eighthLabel.style.display = 'flex';
-            if (sixteenthLabel) sixteenthLabel.style.display = 'flex';
-            if (dottedEighthLabel) dottedEighthLabel.style.display = 'none';
-            if (!allowDotted) {
-                if (dottedHalfCheckbox) dottedHalfCheckbox.checked = false;
-                if (dottedQuarterCheckbox) dottedQuarterCheckbox.checked = false;
-                if (dottedEighthCheckbox) dottedEighthCheckbox.checked = false;
-            }
-
-            if (tripletLabel) tripletLabel.style.display = 'none';
-            if (dupletLabel) dupletLabel.style.display = 'flex';
-            if (quadrupletLabel) quadrupletLabel.style.display = 'flex';
-            if (tripletCheckbox && tripletCheckbox.checked) {
-                tripletCheckbox.checked = false;
-                if (dupletCheckbox && !dupletCheckbox.checked) dupletCheckbox.checked = true;
-                if (quadrupletCheckbox && !quadrupletCheckbox.checked) quadrupletCheckbox.checked = true;
-            }
-
-            if (freqWholeItem) freqWholeItem.style.display = 'none';
-            if (freqDottedHalfItem) freqDottedHalfItem.style.display = 'block';
-            if (freqHalfItem) freqHalfItem.style.display = 'none';
-            if (freqDottedQuarterItem) freqDottedQuarterItem.style.display = 'block';
-            if (freqDottedEighthItem) freqDottedEighthItem.style.display = 'none';
-            if (freqQuarterItem) freqQuarterItem.style.display = 'block';
-            if (freqEighthItem) freqEighthItem.style.display = 'block';
-            if (freqSixteenthItem) freqSixteenthItem.style.display = 'block';
-            if (freqTripletItem) freqTripletItem.style.display = 'none';
-            if (freqDupletItem) freqDupletItem.style.display = 'block';
-            if (freqQuadrupletItem) freqQuadrupletItem.style.display = 'block';
-        } else if (isCompound) {
-            if (dottedOptionsSection) dottedOptionsSection.style.display = 'block';
-            if (freqDottedItem) freqDottedItem.style.display = 'none';
-
+        if (dottedOptionsSection) {
+            dottedOptionsSection.style.display = showDottedToggle ? 'block' : 'none';
+        }
+        if (isMulti) {
             if (wholeLabel) wholeLabel.style.display = 'flex';
             if (dottedHalfLabel) dottedHalfLabel.style.display = 'flex';
             if (halfLabel) halfLabel.style.display = 'flex';
@@ -1588,10 +1573,51 @@
             if (dottedEighthLabel) dottedEighthLabel.style.display = 'flex';
             if (eighthLabel) eighthLabel.style.display = 'flex';
             if (sixteenthLabel) sixteenthLabel.style.display = 'flex';
-            if (!allowDotted) {
-                if (dottedHalfCheckbox) dottedHalfCheckbox.checked = false;
-                if (dottedQuarterCheckbox) dottedQuarterCheckbox.checked = false;
-                if (dottedEighthCheckbox) dottedEighthCheckbox.checked = false;
+
+            if (tripletLabel) tripletLabel.style.display = 'flex';
+            if (dupletLabel) dupletLabel.style.display = 'flex';
+            if (quadrupletLabel) quadrupletLabel.style.display = 'flex';
+
+            if (freqDottedItem) freqDottedItem.style.display = 'none';
+            if (freqWholeItem) freqWholeItem.style.display = 'block';
+            if (freqDottedHalfItem) freqDottedHalfItem.style.display = 'block';
+            if (freqHalfItem) freqHalfItem.style.display = 'block';
+            if (freqDottedQuarterItem) freqDottedQuarterItem.style.display = 'block';
+            if (freqQuarterItem) freqQuarterItem.style.display = 'block';
+            if (freqDottedEighthItem) freqDottedEighthItem.style.display = 'block';
+            if (freqEighthItem) freqEighthItem.style.display = 'block';
+            if (freqSixteenthItem) freqSixteenthItem.style.display = 'block';
+            if (freqTripletItem) freqTripletItem.style.display = 'block';
+            if (freqDupletItem) freqDupletItem.style.display = 'block';
+            if (freqQuadrupletItem) freqQuadrupletItem.style.display = 'block';
+
+            updateFrequencyLabels();
+            return;
+        }
+
+        if (isCompound) {
+            if (wholeLabel) wholeLabel.style.display = 'none';
+            if (halfLabel) halfLabel.style.display = 'none';
+            if (quarterLabel) quarterLabel.style.display = 'none';
+
+            if (dottedHalfLabel) dottedHalfLabel.style.display = 'flex';
+            if (dottedQuarterLabel) dottedQuarterLabel.style.display = 'flex';
+            if (dottedEighthLabel) dottedEighthLabel.style.display = 'flex';
+
+            if (eighthLabel) eighthLabel.style.display = 'flex';
+            if (sixteenthLabel) sixteenthLabel.style.display = 'flex';
+
+            if (wholeCheckbox && wholeCheckbox.checked) {
+                wholeCheckbox.checked = false;
+                if (dottedHalfCheckbox) dottedHalfCheckbox.checked = true;
+            }
+            if (halfCheckbox && halfCheckbox.checked) {
+                halfCheckbox.checked = false;
+                if (dottedQuarterCheckbox) dottedQuarterCheckbox.checked = true;
+            }
+            if (quarterCheckbox && quarterCheckbox.checked) {
+                quarterCheckbox.checked = false;
+                if (dottedQuarterCheckbox) dottedQuarterCheckbox.checked = true;
             }
 
             if (tripletLabel) tripletLabel.style.display = 'none';
@@ -1603,58 +1629,62 @@
                 if (quadrupletCheckbox && !quadrupletCheckbox.checked) quadrupletCheckbox.checked = true;
             }
 
-            if (freqWholeItem) freqWholeItem.style.display = 'block';
+            if (freqDottedItem) freqDottedItem.style.display = 'none';
+            if (freqWholeItem) freqWholeItem.style.display = 'none';
+            if (freqHalfItem) freqHalfItem.style.display = 'none';
+            if (freqQuarterItem) freqQuarterItem.style.display = 'none';
             if (freqDottedHalfItem) freqDottedHalfItem.style.display = 'block';
-            if (freqHalfItem) freqHalfItem.style.display = 'block';
             if (freqDottedQuarterItem) freqDottedQuarterItem.style.display = 'block';
-            if (freqQuarterItem) freqQuarterItem.style.display = 'block';
             if (freqDottedEighthItem) freqDottedEighthItem.style.display = 'block';
             if (freqEighthItem) freqEighthItem.style.display = 'block';
             if (freqSixteenthItem) freqSixteenthItem.style.display = 'block';
             if (freqTripletItem) freqTripletItem.style.display = 'none';
             if (freqDupletItem) freqDupletItem.style.display = 'block';
             if (freqQuadrupletItem) freqQuadrupletItem.style.display = 'block';
-        } else {
-            if (dottedOptionsSection) dottedOptionsSection.style.display = 'block';
-            if (freqDottedItem) freqDottedItem.style.display = timeSignature === '4/4' ? 'block' : 'none';
 
-            if (wholeLabel) wholeLabel.style.display = 'flex';
-            if (halfLabel) halfLabel.style.display = 'flex';
-            if (quarterLabel) quarterLabel.style.display = 'flex';
-            if (eighthLabel) eighthLabel.style.display = 'flex';
-            if (sixteenthLabel) sixteenthLabel.style.display = 'flex';
-
-            const hideSpecificDotted = timeSignature === '4/4' || timeSignature === '2/4' || timeSignature === '3/4';
-            if (dottedHalfLabel) dottedHalfLabel.style.display = hideSpecificDotted ? 'none' : 'flex';
-            if (dottedQuarterLabel) dottedQuarterLabel.style.display = hideSpecificDotted ? 'none' : 'flex';
-            if (dottedEighthLabel) dottedEighthLabel.style.display = hideSpecificDotted ? 'none' : 'flex';
-            if (!allowDotted) {
-                if (dottedHalfCheckbox) dottedHalfCheckbox.checked = false;
-                if (dottedQuarterCheckbox) dottedQuarterCheckbox.checked = false;
-                if (dottedEighthCheckbox) dottedEighthCheckbox.checked = false;
-            }
-
-            if (tripletLabel) tripletLabel.style.display = 'flex';
-            if (dupletLabel) dupletLabel.style.display = 'none';
-            if (quadrupletLabel) quadrupletLabel.style.display = 'none';
-            if (dupletCheckbox?.checked || quadrupletCheckbox?.checked) {
-                if (dupletCheckbox) dupletCheckbox.checked = false;
-                if (quadrupletCheckbox) quadrupletCheckbox.checked = false;
-                if (tripletCheckbox) tripletCheckbox.checked = true;
-            }
-
-            if (freqWholeItem) freqWholeItem.style.display = 'block';
-            if (freqDottedHalfItem) freqDottedHalfItem.style.display = hideSpecificDotted ? 'none' : 'block';
-            if (freqHalfItem) freqHalfItem.style.display = 'block';
-            if (freqDottedQuarterItem) freqDottedQuarterItem.style.display = hideSpecificDotted ? 'none' : 'block';
-            if (freqQuarterItem) freqQuarterItem.style.display = 'block';
-            if (freqDottedEighthItem) freqDottedEighthItem.style.display = hideSpecificDotted ? 'none' : 'block';
-            if (freqEighthItem) freqEighthItem.style.display = 'block';
-            if (freqSixteenthItem) freqSixteenthItem.style.display = 'block';
-            if (freqTripletItem) freqTripletItem.style.display = 'block';
-            if (freqDupletItem) freqDupletItem.style.display = 'none';
-            if (freqQuadrupletItem) freqQuadrupletItem.style.display = 'none';
+            updateFrequencyLabels();
+            return;
         }
+
+        if (dottedOptionsSection) dottedOptionsSection.style.display = 'block';
+        if (freqDottedItem) freqDottedItem.style.display = timeSignature === '4/4' ? 'block' : 'none';
+
+        if (wholeLabel) wholeLabel.style.display = 'flex';
+        if (halfLabel) halfLabel.style.display = 'flex';
+        if (quarterLabel) quarterLabel.style.display = 'flex';
+        if (eighthLabel) eighthLabel.style.display = 'flex';
+        if (sixteenthLabel) sixteenthLabel.style.display = 'flex';
+
+        const hideSpecificDotted = timeSignature === '4/4' || timeSignature === '2/4' || timeSignature === '3/4';
+        if (dottedHalfLabel) dottedHalfLabel.style.display = hideSpecificDotted ? 'none' : 'flex';
+        if (dottedQuarterLabel) dottedQuarterLabel.style.display = hideSpecificDotted ? 'none' : 'flex';
+        if (dottedEighthLabel) dottedEighthLabel.style.display = hideSpecificDotted ? 'none' : 'flex';
+        if (!allowDotted) {
+            if (dottedHalfCheckbox) dottedHalfCheckbox.checked = false;
+            if (dottedQuarterCheckbox) dottedQuarterCheckbox.checked = false;
+            if (dottedEighthCheckbox) dottedEighthCheckbox.checked = false;
+        }
+
+        if (tripletLabel) tripletLabel.style.display = 'flex';
+        if (dupletLabel) dupletLabel.style.display = 'none';
+        if (quadrupletLabel) quadrupletLabel.style.display = 'none';
+        if (dupletCheckbox?.checked || quadrupletCheckbox?.checked) {
+            if (dupletCheckbox) dupletCheckbox.checked = false;
+            if (quadrupletCheckbox) quadrupletCheckbox.checked = false;
+            if (tripletCheckbox) tripletCheckbox.checked = true;
+        }
+
+        if (freqWholeItem) freqWholeItem.style.display = 'block';
+        if (freqDottedHalfItem) freqDottedHalfItem.style.display = hideSpecificDotted ? 'none' : 'block';
+        if (freqHalfItem) freqHalfItem.style.display = 'block';
+        if (freqDottedQuarterItem) freqDottedQuarterItem.style.display = hideSpecificDotted ? 'none' : 'block';
+        if (freqQuarterItem) freqQuarterItem.style.display = 'block';
+        if (freqDottedEighthItem) freqDottedEighthItem.style.display = hideSpecificDotted ? 'none' : 'block';
+        if (freqEighthItem) freqEighthItem.style.display = 'block';
+        if (freqSixteenthItem) freqSixteenthItem.style.display = 'block';
+        if (freqTripletItem) freqTripletItem.style.display = 'block';
+        if (freqDupletItem) freqDupletItem.style.display = 'none';
+        if (freqQuadrupletItem) freqQuadrupletItem.style.display = 'none';
         updateFrequencyLabels();
     }
 
@@ -1810,7 +1840,7 @@
         return window.getComputedStyle(element).display !== 'none';
     }
 
-    function collectAllowedRhythms(allowDottedNotes) {
+    function collectAllowedRhythms(allowDottedNotes, explicitDotted = false) {
         const selectedRhythms = [];
         const baseRhythms = [
             { id: 'valueWhole', value: 'whole' },
@@ -1840,26 +1870,28 @@
             const checkbox = document.getElementById(id);
             if (!checkbox) return;
             const label = checkbox.closest('label');
-            if (allowDottedNotes && checkbox.checked && isElementVisible(label || checkbox)) {
+            if ((allowDottedNotes || explicitDotted) && checkbox.checked && isElementVisible(label || checkbox)) {
                 selectedRhythms.push(value);
             }
-            if (!allowDottedNotes && checkbox.checked) {
+            if (!allowDottedNotes && !explicitDotted && checkbox.checked) {
                 checkbox.checked = false;
             }
         });
 
-        if (allowDottedNotes) {
-            if (selectedRhythms.includes('half') && selectedRhythms.includes('quarter') && !selectedRhythms.includes('half.')) {
-                selectedRhythms.push('half.');
+        if (!explicitDotted) {
+            if (allowDottedNotes) {
+                if (selectedRhythms.includes('half') && selectedRhythms.includes('quarter') && !selectedRhythms.includes('half.')) {
+                    selectedRhythms.push('half.');
+                }
+                if (selectedRhythms.includes('quarter') && selectedRhythms.includes('eighth') && !selectedRhythms.includes('quarter.')) {
+                    selectedRhythms.push('quarter.');
+                }
+                if (selectedRhythms.includes('eighth') && selectedRhythms.includes('16th') && !selectedRhythms.includes('eighth.')) {
+                    selectedRhythms.push('eighth.');
+                }
+            } else {
+                return selectedRhythms.filter(rhythm => !(rhythm.includes('.') || rhythm.startsWith('dotted-')));
             }
-            if (selectedRhythms.includes('quarter') && selectedRhythms.includes('eighth') && !selectedRhythms.includes('quarter.')) {
-                selectedRhythms.push('quarter.');
-            }
-            if (selectedRhythms.includes('eighth') && selectedRhythms.includes('16th') && !selectedRhythms.includes('eighth.')) {
-                selectedRhythms.push('eighth.');
-            }
-        } else {
-            return selectedRhythms.filter(rhythm => !(rhythm.includes('.') || rhythm.startsWith('dotted-')));
         }
 
         return selectedRhythms;
@@ -1867,15 +1899,33 @@
 
     function getSettings() {
         const timeSignatureSelect = document.getElementById('timeSignature');
-        let timeSignature = timeSignatureSelect ? timeSignatureSelect.value : '4/4';
-        if (!SHOW_CUSTOM_TIME_SIGNATURE && !isBuiltInTimeSignature(timeSignature)) {
-            timeSignature = '4/4';
+        let uiTimeSignature = timeSignatureSelect ? timeSignatureSelect.value : '4/4';
+        if (!SHOW_CUSTOM_TIME_SIGNATURE && !isBuiltInTimeSignature(uiTimeSignature) && uiTimeSignature !== 'multi') {
+            uiTimeSignature = '4/4';
             if (timeSignatureSelect) timeSignatureSelect.value = '4/4';
+        }
+        const allowedTimeSignatures = Array.isArray(state.allowedTimeSignatures) && state.allowedTimeSignatures.length
+            ? state.allowedTimeSignatures
+            : (uiTimeSignature && uiTimeSignature !== 'multi' ? [uiTimeSignature] : ['4/4']);
+        let timeSignature = uiTimeSignature;
+        if (uiTimeSignature === 'multi') {
+            const pick = allowedTimeSignatures[Math.floor(Math.random() * allowedTimeSignatures.length)];
+            timeSignature = pick || '4/4';
         }
         const [beats, beatType] = timeSignature.split('/').map(Number);
         const isCompound = RHYTHM_NOTATION_RULES.isCompoundTimeSignature(timeSignature);
-        const allowDottedNotes = document.getElementById('allowDottedNotes')?.checked ?? false;
-        const voiceMode = parseInt(document.getElementById('voiceMode').value, 10);
+        const multiHasCompound = uiTimeSignature === 'multi'
+            ? allowedTimeSignatures.some(ts => RHYTHM_NOTATION_RULES.isCompoundTimeSignature(ts))
+            : false;
+        const allowDottedToggle = document.getElementById('allowDottedNotes')?.checked ?? false;
+        const explicitDotted = isCompound || multiHasCompound;
+        const allowDottedNotes = explicitDotted ? false : allowDottedToggle;
+        const voiceModeSelect = document.getElementById('voiceMode');
+        const checkedVoiceOption = document.querySelector('input[name="voiceOption"]:checked');
+        if (voiceModeSelect && checkedVoiceOption && checkedVoiceOption.value) {
+            voiceModeSelect.value = checkedVoiceOption.value;
+        }
+        const voiceMode = parseInt(voiceModeSelect?.value || '1', 10);
         const secondaryDensityInput = document.getElementById('secondaryDensity');
         const syncopationInput = document.getElementById('syncopation');
         const ostinato = {
@@ -1904,7 +1954,7 @@
             voiceMode,
             ostinato,
             timeSignature,
-            allowedRhythms: collectAllowedRhythms(allowDottedNotes),
+            allowedRhythms: collectAllowedRhythms(allowDottedNotes, explicitDotted),
             noteValues: {
                 whole: document.getElementById('valueWhole')?.checked ?? false,
                 half: document.getElementById('valueHalf')?.checked ?? false,
@@ -1989,7 +2039,15 @@
         if (userFreq === 0) {
             return 0;
         }
-        return Math.pow(userFreq / 100, 1.6);
+        let weight = Math.pow(userFreq / 100, 1.6);
+        if (RHYTHM_NOTATION_RULES.isCompoundTimeSignature(settings.timeSignature)) {
+            if (mappedDuration === 'eighth') {
+                weight *= 1.45;
+            } else if (mappedDuration === 'quarter') {
+                weight *= 0.6;
+            }
+        }
+        return weight;
     }
 
     function selectDurationByPreciseFrequency(availableDurations, settings) {
@@ -3198,7 +3256,12 @@
                 const beatEnd = beatStart + compoundInfo.mainBeatLength;
                 const withinMainBeat = startPos >= beatStart - tol && endPos <= beatEnd + tol;
                 const hasTie = !current.rest && (current.tieType || next.tieType);
-                const allowWithinBeatMerge = withinMainBeat && (hasTie || current.rest);
+                const allowWithinBeatMerge = withinMainBeat && (
+                    current.rest
+                    || hasTie
+                    || (!current.rest && spanMatchesHierarchy(startPos, endPos, timeSignature)
+                        && areAllEventsSameTypeInSpan(merged, startPos, endPos, false))
+                );
                 if (!allowWithinBeatMerge && !canMergeSpan(startPos, endPos, merged, timeSignature, current.rest, criticalBeats)) {
                     position += beats;
                     continue;
@@ -3364,6 +3427,58 @@
         }
 
         return mergedNotes;
+    }
+
+    function mergeAdjacentRestsForCustomGrouping(events, settings, measureIndex) {
+        const timeSignature = `${settings.beats}/${settings.beatType}`;
+        if (!timeSignature || isBuiltInTimeSignature(timeSignature)) return events;
+        const grouping = getCustomBeatGrouping(timeSignature, measureIndex);
+        if (!grouping || !Array.isArray(grouping.starts) || grouping.starts.length === 0) return events;
+
+        const totalBeats = grouping.totalBeats;
+        const groupStarts = grouping.starts.slice();
+        const groupEnds = groupStarts.slice(1).concat([totalBeats]);
+        const tolerance = 0.0001;
+
+        let merged = [...events];
+        let changed = true;
+        let iterations = 0;
+        const maxIterations = 10;
+
+        while (changed && iterations < maxIterations) {
+            changed = false;
+            iterations += 1;
+            let position = 0;
+
+            for (let i = 0; i < merged.length - 1; i += 1) {
+                const current = merged[i];
+                const beats = current.duration / divisions;
+                const start = position;
+                const end = start + beats;
+                const next = merged[i + 1];
+
+                if (current.rest && !current.timeMod && next && next.rest && !next.timeMod) {
+                    const nextBeats = next.duration / divisions;
+                    const nextEnd = end + nextBeats;
+                    const groupIndex = groupEnds.findIndex(groupEnd => start < groupEnd - tolerance);
+                    const groupEnd = groupIndex >= 0 ? groupEnds[groupIndex] : totalBeats;
+
+                    if (nextEnd <= groupEnd + tolerance) {
+                        const combinedBeats = beats + nextBeats;
+                        const mergedRest = buildRestEventFromBeats(combinedBeats, current);
+                        if (mergedRest) {
+                            merged.splice(i, 2, mergedRest);
+                            changed = true;
+                            break;
+                        }
+                    }
+                }
+
+                position = end;
+            }
+        }
+
+        return merged;
     }
 
     function mergeRestsByBeatsFor3_4(events) {
@@ -3558,6 +3673,7 @@
         let merged = applyRestMergeRules(normalized, settings);
         if (!isBuiltInTimeSignature(timeSignature)) {
             merged = applyCustomGroupingBeatClarityEvents(merged, settings, measureIndex || 0);
+            merged = mergeAdjacentRestsForCustomGrouping(merged, settings, measureIndex || 0);
             merged = normalizeCustomTieTypes(merged, timeSignature);
             merged = mergeCustomGroupingTiedEvents(merged, settings, measureIndex || 0);
             merged = normalizeCustomTieTypes(merged, timeSignature);
@@ -3571,7 +3687,114 @@
         return !event.rest && (event.type === 'eighth' || event.type === '16th');
     }
 
+    function applyCustomBeamingToMeasure(events, timeSignature) {
+        const parsed = parseTimeSignatureString(timeSignature);
+        if (!parsed) return;
+        const unit = 4 / parsed.beatType;
+        if (!unit || !Number.isFinite(unit)) return;
+        const isCompound = isCompoundTimeSignature(timeSignature);
+        const groupSize = unit * (isCompound ? 3 : 1);
+        if (!groupSize || !Number.isFinite(groupSize)) return;
+
+        const tolerance = 0.0001;
+        const noteMeta = [];
+        let position = 0;
+
+        events.forEach((event, index) => {
+            const beats = event.duration / divisions;
+            const start = position;
+            const end = start + beats;
+            const beamLevel = event.type === '16th' ? 2 : event.type === 'eighth' ? 1 : 0;
+            const isBeamable = !event.rest && !event.timeMod && beamLevel >= 1;
+            event.beams = null;
+            noteMeta.push({
+                index,
+                event,
+                start,
+                end,
+                beamLevel,
+                isBeamable
+            });
+            position = end;
+        });
+
+        let currentGroup = [];
+        let currentGroupStart = null;
+
+        const finalizeGroup = () => {
+            if (currentGroup.length < 2) {
+                currentGroup = [];
+                return;
+            }
+
+            currentGroup.forEach((meta, idx) => {
+                const isFirst = idx === 0;
+                const isLast = idx === currentGroup.length - 1;
+                meta.event.beams = {
+                    1: isFirst ? 'begin' : isLast ? 'end' : 'continue'
+                };
+            });
+
+            if (isCompound && currentGroup.some(meta => meta.beamLevel >= 2)) {
+                const subSize = unit;
+                currentGroup.forEach((meta, idx) => {
+                    if (meta.beamLevel < 2) return;
+                    const localPos = meta.start - (currentGroupStart || 0);
+                    const subGroup = Math.floor((localPos + tolerance) / subSize);
+                    const prevMeta = idx > 0 ? currentGroup[idx - 1] : null;
+                    const nextMeta = idx < currentGroup.length - 1 ? currentGroup[idx + 1] : null;
+                    const prevIsSameSub = prevMeta && prevMeta.beamLevel >= 2 &&
+                        Math.floor(((prevMeta.start - (currentGroupStart || 0)) + tolerance) / subSize) === subGroup;
+                    const nextIsSameSub = nextMeta && nextMeta.beamLevel >= 2 &&
+                        Math.floor(((nextMeta.start - (currentGroupStart || 0)) + tolerance) / subSize) === subGroup;
+                    let beam2;
+                    if (!prevIsSameSub && !nextIsSameSub) {
+                        beam2 = 'backward hook';
+                    } else if (!prevIsSameSub && nextIsSameSub) {
+                        beam2 = 'begin';
+                    } else if (prevIsSameSub && !nextIsSameSub) {
+                        beam2 = 'end';
+                    } else {
+                        beam2 = 'continue';
+                    }
+                    if (!meta.event.beams) meta.event.beams = {};
+                    meta.event.beams[2] = beam2;
+                });
+            }
+
+            currentGroup = [];
+        };
+
+        noteMeta.forEach(meta => {
+            const groupIndex = Math.floor((meta.start + tolerance) / groupSize);
+            const groupStart = groupIndex * groupSize;
+
+            if (currentGroupStart === null) {
+                currentGroupStart = groupStart;
+            }
+
+            if (Math.abs(groupStart - currentGroupStart) > tolerance) {
+                finalizeGroup();
+                currentGroupStart = groupStart;
+            }
+
+            if (!meta.isBeamable) {
+                finalizeGroup();
+                return;
+            }
+
+            currentGroup.push(meta);
+        });
+
+        finalizeGroup();
+    }
+
     function applyBeamingToMeasure(events, settings) {
+        const timeSignature = `${settings.beats}/${settings.beatType}`;
+        if (!isBuiltInTimeSignature(timeSignature)) {
+            applyCustomBeamingToMeasure(events, timeSignature);
+            return;
+        }
         const ticksPerBeat = divisions * (4 / settings.beatType);
         const isCompound = settings.beatType === 8 && settings.beats % 3 === 0;
         const groupSize = isCompound ? ticksPerBeat * 3 : ticksPerBeat;
@@ -4278,11 +4501,11 @@
         }));
     }
 
-    function pushHistory(xml) {
+    function pushHistory(xml, voices, settings) {
         if (currentHistoryIndex < rhythmHistory.length - 1) {
             rhythmHistory.splice(currentHistoryIndex + 1);
         }
-        rhythmHistory.push({ xml });
+        rhythmHistory.push({ xml, voices, settings });
         if (rhythmHistory.length > maxHistory) {
             rhythmHistory.shift();
         }
@@ -4292,8 +4515,11 @@
     function renderHistory(index) {
         const entry = rhythmHistory[index];
         if (!entry) return;
+        stopPlayback();
         currentHistoryIndex = index;
         window.__rhythmLastXml = entry.xml;
+        if (entry.voices) state.lastVoices = entry.voices;
+        if (entry.settings) state.lastSettings = entry.settings;
         renderScore(entry.xml).catch(err => console.error('OSMD render error', err));
     }
 
@@ -4308,6 +4534,7 @@
     }
 
     function generateRhythm() {
+        stopPlayback();
         const settings = getSettings();
         state.lastSettings = settings;
         const ostinato = settings.ostinato || { voice: 'none' };
@@ -4322,9 +4549,10 @@
                 : buildMeasures(settings, settings.secondaryDensity, 2);
             voices.push(secondaryMeasures);
         }
+        state.lastVoices = voices;
         const xml = buildMusicXml(settings, voices);
         window.__rhythmLastXml = xml;
-        pushHistory(xml);
+        pushHistory(xml, voices, settings);
         renderScore(xml).catch(err => console.error('OSMD render error', err));
     }
 
@@ -4390,11 +4618,908 @@
         return ctx;
     }
 
+    function ensurePlaybackContext() {
+        const ctx = getRhythmAudioContext();
+        state.playback.audioCtx = ctx;
+        return ctx;
+    }
+
+    function getPlaybackOutputGain(ctx) {
+        if (!ctx) return null;
+        if (state.playback.outputGain && state.playback.outputGain.context === ctx) {
+            return state.playback.outputGain;
+        }
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(1, ctx.currentTime);
+        gain.connect(ctx.destination);
+        state.playback.outputGain = gain;
+        return gain;
+    }
+
+    function getMetronomeOutputGain(ctx) {
+        if (!ctx) return null;
+        if (state.metronome.outputGain && state.metronome.outputGain.context === ctx) {
+            return state.metronome.outputGain;
+        }
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(1, ctx.currentTime);
+        gain.connect(ctx.destination);
+        state.metronome.outputGain = gain;
+        return gain;
+    }
+
+    function muteAudioGain(gain, ctx) {
+        if (!gain || !ctx) return;
+        const now = ctx.currentTime;
+        try {
+            gain.gain.cancelScheduledValues(now);
+            gain.gain.setValueAtTime(Math.max(0.0001, gain.gain.value || 0.0001), now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.01);
+        } catch (_) {
+            // ignore gain cancellation errors
+        }
+    }
+
+    function ensureAudioGain(gain, ctx) {
+        if (!gain || !ctx) return;
+        const now = ctx.currentTime;
+        try {
+            gain.gain.cancelScheduledValues(now);
+            gain.gain.setValueAtTime(1, now);
+        } catch (_) {
+            // ignore gain restore errors
+        }
+    }
+
+    function getCurrentTempo() {
+        const bpmInput = document.getElementById('metronomeBpm');
+        const tempo = Math.max(1, parseInt(bpmInput?.value || '80', 10) || 80);
+        return tempo;
+    }
+
+    function getMetronomeBeatDuration(tempo) {
+        const patternInfo = getMetronomePatternInfo(tempo);
+        const subdivision = patternInfo.usePattern ? patternInfo.subdivision : 1;
+        const stepDuration = patternInfo.stepDuration || (60 / tempo);
+        return stepDuration * subdivision;
+    }
+
+    function readCalibrationPreference() {
+        try {
+            const raw = localStorage.getItem(calibrationStorageKey);
+            return raw === '1' || raw === 'true';
+        } catch (_) {
+            return false;
+        }
+    }
+
+    function writeCalibrationPreference(enabled) {
+        try { localStorage.setItem(calibrationStorageKey, enabled ? '1' : '0'); } catch (_) {}
+    }
+
+    function updateCalibrationHint() {
+        const hint = document.getElementById('calibrationHint');
+        if (!hint) return;
+        hint.style.display = state.calibration.enabled ? 'block' : 'none';
+    }
+
+    function updateCalibrationToggleUI() {
+        const toggle = document.getElementById('rhythmCalibrationToggle');
+        if (!toggle) return;
+        toggle.checked = !!state.calibration.enabled;
+    }
+
+    function ensurePlaybackCountInLabel() {
+        const score = document.getElementById('score');
+        if (!score) return null;
+        let label = document.getElementById('playbackCountInLabel');
+        if (!label) {
+            label = document.createElement('div');
+            label.id = 'playbackCountInLabel';
+            label.style.position = 'absolute';
+            label.style.top = '8px';
+            label.style.left = '50%';
+            label.style.transform = 'translateX(-50%)';
+            label.style.fontSize = '18px';
+            label.style.fontWeight = '700';
+            label.style.color = 'var(--text-color)';
+            label.style.background = 'rgba(0,0,0,0.05)';
+            label.style.padding = '4px 10px';
+            label.style.borderRadius = '999px';
+            label.style.backdropFilter = 'blur(2px)';
+            label.style.pointerEvents = 'none';
+            label.style.display = 'none';
+            label.style.zIndex = '5';
+            score.appendChild(label);
+        }
+        return label;
+    }
+
+    function showPlaybackCountdown(value, isStrong) {
+        const label = ensurePlaybackCountInLabel();
+        if (!label) return;
+        label.textContent = String(value);
+        label.style.display = 'inline-flex';
+        if (isStrong) {
+            label.style.color = 'var(--primary-blue, #007aff)';
+            label.style.opacity = '1';
+        } else {
+            label.style.color = 'var(--text-color)';
+            label.style.opacity = '0.75';
+        }
+    }
+
+    function hidePlaybackCountdown() {
+        const label = document.getElementById('playbackCountInLabel');
+        if (label && label.parentNode) {
+            label.parentNode.removeChild(label);
+        }
+    }
+
+    function schedulePlaybackCountdown(value, time, isStrong) {
+        const ctx = getRhythmAudioContext();
+        const delay = Math.max(0, (time - ctx.currentTime) * 1000);
+        const id = setTimeout(() => {
+            showPlaybackCountdown(value, isStrong);
+        }, delay);
+        state.playback.countInUiTimers.push(id);
+    }
+
+    function clearCalibrationStyles() {
+        if (state.calibration.judgedElements && state.calibration.judgedElements.size) {
+            state.calibration.judgedElements.forEach(el => {
+                el.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+            });
+            state.calibration.judgedElements.clear();
+            return;
+        }
+        const svg = document.getElementById('score')?.querySelector('svg');
+        if (!svg) return;
+        const nodes = svg.querySelectorAll('.midi-judge-wrong, .midi-judge-correct');
+        nodes.forEach(el => el.classList.remove('midi-judge-wrong', 'midi-judge-correct'));
+    }
+
+    function setCalibrationEnabled(enabled, save = true) {
+        state.calibration.enabled = !!enabled;
+        if (save) writeCalibrationPreference(state.calibration.enabled);
+        updateCalibrationToggleUI();
+        updateCalibrationHint();
+        if (!state.calibration.enabled) {
+            stopCalibration();
+        }
+    }
+
+    function isRestLikeElement(el) {
+        if (!el || !el.closest) return false;
+        if (el.closest('g.vf-rest, [class*="rest" i], use[href*="rest" i]')) return true;
+        const note = el.closest('g.vf-stavenote, g.vf-note');
+        if (!note) return false;
+        const hasHead = !!note.querySelector('g.vf-notehead, .vf-notehead, use[href*="notehead" i], [class*="notehead" i]');
+        return !hasHead;
+    }
+
+    function getNotePaintTarget(el) {
+        if (!el) return null;
+        if (isRestLikeElement(el)) return null;
+        if (el.matches && el.matches('use[href*="notehead" i]')) return el;
+        if (el.matches && el.matches('.vf-notehead, g.vf-notehead')) {
+            const tag = el.tagName ? el.tagName.toLowerCase() : '';
+            if (tag === 'path' || tag === 'ellipse' || tag === 'circle') return el;
+        }
+        const head = el.closest('g.vf-notehead, .vf-notehead');
+        if (head && !isRestLikeElement(head)) {
+            const concrete = head.querySelector('use[href*="notehead" i], :scope > path, :scope > ellipse, :scope > circle');
+            if (concrete) return concrete;
+            const headTag = head.tagName ? head.tagName.toLowerCase() : '';
+            if (headTag === 'path' || headTag === 'ellipse' || headTag === 'circle') return head;
+            return null;
+        }
+        const note = el.closest('g.vf-stavenote, g.vf-note');
+        if (!note || isRestLikeElement(note)) return null;
+        const ownerHead = note.querySelector('g.vf-notehead, .vf-notehead, use[href*="notehead" i]');
+        if (!ownerHead) return null;
+        if (ownerHead.matches && ownerHead.matches('use[href*="notehead" i]')) return ownerHead;
+        const concrete = ownerHead.querySelector
+            ? ownerHead.querySelector('use[href*="notehead" i], :scope > path, :scope > ellipse, :scope > circle')
+            : null;
+        return concrete || null;
+    }
+
+    function collectCalibrationElements() {
+        const svg = document.getElementById('score')?.querySelector('svg');
+        if (!svg) return [];
+        const candidates = Array.from(svg.querySelectorAll(
+            '.vf-notehead, g.vf-notehead, use[href*="notehead" i]'
+        ));
+        const seen = new Set();
+        const scored = candidates.map(el => {
+            const target = getNotePaintTarget(el);
+            if (!target || seen.has(target)) return null;
+            seen.add(target);
+            const rect = target.getBoundingClientRect();
+            if (rect.width <= 0 || rect.height <= 0) return null;
+            return {
+                el: target,
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2,
+                w: rect.width,
+                h: rect.height
+            };
+        }).filter(item => item && item.el && item.w > 0 && item.h > 0);
+        scored.sort((a, b) => (a.x - b.x) || (a.y - b.y));
+        return scored;
+    }
+
+    function computeCalibrationWindowSec(tempo) {
+        const beatSec = 60 / Math.max(1, tempo || 80);
+        const window = beatSec * 0.22;
+        return Math.max(0.07, Math.min(0.26, window));
+    }
+
+    function isEditableElement(target) {
+        if (!target) return false;
+        const tag = target.tagName ? target.tagName.toLowerCase() : '';
+        return tag === 'input' || tag === 'textarea' || tag === 'select' || target.isContentEditable;
+    }
+
+    function buildCalibrationEvents(tempo) {
+        const { events } = buildPlaybackEvents();
+        if (!events || !events.length) return [];
+        const secondsPerTick = (60 / Math.max(1, tempo || 80)) / divisions;
+        const noteheads = collectCalibrationElements();
+        const voiceMode = (state.lastSettings || getSettings())?.voiceMode || 1;
+        const groups = [];
+        const groupTolerance = 4;
+
+        noteheads.forEach(item => {
+            const last = groups[groups.length - 1];
+            if (!last || Math.abs(item.x - last.centerX) > groupTolerance) {
+                groups.push({ centerX: item.x, items: [item] });
+                return;
+            }
+            last.items.push(item);
+            last.centerX = (last.centerX * (last.items.length - 1) + item.x) / last.items.length;
+        });
+        groups.forEach(group => {
+            group.items.sort((a, b) => a.y - b.y);
+        });
+
+        const tickGroups = [];
+        let current = null;
+        events.forEach(ev => {
+            if (!current || current.ticks !== ev.ticks) {
+                current = { ticks: ev.ticks, items: [ev] };
+                tickGroups.push(current);
+                return;
+            }
+            current.items.push(ev);
+        });
+
+        const mapped = [];
+        const lastXByVoice = new Map();
+        let groupCursor = 0;
+        tickGroups.forEach(tg => {
+            const group = groups[groupCursor] || null;
+            const bucket = group ? group.items.slice() : [];
+            const orderedByLow = bucket.slice().sort((a, b) => b.y - a.y);
+
+            tg.items.forEach((ev, idx) => {
+                let picked = null;
+                let logicalVoice = ev.voice || 1;
+                const lastX = lastXByVoice.get(logicalVoice);
+                const minX = Number.isFinite(lastX) ? (lastX - 2) : -Infinity;
+                if (voiceMode > 1 && orderedByLow.length) {
+                    const upper = orderedByLow[orderedByLow.length - 1];
+                    const lower = orderedByLow[0];
+                    if (logicalVoice === 1) {
+                        picked = upper || lower || null;
+                    } else if (logicalVoice === 2) {
+                        picked = lower || upper || null;
+                    } else {
+                        picked = orderedByLow[idx] || orderedByLow[orderedByLow.length - 1];
+                    }
+                    if (picked && picked.x < minX) {
+                        const forward = orderedByLow.find(item => item.x >= minX) || null;
+                        picked = forward || null;
+                    }
+                } else if (bucket.length) {
+                    picked = bucket[Math.min(idx, bucket.length - 1)];
+                    if (picked && picked.x < minX) {
+                        const forward = bucket.find(item => item.x >= minX) || null;
+                        picked = forward || null;
+                    }
+                }
+                if (picked && Number.isFinite(picked.x)) {
+                    lastXByVoice.set(logicalVoice, picked.x);
+                }
+                mapped.push({
+                    time: ev.ticks * secondsPerTick,
+                    voice: logicalVoice,
+                    judged: false,
+                    elements: picked && picked.el ? [picked.el] : [],
+                    tieType: ev.tieType || null,
+                    tieGroup: ev.tieGroup || null
+                });
+            });
+            groupCursor += 1;
+        });
+        const grouped = [];
+        const EPS = secondsPerTick * 0.5;
+        mapped.forEach(item => {
+            const last = grouped[grouped.length - 1];
+            const target = {
+                voice: item.voice || 1,
+                judged: false,
+                elements: Array.isArray(item.elements) ? item.elements.slice() : [],
+                tieType: item.tieType || null,
+                tieGroup: item.tieGroup || null
+            };
+            if (last && Math.abs(last.time - item.time) <= EPS) {
+                last.targets.push(target);
+                last.elements = last.targets.flatMap(t => t.elements || []);
+                return;
+            }
+            grouped.push({
+                time: item.time,
+                judged: false,
+                targets: [target],
+                elements: target.elements.slice()
+            });
+        });
+        const normalized = grouped.map(ev => {
+            const targets = (Array.isArray(ev.targets) ? ev.targets : []).filter(target =>
+                Array.isArray(target.elements) && target.elements.length > 0
+            );
+            return {
+                ...ev,
+                targets,
+                elements: targets.flatMap(target => target.elements || []),
+                judged: targets.length === 0 ? true : !!ev.judged
+            };
+        }).filter(ev => ev.targets.length > 0);
+        return normalized;
+    }
+
+    function markCalibrationTarget(targetEvent, status) {
+        if (!targetEvent || targetEvent.judged) return;
+        targetEvent.judged = true;
+        const cls = status === 'correct' ? 'midi-judge-correct' : 'midi-judge-wrong';
+        const elements = Array.isArray(targetEvent.elements) ? targetEvent.elements : [];
+        elements.forEach(el => {
+            const target = getNotePaintTarget(el);
+            if (!target) return;
+            target.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+            target.classList.add(cls);
+            state.calibration.judgedElements.add(target);
+        });
+        sanitizeCalibrationPaintTargets();
+    }
+
+    function sanitizeCalibrationPaintTargets() {
+        const svg = document.getElementById('score')?.querySelector('svg');
+        if (!svg) return;
+        const marked = svg.querySelectorAll('.midi-judge-correct, .midi-judge-wrong');
+        marked.forEach(el => {
+            const status = el.classList.contains('midi-judge-correct') ? 'correct'
+                : (el.classList.contains('midi-judge-wrong') ? 'wrong' : null);
+            if (isRestLikeElement(el)) {
+                el.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+                state.calibration.judgedElements.delete(el);
+                return;
+            }
+            const canonical = getNotePaintTarget(el);
+            if (!canonical) {
+                el.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+                state.calibration.judgedElements.delete(el);
+                return;
+            }
+            if (canonical !== el) {
+                el.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+                state.calibration.judgedElements.delete(el);
+                if (status) {
+                    canonical.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+                    canonical.classList.add(status === 'correct' ? 'midi-judge-correct' : 'midi-judge-wrong');
+                    state.calibration.judgedElements.add(canonical);
+                }
+            }
+        });
+    }
+
+    function markCalibrationTieGroup(tieGroup, status) {
+        if (!tieGroup) return;
+        const events = Array.isArray(state.calibration.events) ? state.calibration.events : [];
+        events.forEach(ev => {
+            const targets = Array.isArray(ev.targets) && ev.targets.length
+                ? ev.targets
+                : [{ judged: !!ev.judged, elements: Array.isArray(ev.elements) ? ev.elements : [], voice: ev.voice || 1, tieType: ev.tieType || null, tieGroup: ev.tieGroup || null }];
+            targets.forEach(target => {
+                if (!target.judged && target.tieGroup === tieGroup) {
+                    markCalibrationTarget(target, status);
+                }
+            });
+            ev.judged = targets.every(target => !!target.judged);
+        });
+    }
+
+    function markCalibrationEvent(ev, status) {
+        if (!ev) return;
+        const targets = Array.isArray(ev.targets) && ev.targets.length
+            ? ev.targets
+            : [{ judged: !!ev.judged, elements: Array.isArray(ev.elements) ? ev.elements : [], voice: ev.voice || 1 }];
+        targets.forEach(target => {
+            if (!target.judged) markCalibrationTarget(target, status);
+        });
+        ev.judged = targets.every(target => !!target.judged);
+        sanitizeCalibrationPaintTargets();
+    }
+
+    function startCalibrationAt(startTime, tempo) {
+        if (!state.calibration.enabled) return;
+        state.calibration.active = true;
+        state.calibration.startTime = startTime;
+        state.calibration.events = buildCalibrationEvents(tempo);
+        state.calibration.index = 0;
+        state.calibration.windowSec = computeCalibrationWindowSec(tempo);
+        clearCalibrationStyles();
+    }
+
+    function stopCalibration() {
+        state.calibration.active = false;
+        state.calibration.startTime = 0;
+        state.calibration.events = [];
+        state.calibration.index = 0;
+        clearCalibrationStyles();
+    }
+
+    function mapMidiToVoice(midi, voiceMode) {
+        if (voiceMode <= 1) return 1;
+        const pc = ((midi % 12) + 12) % 12;
+        if (pc === 0) return 2; // C/Do -> lower voice (kick)
+        if (pc === 7) return 1; // G/Sol -> upper voice (snare)
+        return null;
+    }
+
+    function handleCalibrationInput(voice, time) {
+        if (!state.calibration.enabled || !state.calibration.active) return;
+        const ctx = getRhythmAudioContext();
+        const now = typeof time === 'number' ? time : ctx.currentTime;
+        const nowSec = now - (state.calibration.startTime || 0);
+        const events = state.calibration.events;
+        if (!events || !events.length) return;
+        const baseWindow = state.calibration.windowSec || 0.08;
+        const getWindow = index => {
+            if (index === 0) {
+                return { early: Math.min(0.28, baseWindow + 0.1), late: Math.min(0.32, baseWindow + 0.14) };
+            }
+            return { early: baseWindow, late: baseWindow };
+        };
+        const getOverdueLate = (index, ev) => {
+            const w = getWindow(index);
+            const targetCount = Array.isArray(ev?.targets) ? ev.targets.length : 1;
+            const extraFirst = index === 0 ? 0.18 : 0;
+            const extraChord = targetCount > 1 ? 0.08 : 0;
+            return Math.max(w.late + extraFirst + extraChord, index === 0 ? 0.35 : w.late);
+        };
+        const advanceIndex = () => {
+            while (state.calibration.index < events.length && events[state.calibration.index].judged) {
+                state.calibration.index += 1;
+            }
+        };
+
+        while (state.calibration.index < events.length &&
+               nowSec > events[state.calibration.index].time + getOverdueLate(state.calibration.index, events[state.calibration.index])) {
+            markCalibrationEvent(events[state.calibration.index], 'wrong');
+            state.calibration.index += 1;
+            advanceIndex();
+        }
+
+        if (state.calibration.index >= events.length) return;
+        if (state.calibration.index === 0) {
+            const first = events[0];
+            if (first && !first.judged) {
+                const fw = getWindow(0);
+                const hardLate = Math.max(fw.late, 0.35);
+                if (nowSec >= -fw.early && nowSec <= hardLate) {
+                    const targets = Array.isArray(first.targets) && first.targets.length
+                        ? first.targets
+                        : [{ judged: !!first.judged, elements: Array.isArray(first.elements) ? first.elements : [], voice: first.voice || 1 }];
+                    const match = targets.find(target =>
+                        !target.judged &&
+                        Array.isArray(target.elements) &&
+                        target.elements.length > 0 &&
+                        (voice == null || voice === target.voice)
+                    );
+                    if (match) {
+                        markCalibrationTarget(match, 'correct');
+                        if (match.tieType === 'start' && match.tieGroup) {
+                            markCalibrationTieGroup(match.tieGroup, 'correct');
+                        }
+                        first.judged = targets.every(target => !!target.judged);
+                        if (first.judged) {
+                            state.calibration.index = 1;
+                            advanceIndex();
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+
+        const ev = events[state.calibration.index];
+        if (!ev || ev.judged) return;
+        const window = getWindow(state.calibration.index);
+        const targetCount = Array.isArray(ev.targets) ? ev.targets.length : 1;
+        const late = window.late + (targetCount > 1 ? 0.08 : 0);
+        const delta = nowSec - ev.time;
+        if (delta < -window.early || delta > late) return;
+        const targets = Array.isArray(ev.targets) && ev.targets.length
+            ? ev.targets
+            : [{ judged: !!ev.judged, elements: Array.isArray(ev.elements) ? ev.elements : [], voice: ev.voice || 1 }];
+        const match = targets.find(target =>
+            !target.judged &&
+            Array.isArray(target.elements) &&
+            target.elements.length > 0 &&
+            (voice == null || voice === target.voice)
+        );
+        if (match) {
+            markCalibrationTarget(match, 'correct');
+            if (match.tieType === 'start' && match.tieGroup) {
+                markCalibrationTieGroup(match.tieGroup, 'correct');
+            }
+            ev.judged = targets.every(target => !!target.judged);
+            if (ev.judged) {
+                state.calibration.index += 1;
+            }
+            advanceIndex();
+        }
+    }
+
+
+    function getSnareNoiseBuffer(ctx) {
+        if (state.playback.noiseBuffer && state.playback.noiseBuffer.sampleRate === ctx.sampleRate) {
+            return state.playback.noiseBuffer;
+        }
+        const length = Math.floor(ctx.sampleRate * 0.25);
+        const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < length; i += 1) {
+            data[i] = (Math.random() * 2 - 1) * (1 - i / length);
+        }
+        state.playback.noiseBuffer = buffer;
+        return buffer;
+    }
+
+    function playSnare(time, velocity) {
+        const ctx = ensurePlaybackContext();
+        const output = getPlaybackOutputGain(ctx);
+        if (!output) return;
+        ensureAudioGain(output, ctx);
+        const level = Math.max(0.1, Math.min(1, velocity || 0.95));
+        const noise = ctx.createBufferSource();
+        noise.buffer = getSnareNoiseBuffer(ctx);
+        const noiseFilter = ctx.createBiquadFilter();
+        noiseFilter.type = 'highpass';
+        noiseFilter.frequency.setValueAtTime(900, time);
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(level * 1.35, time);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
+        noise.connect(noiseFilter).connect(noiseGain).connect(output);
+        noise.start(time);
+        noise.stop(time + 0.2);
+
+        const tone = ctx.createOscillator();
+        tone.type = 'triangle';
+        tone.frequency.setValueAtTime(180, time);
+        const toneGain = ctx.createGain();
+        toneGain.gain.setValueAtTime(level * 0.5, time);
+        toneGain.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
+        tone.connect(toneGain).connect(output);
+        tone.start(time);
+        tone.stop(time + 0.2);
+    }
+
+    function playKick(time, velocity) {
+        const ctx = ensurePlaybackContext();
+        const output = getPlaybackOutputGain(ctx);
+        if (!output) return;
+        ensureAudioGain(output, ctx);
+        const level = Math.max(0.15, Math.min(1, velocity || 1.0));
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(140, time);
+        osc.frequency.exponentialRampToValueAtTime(45, time + 0.14);
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(level * 1.35, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
+        osc.connect(gain).connect(output);
+        osc.start(time);
+        osc.stop(time + 0.25);
+    }
+
+    function playKeyboardDrumByKey(key, time) {
+        const normalized = String(key || '').toLowerCase();
+        if (normalized !== 'f' && normalized !== 'j') return;
+        const ctx = getRhythmAudioContext();
+        if (!ctx) return;
+        const when = typeof time === 'number' ? time : (ctx.currentTime + 0.01);
+        if (normalized === 'f') {
+            playKick(when, 1.0);
+        } else {
+            playSnare(when, 0.95);
+        }
+    }
+
+    function buildPlaybackEvents() {
+        const voices = state.lastVoices;
+        const settings = state.lastSettings || getSettings();
+        if (!Array.isArray(voices) || voices.length === 0) {
+            return { events: [], totalTicks: 0, settings };
+        }
+        const ticksPerBeat = divisions * (4 / settings.beatType);
+        const measureTicks = ticksPerBeat * settings.beats;
+        const events = [];
+        voices.forEach((measures, voiceIndex) => {
+            if (!Array.isArray(measures)) return;
+            measures.forEach((measure, measureIndex) => {
+                let position = 0;
+                (measure || []).forEach(event => {
+                    const voice = event.voice || (voiceIndex + 1);
+                    if (!event.rest) {
+                        events.push({
+                            ticks: measureIndex * measureTicks + position,
+                            voice,
+                            tieType: event.tieType || null
+                        });
+                    }
+                    position += event.duration || 0;
+                });
+            });
+        });
+        const openTieByVoice = new Map();
+        events.forEach((ev, idx) => {
+            const voiceKey = String(ev.voice || 1);
+            const tieType = ev.tieType || null;
+            ev.tieGroup = null;
+            if (!tieType) return;
+            if (tieType === 'start') {
+                const groupId = `v${voiceKey}-t${ev.ticks}-${idx}`;
+                openTieByVoice.set(voiceKey, groupId);
+                ev.tieGroup = groupId;
+                return;
+            }
+            const openId = openTieByVoice.get(voiceKey) || null;
+            ev.tieGroup = openId;
+            if (tieType === 'stop' && openId) {
+                openTieByVoice.delete(voiceKey);
+            }
+        });
+        const totalTicks = measureTicks * (voices[0] ? voices[0].length : 0);
+        events.sort((a, b) => a.ticks - b.ticks);
+        return { events, totalTicks, settings };
+    }
+
+    function stopPlayback() {
+        if (state.playback.countInTimer) {
+            clearTimeout(state.playback.countInTimer);
+            state.playback.countInTimer = null;
+        }
+        if (state.playback.countInUiTimers && state.playback.countInUiTimers.length) {
+            state.playback.countInUiTimers.forEach(id => clearTimeout(id));
+            state.playback.countInUiTimers = [];
+        }
+        state.playback.countInActive = false;
+        state.playback.countInState = null;
+        hidePlaybackCountdown();
+        if (state.playback.stopTimer) {
+            clearTimeout(state.playback.stopTimer);
+            state.playback.stopTimer = null;
+        }
+        if (state.metronome.isRunning && state.metronome.startedByPlayback) {
+            stopMetronome();
+        }
+        muteAudioGain(state.metronome.outputGain, state.metronome.audioCtx);
+        if (state.calibration.active) {
+            stopCalibration();
+        }
+        if (!state.playback.isPlaying && !state.playback.audioCtx) {
+            updatePlayButtonState(false);
+            return;
+        }
+        state.playback.isPlaying = false;
+        updatePlayButtonState(false);
+        muteAudioGain(state.playback.outputGain, state.playback.audioCtx);
+        if (state.playback.audioCtx && state.playback.audioCtx !== state.metronome.audioCtx) {
+            try {
+                state.playback.audioCtx.close();
+            } catch (_) {
+                // ignore
+            }
+            state.playback.audioCtx = null;
+        }
+    }
+
+    function startPlaybackAt(startTime, tempoOverride) {
+        const { events, totalTicks, settings } = buildPlaybackEvents();
+        const ctx = ensurePlaybackContext();
+        const tempo = Math.max(1, tempoOverride || getCurrentTempo());
+        const secondsPerTick = (60 / tempo) / divisions;
+        const useTwoVoices = (settings && settings.voiceMode > 1) || events.some(event => event.voice === 2);
+
+        if (!events.length) {
+            playSnare(startTime || (ctx.currentTime + 0.05), 0.95);
+            const delay = Math.max(0, ((startTime || ctx.currentTime) - ctx.currentTime) * 1000);
+            state.playback.stopTimer = setTimeout(() => {
+                state.playback.isPlaying = false;
+                updatePlayButtonState(false);
+                if (state.metronome.isRunning && state.metronome.startedByPlayback) {
+                    stopMetronome();
+                }
+                if (state.calibration.active) {
+                    stopCalibration();
+                }
+            }, Math.ceil(delay + 300));
+            return;
+        }
+
+        const baseTime = startTime || (ctx.currentTime + 0.08);
+        events.forEach(event => {
+            const time = baseTime + event.ticks * secondsPerTick;
+            if (useTwoVoices) {
+                if (event.voice === 2) {
+                    playKick(time, 1.0);
+                } else {
+                    playSnare(time, 0.95);
+                }
+            } else {
+                playSnare(time, 0.95);
+            }
+        });
+
+        const totalDuration = Math.max(totalTicks * secondsPerTick, 0.2);
+        const delayMs = Math.max(0, (baseTime - ctx.currentTime) * 1000);
+        state.playback.stopTimer = setTimeout(() => {
+            state.playback.isPlaying = false;
+            updatePlayButtonState(false);
+            if (state.metronome.isRunning && state.metronome.startedByPlayback) {
+                stopMetronome();
+            }
+            if (state.calibration.active) {
+                stopCalibration();
+            }
+        }, Math.ceil(delayMs + (totalDuration + 0.3) * 1000));
+    }
+
+    function getPlaybackCountInInfo(settings) {
+        let beats = Math.max(1, settings?.beats || 4);
+        let beatType = Math.max(1, settings?.beatType || 4);
+        const xml = typeof window.__rhythmLastXml === 'string' ? window.__rhythmLastXml : '';
+        if (xml) {
+            const beatsMatch = xml.match(/<time>\s*<beats>(\d+)<\/beats>\s*<beat-type>(\d+)<\/beat-type>\s*<\/time>/i);
+            if (beatsMatch) {
+                const parsedBeats = parseInt(beatsMatch[1], 10);
+                const parsedBeatType = parseInt(beatsMatch[2], 10);
+                if (Number.isFinite(parsedBeats) && parsedBeats > 0) beats = parsedBeats;
+                if (Number.isFinite(parsedBeatType) && parsedBeatType > 0) beatType = parsedBeatType;
+            }
+        }
+        return { beats, beatType };
+    }
+
+    function startPlaybackWithCountIn() {
+        stopPlayback();
+        if (state.metronome.isRunning) {
+            stopMetronome();
+        }
+        const ctx = ensurePlaybackContext();
+        const output = getPlaybackOutputGain(ctx);
+        const metOutput = getMetronomeOutputGain(ctx);
+        if (output) {
+            output.gain.cancelScheduledValues(ctx.currentTime);
+            output.gain.setValueAtTime(1, ctx.currentTime);
+        }
+        if (metOutput) {
+            metOutput.gain.cancelScheduledValues(ctx.currentTime);
+            metOutput.gain.setValueAtTime(1, ctx.currentTime);
+        }
+        const settings = state.lastSettings || getSettings();
+        const countInInfo = getPlaybackCountInInfo(settings);
+        const countInBeats = countInInfo.beats;
+        const initialTime = ctx.currentTime + 0.08;
+
+        state.playback.isPlaying = true;
+        updatePlayButtonState(true);
+
+        state.playback.countInActive = true;
+        state.playback.countInState = {
+            remaining: countInBeats,
+            total: countInBeats,
+            nextTime: initialTime
+        };
+        const scheduleNextCountIn = () => {
+            if (!state.playback.countInActive || !state.playback.countInState) return;
+            const tempo = getCurrentTempo();
+            const beatDuration = getMetronomeBeatDuration(tempo);
+            const { remaining, total } = state.playback.countInState;
+            const countIndex = (total - remaining) + 1;
+            const isDownbeat = (countInInfo.beats === 6 && countInInfo.beatType === 8)
+                ? (countIndex === 1 || countIndex === 4)
+                : (countIndex === 1);
+            const scheduledTime = state.playback.countInState.nextTime;
+
+            playClick(isDownbeat, scheduledTime);
+            schedulePlaybackCountdown(countIndex, scheduledTime, isDownbeat);
+
+            state.playback.countInState.remaining -= 1;
+            state.playback.countInState.nextTime = scheduledTime + beatDuration;
+
+            if (state.playback.countInState.remaining <= 0) {
+                state.playback.countInActive = false;
+                const startTime = state.playback.countInState.nextTime;
+                const tempoAtStart = getCurrentTempo();
+                if (state.calibration.enabled) {
+                    startCalibrationAt(startTime, tempoAtStart);
+                }
+                startMetronome(startTime, true);
+                startPlaybackAt(startTime, tempoAtStart);
+                const hideDelayMs = Math.max(0, (startTime - ctx.currentTime) * 1000);
+                const hideId = setTimeout(() => {
+                    hidePlaybackCountdown();
+                }, hideDelayMs);
+                state.playback.countInUiTimers.push(hideId);
+                return;
+            }
+
+            const lookahead = 0.05;
+            const delayMs = Math.max(0, (state.playback.countInState.nextTime - ctx.currentTime - lookahead) * 1000);
+            state.playback.countInTimer = setTimeout(scheduleNextCountIn, delayMs);
+        };
+
+        scheduleNextCountIn();
+    }
+
+    function directPlayTest() {
+        if (state.playback.isPlaying) {
+            stopPlayback();
+            return;
+        }
+        startPlaybackWithCountIn();
+    }
+
+    function handleMidiNoteOn(midi) {
+        if (!state.calibration.enabled) return;
+        const settings = state.lastSettings || getSettings();
+        const voiceMode = settings?.voiceMode || 1;
+        const voice = mapMidiToVoice(midi, voiceMode);
+        if (voiceMode > 1 && !voice) return;
+        handleCalibrationInput(voice, getRhythmAudioContext().currentTime);
+    }
+
+    function handleMidiDrumNoteOn(midi, velocity) {
+        const ctx = getRhythmAudioContext();
+        if (!ctx) return null;
+        const now = ctx.currentTime + 0.01;
+        const level = Math.max(0.15, Math.min(1, (velocity || 0) / 127));
+        const settings = state.lastSettings || getSettings();
+        const voiceMode = settings?.voiceMode || 1;
+        const voice = voiceMode > 1 ? mapMidiToVoice(midi, voiceMode) : 1;
+        if (voiceMode > 1 && !voice) {
+            return null;
+        }
+        if (voiceMode > 1 && voice === 2) {
+            playKick(now, level);
+        } else {
+            playSnare(now, level);
+        }
+        return null;
+    }
+
     window.IC_MIDI_CONFIG = {
         getAudioContext: getRhythmAudioContext,
         useSamplePlayer: false,
         translations,
-        getLanguage: () => currentLanguage
+        getLanguage: () => currentLanguage,
+        noteOn: handleMidiDrumNoteOn,
+        onNoteOn: handleMidiNoteOn
     };
 
     window.getMetronomeState = () => {
@@ -4407,65 +5532,99 @@
         };
     };
 
-    function playClick(accent) {
+    function scheduleMetronomeIndicator(shouldPlay, accent, time) {
+        const indicator = document.getElementById('metronomeBeatIndicator');
+        if (!indicator || !state.metronome.audioCtx) return;
         const ctx = state.metronome.audioCtx;
-        if (!ctx) return;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.value = accent ? 1100 : 880;
-        gain.gain.value = 0.16;
-        osc.connect(gain).connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.05);
+        const delay = Math.max(0, (time - ctx.currentTime) * 1000);
+        setTimeout(() => {
+            if (!state.metronome.isRunning) return;
+            indicator.classList.toggle('beat', shouldPlay && accent);
+            indicator.style.opacity = shouldPlay && accent ? '1' : '0.6';
+        }, delay);
     }
 
-    function startMetronome() {
-        const bpmInput = document.getElementById('metronomeBpm');
-        const indicator = document.getElementById('metronomeBeatIndicator');
+    function playClick(accent, time) {
+        const ctx = state.metronome.audioCtx;
+        if (!ctx) return;
+        const output = getMetronomeOutputGain(ctx);
+        if (!output) return;
+        const scheduleTime = typeof time === 'number' ? time : ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const baseFreq = 523.25; // C5, match other tools
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(accent ? baseFreq * 1.2 : baseFreq, scheduleTime);
+        gain.gain.setValueAtTime(0.5, scheduleTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, scheduleTime + 0.05);
+        osc.connect(gain).connect(output);
+        osc.start(scheduleTime);
+        osc.stop(scheduleTime + 0.05);
+    }
+
+    function startMetronome(startAtTime, startedByPlayback = false) {
         const settings = getSettings();
         const beatsPerMeasure = settings.beats;
-        const tempo = Math.max(1, parseInt(bpmInput.value, 10) || 80);
-        const patternInfo = getMetronomePatternInfo(tempo);
-        const interval = (patternInfo.stepDuration || (60 / tempo)) * 1000;
-        const subdivision = patternInfo.usePattern ? patternInfo.subdivision : 1;
-
-        initAudioContext();
+        const ctx = getRhythmAudioContext();
+        const output = getMetronomeOutputGain(ctx);
+        if (output) {
+            output.gain.cancelScheduledValues(ctx.currentTime);
+            output.gain.setValueAtTime(1, ctx.currentTime);
+        }
+        const startTime = typeof startAtTime === 'number'
+            ? startAtTime
+            : (ctx.currentTime + 0.05);
         state.metronome.beatIndex = 0;
         state.metronome.stepIndex = 0;
         state.metronome.isRunning = true;
+        state.metronome.startedByPlayback = !!startedByPlayback;
+        state.metronome.nextTime = Math.max(startTime, state.metronome.audioCtx.currentTime + 0.02);
 
-        state.metronome.timer = setInterval(() => {
-            const stepIndex = state.metronome.stepIndex;
-            let shouldPlay = true;
-            if (patternInfo.usePattern && patternInfo.stepsPerPattern) {
-                const idx = stepIndex % patternInfo.stepsPerPattern;
-                shouldPlay = patternInfo.steps[idx] === 1;
+        const schedule = () => {
+            if (!state.metronome.isRunning || !state.metronome.audioCtx) return;
+            const ctx = state.metronome.audioCtx;
+            const lookahead = 0.12;
+
+            while (state.metronome.nextTime < ctx.currentTime + lookahead) {
+                const currentTempo = getCurrentTempo();
+                const patternInfo = getMetronomePatternInfo(currentTempo);
+                const subdivision = patternInfo.usePattern ? patternInfo.subdivision : 1;
+                let shouldPlay = true;
+                if (patternInfo.usePattern && patternInfo.stepsPerPattern) {
+                    const idx = state.metronome.stepIndex % patternInfo.stepsPerPattern;
+                    shouldPlay = patternInfo.steps[idx] === 1;
+                }
+                const isBeatStart = patternInfo.usePattern ? (state.metronome.stepIndex % subdivision === 0) : true;
+                if (isBeatStart) {
+                    state.metronome.beatIndex += 1;
+                }
+                const accent = isBeatStart && (state.metronome.beatIndex - 1) % beatsPerMeasure === 0;
+                if (shouldPlay) {
+                    playClick(accent, state.metronome.nextTime);
+                }
+                scheduleMetronomeIndicator(shouldPlay, accent, state.metronome.nextTime);
+                state.metronome.stepIndex += 1;
+                const stepDuration = patternInfo.stepDuration || (60 / currentTempo);
+                state.metronome.nextTime += stepDuration;
             }
-            const isBeatStart = patternInfo.usePattern ? (stepIndex % subdivision === 0) : true;
-            if (isBeatStart) {
-                state.metronome.beatIndex += 1;
-            }
-            const accent = isBeatStart && (state.metronome.beatIndex - 1) % beatsPerMeasure === 0;
-            if (shouldPlay) {
-                playClick(accent);
-            }
-            if (indicator) {
-                indicator.classList.toggle('beat', shouldPlay && accent);
-                indicator.style.opacity = shouldPlay && accent ? '1' : '0.6';
-            }
-            state.metronome.stepIndex += 1;
-        }, interval);
+
+            state.metronome.timer = setTimeout(schedule, 25);
+        };
+
+        schedule();
     }
 
     function stopMetronome() {
         if (state.metronome.timer) {
-            clearInterval(state.metronome.timer);
+            clearTimeout(state.metronome.timer);
             state.metronome.timer = null;
         }
         state.metronome.isRunning = false;
         state.metronome.stepIndex = 0;
         state.metronome.beatIndex = 0;
+        state.metronome.nextTime = 0;
+        state.metronome.startedByPlayback = false;
+        muteAudioGain(state.metronome.outputGain, state.metronome.audioCtx);
         const indicator = document.getElementById('metronomeBeatIndicator');
         if (indicator) {
             indicator.classList.remove('beat');
@@ -4553,6 +5712,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         loadOstinatoState();
         initializePreferences();
+        initializeCalibrationSettings();
         bindEvents();
         initializeMetronomePatternUI();
         initializeOstinatoPatternUI();
@@ -4571,6 +5731,77 @@
         setupModalAutoSave('metronomePatternModal', saveMetronomePatternSettingsAndClose);
         setupModalAutoSave('settingsModal', closeSettingsModal);
         setEmptyScore();
+
+        // ============ 跨工具同步监听机制 ============
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'preferredTheme' && e.newValue && e.newValue !== currentTheme) {
+                currentTheme = e.newValue;
+                document.documentElement.setAttribute('data-theme', currentTheme);
+            }
+
+            if (e.key === 'preferredLanguage' && e.newValue && e.newValue !== currentLanguage) {
+                currentLanguage = e.newValue;
+                applyTranslations();
+                if (window.__icMidi && typeof window.__icMidi.refreshStatus === 'function') {
+                    window.__icMidi.refreshStatus();
+                }
+            }
+        });
+
+        // ============ 统一同步系统 ============
+        window.ICStudioSync = window.ICStudioSync || {
+            tools: new Set(),
+
+            registerTool: function(toolName, callbacks) {
+                this.tools.add({
+                    name: toolName,
+                    onThemeChange: callbacks.onThemeChange,
+                    onLanguageChange: callbacks.onLanguageChange
+                });
+            },
+
+            syncTheme: function(newTheme, fromTool) {
+                this.tools.forEach(tool => {
+                    if (tool.name !== fromTool && tool.onThemeChange) {
+                        try {
+                            tool.onThemeChange(newTheme);
+                        } catch (error) {
+                            console.warn(`⚠️ ${tool.name} 主题同步失败:`, error);
+                        }
+                    }
+                });
+            },
+
+            syncLanguage: function(newLanguage, fromTool) {
+                this.tools.forEach(tool => {
+                    if (tool.name !== fromTool && tool.onLanguageChange) {
+                        try {
+                            tool.onLanguageChange(newLanguage);
+                        } catch (error) {
+                            console.warn(`⚠️ ${tool.name} 语言同步失败:`, error);
+                        }
+                    }
+                });
+            }
+        };
+
+        window.ICStudioSync.registerTool('rhythm-tool', {
+            onThemeChange: function(newTheme) {
+                if (currentTheme !== newTheme) {
+                    currentTheme = newTheme;
+                    document.documentElement.setAttribute('data-theme', currentTheme);
+                }
+            },
+            onLanguageChange: function(newLanguage) {
+                if (currentLanguage !== newLanguage) {
+                    currentLanguage = newLanguage;
+                    applyTranslations();
+                    if (window.__icMidi && typeof window.__icMidi.refreshStatus === 'function') {
+                        window.__icMidi.refreshStatus();
+                    }
+                }
+            }
+        });
     });
 
     document.addEventListener('keydown', event => {
@@ -4579,6 +5810,16 @@
             if (modal && modal.dataset.open === 'true') {
                 closeSettingsModal();
             }
+        }
+        if (!state.calibration.enabled) return;
+        if (event.repeat || isEditableElement(event.target)) return;
+        const key = (event.key || '').toLowerCase();
+        if (key === 'f' || key === 'j') {
+            playKeyboardDrumByKey(key);
+            const settings = state.lastSettings || getSettings();
+            const voiceMode = settings?.voiceMode || 1;
+            const voice = voiceMode > 1 ? (key === 'f' ? 2 : 1) : 1;
+            handleCalibrationInput(voice, getRhythmAudioContext().currentTime);
         }
     });
 
@@ -4610,6 +5851,8 @@
     window.clearMetronomePattern = clearMetronomePattern;
     window.loadMetronomePatternSettings = loadMetronomePatternSettings;
     window.getMetronomePatternInfo = getMetronomePatternInfo;
+    window.__icRhythmPlayKeyboardDrum = playKeyboardDrumByKey;
     window.resetOstinatoPattern = resetOstinatoPattern;
     window.clearOstinatoPattern = clearOstinatoPattern;
+    window.directPlayTest = directPlayTest;
 })();

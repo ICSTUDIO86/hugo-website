@@ -1,5 +1,5 @@
 /*!
- * Cognote - 和弦视奏生成器
+ * IC Studio - 和弦视奏生成器
  * Chord Sight-Reading Generator JavaScript
  *
  * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club

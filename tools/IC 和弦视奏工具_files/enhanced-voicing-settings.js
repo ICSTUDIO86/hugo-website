@@ -1,11 +1,11 @@
 /**
- * Cognote 增强Voicing设置系统
+ * IC Studio 增强Voicing设置系统
  * Enhanced Voicing Settings - 支持每种voicing类型的独立转位控制
  *
  * 让用户可以单独控制close、drop2、drop3、shell等每种voicing的转位行为
  *
  * @version 1.0.0
- * @author Cognote
+ * @author IC Studio
  */
 
 class EnhancedVoicingSettings {
