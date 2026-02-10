@@ -134,22 +134,71 @@ async function playMelody() {
         return;
     }
 
+    const durationToBeats = (note) => {
+        if (!note) return 0;
+        if (typeof note.beats === 'number' && Number.isFinite(note.beats) && note.beats > 0) {
+            return note.beats;
+        }
+
+        const token = typeof note.duration === 'string' ? note.duration : '';
+        const beatMap = {
+            'whole': 4,
+            'half': 2,
+            'half.': 3,
+            'quarter': 1,
+            'quarter.': 1.5,
+            'eighth': 0.5,
+            'eighth.': 0.75,
+            '16th': 0.25,
+            '32nd': 0.125
+        };
+        return beatMap[token] || 1;
+    };
+
+    const extractPlaybackEvents = (melodyData) => {
+        if (!melodyData || !Array.isArray(melodyData.melody)) return [];
+        if (melodyData.melody.length > 0 && melodyData.melody[0] && Array.isArray(melodyData.melody[0].notes)) {
+            return melodyData.melody.flatMap(measure => Array.isArray(measure?.notes) ? measure.notes : []);
+        }
+        return melodyData.melody;
+    };
+
+    const events = extractPlaybackEvents(currentMelody);
+    const playableEvents = events.filter(Boolean);
+    if (playableEvents.length === 0) {
+        console.warn('⚠️ 当前旋律无可播放音符');
+        return;
+    }
+
+    const msPerBeat = 600; // 与现有节奏保持一致（约100 BPM）
     let noteIndex = 0;
-    const notes = currentMelody.melody.filter(note => note.type === 'note' && note.midi);
 
     function playNextNote() {
-        if (noteIndex >= notes.length) {
+        if (noteIndex >= playableEvents.length) {
             console.log('🎵 旋律播放完成');
             return;
         }
 
-        const note = notes[noteIndex];
-        const duration = note.duration || 0.5;
+        const event = playableEvents[noteIndex];
+        const beats = durationToBeats(event);
+        const eventMs = Math.max(80, beats * msPerBeat);
 
-        playNote(note.midi, duration * 0.8); // 稍微缩短持续时间以区分音符
-
+        if (event.type === 'note' && typeof event.midi === 'number') {
+            // Acciaccatura: 先快速播放grace，再落在主音，整体时值不变
+            if (event.graceNote && typeof event.graceNote.midi === 'number') {
+                const graceMs = Math.min(90, Math.max(45, eventMs * 0.18));
+                const leadMs = Math.max(20, Math.floor(graceMs * 0.8));
+                playNote(event.graceNote.midi, Math.max(0.04, graceMs / 1000));
+                setTimeout(() => {
+                    const mainSec = Math.max(0.06, (eventMs - leadMs) / 1000 * 0.92);
+                    playNote(event.midi, mainSec);
+                }, leadMs);
+            } else {
+                playNote(event.midi, Math.max(0.06, eventMs / 1000 * 0.85));
+            }
+        }
         noteIndex++;
-        setTimeout(playNextNote, duration * 600); // 控制播放速度
+        setTimeout(playNextNote, eventMs);
     }
 
     playNextNote();
@@ -408,11 +457,16 @@ function shouldGenerateDirectionalSlur(interval, randomGenerator = null) {
 }
 
 const SLIDE_ARTICULATION_TYPES = ['glissando', 'slide-in', 'slide-out'];
+const TWO_NOTE_TECHNIQUE_TYPES = ['hammer-on', 'pull-off', 'glissando'];
 const MAX_SLIDES_PER_MELODY = 2;
 const SLIDE_UNLIMITED_THRESHOLD = 60;
 
 function isSlideArticulationType(type) {
     return SLIDE_ARTICULATION_TYPES.includes(type);
+}
+
+function isTwoNoteTechniqueType(type) {
+    return TWO_NOTE_TECHNIQUE_TYPES.includes(type);
 }
 
 function mapSlideFrequencyToExpectedSlides(slideFrequency) {
@@ -3255,7 +3309,8 @@ class IntelligentMelodyGenerator {
         const glissReadyMelody = this.ensureAtLeastOneGlissando(glissSanitizedMelody);
         const pairSafeMelody = this.sanitizeTwoNoteArticulationConflicts(glissReadyMelody);
         const nonConsecutiveSlideMelody = this.sanitizeConsecutiveSlides(pairSafeMelody);
-        const slideLimitedMelody = this.enforceSlideLimitPerMelody(nonConsecutiveSlideMelody);
+        const singleTechniqueMelody = this.sanitizeSingleTechniquePerNote(nonConsecutiveSlideMelody);
+        const slideLimitedMelody = this.enforceSlideLimitPerMelody(singleTechniqueMelody);
         
         console.log(`✅ 旋律生成完成: ${this.stats.noteCount}音符 ${this.stats.restCount}休止 休止比例${(this.stats.restRatio*100).toFixed(1)}%`);
         
@@ -12384,6 +12439,86 @@ class IntelligentMelodyGenerator {
         return measures;
     }
 
+    sanitizeSingleTechniquePerNote(measures) {
+        if (!Array.isArray(measures) || measures.length === 0) {
+            return measures;
+        }
+
+        let removed = 0;
+        const hammerOnAllowed = !!userSettings?.articulations?.guitar?.includes('hammer-on');
+        const pullOffAllowed = !!userSettings?.articulations?.guitar?.includes('pull-off');
+
+        for (let measureIndex = 0; measureIndex < measures.length; measureIndex++) {
+            const measure = measures[measureIndex];
+            if (!Array.isArray(measure?.notes)) continue;
+
+            for (let noteIndex = 0; noteIndex < measure.notes.length; noteIndex++) {
+                const current = measure.notes[noteIndex];
+                if (current?.type !== 'note') continue;
+                if (!isTwoNoteTechniqueType(current.articulation)) continue;
+
+                const previous = noteIndex > 0 ? measure.notes[noteIndex - 1] : null;
+                const next = noteIndex < measure.notes.length - 1 ? measure.notes[noteIndex + 1] : null;
+
+                // 同一个音符不能同时作为前一个技巧的终点、又作为当前技巧的起点。
+                if (previous?.type === 'note' && isTwoNoteTechniqueType(previous.articulation)) {
+                    current.articulation = null;
+                    removed++;
+                    continue;
+                }
+
+                // 严格限制：仅允许相邻两个音符形成双音技巧。
+                if (current.articulation === 'glissando') {
+                    const validGliss =
+                        next?.type === 'note' &&
+                        typeof current.midi === 'number' &&
+                        typeof next.midi === 'number' &&
+                        current.midi !== next.midi &&
+                        Math.abs(next.midi - current.midi) <= 12;
+                    if (!validGliss) {
+                        current.articulation = null;
+                        current.forceGlissandoStart = false;
+                        current.needsGlissandoStop = false;
+                        removed++;
+                        continue;
+                    }
+                } else if (current.articulation === 'hammer-on') {
+                    const interval = (typeof next?.midi === 'number' && typeof current.midi === 'number')
+                        ? next.midi - current.midi
+                        : null;
+                    const validHammer = hammerOnAllowed && (interval === 1 || interval === 2);
+                    if (!validHammer) {
+                        current.articulation = null;
+                        removed++;
+                        continue;
+                    }
+                } else if (current.articulation === 'pull-off') {
+                    const interval = (typeof next?.midi === 'number' && typeof current.midi === 'number')
+                        ? next.midi - current.midi
+                        : null;
+                    const validPull = pullOffAllowed && (interval === -1 || interval === -2);
+                    if (!validPull) {
+                        current.articulation = null;
+                        removed++;
+                        continue;
+                    }
+                }
+
+                // 当前音符是双音技巧起点时，下一音符不能再带双音技巧（避免单音叠加两种技巧）。
+                if (next?.type === 'note' && isTwoNoteTechniqueType(next.articulation)) {
+                    next.articulation = null;
+                    removed++;
+                }
+            }
+        }
+
+        if (removed > 0) {
+            console.log(`✅ 单音单技巧清理完成: 移除${removed}个冲突或无效双音技巧`);
+        }
+
+        return measures;
+    }
+
     /**
      * 🔍 实时userSettings状态检查 - 用于调试权限检查问题
      */
@@ -14005,8 +14140,8 @@ class MusicXMLBuilder {
                     } else if (articulation === 'pull-off' && pullOffAllowed) {
                         slurAllowed = true;
                     } else if (!['hammer-on', 'pull-off'].includes(articulation)) {
-                        // 非吉他技巧的articulation，允许slur
-                        slurAllowed = true;
+                        // 只允许hammer-on/pull-off生成slur，其他技巧一律不生成
+                        slurAllowed = false;
                     }
                     
                     console.log(`🔍 buildNoteXML内部slur权限检查: articulation=${articulation}, forceSlurStart=${forceSlurStart}, slurAllowed=${slurAllowed}`);
@@ -14021,27 +14156,17 @@ class MusicXMLBuilder {
                         // 计算当前音符的符干方向
                         const currentStemDirection = this.calculateStemDirection(octave, step);
                         let slurPlacement = '';
-                        
-                        // 检查当前音符和下一个音符的符干方向
+
                         if (currentStemDirection && nextStemDirection) {
                             if (currentStemDirection === nextStemDirection) {
                                 // 符干方向相同，slur放在符庆的反方向
                                 slurPlacement = ` placement="${currentStemDirection === 'up' ? 'below' : 'above'}"`;
+                            } else if (articulation === 'hammer-on') {
+                                slurPlacement = ` placement="above"`;
+                            } else if (articulation === 'pull-off') {
+                                slurPlacement = ` placement="below"`;
                             } else {
-                                // 符庆方向不同，根据旋律走向决定
-                                // Hammer-on是上行，slur在上方；Pull-off是下行，slur在下方
-                                if (articulation === 'hammer-on') {
-                                    // Hammer-on: 上行旋律，slur在上方
-                                    slurPlacement = ` placement="above"`;
-                                    console.log(`🎵 Hammer-on 上行旋律，符庆方向不同，slur在上方`);
-                                } else if (articulation === 'pull-off') {
-                                    // Pull-off: 下行旋律，slur在下方
-                                    slurPlacement = ` placement="below"`;
-                                    console.log(`🎵 Pull-off 下行旋律，符庆方向不同，slur在下方`);
-                                } else {
-                                    // 其他articulation，默认上方
-                                    slurPlacement = ` placement="above"`;
-                                }
+                                slurPlacement = ` placement="above"`;
                             }
                         } else if (currentStemDirection) {
                             // 如果无法确定下一个音符的符庆方向，使用默认规则
@@ -14139,28 +14264,6 @@ class MusicXMLBuilder {
                 console.log(`🎸 Slide-out: 由自定义渲染层绘制，不写入单端glissando标签`);
             }
             
-            // OSMD限制：glissando不被支持，保留标签用于未来兼容性
-            if (forceGlissandoStart) {
-                noteXML += `
-          <glissando type="start" line-type="solid" number="1"/>`;
-                console.log(`⚠️ OSMD不稳定支持glissando，已保留glissando标签`);
-            }
-            
-            if (needsGlissandoStop) {
-                noteXML += `
-          <glissando type="stop" line-type="solid" number="1"/>`;
-                console.log(`⚠️ glissando stop标签已添加（OSMD暂不支持）`);
-            }
-            
-            // OSMD不支持slide-in/slide-out的glissando渲染
-            if (articulation === 'slide-in') {
-                // Slide-in使用自定义渲染层，避免单端glissando触发解析兼容问题
-                console.log(`🎸 Slide-in: 由自定义渲染层绘制，不写入单端glissando标签`);
-            } else if (articulation === 'slide-out') {
-                // Slide-out使用自定义渲染层，避免单端glissando触发解析兼容问题
-                console.log(`🎸 Slide-out: 由自定义渲染层绘制，不写入单端glissando标签`);
-            }
-            
             // 添加articulation标记（glissando、slide-in、slide-out已经在notations中处理了）
             if (renderArticulation && articulation !== 'glissando' && 
                 articulation !== 'slide-in' && articulation !== 'slide-out') {
@@ -14179,8 +14282,8 @@ class MusicXMLBuilder {
                 } else if (articulation === 'pull-off' && pullOffAllowed) {
                     slurAllowed = true;
                 } else if (!['hammer-on', 'pull-off'].includes(articulation)) {
-                    // 非吉他技巧的articulation，允许slur
-                    slurAllowed = true;
+                    // 只允许hammer-on/pull-off生成slur，其他技巧一律不生成
+                    slurAllowed = false;
                 }
                 
                 console.log(`🔍 buildNoteXML第三分支slur权限检查: articulation=${articulation}, forceSlurStart=${forceSlurStart}, slurAllowed=${slurAllowed}`);
@@ -14189,20 +14292,14 @@ class MusicXMLBuilder {
                     // 计算当前音符的符干方向，决定slur placement
                     const currentStemDirection = this.calculateStemDirection(octave, step);
                     let slurPlacement = '';
-                    
-                    // 检查当前音符和下一个音符的符干方向
+
                     if (currentStemDirection && nextStemDirection) {
                         if (currentStemDirection === nextStemDirection) {
                             // 符干方向相同，slur放在符干的反方向
                             slurPlacement = ` placement="${currentStemDirection === 'up' ? 'below' : 'above'}"`;
                         } else {
-                            // 符干方向相反，统一放在上方
-                            // 注意：OSMD在处理符干方向相反的slur时有局限性
-                            // 理想情况下slur应该连接两个音头，但OSMD可能会将一端连接到符干
-                            // 这是OSMD渲染引擎的限制，需要等待OSMD更新或使用自定义渲染
-                            // 临时解决方案：统一使用above placement以保持一致性
+                            // 兜底：方向不一致时统一放在上方
                             slurPlacement = ` placement="above"`;
-                            console.log(`🎵 符干方向相反(${currentStemDirection} vs ${nextStemDirection})，统一放在上方（OSMD限制）`);
                         }
                     } else if (currentStemDirection) {
                         // 如果无法确定下一个音符的符干方向，使用默认规则
@@ -14306,8 +14403,8 @@ class MusicXMLBuilder {
                 } else if (articulation === 'pull-off' && pullOffAllowed) {
                     slurAllowed = true;
                 } else if (!['hammer-on', 'pull-off'].includes(articulation)) {
-                    // 非吉他技巧的articulation，允许slur
-                    slurAllowed = true;
+                    // 只允许hammer-on/pull-off生成slur，其他技巧一律不生成
+                    slurAllowed = false;
                 }
                 
                 console.log(`🔍 buildNoteXML第二分支slur权限检查: articulation=${articulation}, forceSlurStart=${forceSlurStart}, slurAllowed=${slurAllowed}`);
@@ -14316,20 +14413,14 @@ class MusicXMLBuilder {
                     // 计算当前音符的符干方向，决定slur placement
                     const currentStemDirection = this.calculateStemDirection(octave, step);
                     let slurPlacement = '';
-                    
-                    // 检查当前音符和下一个音符的符干方向
+
                     if (currentStemDirection && nextStemDirection) {
                         if (currentStemDirection === nextStemDirection) {
                             // 符干方向相同，slur放在符干的反方向
                             slurPlacement = ` placement="${currentStemDirection === 'up' ? 'below' : 'above'}"`;
                         } else {
-                            // 符干方向相反，统一放在上方
-                            // 注意：OSMD在处理符干方向相反的slur时有局限性
-                            // 理想情况下slur应该连接两个音头，但OSMD可能会将一端连接到符干
-                            // 这是OSMD渲染引擎的限制，需要等待OSMD更新或使用自定义渲染
-                            // 临时解决方案：统一使用above placement以保持一致性
+                            // 兜底：方向不一致时统一放在上方
                             slurPlacement = ` placement="above"`;
-                            console.log(`🎵 符干方向相反(${currentStemDirection} vs ${nextStemDirection})，统一放在上方（OSMD限制）`);
                         }
                     } else if (currentStemDirection) {
                         // 如果无法确定下一个音符的符干方向，使用默认规则
@@ -17738,166 +17829,7 @@ ${measuresXML}  </part>
         console.log(`🎸 Technical ${index + 1}: ${tech}`);
     });
     
-    // 🔥 新功能：确保每条旋律包含1-2个slur（当勾选hammer-on或pull-off时）
-    let finalMusicXML = musicXML;
-    if (userSettings && userSettings.articulations && userSettings.articulations.enabled) {
-        const hammerOnAllowed = userSettings.articulations.guitar.includes('hammer-on');
-        const pullOffAllowed = userSettings.articulations.guitar.includes('pull-off');
-        
-        if (hammerOnAllowed || pullOffAllowed) {
-            console.log(`🎯 === 开始保证slur出现逻辑 ===`);
-            console.log(`🎯 Hammer-on允许: ${hammerOnAllowed}, Pull-off允许: ${pullOffAllowed}`);
-            
-            // 统计当前slur数量
-            const currentSlurs = finalMusicXML.match(/<slur[^>]*type="start"[^>]*>/g) || [];
-            console.log(`🎯 当前slur数量: ${currentSlurs.length}`);
-            
-            // 如果slur数量为0，强制添加1个合适的slur
-            if (currentSlurs.length === 0) {
-                console.log(`🎯 发现0个slur，开始强制添加...`);
-                
-                // 寻找合适的音程来添加slur
-                let slurAdded = false;
-                const noteRegex = /<note>[\s\S]*?<\/note>/g;
-                const noteMatches = finalMusicXML.match(noteRegex) || [];
-                
-                console.log(`🎯 找到 ${noteMatches.length} 个音符，寻找合适的连续音符对...`);
-                
-                // 解析所有音符的MIDI值，并识别它们所在的小节
-                const parsedNotes = [];
-                let currentMeasureIndex = -1;
-                let noteIndexInMeasure = 0;
-                
-                // 按小节分析MusicXML结构
-                const measureRegex = /<measure[^>]*>[\s\S]*?<\/measure>/g;
-                const measureMatches = finalMusicXML.match(measureRegex) || [];
-                
-                console.log(`🎯 找到 ${measureMatches.length} 个小节`);
-                
-                measureMatches.forEach((measureXml, measureIndex) => {
-                    const measureNotes = measureXml.match(/<note>[\s\S]*?<\/note>/g) || [];
-                    console.log(`🎯 小节 ${measureIndex + 1} 包含 ${measureNotes.length} 个音符`);
-                    
-                    measureNotes.forEach((noteXml, noteIndexInThisMeasure) => {
-                        // 检查是否是休止符
-                        const isRest = noteXml.includes('<rest/>') || noteXml.includes('<rest ') || noteXml.includes('<rest>');
-                        
-                        if (!isRest) {
-                            const stepMatch = noteXml.match(/<step>([A-G])<\/step>/);
-                            const octaveMatch = noteXml.match(/<octave>(\d+)<\/octave>/);
-                            const alterMatch = noteXml.match(/<alter>([-\d]+)<\/alter>/);
-                            
-                            if (stepMatch && octaveMatch) {
-                                const step = stepMatch[1];
-                                const octave = parseInt(octaveMatch[1]);
-                                const alter = alterMatch ? parseInt(alterMatch[1]) : 0;
-                                
-                                // 转换为MIDI值
-                                const stepValues = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11};
-                                const midi = (octave + 1) * 12 + stepValues[step] + alter;
-                                
-                                parsedNotes.push({
-                                    index: parsedNotes.length,
-                                    midi: midi,
-                                    xml: noteXml,
-                                    measureIndex: measureIndex,
-                                    noteIndexInMeasure: noteIndexInThisMeasure,
-                                    globalNoteIndex: parsedNotes.length
-                                });
-                            }
-                        }
-                    });
-                });
-                
-                console.log(`🎯 解析得到 ${parsedNotes.length} 个有效音符（排除休止符）`);
-                
-                // 寻找合适的音程对（上行或下行二度），确保在同一小节内
-                for (let i = 0; i < parsedNotes.length - 1 && !slurAdded; i++) {
-                    const note1 = parsedNotes[i];
-                    const note2 = parsedNotes[i + 1];
-                    
-                    // 🔥 关键检查：确保两个音符在同一小节内
-                    if (note1.measureIndex !== note2.measureIndex) {
-                        console.log(`🎯 跳过跨小节音符对: 音符${i}在小节${note1.measureIndex + 1}, 音符${i + 1}在小节${note2.measureIndex + 1}`);
-                        continue;
-                    }
-                    
-                    // 🔥 检查两个音符是否在小节中相邻（中间没有休止符）
-                    const measureNotes = measureMatches[note1.measureIndex].match(/<note>[\s\S]*?<\/note>/g) || [];
-                    let hasRestBetween = false;
-                    
-                    // 检查这两个音符之间是否有休止符
-                    for (let j = note1.noteIndexInMeasure + 1; j < note2.noteIndexInMeasure; j++) {
-                        const intermediateNote = measureNotes[j];
-                        if (intermediateNote && (intermediateNote.includes('<rest/>') || intermediateNote.includes('<rest ') || intermediateNote.includes('<rest>'))) {
-                            hasRestBetween = true;
-                            break;
-                        }
-                    }
-                    
-                    if (hasRestBetween) {
-                        console.log(`🎯 跳过被休止符分隔的音符对: 音符${i}-${i + 1}之间有休止符`);
-                        continue;
-                    }
-                    
-                    const interval = note2.midi - note1.midi;
-                    
-                    console.log(`🎯 检查音符对 ${i}-${i+1} (小节${note1.measureIndex + 1}): MIDI ${note1.midi} -> ${note2.midi}, 音程=${interval}`);
-                    
-                    let shouldAddSlur = false;
-                    let slurType = '';
-                    
-                    // 检查是否符合允许的articulation类型
-                    if (hammerOnAllowed && !pullOffAllowed && (interval === 1 || interval === 2)) {
-                        // 只允许hammer-on：上行二度
-                        shouldAddSlur = true;
-                        slurType = 'hammer-on';
-                    } else if (pullOffAllowed && !hammerOnAllowed && (interval === -1 || interval === -2)) {
-                        // 只允许pull-off：下行二度
-                        shouldAddSlur = true;
-                        slurType = 'pull-off';
-                    } else if (hammerOnAllowed && pullOffAllowed && (Math.abs(interval) === 1 || Math.abs(interval) === 2)) {
-                        // 两种都允许：上行或下行二度
-                        shouldAddSlur = true;
-                        slurType = interval > 0 ? 'hammer-on' : 'pull-off';
-                    }
-                    
-                    if (shouldAddSlur) {
-                        console.log(`✅ 找到合适的音程对，添加${slurType}类型的slur`);
-                        
-                        // 在第一个音符中添加slur start
-                        const updatedNote1 = note1.xml.replace('</note>', 
-                            `    <notations>\n        <slur number="1" type="start"/>\n    </notations>\n</note>`);
-                        
-                        // 在第二个音符中添加slur stop  
-                        const updatedNote2 = note2.xml.replace('</note>', 
-                            `    <notations>\n        <slur number="1" type="stop"/>\n    </notations>\n</note>`);
-                        
-                        // 替换XML中的音符
-                        finalMusicXML = finalMusicXML.replace(note1.xml, updatedNote1);
-                        finalMusicXML = finalMusicXML.replace(note2.xml, updatedNote2);
-                        
-                        slurAdded = true;
-                        console.log(`✅ 成功添加${slurType}类型的slur到小节${note1.measureIndex + 1}的音符对 ${i}-${i+1}`);
-                    }
-                }
-                
-                if (!slurAdded) {
-                    console.log(`⚠️ 未找到合适的音程对来添加slur`);
-                }
-            } else if (currentSlurs.length > 2) {
-                // 如果slur数量超过2个，随机保留1-2个
-                console.log(`🎯 发现${currentSlurs.length}个slur，需要减少到1-2个`);
-                
-                // 这个逻辑比较复杂，暂时保持现状，因为用户主要关心的是保证出现
-                console.log(`🎯 当前slur数量已满足要求，保持现状`);
-            } else {
-                console.log(`✅ 当前slur数量${currentSlurs.length}符合要求（1-2个）`);
-            }
-            
-            console.log(`🎯 === slur保证逻辑结束 ===`);
-        }
-    }
+    const finalMusicXML = musicXML;
     
     // 🔥 恢复原始的allowedRhythms设置，避免影响UI显示和下次生成
     if (typeof originalAllowedRhythms !== 'undefined') {

@@ -1,26 +1,98 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>教学 on IC Studio</title>
-    <link>http://localhost:1313/tags/%E6%95%99%E5%AD%A6/</link>
-    <description>Recent content in 教学 on IC Studio</description>
-    <generator>Hugo</generator>
-    <language>zh-cn</language>
-    <lastBuildDate>Sat, 11 Oct 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/%E6%95%99%E5%AD%A6/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>什么是 Spread Triads？</title>
-      <link>http://localhost:1313/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-spread-triads-secret-zh/</link>
-      <pubDate>Sat, 11 Oct 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-spread-triads-secret-zh/</guid>
-      <description>&lt;h2 id=&#34;spread-triads-vs-其他三和弦&#34;&gt;Spread Triads vs 其他三和弦&lt;/h2&gt;&#xA;&lt;p&gt;在开始了解什么是 Spread Triads 之前，我们先听一下它跟我们平常弹的三和弦有什么区别：&lt;/p&gt;&#xA;&lt;figure style=&#34;text-align: center; margin: 20px auto; width: 100%;&#34;&gt;&#xA;  &lt;div style=&#34;display: flex; justify-content: center;&#34;&gt;&#xA;    &lt;audio controls preload=&#34;auto&#34; style=&#34;max-width: 100%; display: inline-block !important; margin: 0 auto;&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-1.mp3&#34; type=&#34;audio/mpeg&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-1.mp3&#34; type=&#34;audio/mp3&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-1.mp3&#34; type=&#34;audio/wav&#34;&gt;&#xA;      您的浏览器不支持音频播放。&#xA;    &lt;/audio&gt;&#xA;  &lt;/div&gt;&#xA;  &#xA;  &lt;figcaption style=&#34;margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;&#34;&gt;&#xA;    前三品三和弦&#xA;  &lt;/figcaption&gt;&#xA;  &#xA;&lt;/figure&gt;&#xA;  &#xA;&lt;figure style=&#34;text-align: center; margin: 20px auto; width: 100%;&#34;&gt;&#xA;  &lt;div style=&#34;display: flex; justify-content: center;&#34;&gt;&#xA;    &lt;audio controls preload=&#34;auto&#34; style=&#34;max-width: 100%; display: inline-block !important; margin: 0 auto;&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-2.mp3&#34; type=&#34;audio/mpeg&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-2.mp3&#34; type=&#34;audio/mp3&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-2.mp3&#34; type=&#34;audio/wav&#34;&gt;&#xA;      您的浏览器不支持音频播放。&#xA;    &lt;/audio&gt;&#xA;  &lt;/div&gt;&#xA;  &#xA;  &lt;figcaption style=&#34;margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;&#34;&gt;&#xA;    紧密三音配置的三和弦&#xA;  &lt;/figcaption&gt;&#xA;  &#xA;&lt;/figure&gt;&#xA;  &#xA;&lt;figure style=&#34;text-align: center; margin: 20px auto; width: 100%;&#34;&gt;&#xA;  &lt;div style=&#34;display: flex; justify-content: center;&#34;&gt;&#xA;    &lt;audio controls preload=&#34;auto&#34; style=&#34;max-width: 100%; display: inline-block !important; margin: 0 auto;&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-3.mp3&#34; type=&#34;audio/mpeg&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-3.mp3&#34; type=&#34;audio/mp3&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/Spread-Triads-3.mp3&#34; type=&#34;audio/wav&#34;&gt;&#xA;      您的浏览器不支持音频播放。&#xA;    &lt;/audio&gt;&#xA;  &lt;/div&gt;&#xA;  &#xA;  &lt;figcaption style=&#34;margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;&#34;&gt;&#xA;    Spread Triads&#xA;  &lt;/figcaption&gt;&#xA;  &#xA;&lt;/figure&gt;&#xA;  &#xA;&lt;p&gt;从听感上看，普通三和弦在前三弦的按法更&lt;strong&gt;厚实、集中&lt;/strong&gt;，三音配置（Close Voicing）更&lt;strong&gt;轻盈、单薄&lt;/strong&gt;；而 Spread Triads 介于两者之间：它保留了&lt;strong&gt;清澈与空间感&lt;/strong&gt;，同时通过低音的支撑带来更稳、更饱满的底色。这使它在伴奏与编配里既“通透”，又不“单薄”。你可以对照上面的三段音频示例，先用耳朵建立直觉差异。&lt;/p&gt;</description>
-    </item>
-    <item>
-      <title>随时随地随心：五声音阶的实用之路</title>
-      <link>http://localhost:1313/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/pentatonic-guitar-boxes-practice-zh/</link>
-      <pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/pentatonic-guitar-boxes-practice-zh/</guid>
-      <description>&lt;p&gt;五声音阶只有五个音，却是最简单且最广泛使用的音阶之一。本文带你快速厘清它是什么、在吉他指板上的五个常用位置（box），为什么要牢牢记住主音位置，以及如何高效练习与实际应用，让它成为你创作与即兴的&amp;quot;随时随地随心&amp;quot;的工具。&lt;/p&gt;&#xA;&lt;h2 id=&#34;什么是五声音阶&#34;&gt;什么是五声音阶？&lt;/h2&gt;&#xA;&lt;p&gt;所谓五声音阶，就是由五个音构成的音阶。你可以把一个大调五声音阶理解为：一个没有四音和七音的&lt;strong&gt;大调音阶&lt;/strong&gt;。例如，C 的大调五声音阶就是把 C 大调的 Fa 和 Si 去掉后得到的五个音。&lt;/p&gt;&#xA;&lt;p&gt;这些五个音在中国传统里对应&amp;quot;&lt;strong&gt;宫—商—角—徵—羽&lt;/strong&gt;&amp;quot;，也正对应着五声音阶里的五个&amp;quot;调式&amp;quot;。当你以不同的音作为主音（tonic）去听同一个五声音列，就得到不同的调式：&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;以 C 为主音：宫调式（大调五声音阶）&lt;/li&gt;&#xA;&lt;li&gt;以 D 为主音：商调式&lt;/li&gt;&#xA;&lt;li&gt;以 E 为主音：角调式&lt;/li&gt;&#xA;&lt;li&gt;以 G 为主音：徵调式&lt;/li&gt;&#xA;&lt;li&gt;以 A 为主音：羽调式（这就是我们常说的&lt;strong&gt;小调五声音阶&lt;/strong&gt;）&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;小调五声音阶可以理解为：把自然小调的二音和六音去掉。由于五声音阶缺少了大调中的四音和七音——这两个既容易带来紧张感、又是唯一能形成&lt;strong&gt;三全音&lt;/strong&gt;的音——所以它听起来更和谐、也更不容易出现刺耳的音程。正因为结构简单、声音和谐，我强烈建议初学者从五声音阶入门，再逐步过渡到大调音阶；本质上，大调音阶就是在大调五声音阶的基础上加入了四音和七音。&lt;/p&gt;&#xA;&lt;h2 id=&#34;在吉他上的五个-box以-a-小调五声音阶为例&#34;&gt;在吉他上的五个 box（以 A 小调五声音阶为例）&lt;/h2&gt;&#xA;&lt;p&gt;吉他上常用五个五声音阶指型，因形状而被称为五个&amp;quot;box&amp;quot;。以下以 A 小调五声音阶（即羽调式）示例，并标注常见&lt;strong&gt;主音&lt;/strong&gt;位置，方便你在指板上定位与串联：&lt;/p&gt;&#xA;&lt;h3 id=&#34;box-1小调五声音阶的基础形&#34;&gt;Box 1（小调五声音阶的基础形）&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;主音位置：该指型的最低音为主音，此外在四弦7品、一弦5品也有主音。&lt;/li&gt;&#xA;&lt;li&gt;形状参考：&#xA;&lt;img src=&#34;http://localhost:1313/images/pentatonic-scale/a-minor-pentatonic-box-1.png&#34; alt=&#34;A 小调五声音阶：Box 1（主音示意）&#34;&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h3 id=&#34;box-2&#34;&gt;Box 2&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;主音位置：四弦7品、二弦10品。&#xA;&lt;img src=&#34;http://localhost:1313/images/pentatonic-scale/a-minor-pentatonic-box-2.png&#34; alt=&#34;A 小调五声音阶：Box 2（主音示意）&#34;&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h3 id=&#34;box-3&#34;&gt;Box 3&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;主音位置：五弦12品、二弦10品。&#xA;&lt;img src=&#34;http://localhost:1313/images/pentatonic-scale/a-minor-pentatonic-box-3.png&#34; alt=&#34;A 小调五声音阶：Box 3（主音示意）&#34;&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h3 id=&#34;box-4&#34;&gt;Box 4&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;指板重复：12 品后音高开始重复，此 box 既可从空弦起，也可从 12 品起。&lt;/li&gt;&#xA;&lt;li&gt;主音位置：五弦空弦/12品、三弦2品/14品。&#xA;&lt;img src=&#34;http://localhost:1313/images/pentatonic-scale/a-minor-pentatonic-box-4.png&#34; alt=&#34;A 小调五声音阶：Box 4（主音示意）&#34;&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h3 id=&#34;box-5&#34;&gt;Box 5&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;主音位置：六弦5品、三弦2品、一弦5品。&#xA;&lt;img src=&#34;http://localhost:1313/images/pentatonic-scale/a-minor-pentatonic-box-5.png&#34; alt=&#34;A 小调五声音阶：Box 5（主音示意）&#34;&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;小结与延伸：&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;多数吉他手口中的&amp;quot;五声音阶&amp;quot;，往往默认指的是&lt;strong&gt;小调五声音阶&lt;/strong&gt;（此处即 A 为主音）。如果把上述五个指型里的 C 当作主音，你就得到 C 的&lt;strong&gt;大调五声音阶&lt;/strong&gt;。&lt;/li&gt;&#xA;&lt;li&gt;牢记&lt;strong&gt;主音位置&lt;/strong&gt;的好处有二：其一，能让乐句自然地以主音收尾，形成稳定、完整的结束感；其二，可帮助你迅速拼接、迁移五个 box，覆盖整个指板。&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;两个关键指型与跨三弦挪一品&#34;&gt;两个关键指型与&amp;quot;跨三弦挪一品&amp;quot;&lt;/h2&gt;&#xA;&lt;p&gt;把五个 box 抽象起来，核心就两类手型：&lt;/p&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>教学 on IC Studio</title><link>https://icstudio.club/tags/%E6%95%99%E5%AD%A6/</link><description>Recent content in 教学 on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Sat, 11 Oct 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://icstudio.club/tags/%E6%95%99%E5%AD%A6/index.xml" rel="self" type="application/rss+xml"/><item><title>什么是 Spread Triads？</title><link>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-spread-triads-secret-zh/</link><pubDate>Sat, 11 Oct 2025 00:00:00 +0000</pubDate><guid>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/guitar-spread-triads-secret-zh/</guid><description>&lt;h2 id="spread-triads-vs-其他三和弦">Spread Triads vs 其他三和弦&lt;/h2>
+&lt;p>在开始了解什么是 Spread Triads 之前，我们先听一下它跟我们平常弹的三和弦有什么区别：&lt;/p>
+&lt;figure style="text-align: center; margin: 20px auto; width: 100%;">
+ &lt;div style="display: flex; justify-content: center;">
+ &lt;audio controls preload="auto" style="max-width: 100%; display: inline-block !important; margin: 0 auto;">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-1.mp3" type="audio/mpeg">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-1.mp3" type="audio/mp3">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-1.mp3" type="audio/wav">
+ 您的浏览器不支持音频播放。
+ &lt;/audio>
+ &lt;/div>
+ 
+ &lt;figcaption style="margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;">
+ 前三品三和弦
+ &lt;/figcaption>
+ 
+&lt;/figure>
+ 
+&lt;figure style="text-align: center; margin: 20px auto; width: 100%;">
+ &lt;div style="display: flex; justify-content: center;">
+ &lt;audio controls preload="auto" style="max-width: 100%; display: inline-block !important; margin: 0 auto;">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-2.mp3" type="audio/mpeg">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-2.mp3" type="audio/mp3">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-2.mp3" type="audio/wav">
+ 您的浏览器不支持音频播放。
+ &lt;/audio>
+ &lt;/div>
+ 
+ &lt;figcaption style="margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;">
+ 紧密三音配置的三和弦
+ &lt;/figcaption>
+ 
+&lt;/figure>
+ 
+&lt;figure style="text-align: center; margin: 20px auto; width: 100%;">
+ &lt;div style="display: flex; justify-content: center;">
+ &lt;audio controls preload="auto" style="max-width: 100%; display: inline-block !important; margin: 0 auto;">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-3.mp3" type="audio/mpeg">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-3.mp3" type="audio/mp3">
+ &lt;source src="https://icstudio.club/audio/Spread-Triads-3.mp3" type="audio/wav">
+ 您的浏览器不支持音频播放。
+ &lt;/audio>
+ &lt;/div>
+ 
+ &lt;figcaption style="margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;">
+ Spread Triads
+ &lt;/figcaption>
+ 
+&lt;/figure>
+ 
+&lt;p>从听感上看，普通三和弦在前三弦的按法更&lt;strong>厚实、集中&lt;/strong>，三音配置（Close Voicing）更&lt;strong>轻盈、单薄&lt;/strong>；而 Spread Triads 介于两者之间：它保留了&lt;strong>清澈与空间感&lt;/strong>，同时通过低音的支撑带来更稳、更饱满的底色。这使它在伴奏与编配里既“通透”，又不“单薄”。你可以对照上面的三段音频示例，先用耳朵建立直觉差异。&lt;/p></description></item><item><title>随时随地随心：五声音阶的实用之路</title><link>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/pentatonic-guitar-boxes-practice-zh/</link><pubDate>Mon, 14 Oct 2024 00:00:00 +0000</pubDate><guid>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/pentatonic-guitar-boxes-practice-zh/</guid><description>&lt;p>五声音阶只有五个音，却是最简单且最广泛使用的音阶之一。本文带你快速厘清它是什么、在吉他指板上的五个常用位置（box），为什么要牢牢记住主音位置，以及如何高效练习与实际应用，让它成为你创作与即兴的&amp;quot;随时随地随心&amp;quot;的工具。&lt;/p>
+&lt;h2 id="什么是五声音阶">什么是五声音阶？&lt;/h2>
+&lt;p>所谓五声音阶，就是由五个音构成的音阶。你可以把一个大调五声音阶理解为：一个没有四音和七音的&lt;strong>大调音阶&lt;/strong>。例如，C 的大调五声音阶就是把 C 大调的 Fa 和 Si 去掉后得到的五个音。&lt;/p>
+&lt;p>这些五个音在中国传统里对应&amp;quot;&lt;strong>宫—商—角—徵—羽&lt;/strong>&amp;quot;，也正对应着五声音阶里的五个&amp;quot;调式&amp;quot;。当你以不同的音作为主音（tonic）去听同一个五声音列，就得到不同的调式：&lt;/p>
+&lt;ul>
+&lt;li>以 C 为主音：宫调式（大调五声音阶）&lt;/li>
+&lt;li>以 D 为主音：商调式&lt;/li>
+&lt;li>以 E 为主音：角调式&lt;/li>
+&lt;li>以 G 为主音：徵调式&lt;/li>
+&lt;li>以 A 为主音：羽调式（这就是我们常说的&lt;strong>小调五声音阶&lt;/strong>）&lt;/li>
+&lt;/ul>
+&lt;p>小调五声音阶可以理解为：把自然小调的二音和六音去掉。由于五声音阶缺少了大调中的四音和七音——这两个既容易带来紧张感、又是唯一能形成&lt;strong>三全音&lt;/strong>的音——所以它听起来更和谐、也更不容易出现刺耳的音程。正因为结构简单、声音和谐，我强烈建议初学者从五声音阶入门，再逐步过渡到大调音阶；本质上，大调音阶就是在大调五声音阶的基础上加入了四音和七音。&lt;/p>
+&lt;h2 id="在吉他上的五个-box以-a-小调五声音阶为例">在吉他上的五个 box（以 A 小调五声音阶为例）&lt;/h2>
+&lt;p>吉他上常用五个五声音阶指型，因形状而被称为五个&amp;quot;box&amp;quot;。以下以 A 小调五声音阶（即羽调式）示例，并标注常见&lt;strong>主音&lt;/strong>位置，方便你在指板上定位与串联：&lt;/p>
+&lt;h3 id="box-1小调五声音阶的基础形">Box 1（小调五声音阶的基础形）&lt;/h3>
+&lt;ul>
+&lt;li>主音位置：该指型的最低音为主音，此外在四弦7品、一弦5品也有主音。&lt;/li>
+&lt;li>形状参考：
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-1.png" alt="A 小调五声音阶：Box 1（主音示意）">&lt;/li>
+&lt;/ul>
+&lt;h3 id="box-2">Box 2&lt;/h3>
+&lt;ul>
+&lt;li>主音位置：四弦7品、二弦10品。
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-2.png" alt="A 小调五声音阶：Box 2（主音示意）">&lt;/li>
+&lt;/ul>
+&lt;h3 id="box-3">Box 3&lt;/h3>
+&lt;ul>
+&lt;li>主音位置：五弦12品、二弦10品。
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-3.png" alt="A 小调五声音阶：Box 3（主音示意）">&lt;/li>
+&lt;/ul>
+&lt;h3 id="box-4">Box 4&lt;/h3>
+&lt;ul>
+&lt;li>指板重复：12 品后音高开始重复，此 box 既可从空弦起，也可从 12 品起。&lt;/li>
+&lt;li>主音位置：五弦空弦/12品、三弦2品/14品。
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-4.png" alt="A 小调五声音阶：Box 4（主音示意）">&lt;/li>
+&lt;/ul>
+&lt;h3 id="box-5">Box 5&lt;/h3>
+&lt;ul>
+&lt;li>主音位置：六弦5品、三弦2品、一弦5品。
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-5.png" alt="A 小调五声音阶：Box 5（主音示意）">&lt;/li>
+&lt;/ul>
+&lt;p>小结与延伸：&lt;/p>
+&lt;ul>
+&lt;li>多数吉他手口中的&amp;quot;五声音阶&amp;quot;，往往默认指的是&lt;strong>小调五声音阶&lt;/strong>（此处即 A 为主音）。如果把上述五个指型里的 C 当作主音，你就得到 C 的&lt;strong>大调五声音阶&lt;/strong>。&lt;/li>
+&lt;li>牢记&lt;strong>主音位置&lt;/strong>的好处有二：其一，能让乐句自然地以主音收尾，形成稳定、完整的结束感；其二，可帮助你迅速拼接、迁移五个 box，覆盖整个指板。&lt;/li>
+&lt;/ul>
+&lt;h2 id="两个关键指型与跨三弦挪一品">两个关键指型与&amp;quot;跨三弦挪一品&amp;quot;&lt;/h2>
+&lt;p>把五个 box 抽象起来，核心就两类手型：&lt;/p></description></item></channel></rss>
