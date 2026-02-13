@@ -36,7 +36,7 @@
     cursorHeight: null,
     cursorEnabled: true,
     metronomeEnabled: true,
-    hideEnabled: true,
+    hideEnabled: false,
     autoRestart: false,
     metronomeWasRunning: false,
     lastBeatTimeMs: 0,
@@ -67,11 +67,312 @@
     judgeWindowMs: 160,
     judgeBeatDurationSec: 0,
     judgeOctShift: null,
+    judgeOctShiftCandidate: null,
+    judgeOctShiftCandidateCount: 0,
     judgeGateUntilSec: 0,
     judgedElements: new Set(),
   };
 
   function $(id){ return document.getElementById(id); }
+
+  const micStorageKey = 'ic_jianpu_mic_enabled';
+  const micDeviceStorageKey = 'ic_jianpu_mic_device';
+  const crepeModelBaseUrl = 'https://cdn.jsdelivr.net/gh/ml5js/ml5-data-and-models@main/models/pitch-detection/crepe/';
+
+  const micEngine = {
+    running: false,
+    loopId: null,
+    stream: null,
+    audioCtx: null,
+    source: null,
+    analyser: null,
+    buffer: null,
+    lastProcessMs: 0,
+    stableMidi: null,
+    stableCount: 0,
+    lastEmittedMidi: null,
+    lastEmitMs: 0,
+    prevVoiced: false,
+    prevRms: 0,
+    permissionDenied: false,
+    lastError: false,
+    lastErrorName: '',
+    lastErrorSummary: '',
+    devices: [],
+    deviceLabelCache: {},
+    autoWarmupTried: false,
+    warmupInFlight: false,
+    activeTrackLabel: '',
+    selectedDeviceId: '',
+    selectedDeviceLabel: '',
+    smoothedFreq: null,
+    smoothedFreqAtMs: 0,
+    lastWarmupAtMs: 0,
+    selectedPitchEngine: 'crepe',
+    lastDetectedFreq: null,
+    lastDetectedMidi: null,
+    lastDetectedConfidence: 0,
+    lastDetectedEngine: '',
+    lastDetectedAtMs: 0,
+    history: [],
+    historyMax: 260,
+    crepe: {
+      detector: null,
+      loading: false,
+      ready: false,
+      pollToken: 0,
+      lastFreq: null,
+      lastAtMs: 0,
+      lastConf: 0,
+      modelUnavailable: false
+    }
+  };
+
+  function tLocal(key, fallback){
+    try{
+      if (typeof translations !== 'undefined' && translations){
+        const lang = (typeof currentLanguage !== 'undefined' && currentLanguage) ? currentLanguage : 'zh-CN';
+        const table = translations[lang] || translations['zh-CN'] || {};
+        if (table && Object.prototype.hasOwnProperty.call(table, key)) return table[key];
+      }
+    }catch(_){}
+    return fallback || key;
+  }
+
+  function tLocalWithParams(key, fallback, params){
+    let text = tLocal(key, fallback);
+    if (!params || typeof params !== 'object') return text;
+    Object.keys(params).forEach((k) => {
+      const v = params[k];
+      text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+    });
+    return text;
+  }
+
+  function setMicStatus(key, tone, params){
+    const statusEl = $('micStatusText');
+    if (!statusEl) return;
+    statusEl.textContent = tLocalWithParams(key, statusEl.textContent || key, params);
+    statusEl.classList.remove('ok', 'warn', 'error');
+    if (tone) statusEl.classList.add(tone);
+  }
+
+  function isMidiEnabledConfigured(){
+    const midiToggle = $('midiEnableToggle');
+    return !!(midiToggle && midiToggle.checked);
+  }
+
+  function isMicSupported(){
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && (window.AudioContext || window.webkitAudioContext));
+  }
+
+  function isMicEnabledConfigured(){
+    const micToggle = $('micEnableToggle');
+    return !!(micToggle && micToggle.checked);
+  }
+
+  function hasAnyJudgeInputConfigured(){
+    return isMidiEnabledConfigured() || isMicEnabledConfigured();
+  }
+
+  function shouldUseMicJudgeInput(){
+    return !!(state.active && toggleEl && toggleEl.checked && state.calibrationEnabled && isMicEnabledConfigured());
+  }
+
+  function readMicEnabledStored(){
+    try {
+      const raw = localStorage.getItem(micStorageKey);
+      return raw === '1' || raw === 'true';
+    } catch(_) {
+      return false;
+    }
+  }
+
+  function writeMicEnabledStored(next){
+    try { localStorage.setItem(micStorageKey, next ? '1' : '0'); } catch(_) {}
+  }
+
+  function readMicDeviceStored(){
+    try {
+      return localStorage.getItem(micDeviceStorageKey) || '';
+    } catch(_) {
+      return '';
+    }
+  }
+
+  function writeMicDeviceStored(deviceId){
+    try { localStorage.setItem(micDeviceStorageKey, deviceId || ''); } catch(_) {}
+  }
+
+  function getUnknownMicLabel(index){
+    return tLocalWithParams('mic.device.unknown', `Microphone ${index + 1}`, { index: index + 1 });
+  }
+
+  function rememberMicDeviceLabels(devices){
+    if (!Array.isArray(devices)) return;
+    devices.forEach((d) => {
+      if (!d || !d.deviceId) return;
+      const label = (d.label || '').trim();
+      if (!label) return;
+      micEngine.deviceLabelCache[d.deviceId] = label;
+    });
+  }
+
+  function getCachedMicDeviceLabel(deviceId){
+    if (!deviceId) return '';
+    return micEngine.deviceLabelCache[deviceId] || '';
+  }
+
+  function cacheTrackLabelToDevice(track, fallbackLabel){
+    try {
+      const label = ((track && track.label) ? track.label : fallbackLabel || '').trim();
+      if (!label) return;
+      micEngine.activeTrackLabel = label;
+      const settings = track && typeof track.getSettings === 'function' ? track.getSettings() : null;
+      const deviceId = settings && settings.deviceId ? String(settings.deviceId).trim() : '';
+      if (deviceId){
+        micEngine.deviceLabelCache[deviceId] = label;
+      }
+    } catch(_) {}
+  }
+
+  function resolveMicDeviceLabel(device, index){
+    if (!device) return getUnknownMicLabel(index || 0);
+    const raw = (device.label || '').trim();
+    if (raw) return raw;
+    const cached = getCachedMicDeviceLabel(device.deviceId || '');
+    if (cached) return cached;
+    return getUnknownMicLabel(index || 0);
+  }
+
+  function hasNamedMicDevices(devices){
+    if (!Array.isArray(devices) || !devices.length) return false;
+    return devices.some((d) => {
+      if (!d) return false;
+      const label = (d.label || '').trim();
+      if (label) return true;
+      const cached = getCachedMicDeviceLabel(d.deviceId || '');
+      return !!(cached && cached.trim());
+    });
+  }
+
+  function hasOnlyAnonymousMicDevices(devices){
+    if (!Array.isArray(devices) || !devices.length) return false;
+    return devices.every((d) => {
+      if (!d) return true;
+      const label = (d.label || '').trim();
+      const cached = getCachedMicDeviceLabel(d.deviceId || '');
+      const id = (d.deviceId || '').trim();
+      return !label && !cached && !id;
+    });
+  }
+
+  async function enumerateMicInputDevices(){
+    const timeout = 1800;
+    let timer = null;
+    try {
+      const listPromise = navigator.mediaDevices.enumerateDevices()
+        .then((all) => Array.isArray(all) ? all.filter(d => d && d.kind === 'audioinput') : [])
+        .catch(() => []);
+      const timeoutPromise = new Promise((resolve) => {
+        timer = setTimeout(() => resolve([]), timeout);
+      });
+      return await Promise.race([listPromise, timeoutPromise]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  function updateSelectedMicLabel(){
+    if (!micEngine.selectedDeviceId){
+      micEngine.selectedDeviceLabel = '';
+      return;
+    }
+    const idx = micEngine.devices.findIndex(d => d.deviceId === micEngine.selectedDeviceId);
+    if (idx < 0){
+      micEngine.selectedDeviceLabel = '';
+      return;
+    }
+    const d = micEngine.devices[idx];
+    micEngine.selectedDeviceLabel = resolveMicDeviceLabel(d, idx);
+  }
+
+  async function updateMicDeviceList(){
+    const selectEl = $('micDeviceSelect');
+    if (!selectEl) return;
+
+    if (!isMicSupported()){
+      micEngine.devices = [];
+      micEngine.selectedDeviceId = '';
+      micEngine.selectedDeviceLabel = '';
+      selectEl.innerHTML = '<option value="">-</option>';
+      selectEl.disabled = true;
+      return;
+    }
+
+    let devices = await enumerateMicInputDevices();
+    rememberMicDeviceLabels(micEngine.devices);
+    rememberMicDeviceLabels(devices);
+    const shouldAutoWarmup =
+      isMicEnabledConfigured() &&
+      !micEngine.stream &&
+      !micEngine.permissionDenied &&
+      !hasNamedMicDevices(devices) &&
+      !micEngine.autoWarmupTried;
+    if (shouldAutoWarmup){
+      await warmupMicPermissionForDeviceLabels();
+      devices = await enumerateMicInputDevices();
+      rememberMicDeviceLabels(devices);
+    }
+    micEngine.devices = devices;
+    selectEl.innerHTML = '';
+
+    if (!devices.length){
+      micEngine.selectedDeviceId = '';
+      micEngine.selectedDeviceLabel = '';
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = '-';
+      selectEl.appendChild(opt);
+      selectEl.disabled = true;
+      return;
+    }
+
+    const current = micEngine.selectedDeviceId || '';
+    const stored = readMicDeviceStored();
+    let selected = '';
+    if (current && devices.some(d => d.deviceId === current)) selected = current;
+    else if (stored && devices.some(d => d.deviceId === stored)) selected = stored;
+    else selected = devices[0].deviceId || '';
+
+    devices.forEach((d, idx) => {
+      const opt = document.createElement('option');
+      opt.value = d.deviceId || '';
+      let label = resolveMicDeviceLabel(d, idx);
+      const isUnknown = !label || /^microphone\s+\d+$/i.test(label) || /^麥克風\s+\d+$/i.test(label) || /^麦克风\s+\d+$/i.test(label);
+      if (isUnknown && micEngine.activeTrackLabel){
+        const isSelectedHint = (selected && d.deviceId === selected) || (!selected && idx === 0) || !d.deviceId;
+        if (isSelectedHint){
+          label = micEngine.activeTrackLabel;
+          if (d.deviceId){
+            micEngine.deviceLabelCache[d.deviceId] = label;
+          }
+        }
+      }
+      opt.textContent = label;
+      selectEl.appendChild(opt);
+    });
+
+    if (!selected && devices[0]) selected = devices[0].deviceId || '';
+    selectEl.value = selected;
+    micEngine.selectedDeviceId = selected;
+    updateSelectedMicLabel();
+    if (!micEngine.selectedDeviceLabel && micEngine.activeTrackLabel){
+      micEngine.selectedDeviceLabel = micEngine.activeTrackLabel;
+    }
+    writeMicDeviceStored(selected);
+    selectEl.disabled = !isMicEnabledConfigured();
+  }
 
   function isMidiConnected(){
     try {
@@ -135,6 +436,936 @@
     return { beatSec, strict };
   }
 
+  function getMicJudgeToleranceSec(bpm){
+    const beatSec = 60 / Math.max(1, bpm || 80);
+    const fromBeat = 0.29 * beatSec;
+    const fromWindow = Math.max(0.14, (state.judgeWindowMs || 160) / 1000);
+    return clamp(Math.max(fromBeat, fromWindow), 0.14, 0.38);
+  }
+
+  function getJudgeEventWindow(ev, bpmVal, inputSource){
+    const judgeWindows = computeJudgeWindows(bpmVal);
+    const strictTolSec = (isFinite(ev?.strictTolSec) && ev.strictTolSec > 0)
+      ? ev.strictTolSec
+      : judgeWindows.strict;
+    const startBase = (typeof ev?.startWindowSec === 'number') ? ev.startWindowSec : (ev.timeSec - strictTolSec);
+    const endBase = (typeof ev?.endWindowSec === 'number') ? ev.endWindowSec : (ev.timeSec + strictTolSec);
+    const onlyMicMode = inputSource === 'mic' && shouldUseMicJudgeInput() && !isMidiEnabledConfigured();
+    if (!onlyMicMode){
+      return { startSec: startBase, endSec: endBase, strictTolSec, onlyMicMode: false };
+    }
+    const micTolSec = getMicJudgeToleranceSec(bpmVal);
+    const endGraceSec = 0.08;
+    return {
+      startSec: Math.min(startBase, ev.timeSec - micTolSec),
+      endSec: Math.max(endBase, ev.timeSec + micTolSec + endGraceSec),
+      strictTolSec: Math.max(strictTolSec, micTolSec),
+      onlyMicMode: true
+    };
+  }
+
+  function getCentsDistanceToMidi(freq, midi){
+    if (!isFinite(freq) || !isFinite(midi)) return Infinity;
+    const target = 440 * Math.pow(2, (midi - 69) / 12);
+    if (!isFinite(target) || target <= 0) return Infinity;
+    const cents = 1200 * Math.log2(freq / target);
+    return Math.abs(cents);
+  }
+
+  function isMicFreqNearMidi(freq, midi, centsTol){
+    const dist = getCentsDistanceToMidi(freq, midi);
+    if (!isFinite(dist)) return false;
+    return dist <= Math.max(20, centsTol || 45);
+  }
+
+  function findMicFreqExpectedMatch(expectedMidis, observedMidi, micFreq, preferredShift, centsTol){
+    if (!Array.isArray(expectedMidis) || !expectedMidis.length) return null;
+    if (!isFinite(micFreq) || micFreq <= 0) return null;
+    const tol = Math.max(22, centsTol || 45);
+    let best = null;
+    expectedMidis.forEach((target) => {
+      if (!isFinite(target)) return;
+      const baseShift = isFinite(preferredShift)
+        ? Math.round(preferredShift)
+        : Math.round((observedMidi - target) / 12);
+      const shifts = isFinite(preferredShift)
+        ? [baseShift, baseShift - 1, baseShift + 1]
+        : [baseShift - 1, baseShift, baseShift + 1];
+      shifts.forEach((shift) => {
+        const shiftedMidi = target + (12 * shift);
+        const cents = getCentsDistanceToMidi(micFreq, shiftedMidi);
+        if (!isFinite(cents)) return;
+        if (!best || cents < best.cents){
+          best = { target, shift, shiftedMidi, cents };
+        }
+      });
+    });
+    if (!best || best.cents > tol) return null;
+    return best;
+  }
+
+  function pushMicHistorySample(atMs, midi, freq, conf, engine){
+    if (!isFinite(atMs)) return;
+    if (!isFinite(freq) || freq <= 0) return;
+    const sample = {
+      atMs,
+      midi: isFinite(midi) ? midi : null,
+      freq,
+      conf: isFinite(conf) ? conf : 0,
+      engine: engine || ''
+    };
+    micEngine.history.push(sample);
+    if (micEngine.history.length > micEngine.historyMax){
+      micEngine.history.splice(0, micEngine.history.length - micEngine.historyMax);
+    }
+    const keepAfter = atMs - 2800;
+    let dropCount = 0;
+    while (dropCount < micEngine.history.length && micEngine.history[dropCount].atMs < keepAfter){
+      dropCount++;
+    }
+    if (dropCount > 0){
+      micEngine.history.splice(0, dropCount);
+    }
+  }
+
+  function findBufferedMicMatchForEvent(ev, centsTol){
+    if (!ev || !Array.isArray(ev.expectedMidis) || !ev.expectedMidis.length) return null;
+    if (!state.judgeStartMs || !micEngine.history.length) return null;
+    const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
+    const windowInfo = getJudgeEventWindow(ev, bpmVal, 'mic');
+    const fromSec = (isFinite(windowInfo.startSec) ? windowInfo.startSec : ev.timeSec) - 0.1;
+    const toSec = (isFinite(windowInfo.endSec) ? windowInfo.endSec : ev.timeSec) + 0.16;
+    const expected = ev.expectedMidis;
+    const preferredShift = isFinite(state.judgeOctShift) ? state.judgeOctShift : null;
+    const tol = Math.max(26, centsTol || 68);
+    let best = null;
+
+    for (let i = micEngine.history.length - 1; i >= 0; i--){
+      const s = micEngine.history[i];
+      if (!s || !isFinite(s.atMs)) continue;
+      const sampleSecRaw = (s.atMs - state.judgeStartMs) / 1000;
+      const sampleSec = (state.calibrationEnabled && state.calibrationOffsetSec)
+        ? (sampleSecRaw - state.calibrationOffsetSec)
+        : sampleSecRaw;
+      if (!isFinite(sampleSec) || sampleSec < fromSec || sampleSec > toSec) continue;
+
+      const observedMidi = isFinite(s.midi) ? s.midi : micEngine.lastDetectedMidi;
+      const freqMatch = findMicFreqExpectedMatch(expected, observedMidi, s.freq, preferredShift, tol);
+      if (freqMatch){
+        const score = (Math.max(0.3, s.conf) * 1000) - Math.min(400, freqMatch.cents) - Math.abs(sampleSec - ev.timeSec) * 120;
+        if (!best || score > best.score){
+          best = { ...freqMatch, score, sampleSec, conf: s.conf };
+        }
+        continue;
+      }
+
+      if (isFinite(observedMidi) && (s.conf || 0) >= 0.54){
+        const pc = ((observedMidi % 12) + 12) % 12;
+        const pcMatch = expected.find((target) => (((target % 12) + 12) % 12) === pc);
+        if (pcMatch != null){
+          const shift = Math.round((observedMidi - pcMatch) / 12);
+          const score = ((s.conf || 0) * 800) - Math.abs(sampleSec - ev.timeSec) * 150;
+          if (!best || score > best.score){
+            best = { target: pcMatch, shift, shiftedMidi: pcMatch + (12 * shift), cents: Infinity, score, sampleSec, conf: s.conf, pcFallback: true };
+          }
+        }
+      }
+    }
+    return best;
+  }
+
+  function getMicExpectedMatchForEvent(ev, observedMidi, centsTol){
+    const expected = Array.isArray(ev?.expectedMidis) ? ev.expectedMidis : [];
+    if (!expected.length) return null;
+    const micFreq = micEngine.lastDetectedFreq;
+    const micConf = isFinite(micEngine.lastDetectedConfidence) ? micEngine.lastDetectedConfidence : 0;
+    const ageMs = performance.now() - (micEngine.lastDetectedAtMs || 0);
+    if (!isFinite(micFreq) || micFreq <= 0 || !isFinite(ageMs) || ageMs > 260 || micConf < 0.42){
+      return null;
+    }
+    const observed = isFinite(observedMidi) ? observedMidi : micEngine.lastDetectedMidi;
+    const preferredShift = isFinite(state.judgeOctShift) ? state.judgeOctShift : null;
+    const freqMatch = findMicFreqExpectedMatch(expected, observed, micFreq, preferredShift, centsTol || 62);
+    if (freqMatch) return freqMatch;
+    if (!isFinite(observed) || micConf < 0.62) return null;
+    const pc = ((observed % 12) + 12) % 12;
+    const pcMatch = expected.find((target) => (((target % 12) + 12) % 12) === pc);
+    if (pcMatch == null) return null;
+    const shift = Math.round((observed - pcMatch) / 12);
+    return {
+      target: pcMatch,
+      shift,
+      shiftedMidi: pcMatch + (12 * shift),
+      cents: Infinity,
+      pcFallback: true
+    };
+  }
+
+  function registerOctShiftObservation(observedShift, inputSource){
+    if (!isFinite(observedShift)) return;
+    const shift = Math.round(observedShift);
+    if (state.judgeOctShift == null){
+      if (state.judgeOctShiftCandidate === shift){
+        state.judgeOctShiftCandidateCount += 1;
+      } else {
+        state.judgeOctShiftCandidate = shift;
+        state.judgeOctShiftCandidateCount = 1;
+      }
+      if (state.judgeOctShiftCandidateCount >= 2){
+        state.judgeOctShift = state.judgeOctShiftCandidate;
+      }
+      return;
+    }
+    if (shift === state.judgeOctShift){
+      state.judgeOctShiftCandidate = shift;
+      state.judgeOctShiftCandidateCount = 0;
+      return;
+    }
+    if (inputSource !== 'mic') return;
+    if (state.judgeOctShiftCandidate === shift){
+      state.judgeOctShiftCandidateCount += 1;
+    } else {
+      state.judgeOctShiftCandidate = shift;
+      state.judgeOctShiftCandidateCount = 1;
+    }
+    if (state.judgeOctShiftCandidateCount >= 3){
+      state.judgeOctShift = shift;
+      state.judgeOctShiftCandidateCount = 0;
+    }
+  }
+
+  function settleExpiredJudgeEvent(ev, inputSource){
+    if (!ev || ev.judged) return;
+    if (!state.calibrationEnabled){
+      ev.judged = true;
+      return;
+    }
+    const hasMidiInput = isMidiEnabledConfigured();
+    const expectMic = shouldUseMicJudgeInput();
+    const micDown = expectMic && !micEngine.running;
+    if (micDown && !hasMidiInput){
+      ev.judged = true;
+      return;
+    }
+    if (inputSource === 'mic'){
+      const bufferedMatch = findBufferedMicMatchForEvent(ev, 74);
+      if (bufferedMatch){
+        markJudgeEvent(ev, 'correct');
+        if (isFinite(bufferedMatch.shift)){
+          registerOctShiftObservation(bufferedMatch.shift, 'mic');
+        }
+        const nowSecRaw = (performance.now() - state.judgeStartMs) / 1000;
+        const delta = clamp(nowSecRaw - ev.timeSec, -0.16, 0.16);
+        const nextOffset = (state.calibrationOffsetSec * 0.84) + (delta * 0.16);
+        state.calibrationOffsetSec = Math.max(-0.25, Math.min(0.25, nextOffset));
+        return;
+      }
+      const lateMatch = getMicExpectedMatchForEvent(ev, micEngine.lastDetectedMidi, 70);
+      if (lateMatch){
+        markJudgeEvent(ev, 'correct');
+        if (isFinite(lateMatch.shift)){
+          registerOctShiftObservation(lateMatch.shift, 'mic');
+        }
+        const nowSecRaw = (performance.now() - state.judgeStartMs) / 1000;
+        const delta = clamp(nowSecRaw - ev.timeSec, -0.16, 0.16);
+        const nextOffset = (state.calibrationOffsetSec * 0.84) + (delta * 0.16);
+        state.calibrationOffsetSec = Math.max(-0.25, Math.min(0.25, nextOffset));
+        return;
+      }
+    }
+    markJudgeEvent(ev, 'wrong');
+  }
+
+  function correlationAtLag(buf, lag){
+    let sum = 0;
+    for (let i = 0; i < buf.length - lag; i++){
+      sum += buf[i] * buf[i + lag];
+    }
+    return sum;
+  }
+
+  function detectPitchFromBuffer(buf, sampleRate){
+    const size = buf.length;
+    let energy = 0;
+    for (let i = 0; i < size; i++){
+      const v = buf[i];
+      energy += v * v;
+    }
+    const rms = Math.sqrt(energy / Math.max(1, size));
+    if (!isFinite(rms) || rms < 0.004) return { freq: null, rms, confidence: 0 };
+
+    const minFreq = 60;
+    const maxFreq = 1400;
+    const minLag = Math.max(2, Math.floor(sampleRate / maxFreq));
+    const maxLag = Math.min(size - 2, Math.floor(sampleRate / minFreq));
+
+    let bestLag = -1;
+    let bestCorr = -Infinity;
+    for (let lag = minLag; lag <= maxLag; lag++){
+      const corr = correlationAtLag(buf, lag);
+      if (corr > bestCorr){
+        bestCorr = corr;
+        bestLag = lag;
+      }
+    }
+    if (bestLag <= 0) return { freq: null, rms, confidence: 0 };
+
+    const norm = bestCorr / Math.max(1e-9, energy);
+    if (!isFinite(norm) || norm < 0.22) {
+      return { freq: null, rms, confidence: Math.max(0, Math.min(1, norm || 0)) };
+    }
+
+    const prev = correlationAtLag(buf, bestLag - 1);
+    const next = correlationAtLag(buf, bestLag + 1);
+    const denom = prev - (2 * bestCorr) + next;
+    let refinedLag = bestLag;
+    if (Math.abs(denom) > 1e-9){
+      refinedLag = bestLag + (0.5 * (prev - next) / denom);
+    }
+    if (!isFinite(refinedLag) || refinedLag <= 0) {
+      return { freq: null, rms, confidence: Math.max(0, Math.min(1, norm || 0)) };
+    }
+
+    const freq = sampleRate / refinedLag;
+    if (!isFinite(freq) || freq < minFreq || freq > maxFreq) {
+      return { freq: null, rms, confidence: Math.max(0, Math.min(1, norm || 0)) };
+    }
+    return {
+      freq,
+      rms,
+      confidence: Math.max(0, Math.min(1, norm))
+    };
+  }
+
+  function getSmoothedMicFreq(rawFreq, nowMs){
+    if (!isFinite(rawFreq) || rawFreq <= 0){
+      const age = nowMs - (micEngine.smoothedFreqAtMs || 0);
+      if (isFinite(micEngine.smoothedFreq) && age < 95){
+        return micEngine.smoothedFreq;
+      }
+      micEngine.smoothedFreq = null;
+      micEngine.smoothedFreqAtMs = 0;
+      return null;
+    }
+    if (!isFinite(micEngine.smoothedFreq) || micEngine.smoothedFreq <= 0){
+      micEngine.smoothedFreq = rawFreq;
+    } else {
+      const driftSemi = Math.abs(12 * Math.log2(rawFreq / micEngine.smoothedFreq));
+      const alpha = driftSemi > 1.2 ? 0.46 : 0.28;
+      micEngine.smoothedFreq = (micEngine.smoothedFreq * (1 - alpha)) + (rawFreq * alpha);
+    }
+    micEngine.smoothedFreqAtMs = nowMs;
+    return micEngine.smoothedFreq;
+  }
+
+  function freqToStableMidi(freq, referenceMidi){
+    if (!isFinite(freq) || freq <= 0) return null;
+    const midiFloat = 69 + 12 * Math.log2(freq / 440);
+    if (!isFinite(midiFloat)) return null;
+    let midi = Math.round(midiFloat);
+    if (isFinite(referenceMidi)){
+      const diff = Math.abs(midiFloat - referenceMidi);
+      if (diff <= 0.46){
+        midi = Math.round(referenceMidi);
+      }
+    }
+    return midi;
+  }
+
+  function runMicCaptureLoop(){
+    if (!micEngine.running || !micEngine.analyser || !micEngine.audioCtx) return;
+    micEngine.loopId = requestAnimationFrame(runMicCaptureLoop);
+    const now = performance.now();
+    if (now - micEngine.lastProcessMs < 34) return;
+    micEngine.lastProcessMs = now;
+
+    micEngine.analyser.getFloatTimeDomainData(micEngine.buffer);
+    const detected = detectPitchFromBuffer(micEngine.buffer, micEngine.audioCtx.sampleRate);
+    const stableAutoFreq = getSmoothedMicFreq(detected?.freq, now);
+    if (micEngine.selectedPitchEngine === 'crepe' && micEngine.crepe.ready){
+      startCrepePolling();
+    }
+    const resolved = resolvePitchByEngine(now, stableAutoFreq, detected?.confidence ?? 0, detected?.freq ?? null);
+    const resolvedConf = isFinite(resolved?.confidence) ? resolved.confidence : 0;
+    const minConf = (resolved?.engine === 'crepe') ? 0.55 : 0.18;
+    const voiced = !!(resolved && isFinite(resolved.freq) && resolvedConf >= minConf);
+    let midi = null;
+    if (voiced){
+      const refMidi = isFinite(micEngine.lastEmittedMidi) ? micEngine.lastEmittedMidi : micEngine.stableMidi;
+      midi = freqToStableMidi(resolved.freq, refMidi);
+      if (!isFinite(midi) || midi < 24 || midi > 108){
+        midi = null;
+      }
+    }
+    micEngine.lastDetectedFreq = voiced ? resolved.freq : null;
+    micEngine.lastDetectedMidi = midi;
+    micEngine.lastDetectedConfidence = resolvedConf;
+    micEngine.lastDetectedEngine = resolved?.engine || '';
+    micEngine.lastDetectedAtMs = now;
+    if (voiced){
+      pushMicHistorySample(now, midi, resolved.freq, resolvedConf, resolved?.engine || '');
+    }
+
+    const prevRms = micEngine.prevRms || 0;
+    const currRms = detected ? detected.rms : 0;
+    const onset = voiced && (
+      !micEngine.prevVoiced ||
+      (currRms > prevRms * 1.25 && (currRms - prevRms) > 0.008)
+    );
+
+    if (midi != null){
+      if (midi === micEngine.stableMidi){
+        micEngine.stableCount += 1;
+      } else {
+        micEngine.stableMidi = midi;
+        micEngine.stableCount = 1;
+      }
+
+      const pitchChanged = (micEngine.lastEmittedMidi == null) || (midi !== micEngine.lastEmittedMidi);
+      const micMode = shouldUseMicJudgeInput();
+      const quickAccept = micMode && pitchChanged && resolvedConf >= 0.82;
+      if (micEngine.stableCount >= 2 || quickAccept){
+        const minEmitGapMs = micMode ? 65 : 90;
+        const retriggerSamePitch = !pitchChanged && (now - micEngine.lastEmitMs > minEmitGapMs) && (micMode || onset);
+        if (pitchChanged || retriggerSamePitch){
+          micEngine.lastEmittedMidi = midi;
+          micEngine.lastEmitMs = now;
+          handleJudgeInput(midi, 'mic');
+        }
+      }
+    } else {
+      micEngine.stableMidi = null;
+      micEngine.stableCount = 0;
+    }
+
+    micEngine.prevVoiced = voiced;
+    micEngine.prevRms = currRms;
+  }
+
+  function getMicAudioConstraints(preferredDeviceId){
+    const constraints = {
+      sampleRate: 48000,
+      echoCancellation: false,
+      noiseSuppression: false,
+      autoGainControl: false,
+      channelCount: 1
+    };
+    if (preferredDeviceId){
+      constraints.deviceId = { exact: preferredDeviceId };
+    }
+    return constraints;
+  }
+
+  function getBasicAudioConstraints(preferredDeviceId){
+    if (preferredDeviceId) return { deviceId: { exact: preferredDeviceId } };
+    return true;
+  }
+
+  function getFallbackMicAttempts(preferredDeviceId){
+    const attempts = [];
+    const preferred = (preferredDeviceId || '').trim();
+    if (preferred) {
+      attempts.push({
+        id: 'preferred-basic',
+        label: 'preferred-basic',
+        constraints: getBasicAudioConstraints(preferred)
+      });
+    }
+    attempts.push({
+      id: 'default-advanced',
+      label: 'default-advanced',
+      constraints: getMicAudioConstraints('')
+    });
+    attempts.push({
+      id: 'default-basic',
+      label: 'default-basic',
+      constraints: true
+    });
+    if (preferred) {
+      attempts.push({
+        id: 'preferred-advanced',
+        label: 'preferred-advanced',
+        constraints: getMicAudioConstraints(preferred)
+      });
+    }
+    return attempts;
+  }
+
+  function getErrorName(err){
+    return (err && err.name ? String(err.name) : 'UnknownError');
+  }
+
+  function summarizeAttemptFailures(failures){
+    if (!Array.isArray(failures) || !failures.length) return '';
+    const text = failures.map((f) => `${f.label}:${f.errorName}`).join('|');
+    if (text.length <= 200) return text;
+    return `${text.slice(0, 197)}...`;
+  }
+
+  function isRetryableMicError(errorName){
+    return (
+      errorName === 'NotFoundError' ||
+      errorName === 'OverconstrainedError' ||
+      errorName === 'ConstraintNotSatisfiedError' ||
+      errorName === 'AbortError' ||
+      errorName === 'NotReadableError' ||
+      errorName === 'TrackStartError' ||
+      errorName === 'TimeoutError'
+    );
+  }
+
+  async function getUserMediaDirect(audioConstraints){
+    return navigator.mediaDevices.getUserMedia({ audio: audioConstraints, video: false });
+  }
+
+  async function getUserMediaWithTimeout(audioConstraints, timeoutMs){
+    const timeout = Math.max(3500, parseInt(timeoutMs || 12000, 10) || 12000);
+    let timer = null;
+    let timedOut = false;
+    let requestPromise = null;
+    try {
+      requestPromise = navigator.mediaDevices.getUserMedia({ audio: audioConstraints, video: false });
+      const timeoutPromise = new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          timedOut = true;
+          const err = new Error('getUserMedia timeout');
+          err.name = 'TimeoutError';
+          reject(err);
+        }, timeout);
+      });
+      return await Promise.race([requestPromise, timeoutPromise]);
+    } finally {
+      if (timer) clearTimeout(timer);
+      if (timedOut && requestPromise && typeof requestPromise.then === 'function') {
+        requestPromise.then((lateStream) => {
+          try { lateStream.getTracks().forEach((t) => t.stop()); } catch(_) {}
+        }).catch(() => {});
+      }
+    }
+  }
+
+  async function acquireMicStreamWithFallback(preferredDeviceId, timeoutMs){
+    const attempts = getFallbackMicAttempts(preferredDeviceId);
+    const failures = [];
+    let lastErr = null;
+    for (const attempt of attempts){
+      try {
+        const stream = await getUserMediaWithTimeout(attempt.constraints, timeoutMs);
+        return { stream, attempt, failures };
+      } catch(err){
+        const errorName = getErrorName(err);
+        failures.push({ id: attempt.id, label: attempt.label, errorName });
+        lastErr = err;
+        if (errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError') break;
+        if (!isRetryableMicError(errorName)) break;
+      }
+    }
+    const finalErr = lastErr || new Error('Unable to acquire microphone stream');
+    try { finalErr.micAttemptFailures = failures; } catch(_) {}
+    throw finalErr;
+  }
+
+  async function acquireMicStreamCompat(preferredDeviceId){
+    const failures = [];
+    const preferred = (preferredDeviceId || '').trim();
+
+    try {
+      const stream = await getUserMediaDirect(getMicAudioConstraints(''));
+      return { stream, attempt: { id: 'default-direct', label: 'default-direct' }, failures };
+    } catch(err){
+      failures.push({ id: 'default-direct', label: 'default-direct', errorName: getErrorName(err) });
+    }
+
+    if (preferred) {
+      try {
+        const stream = await getUserMediaDirect(getBasicAudioConstraints(preferred));
+        return { stream, attempt: { id: 'preferred-direct', label: 'preferred-direct' }, failures };
+      } catch(err){
+        failures.push({ id: 'preferred-direct', label: 'preferred-direct', errorName: getErrorName(err) });
+      }
+    }
+
+    try {
+      const fallback = await acquireMicStreamWithFallback(preferred, 12000);
+      return {
+        stream: fallback.stream,
+        attempt: fallback.attempt,
+        failures: failures.concat(fallback.failures || [])
+      };
+    } catch(err){
+      const finalErr = err || new Error('Unable to acquire microphone stream');
+      const merged = failures.concat((err && err.micAttemptFailures) || []);
+      try { finalErr.micAttemptFailures = merged; } catch(_) {}
+      throw finalErr;
+    }
+  }
+
+  function stopCrepePolling(resetDetector){
+    micEngine.crepe.pollToken += 1;
+    micEngine.crepe.lastFreq = null;
+    micEngine.crepe.lastAtMs = 0;
+    micEngine.crepe.lastConf = 0;
+    if (resetDetector){
+      micEngine.crepe.detector = null;
+      micEngine.crepe.ready = false;
+      micEngine.crepe.loading = false;
+    }
+  }
+
+  function startCrepePolling(){
+    const crepe = micEngine.crepe;
+    if (!micEngine.running || !crepe.ready || !crepe.detector || micEngine.selectedPitchEngine !== 'crepe') return;
+    const token = ++crepe.pollToken;
+    const poll = () => {
+      if (token !== crepe.pollToken || !micEngine.running || micEngine.selectedPitchEngine !== 'crepe') return;
+      try {
+        crepe.detector.getPitch((err, freq) => {
+          if (token !== crepe.pollToken || !micEngine.running) return;
+          if (!err && isFinite(freq) && freq > 40 && freq < 1800){
+            const prev = crepe.lastFreq;
+            let conf = 0.93;
+            if (isFinite(prev) && prev > 0){
+              const drift = Math.abs(Math.log2(freq / prev));
+              conf = Math.max(0.72, 0.95 - (drift * 2.5));
+            }
+            crepe.lastFreq = freq;
+            crepe.lastConf = conf;
+            crepe.lastAtMs = performance.now();
+          }
+          setTimeout(poll, 0);
+        });
+      } catch(_) {
+        setTimeout(poll, 60);
+      }
+    };
+    poll();
+  }
+
+  async function ensureCrepeDetector(){
+    if (micEngine.selectedPitchEngine !== 'crepe') return false;
+    if (!micEngine.audioCtx || !micEngine.stream) return false;
+    const crepe = micEngine.crepe;
+    if (crepe.modelUnavailable) return false;
+    if (!(window.ml5 && typeof window.ml5.pitchDetection === 'function')) {
+      crepe.modelUnavailable = true;
+      return false;
+    }
+    if (crepe.ready && crepe.detector){
+      startCrepePolling();
+      return true;
+    }
+    if (crepe.loading) return false;
+
+    crepe.loading = true;
+    return await new Promise((resolve) => {
+      let settled = false;
+      let detector = null;
+      const finish = (ok) => {
+        if (settled) return;
+        settled = true;
+        crepe.loading = false;
+        resolve(!!ok);
+      };
+      const timeoutId = setTimeout(() => {
+        if (!settled){
+          crepe.modelUnavailable = true;
+          finish(false);
+        }
+      }, 22000);
+
+      try {
+        detector = window.ml5.pitchDetection(
+          crepeModelBaseUrl,
+          micEngine.audioCtx,
+          micEngine.stream,
+          () => {
+            clearTimeout(timeoutId);
+            crepe.detector = detector;
+            crepe.ready = true;
+            crepe.modelUnavailable = false;
+            startCrepePolling();
+            finish(true);
+          }
+        );
+      } catch(_) {
+        clearTimeout(timeoutId);
+        crepe.modelUnavailable = true;
+        finish(false);
+      }
+    });
+  }
+
+  function resolvePitchByEngine(nowMs, autoFreq, autoConfidence, rawAutoFreq){
+    if (micEngine.selectedPitchEngine !== 'crepe') {
+      return { freq: autoFreq, confidence: autoConfidence, engine: 'classic' };
+    }
+    const age = nowMs - (micEngine.crepe.lastAtMs || 0);
+    const modelFreq = micEngine.crepe.lastFreq;
+    const hasAuto = isFinite(autoFreq) && autoFreq > 40 && autoFreq < 1800;
+    const modelFreshMs = hasAuto ? 300 : 380;
+    if (micEngine.crepe.ready && isFinite(modelFreq) && modelFreq > 40 && modelFreq < 1800 && age < modelFreshMs){
+      if (hasAuto){
+        const gapSemi = Math.abs(12 * Math.log2(modelFreq / autoFreq));
+        if (isFinite(gapSemi) && gapSemi > 1.35 && (autoConfidence || 0) >= 0.32){
+          return {
+            freq: autoFreq,
+            confidence: Math.max(autoConfidence || 0, 0.32),
+            engine: 'classic-preferred'
+          };
+        }
+      }
+      return {
+        freq: modelFreq,
+        confidence: Math.max(autoConfidence || 0, micEngine.crepe.lastConf || 0.9),
+        engine: 'crepe'
+      };
+    }
+    const fallbackFreq = (isFinite(autoFreq) ? autoFreq : rawAutoFreq);
+    return { freq: fallbackFreq, confidence: autoConfidence, engine: 'classic-fallback' };
+  }
+
+  async function warmupMicPermissionForDeviceLabels(){
+    if (!isMicSupported() || !isMicEnabledConfigured() || micEngine.stream) return;
+    if (micEngine.autoWarmupTried || micEngine.warmupInFlight) return;
+    micEngine.autoWarmupTried = true;
+    micEngine.warmupInFlight = true;
+    micEngine.lastWarmupAtMs = Date.now();
+    try {
+      const probeStream = await navigator.mediaDevices.getUserMedia({
+        audio: getMicAudioConstraints('')
+      });
+      try {
+        const probeTrack = probeStream.getAudioTracks ? probeStream.getAudioTracks()[0] : null;
+        const probeLabel = (probeTrack && probeTrack.label ? probeTrack.label : '').trim();
+        if (probeLabel){
+          cacheTrackLabelToDevice(probeTrack, probeLabel);
+        }
+      } catch(_) {}
+      try {
+        const all = await navigator.mediaDevices.enumerateDevices();
+        const inputs = Array.isArray(all) ? all.filter(d => d && d.kind === 'audioinput') : [];
+        rememberMicDeviceLabels(inputs);
+      } catch(_) {}
+      try {
+        probeStream.getTracks().forEach(t => t.stop());
+      } catch(_) {}
+      micEngine.autoWarmupTried = true;
+      micEngine.permissionDenied = false;
+      micEngine.lastError = false;
+    } catch(err){
+      const denied = !!(err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError'));
+      micEngine.autoWarmupTried = true;
+      micEngine.permissionDenied = denied;
+      micEngine.lastError = true;
+    } finally {
+      micEngine.warmupInFlight = false;
+    }
+  }
+
+  function stopMicCapture(){
+    stopCrepePolling(true);
+    if (micEngine.loopId) {
+      cancelAnimationFrame(micEngine.loopId);
+      micEngine.loopId = null;
+    }
+    micEngine.running = false;
+    micEngine.lastProcessMs = 0;
+    micEngine.stableMidi = null;
+    micEngine.stableCount = 0;
+    micEngine.lastEmittedMidi = null;
+    micEngine.lastEmitMs = 0;
+    micEngine.prevVoiced = false;
+    micEngine.prevRms = 0;
+    micEngine.smoothedFreq = null;
+    micEngine.smoothedFreqAtMs = 0;
+    micEngine.lastErrorName = '';
+    micEngine.lastErrorSummary = '';
+    micEngine.lastDetectedFreq = null;
+    micEngine.lastDetectedMidi = null;
+    micEngine.lastDetectedConfidence = 0;
+    micEngine.lastDetectedEngine = '';
+    micEngine.lastDetectedAtMs = 0;
+    micEngine.history = [];
+    if (micEngine.source) {
+      try { micEngine.source.disconnect(); } catch(_) {}
+      micEngine.source = null;
+    }
+    if (micEngine.analyser) {
+      try { micEngine.analyser.disconnect(); } catch(_) {}
+      micEngine.analyser = null;
+    }
+    if (micEngine.stream) {
+      try { micEngine.stream.getTracks().forEach(t => t.stop()); } catch(_) {}
+      micEngine.stream = null;
+    }
+    if (micEngine.audioCtx) {
+      try { micEngine.audioCtx.close(); } catch(_) {}
+      micEngine.audioCtx = null;
+    }
+    micEngine.buffer = null;
+  }
+
+  async function startMicCapture(){
+    if (micEngine.running) return true;
+    if (!isMicSupported()){
+      setMicStatus('mic.status.unsupported', 'error');
+      return false;
+    }
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    try{
+      micEngine.lastError = false;
+      micEngine.lastErrorName = '';
+      micEngine.lastErrorSummary = '';
+      if (micEngine.selectedPitchEngine === 'crepe') {
+        micEngine.crepe.modelUnavailable = false;
+      }
+      if (!micEngine.selectedDeviceId){
+        micEngine.selectedDeviceId = readMicDeviceStored();
+      }
+      if (!micEngine.stream){
+        const preferredDeviceId = micEngine.selectedDeviceId || '';
+        const acquired = await acquireMicStreamCompat(preferredDeviceId);
+        micEngine.stream = acquired.stream;
+        if (acquired.attempt && String(acquired.attempt.id || '').indexOf('default-') === 0){
+          micEngine.selectedDeviceId = '';
+          writeMicDeviceStored('');
+        }
+        const summary = summarizeAttemptFailures(acquired.failures);
+        micEngine.lastErrorSummary = summary || '';
+        try {
+          const audioTrack = micEngine.stream.getAudioTracks ? micEngine.stream.getAudioTracks()[0] : null;
+          const liveLabel = (audioTrack && audioTrack.label ? audioTrack.label : '').trim();
+          if (liveLabel){
+            cacheTrackLabelToDevice(audioTrack, liveLabel);
+          }
+        } catch(_) {}
+      }
+      if (!micEngine.audioCtx){
+        micEngine.audioCtx = new AudioContextClass({ sampleRate: 48000 });
+      }
+      if (micEngine.audioCtx.state === 'suspended'){
+        try {
+          await micEngine.audioCtx.resume();
+        } catch(_) {}
+      }
+      micEngine.source = micEngine.audioCtx.createMediaStreamSource(micEngine.stream);
+      micEngine.analyser = micEngine.audioCtx.createAnalyser();
+      micEngine.analyser.fftSize = 2048;
+      micEngine.analyser.smoothingTimeConstant = 0.08;
+      micEngine.source.connect(micEngine.analyser);
+      micEngine.buffer = new Float32Array(micEngine.analyser.fftSize);
+      micEngine.permissionDenied = false;
+      await updateMicDeviceList();
+      micEngine.running = true;
+      if (micEngine.selectedPitchEngine === 'crepe'){
+        ensureCrepeDetector().then(() => {
+          if (!micEngine.running) return;
+          refreshMicStatus();
+        }).catch(() => {});
+      }
+      runMicCaptureLoop();
+      return true;
+    } catch(err){
+      micEngine.lastError = true;
+      const denied = !!(err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError'));
+      micEngine.permissionDenied = denied;
+      const errName = getErrorName(err);
+      const errSummary = summarizeAttemptFailures(err && err.micAttemptFailures);
+      stopMicCapture();
+      micEngine.lastErrorName = errName;
+      micEngine.lastErrorSummary = errSummary || '';
+      return false;
+    }
+  }
+
+  function refreshMicStatus(){
+    if (!isMicEnabledConfigured()){
+      setMicStatus('mic.status.disabled', '');
+      return;
+    }
+    if (!isMicSupported()){
+      setMicStatus('mic.status.unsupported', 'error');
+      return;
+    }
+    if (micEngine.permissionDenied){
+      setMicStatus('mic.status.permission', 'error');
+      return;
+    }
+    if (micEngine.lastError){
+      setMicStatus('mic.status.error', 'warn');
+      return;
+    }
+    if (hasOnlyAnonymousMicDevices(micEngine.devices)){
+      setMicStatus('mic.status.permissionNeeded', 'warn');
+      return;
+    }
+    if (!micEngine.devices.length){
+      setMicStatus('mic.status.nodevice', 'warn');
+      return;
+    }
+    const hasDeviceLabel = !!(micEngine.selectedDeviceLabel && micEngine.selectedDeviceLabel.trim());
+    if (micEngine.running){
+      if (hasDeviceLabel){
+        setMicStatus('mic.status.listeningDevice', 'ok', { device: micEngine.selectedDeviceLabel });
+      } else {
+        setMicStatus('mic.status.listening', 'ok');
+      }
+      return;
+    }
+    if (hasDeviceLabel){
+      setMicStatus('mic.status.readyDevice', 'ok', { device: micEngine.selectedDeviceLabel });
+    } else {
+      setMicStatus('mic.status.ready', 'ok');
+    }
+  }
+
+  async function startMicCaptureWithTimeout(timeoutMs){
+    const timeout = Math.max(1000, parseInt(timeoutMs || 8000, 10) || 8000);
+    let timer = null;
+    try {
+      const result = await Promise.race([
+        startMicCapture(),
+        new Promise((resolve) => {
+          timer = setTimeout(() => resolve(false), timeout);
+        })
+      ]);
+      if (result === false && !micEngine.permissionDenied && !micEngine.lastError){
+        micEngine.lastError = true;
+        micEngine.lastErrorName = 'TimeoutError';
+      }
+      return !!result;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  async function syncJudgeInputEngines(){
+    const shouldRunMic = shouldUseMicJudgeInput();
+    if (shouldRunMic){
+      let started = await startMicCaptureWithTimeout(16000);
+      if (!started){
+        stopMicCapture();
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        started = await startMicCaptureWithTimeout(6000);
+      }
+      await updateMicDeviceList();
+      if (!started && !isMidiEnabledConfigured()) {
+        state.calibrationEnabled = false;
+        state.calibrationOffsetSec = 0;
+        if (calibrationToggleEl && calibrationToggleEl.checked){
+          calibrationToggleEl.checked = false;
+          updateCalibrationToggleVisual();
+        }
+      }
+    } else if (micEngine.running) {
+      stopMicCapture();
+      await updateMicDeviceList();
+    } else {
+      await updateMicDeviceList();
+    }
+    refreshMicStatus();
+  }
+
   function collectIndexedNoteElements(){
     const svg = scoreEl ? scoreEl.querySelector('svg') : null;
     if (!svg) return [];
@@ -190,19 +1421,61 @@
       const timeline = parseTimelineFromMelodyData() || parseTimelineFromXML();
       if (!timeline || !Array.isArray(timeline.events)) return [];
       const noteSlotsByMeasure = Array.isArray(timeline.noteSlotsByMeasure) ? timeline.noteSlotsByMeasure : [];
+      const indexedElements = collectIndexedNoteElements();
+      const indexedById = new Map();
+      indexedElements.forEach((entry) => {
+        if (!entry || !Number.isFinite(entry.index)) return;
+        if (!indexedById.has(entry.index)) indexedById.set(entry.index, []);
+        indexedById.get(entry.index).push(entry);
+      });
+      const indexOffset = (!indexedById.has(0) && indexedById.has(1)) ? 1 : 0;
+      const usedElements = new Set();
+      const claimEntryByIndex = (rawIndex, measureHint) => {
+        if (!Number.isFinite(rawIndex)) return null;
+        const candidates = [];
+        const adjusted = rawIndex + indexOffset;
+        candidates.push(adjusted);
+        if (adjusted !== rawIndex) candidates.push(rawIndex);
+        if (!indexOffset) {
+          candidates.push(rawIndex + 1);
+          candidates.push(rawIndex - 1);
+        }
+        for (const idx of candidates){
+          const list = indexedById.get(idx);
+          if (!list || !list.length) continue;
+          let preferred = null;
+          for (const item of list){
+            if (!item || !item.el || usedElements.has(item.el)) continue;
+            if (measureHint != null && item.measureIndex === measureHint){
+              preferred = item;
+              break;
+            }
+            if (!preferred) preferred = item;
+          }
+          if (preferred && preferred.el){
+            usedElements.add(preferred.el);
+            return preferred.el;
+          }
+        }
+        return null;
+      };
       const raw = [];
       timeline.events.forEach(ev => {
         if (!ev || ev.isRest) return;
         let midi = null;
+        let eventIndex = null;
         const slots = noteSlotsByMeasure[ev.measure];
         if (slots && typeof ev.noteIndex === 'number' && slots[ev.noteIndex]) {
-          const slotMidi = slots[ev.noteIndex].midi;
+          const slot = slots[ev.noteIndex];
+          const slotMidi = slot.midi;
           if (typeof slotMidi === 'number') midi = slotMidi;
+          if (Number.isFinite(slot.globalIndex)) eventIndex = slot.globalIndex;
         }
         if (typeof ev.midi === 'number') midi = ev.midi;
         if (typeof midi !== 'number') return;
         const startQN = (typeof ev.absBeats === 'number' ? ev.absBeats : 0);
-        raw.push({ startQN, expectedMidis: [midi], measureIndex: ev.measure });
+        if (Number.isFinite(ev.globalIndex)) eventIndex = ev.globalIndex;
+        raw.push({ startQN, expectedMidis: [midi], measureIndex: ev.measure, noteIndices: eventIndex != null ? [eventIndex] : [] });
       });
       if (!raw.length) return [];
       raw.sort((a,b)=> a.startQN - b.startQN);
@@ -212,26 +1485,42 @@
         const last = grouped[grouped.length - 1];
         if (last && Math.abs(ev.startQN - last.startQN) <= eps){
           last.expectedMidis.push(...ev.expectedMidis);
+          if (Array.isArray(ev.noteIndices) && ev.noteIndices.length){
+            last.noteIndices.push(...ev.noteIndices);
+          }
         } else {
-          grouped.push({ startQN: ev.startQN, expectedMidis: [...ev.expectedMidis], measureIndex: ev.measureIndex });
+          grouped.push({
+            startQN: ev.startQN,
+            expectedMidis: [...ev.expectedMidis],
+            measureIndex: ev.measureIndex,
+            noteIndices: Array.isArray(ev.noteIndices) ? [...ev.noteIndices] : []
+          });
         }
       }
-      const noteEls = collectIndexedNoteElements();
       let ei = 0;
       const bpmSafe = Math.max(1, bpm || 80);
       const judgeWindows = computeJudgeWindows(bpmSafe);
       grouped.forEach(ev => {
         const count = Math.max(1, ev.expectedMidis.length);
         const els = [];
-        for (let i=0; i<count; i++){
-          if (ei < noteEls.length) {
-            const entry = noteEls[ei];
-            els.push(entry.el);
-            if (ev.measureIndex == null && entry && typeof entry.measureIndex === 'number') {
-              ev.measureIndex = entry.measureIndex;
-            }
+
+        if (Array.isArray(ev.noteIndices) && ev.noteIndices.length){
+          for (const idx of ev.noteIndices){
+            const found = claimEntryByIndex(idx, ev.measureIndex);
+            if (!found) continue;
+            els.push(found);
+            if (els.length >= count) break;
           }
-          ei++;
+        }
+
+        while (els.length < count && ei < indexedElements.length){
+          const entry = indexedElements[ei++];
+          if (!entry || !entry.el || usedElements.has(entry.el)) continue;
+          usedElements.add(entry.el);
+          els.push(entry.el);
+          if (ev.measureIndex == null && entry && typeof entry.measureIndex === 'number') {
+            ev.measureIndex = entry.measureIndex;
+          }
         }
         ev.elements = els;
         ev.timeSec = ev.startQN * (60 / Math.max(1, bpm));
@@ -255,23 +1544,21 @@
       if (!state.active) return;
       const nowMs = performance.now();
       const nowSec = (nowMs - state.judgeStartMs) / 1000;
+      const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
       while (state.judgeIndex < state.judgeEvents.length){
         const ev = state.judgeEvents[state.judgeIndex];
         if (ev.judged) { state.judgeIndex++; continue; }
-        const endTolSec = (isFinite(ev.strictTolSec) && ev.strictTolSec > 0) ? ev.strictTolSec : fallbackTolSec;
-        const endSec = (typeof ev.endWindowSec === 'number') ? ev.endWindowSec : (ev.timeSec + endTolSec);
+        const modeSource = (shouldUseMicJudgeInput() && !isMidiEnabledConfigured()) ? 'mic' : 'midi';
+        const windowInfo = getJudgeEventWindow(ev, bpmVal, modeSource);
+        const endSec = isFinite(windowInfo.endSec) ? windowInfo.endSec : (ev.timeSec + fallbackTolSec);
         if (nowSec > endSec){
-          if (state.calibrationEnabled){
-            markJudgeEvent(ev, 'wrong');
-          } else {
-            ev.judged = true;
-          }
+          settleExpiredJudgeEvent(ev, modeSource);
           state.judgeIndex++;
           continue;
         }
         break;
       }
-    }, 80);
+    }, 50);
   }
 
   function stopJudgeTimeline(){
@@ -282,7 +1569,8 @@
     state.judgeEvents = [];
   }
 
-  function handleJudgeInput(midi){
+  function handleJudgeInput(midi, source){
+    const inputSource = source === 'mic' ? 'mic' : 'midi';
     if (!state.active || !toggleEl || !toggleEl.checked) return;
     if (!state.judgeEvents || !state.judgeEvents.length || !state.judgeStartMs) return;
     const nowSecRaw = (performance.now() - state.judgeStartMs) / 1000;
@@ -295,13 +1583,26 @@
     if (state.judgeGateUntilSec && nowSec > state.judgeGateUntilSec) {
       state.judgeGateUntilSec = 0;
     }
+    while (state.judgeIndex < state.judgeEvents.length){
+      const cur = state.judgeEvents[state.judgeIndex];
+      if (!cur || cur.judged){
+        state.judgeIndex++;
+        continue;
+      }
+      const curWindow = getJudgeEventWindow(cur, bpmVal, inputSource);
+      if (nowSec > curWindow.endSec){
+        settleExpiredJudgeEvent(cur, inputSource);
+        state.judgeIndex++;
+        continue;
+      }
+      break;
+    }
     const ev = state.judgeEvents[state.judgeIndex];
     if (!ev || ev.judged) return;
-    const strictTolSec = (isFinite(ev.strictTolSec) && ev.strictTolSec > 0)
-      ? ev.strictTolSec
-      : judgeWindows.strict;
-    const startSec = (typeof ev.startWindowSec === 'number') ? ev.startWindowSec : (ev.timeSec - strictTolSec);
-    const endSec = (typeof ev.endWindowSec === 'number') ? ev.endWindowSec : (ev.timeSec + strictTolSec);
+    const windowInfo = getJudgeEventWindow(ev, bpmVal, inputSource);
+    const strictTolSec = windowInfo.strictTolSec || judgeWindows.strict;
+    const startSec = windowInfo.startSec;
+    const endSec = windowInfo.endSec;
 
     if (nowSec < startSec) return;
     if (nowSec > endSec) return;
@@ -310,48 +1611,104 @@
     const pitchClass = (n) => ((n % 12) + 12) % 12;
     let match = false;
     let matchedBase = null;
+    let observedShift = null;
+    const micConf = isFinite(micEngine.lastDetectedConfidence) ? micEngine.lastDetectedConfidence : 0;
+    const micFreq = micEngine.lastDetectedFreq;
+    const micFreqTol = micConf >= 0.82 ? 55 : (micConf >= 0.66 ? 49 : 44);
 
     if (expected.length){
       if (state.judgeOctShift == null){
-        const pc = pitchClass(midi);
-        for (const target of expected){
-          if (pitchClass(target) === pc){
+        if (inputSource === 'mic' && micConf >= 0.44 && isFinite(micFreq)){
+          const near = findMicFreqExpectedMatch(expected, midi, micFreq, null, micFreqTol);
+          if (near){
             match = true;
-            matchedBase = target;
-            break;
+            matchedBase = near.target;
+            observedShift = near.shift;
+          }
+        }
+        const pc = pitchClass(midi);
+        if (!match){
+          for (const target of expected){
+            if (pitchClass(target) === pc){
+              match = true;
+              matchedBase = target;
+              observedShift = (midi - target) / 12;
+              break;
+            }
           }
         }
       } else {
         const shift = state.judgeOctShift;
-        match = expected.some(target => midi === (target + 12 * shift));
+        const shifted = expected.map((target) => ({ target, shiftedMidi: target + 12 * shift }));
+        const exact = shifted.find((item) => midi === item.shiftedMidi);
+        if (exact){
+          match = true;
+          matchedBase = exact.target;
+          observedShift = (midi - exact.target) / 12;
+        }
+
+        if (!match && inputSource === 'mic' && micConf >= 0.44 && isFinite(micFreq)){
+          const near = findMicFreqExpectedMatch(expected, midi, micFreq, shift, micFreqTol);
+          if (near){
+            match = true;
+            matchedBase = near.target;
+            observedShift = near.shift;
+          }
+        }
+
+        if (!match && inputSource === 'mic' && micConf >= 0.56){
+          const pc = pitchClass(midi);
+          const pcMatch = expected.find((target) => pitchClass(target) === pc);
+          if (pcMatch != null){
+            match = true;
+            matchedBase = pcMatch;
+            observedShift = (midi - pcMatch) / 12;
+          }
+        }
+      }
+    }
+
+    if (!match && inputSource === 'mic'){
+      const buffered = findBufferedMicMatchForEvent(ev, 68);
+      if (buffered){
+        match = true;
+        matchedBase = buffered.target;
+        observedShift = buffered.shift;
       }
     }
 
     if (match){
       const errorSec = nowSec - ev.timeSec;
       const absErrorSec = Math.abs(errorSec);
-      const timingStatus = absErrorSec <= strictTolSec ? 'correct' : 'wrong';
+      const timingStatus = (inputSource === 'mic' && windowInfo.onlyMicMode)
+        ? 'correct'
+        : (absErrorSec <= strictTolSec ? 'correct' : 'wrong');
       markJudgeEvent(ev, timingStatus);
       if (state.calibrationEnabled){
-        const delta = nowSecRaw - ev.timeSec;
-        const nextOffset = (state.calibrationOffsetSec * 0.7) + (delta * 0.3);
+        const rawDelta = nowSecRaw - ev.timeSec;
+        const delta = (inputSource === 'mic')
+          ? clamp(rawDelta, -0.14, 0.14)
+          : rawDelta;
+        const keepRatio = (inputSource === 'mic') ? 0.82 : 0.7;
+        const nextOffset = (state.calibrationOffsetSec * keepRatio) + (delta * (1 - keepRatio));
         state.calibrationOffsetSec = Math.max(-0.25, Math.min(0.25, nextOffset));
       }
-      if (state.judgeOctShift == null && matchedBase != null){
-        state.judgeOctShift = Math.round((midi - matchedBase) / 12);
+      if (matchedBase != null && isFinite(observedShift)){
+        registerOctShiftObservation(observedShift, inputSource);
       }
-      state.judgeGateUntilSec = endSec;
+      state.judgeGateUntilSec = nowSec + (inputSource === 'mic' ? 0.04 : 0.03);
       state.judgeIndex++;
     } else {
+      if (inputSource === 'mic') return;
       markJudgeEvent(ev, 'wrong');
-      state.judgeGateUntilSec = endSec;
+      state.judgeGateUntilSec = nowSec + 0.03;
       state.judgeIndex++;
     }
   }
 
-  function applyCalibrationAuto(connected){
+  function applyCalibrationAuto(){
     if (!calibrationToggleEl) return;
-    if (!connected){
+    if (!hasAnyJudgeInputConfigured()){
       if (calibrationToggleEl.checked){
         calibrationToggleEl.checked = false;
         updateCalibrationToggleVisual();
@@ -359,9 +1716,11 @@
       state.calibrationEnabled = false;
       state.calibrationOffsetSec = 0;
       clearJudgementStyles();
+      syncJudgeInputEngines();
       return;
     }
     state.calibrationEnabled = !!calibrationToggleEl.checked;
+    syncJudgeInputEngines();
   }
 
   const svgns = 'http://www.w3.org/2000/svg';
@@ -390,8 +1749,8 @@
     if (modalModeToggle) modalModeToggle.checked = !!(toggleEl && toggleEl.checked);
     if (cursorToggle && !hasCursorPref) cursorToggle.checked = true;
     if (metronomeToggle && !hasMetronomePref) metronomeToggle.checked = true;
-    if (hideToggle && !hasHidePref) hideToggle.checked = true;
-    if (calibrationToggle && !isMidiConnected()) {
+    if (hideToggle && !hasHidePref) hideToggle.checked = false;
+    if (calibrationToggle && !hasAnyJudgeInputConfigured()) {
       calibrationToggle.checked = false;
       state.calibrationEnabled = false;
     }
@@ -424,8 +1783,9 @@
     const bpm = Math.max(40, Math.min(240, parseInt(($('challengeBPM').value||'80'), 10)));
     const cursorEnabled = $('challengeCursorToggle') ? $('challengeCursorToggle').checked : true;
     const metronomeEnabled = $('challengeMetronomeToggle') ? $('challengeMetronomeToggle').checked : true;
-    const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : true;
-    const calibrationEnabled = $('challengeCalibrationToggle') ? $('challengeCalibrationToggle').checked : false;
+    const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : false;
+    const calibrationRequested = $('challengeCalibrationToggle') ? $('challengeCalibrationToggle').checked : false;
+    const calibrationEnabled = calibrationRequested && hasAnyJudgeInputConfigured();
     try { localStorage.setItem('ic_jianpu_challenge_settings', JSON.stringify({ prep, bpm, cursor: cursorEnabled, metronome: metronomeEnabled, hide: hideEnabled, calibration: calibrationEnabled })); } catch(_) {}
     state.calibrationEnabled = calibrationEnabled;
     state.calibrationOffsetSec = 0;
@@ -2025,9 +3385,10 @@
           const n = notes[ni] || {};
           const beats = (typeof n.beats === 'number' && isFinite(n.beats)) ? n.beats : durationToQuarterSimple(n.duration);
           if (n.type === 'note'){
+            const globalIndex = noteToGlobalIndex.has(n) ? noteToGlobalIndex.get(n) : null;
             const noteIndex = noteSlots.length;
             const tieType = inferTieType(notes, ni);
-            noteSlots.push({ tieType, tied: n.tied, midi: n.midi, posBeats: pos });
+            noteSlots.push({ tieType, tied: n.tied, midi: n.midi, posBeats: pos, globalIndex });
             const isTieStart = tieType === 'start';
             const isTieContinue = tieType === 'continue' || tieType === 'stop';
             if (!isTieContinue){
@@ -2045,7 +3406,15 @@
                   if (nnTie === 'stop') break;
                 }
               }
-              events.push({ measure: mi, posBeats: pos, absBeats: absQN + pos, durBeats: dur, isRest: false, noteIndex });
+              events.push({
+                measure: mi,
+                posBeats: pos,
+                absBeats: absQN + pos,
+                durBeats: dur,
+                isRest: false,
+                noteIndex,
+                globalIndex
+              });
             }
           }
           pos += beats;
@@ -2956,7 +4325,7 @@
   }
 
   async function startChallenge(prepSec, bpm, cursorEnabled, metronomeEnabled, hideEnabled){
-    if (state.active) stopChallenge({ keepToggle: true, keepAuto: true });
+    if (state.active) stopChallenge({ keepToggle: true, keepAuto: true, keepMic: true });
     state.runId += 1;
     const runId = state.runId;
     state.active = true;
@@ -2965,6 +4334,22 @@
     state.metronomeEnabled = metronomeEnabled !== false;
     state.hideEnabled = hideEnabled !== false;
     state.metronomeWasRunning = false;
+    const judgeSyncPromise = syncJudgeInputEngines().catch(() => {});
+    const onlyMicMode = shouldUseMicJudgeInput() && !isMidiEnabledConfigured();
+    const syncWaitMs = onlyMicMode ? 6500 : 1200;
+    await Promise.race([
+      judgeSyncPromise,
+      new Promise((resolve) => setTimeout(resolve, syncWaitMs))
+    ]);
+    if (onlyMicMode && !micEngine.running) {
+      state.calibrationEnabled = false;
+      state.calibrationOffsetSec = 0;
+      if (calibrationToggleEl && calibrationToggleEl.checked){
+        calibrationToggleEl.checked = false;
+        updateCalibrationToggleVisual();
+      }
+      refreshMicStatus();
+    }
 
     showCountdownUI(prepSec);
     const tStart = Date.now();
@@ -3023,6 +4408,8 @@
     clearJudgementStyles();
     state.judgeWindowMs = Math.max(90, Math.min(220, (60 / Math.max(1, bpm)) * 0.35 * 1000));
     state.judgeOctShift = null;
+    state.judgeOctShiftCandidate = null;
+    state.judgeOctShiftCandidateCount = 0;
     const judgeWindows = computeJudgeWindows(bpm);
     state.judgeBeatDurationSec = judgeWindows.beatSec;
     state.judgeEvents = buildJudgeTimeline(bpm);
@@ -3058,6 +4445,7 @@
 
   function stopChallenge(options){
     const opts = options || {};
+    const keepMic = !!opts.keepMic;
     state.runId += 1;
     if (state.observer) { try { state.observer.disconnect(); } catch(_){} state.observer = null; }
     if (state.resizeHandler) { window.removeEventListener('resize', state.resizeHandler); state.resizeHandler = null; }
@@ -3075,9 +4463,15 @@
     if (state.rafId) { cancelAnimationFrame(state.rafId); state.rafId = null; }
     stopJudgeTimeline();
     state.judgeOctShift = null;
+    state.judgeOctShiftCandidate = null;
+    state.judgeOctShiftCandidateCount = 0;
     state.judgeBeatDurationSec = 0;
     state.calibrationEnabled = false;
     state.calibrationOffsetSec = 0;
+    if (!keepMic){
+      stopMicCapture();
+    }
+    refreshMicStatus();
     clearJudgementStyles();
     removeCountInLabel();
     restoreHiddenElements();
@@ -3116,10 +4510,14 @@
       } else {
         state.nextCountInDelayMs = 0;
       }
-      stopChallenge({ keepToggle: true, keepAuto: true });
+      stopChallenge({ keepToggle: true, keepAuto: true, keepMic: true });
       const cursorEnabled = $('challengeCursorToggle') ? $('challengeCursorToggle').checked : true;
       const metronomeEnabled = $('challengeMetronomeToggle') ? $('challengeMetronomeToggle').checked : true;
-      const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : true;
+      const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : false;
+      const calibrationRequested = $('challengeCalibrationToggle') ? $('challengeCalibrationToggle').checked : false;
+      const calibrationEnabled = calibrationRequested && hasAnyJudgeInputConfigured();
+      state.calibrationEnabled = calibrationEnabled;
+      state.calibrationOffsetSec = 0;
       if (toggleEl.checked) startChallenge(prep, bpm, cursorEnabled, metronomeEnabled, hideEnabled);
     } else {
       stopChallenge();
@@ -3154,7 +4552,10 @@
     updateHideToggleVisual();
   }
   if (calibrationToggleEl){
-    calibrationToggleEl.addEventListener('change', updateCalibrationToggleVisual);
+    calibrationToggleEl.addEventListener('change', () => {
+      updateCalibrationToggleVisual();
+      applyCalibrationAuto();
+    });
     updateCalibrationToggleVisual();
   }
   if (modalModeToggleEl){
@@ -3172,20 +4573,121 @@
     updateModalModeToggleVisual();
   }
 
-  window.addEventListener('ic-midi-connection', (ev) => {
-    const connected = !!(ev && ev.detail && ev.detail.connected);
-    applyCalibrationAuto(connected);
+  const micEnableToggleEl = $('micEnableToggle');
+  const micDeviceSelectEl = $('micDeviceSelect');
+  micEngine.selectedDeviceId = readMicDeviceStored();
+  if (micEnableToggleEl){
+    const storedMic = readMicEnabledStored();
+    micEnableToggleEl.checked = storedMic;
+    micEnableToggleEl.addEventListener('change', async () => {
+      writeMicEnabledStored(!!micEnableToggleEl.checked);
+      micEngine.autoWarmupTried = false;
+      micEngine.warmupInFlight = false;
+      micEngine.permissionDenied = false;
+      micEngine.lastError = false;
+      if (!micEnableToggleEl.checked){
+        stopMicCapture();
+      } else {
+        await warmupMicPermissionForDeviceLabels();
+      }
+      await updateMicDeviceList();
+      refreshMicStatus();
+      applyCalibrationAuto();
+    });
+  }
+  if (micDeviceSelectEl){
+    micDeviceSelectEl.addEventListener('pointerdown', async () => {
+      if (!isMicEnabledConfigured()) return;
+      if (hasNamedMicDevices(micEngine.devices)) return;
+      if (micEngine.autoWarmupTried || micEngine.warmupInFlight) return;
+      micEngine.autoWarmupTried = false;
+      await warmupMicPermissionForDeviceLabels();
+      await updateMicDeviceList();
+      refreshMicStatus();
+    });
+    micDeviceSelectEl.addEventListener('change', async () => {
+      micEngine.selectedDeviceId = micDeviceSelectEl.value || '';
+      updateSelectedMicLabel();
+      writeMicDeviceStored(micEngine.selectedDeviceId);
+      micEngine.permissionDenied = false;
+      micEngine.lastError = false;
+      if (micEngine.running){
+        stopMicCapture();
+      }
+      await syncJudgeInputEngines();
+      refreshMicStatus();
+    });
+  }
+
+  window.addEventListener('ic-midi-connection', () => {
+    applyCalibrationAuto();
   });
   try {
     if (window.__icMidi && typeof window.__icMidi.getState === 'function') {
-      applyCalibrationAuto(!!window.__icMidi.getState().connected);
+      applyCalibrationAuto();
     }
   } catch(_) {}
 
+  if (navigator.mediaDevices && typeof navigator.mediaDevices.addEventListener === 'function'){
+    navigator.mediaDevices.addEventListener('devicechange', () => {
+      updateMicDeviceList().then(() => refreshMicStatus()).catch(() => {});
+    });
+  }
+
+  window.addEventListener('storage', (ev) => {
+    if (!ev) return;
+    if (ev.key === micStorageKey && micEnableToggleEl){
+      const next = readMicEnabledStored();
+      if (micEnableToggleEl.checked !== next) micEnableToggleEl.checked = next;
+      applyCalibrationAuto();
+      refreshMicStatus();
+      return;
+    }
+    if (ev.key === micDeviceStorageKey){
+      micEngine.selectedDeviceId = readMicDeviceStored();
+      updateMicDeviceList().then(() => {
+        if (micEngine.running){
+          stopMicCapture();
+        }
+        applyCalibrationAuto();
+        refreshMicStatus();
+      }).catch(() => {
+        refreshMicStatus();
+      });
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    updateMicDeviceList().then(() => {
+      refreshMicStatus();
+    }).catch(() => {
+      refreshMicStatus();
+    });
+  });
+
+  updateMicDeviceList().then(() => {
+    refreshMicStatus();
+    applyCalibrationAuto();
+  }).catch(() => {});
+
   window.__icChallenge = {
     isActive: () => !!(state.active && toggleEl && toggleEl.checked),
-    handleMidiNoteOn: (midi) => handleJudgeInput(midi),
+    handleMidiNoteOn: (midi) => handleJudgeInput(midi, 'midi'),
     clearJudgement: () => clearJudgementStyles()
+  };
+  window.__icMic = {
+    refreshStatus: () => {
+      updateMicDeviceList().catch(()=>{});
+      refreshMicStatus();
+    },
+    getState: () => ({
+      enabled: isMicEnabledConfigured(),
+      running: micEngine.running,
+      permissionDenied: micEngine.permissionDenied,
+      selectedDeviceId: micEngine.selectedDeviceId || '',
+      selectedDeviceLabel: micEngine.selectedDeviceLabel || '',
+      devices: Array.isArray(micEngine.devices) ? micEngine.devices.slice() : []
+    })
   };
 
   // expose APIs

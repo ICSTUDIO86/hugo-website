@@ -33,7 +33,7 @@
     cursorHeight: null,
     cursorEnabled: true,
     metronomeEnabled: true,
-    hideEnabled: true,
+    hideEnabled: false,
     autoRestart: false,
     lastBeatTimeMs: 0,
     nextCountInDelayMs: 0,
@@ -57,7 +57,6 @@
     judgeTimerId: null,
     judgeWindowMs: 160,
     judgeBeatDurationSec: 0,
-    judgeOctShift: null,
     judgeGateUntilSec: 0,
     judgedElements: new Set(),
   };
@@ -207,9 +206,93 @@
     return el.closest('g.vf-stavenote, g.vf-note, g.vf-notehead') || el.closest('g') || el;
   }
 
+  function dedupeElementsByPaintTarget(elements){
+    const list = Array.isArray(elements) ? elements : [];
+    const seen = new Set();
+    const out = [];
+    list.forEach((el) => {
+      if (!el) return;
+      const paint = getNotePaintTarget(el) || el;
+      if (seen.has(paint)) return;
+      seen.add(paint);
+      out.push(el);
+    });
+    return out;
+  }
+
+  function getElementCenterY(el){
+    try{
+      const r = el && el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+      if (!r) return null;
+      const containerRect = scoreEl.getBoundingClientRect();
+      return r.top - containerRect.top + scoreEl.scrollTop + r.height / 2;
+    } catch(_) {
+      return null;
+    }
+  }
+
+  function buildJudgeTargets(expectedMidis, elements){
+    const expected = Array.isArray(expectedMidis)
+      ? expectedMidis.filter(m => isFinite(m)).map(m => Math.round(m)).sort((a,b)=>a-b)
+      : [];
+    if (!expected.length) return [];
+    const mappedEls = Array.isArray(elements)
+      ? dedupeElementsByPaintTarget(elements)
+          .map(el => ({ el, y: getElementCenterY(el) }))
+          .sort((a,b)=>{
+            const ay = isFinite(a.y) ? a.y : -Infinity;
+            const by = isFinite(b.y) ? b.y : -Infinity;
+            return by - ay; // lower pitch first (larger y)
+          })
+          .map(item => item.el)
+      : [];
+    return expected.map((midi, idx) => ({
+      midi,
+      element: mappedEls[idx] || null,
+      status: 'unjudged'
+    }));
+  }
+
+  function markJudgeTarget(target, status){
+    if (!target) return;
+    const next = status === 'correct' ? 'correct' : 'wrong';
+    if (target.status === 'correct' && next === 'wrong') return;
+    if (target.status === next) return;
+    target.status = next;
+    const el = target.element;
+    if (!el) return;
+    const node = getNotePaintTarget(el);
+    if (!node) return;
+    node.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+    node.classList.add(next === 'correct' ? 'midi-judge-correct' : 'midi-judge-wrong');
+    state.judgedElements.add(node);
+  }
+
+  function isJudgeEventComplete(ev){
+    if (!ev || !Array.isArray(ev.targets) || !ev.targets.length) return false;
+    return !ev.targets.some(t => t && t.status !== 'correct');
+  }
+
+  function finalizeJudgeEventAsMiss(ev){
+    if (!ev || ev.judged) return;
+    if (Array.isArray(ev.targets) && ev.targets.length){
+      ev.targets.forEach(t => {
+        if (!t || t.status === 'correct') return;
+        markJudgeTarget(t, 'wrong');
+      });
+      ev.judged = true;
+      return;
+    }
+    markJudgeEvent(ev, 'wrong');
+  }
+
   function markJudgeEvent(ev, status){
     if (!ev || ev.judged) return;
     ev.judged = true;
+    if (Array.isArray(ev.targets) && ev.targets.length){
+      ev.targets.forEach(t => markJudgeTarget(t, status));
+      return;
+    }
     const cls = status === 'correct' ? 'midi-judge-correct' : 'midi-judge-wrong';
     const els = Array.isArray(ev.elements) ? ev.elements : [];
     els.forEach(el => {
@@ -232,35 +315,155 @@
     return { beatSec, strict };
   }
 
+  function buildExpectedMidiSet(expectedMidis){
+    const list = Array.isArray(expectedMidis) ? expectedMidis : [];
+    const cleaned = list.filter(n => isFinite(n)).map(n => Math.round(n));
+    return new Set(cleaned);
+  }
+
+  function ensureJudgeEventRuntime(ev){
+    if (!ev) return;
+    if (!(ev.expectedMidiSet instanceof Set)) ev.expectedMidiSet = buildExpectedMidiSet(ev.expectedMidis);
+    if (!(ev.hitMidis instanceof Set)) ev.hitMidis = new Set();
+    if (!Array.isArray(ev.targets) || !ev.targets.length) ev.targets = buildJudgeTargets(ev.expectedMidis, ev.elements);
+    if (!Number.isFinite(ev.firstHitSec)) ev.firstHitSec = null;
+    if (!Number.isFinite(ev.firstHitRawSec)) ev.firstHitRawSec = null;
+  }
+
+  function getJudgeEventWindow(ev, judgeWindows, isFirst){
+    const strictTolSec = (isFinite(ev?.strictTolSec) && ev.strictTolSec > 0)
+      ? ev.strictTolSec
+      : judgeWindows.strict;
+    const startSec = (typeof ev?.startWindowSec === 'number') ? ev.startWindowSec : ((ev?.timeSec || 0) - strictTolSec);
+    const endSec = (typeof ev?.endWindowSec === 'number') ? ev.endWindowSec : ((ev?.timeSec || 0) + strictTolSec);
+    const chordSize = Array.isArray(ev?.expectedMidis) ? ev.expectedMidis.length : 1;
+    const baseGrace = clamp(strictTolSec * 1.4, 0.06, 0.14);
+    const chordExtra = clamp((Math.max(1, chordSize) - 1) * 0.045, 0, 0.18);
+    const firstExtra = isFirst ? 0.08 : 0.02;
+    const acceptStart = startSec - (baseGrace * 0.55) - (isFirst ? 0.04 : 0.01);
+    const acceptEnd = endSec + baseGrace + chordExtra + firstExtra;
+    const closeEnd = acceptEnd + (chordSize > 1 ? 0.08 : 0.04);
+    return { strictTolSec, startSec, endSec, acceptStart, acceptEnd, closeEnd };
+  }
+
+  function buildMeasureCandidateRanges(measureRects){
+    const rects = Array.isArray(measureRects) ? measureRects : [];
+    return rects.map((m, i) => {
+      const prev = i > 0 ? rects[i - 1] : null;
+      const next = i < rects.length - 1 ? rects[i + 1] : null;
+      const left = prev ? ((prev.x + prev.width + m.x) / 2) : (m.x - 6);
+      const right = next ? ((m.x + m.width + next.x) / 2) : (m.x + m.width + 6);
+      const top = m.y - (m.height * 0.6);
+      const bottom = m.y + (m.height * 1.9);
+      return { index: i, left, right, top, bottom };
+    });
+  }
+
+  function pickMeasureIndexForPoint(cx, cy, ranges, strictY){
+    if (!isFinite(cx) || !Array.isArray(ranges) || !ranges.length) return -1;
+    const hits = [];
+    for (const r of ranges){
+      if (!r) continue;
+      if (cx < r.left || cx > r.right) continue;
+      if (strictY && isFinite(cy) && (cy < r.top || cy > r.bottom)) continue;
+      hits.push(r);
+    }
+    if (hits.length === 1) return hits[0].index;
+    if (hits.length > 1){
+      let best = hits[0];
+      let bestDist = Infinity;
+      for (const r of hits){
+        const mid = (r.left + r.right) / 2;
+        const dist = Math.abs(cx - mid);
+        if (dist < bestDist){
+          bestDist = dist;
+          best = r;
+        }
+      }
+      return best.index;
+    }
+    return -1;
+  }
+
+  function isElementInMeasure(el, measureRects, measureIndex, ranges){
+    if (!el || !Array.isArray(measureRects) || measureIndex < 0 || measureIndex >= measureRects.length) return false;
+    const containerRect = scoreEl.getBoundingClientRect();
+    const r = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+    if (!r) return false;
+    const cx = r.left - containerRect.left + scoreEl.scrollLeft + r.width / 2;
+    const cy = r.top - containerRect.top + scoreEl.scrollTop + r.height / 2;
+    const measureRanges = Array.isArray(ranges) && ranges.length ? ranges : buildMeasureCandidateRanges(measureRects);
+    const idx = pickMeasureIndexForPoint(cx, cy, measureRanges, false);
+    return idx === measureIndex;
+  }
+
   function collectNoteheadCandidates(measureRects){
     const svg = scoreEl.querySelector('svg');
     if (!svg) return { byMeasure: [], all: [] };
     const containerRect = scoreEl.getBoundingClientRect();
+    const measureRanges = buildMeasureCandidateRanges(measureRects);
     const selector = [
       '.vf-notehead',
       '.vf-notehead path',
       '.vf-notehead ellipse',
-      '.vf-notehead use'
+      '.vf-notehead use',
+      '[class*="notehead"]',
+      '[class*="NoteHead"]',
+      '[class*="stavenote"]',
+      '[class*="StaveNote"]',
+      'use[href*="notehead" i]'
     ].join(',');
     const nodes = Array.from(svg.querySelectorAll(selector));
-    const candidates = [];
-    nodes.forEach(el => {
+    const bestByPaint = new Map();
+    nodes.forEach(rawEl => {
+      const el = rawEl || null;
+      if (!el) return;
       const r = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
       if (!r || (r.width === 0 && r.height === 0)) return;
       const cx = r.left - containerRect.left + scoreEl.scrollLeft + r.width / 2;
       const cy = r.top - containerRect.top + scoreEl.scrollTop + r.height / 2;
       if (!isFinite(cx) || !isFinite(cy)) return;
-      candidates.push({ el, cx, cy });
+      const paint = getNotePaintTarget(el) || el;
+      const area = Math.max(1, r.width * r.height);
+      const shapePenalty = Math.abs(r.width - r.height) * 0.12;
+      const score = area + shapePenalty;
+      const prev = bestByPaint.get(paint);
+      if (!prev || score < prev.score){
+        bestByPaint.set(paint, { el, cx, cy, score });
+      }
     });
+    const candidates = Array.from(bestByPaint.values()).map(item => ({ el: item.el, cx: item.cx, cy: item.cy }));
     const byMeasure = measureRects.map(() => []);
     candidates.forEach(c => {
+      const byBoundary = pickMeasureIndexForPoint(c.cx, c.cy, measureRanges, false);
+      if (byBoundary >= 0){
+        byMeasure[byBoundary].push(c);
+        return;
+      }
+      let bestIdx = -1;
+      let bestScore = Infinity;
       for (let i=0; i<measureRects.length; i++){
         const m = measureRects[i];
-        const inX = c.cx >= (m.x - 6) && c.cx <= (m.x + m.width + 6);
-        const inY = c.cy >= (m.y - m.height) && c.cy <= (m.y + m.height * 2);
-        if (inX && inY) {
-          byMeasure[i].push(c);
-          break;
+        if (!m || !isFinite(m.x) || !isFinite(m.y) || !isFinite(m.width) || !isFinite(m.height)) continue;
+        const left = m.x - 8;
+        const right = m.x + m.width + 8;
+        const top = m.y - m.height * 0.55;
+        const bottom = m.y + m.height * 1.75;
+        const dx = c.cx < left ? (left - c.cx) : (c.cx > right ? (c.cx - right) : 0);
+        const dy = c.cy < top ? (top - c.cy) : (c.cy > bottom ? (c.cy - bottom) : 0);
+        const centerY = m.y + (m.height / 2);
+        const dyCenter = Math.abs(c.cy - centerY);
+        const score = (dx * 1.0) + (dy * 2.2) + (dyCenter * 0.08);
+        if (score < bestScore){
+          bestScore = score;
+          bestIdx = i;
+        }
+      }
+      if (bestIdx >= 0){
+        const m = measureRects[bestIdx];
+        const scoreCap = Math.max(38, (m?.width || 0) * 0.36);
+        if (bestScore <= scoreCap){
+          byMeasure[bestIdx].push(c);
         }
       }
     });
@@ -272,7 +475,8 @@
     let best = null;
     let bestDist = Infinity;
     for (const c of list){
-      if (used.has(c.el)) continue;
+      const paint = getNotePaintTarget(c.el) || c.el;
+      if (used.has(paint)) continue;
       const dx = c.cx - x;
       const dy = c.cy - y;
       const dist = Math.abs(dx) + Math.abs(dy);
@@ -281,11 +485,96 @@
         best = c;
       }
     }
-    if (best && bestDist <= 18){
-      used.add(best.el);
+    if (best){
+      const paint = getNotePaintTarget(best.el) || best.el;
+      used.add(paint);
       return best.el;
     }
     return null;
+  }
+
+  function buildCandidateClusters(candidates){
+    const list = Array.isArray(candidates) ? candidates.filter(c => c && c.el && isFinite(c.cx) && isFinite(c.cy)) : [];
+    if (!list.length) return [];
+    const sorted = list.slice().sort((a,b)=> (a.cx - b.cx) || (a.cy - b.cy));
+    const clusters = [];
+    const gapPx = 20;
+    for (const c of sorted){
+      const last = clusters[clusters.length - 1];
+      if (!last || Math.abs(c.cx - last.x) > gapPx){
+        clusters.push({ x: c.cx, list: [c] });
+      } else {
+        last.list.push(c);
+        last.x = (last.x * (last.list.length - 1) + c.cx) / last.list.length;
+      }
+    }
+    return clusters.map(cluster => {
+      const ordered = cluster.list
+        .slice()
+        .sort((a,b)=> b.cy - a.cy)
+        .map(item => item.el);
+      return { x: cluster.x, elements: dedupeElementsByPaintTarget(ordered) };
+    }).filter(cluster => cluster.elements.length);
+  }
+
+  function getNodeTagName(node){
+    if (!node || !node.tagName) return '';
+    return String(node.tagName).toLowerCase();
+  }
+
+  function parseDurationDivFromNode(node){
+    if (!node || typeof node.querySelector !== 'function') return 0;
+    const durEl = node.querySelector('duration');
+    return durEl ? Math.max(0, parseInt(durEl.textContent || '0', 10) || 0) : 0;
+  }
+
+  function collectMeasureNoteEntries(measure, divisions, absQN){
+    const safeDivisions = Math.max(1, divisions || 1);
+    let posDiv = 0;
+    let lastStartDiv = 0;
+    const entries = [];
+    const children = Array.from(measure?.children || []);
+    for (const child of children){
+      const tag = getNodeTagName(child);
+      if (tag === 'backup'){
+        const backDiv = parseDurationDivFromNode(child);
+        posDiv = Math.max(0, posDiv - backDiv);
+        lastStartDiv = posDiv;
+        continue;
+      }
+      if (tag === 'forward'){
+        const forwardDiv = parseDurationDivFromNode(child);
+        posDiv += forwardDiv;
+        lastStartDiv = posDiv;
+        continue;
+      }
+      if (tag !== 'note') continue;
+      const noteEl = child;
+      const isChord = !!noteEl.querySelector('chord');
+      const durDiv = parseDurationDivFromNode(noteEl);
+      const startDiv = isChord ? lastStartDiv : posDiv;
+      if (!isChord) lastStartDiv = startDiv;
+      const isRest = !!noteEl.querySelector('rest');
+      const ties = Array.from(noteEl.querySelectorAll('tie')).map(x => x.getAttribute('type'));
+      const hasStart = ties.includes('start');
+      const hasStop = ties.includes('stop');
+      const startQNAbs = absQN + (startDiv / safeDivisions);
+      const startQNInMeasure = startDiv / safeDivisions;
+      entries.push({
+        noteEl,
+        isChord,
+        isRest,
+        durDiv,
+        durQN: durDiv / safeDivisions,
+        startDiv,
+        startQNAbs,
+        startQNInMeasure,
+        hasStart,
+        hasStop
+      });
+      if (!isChord) posDiv += durDiv;
+    }
+    return entries;
   }
 
   function parseJudgeEventsFromXML(xml){
@@ -314,45 +603,48 @@
             }
           }
         }
-        let posDiv = 0;
-        const notes = Array.from(m.querySelectorAll('note'));
-        for (let ni=0; ni<notes.length; ni++){
-          const n = notes[ni];
-          const isRest = !!n.querySelector('rest');
-          const durEl = n.querySelector('duration');
-          const durDiv = durEl ? Math.max(0, parseInt(durEl.textContent||'0',10)||0) : 0;
-          const isChord = !!n.querySelector('chord');
-          const ties = Array.from(n.querySelectorAll('tie')).map(x=>x.getAttribute('type'));
-          const hasStart = ties.includes('start');
-          const hasStop = ties.includes('stop');
-          const startQNAbs = absQN + (posDiv/divisions);
-          if (!isRest && !(hasStop && !hasStart)){
-            const pitch = n.querySelector('pitch');
-            const step = pitch?.querySelector('step')?.textContent;
-            const octave = parseInt(pitch?.querySelector('octave')?.textContent || '0', 10);
-            const alter = parseInt(pitch?.querySelector('alter')?.textContent || '0', 10) || 0;
-            if (step && isFinite(octave)){
-              const stepToSemitone = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
-              const base = stepToSemitone[step];
-              if (base != null){
-                const midi = (octave + 1) * 12 + base + alter;
-                events.push({ startQN: startQNAbs, midi });
-              }
+        const entries = collectMeasureNoteEntries(m, divisions, absQN);
+        for (const entry of entries){
+          if (!entry || entry.isRest || (entry.hasStop && !entry.hasStart)) continue;
+          const pitch = entry.noteEl.querySelector('pitch');
+          const step = pitch?.querySelector('step')?.textContent;
+          const octave = parseInt(pitch?.querySelector('octave')?.textContent || '0', 10);
+          const alter = parseInt(pitch?.querySelector('alter')?.textContent || '0', 10) || 0;
+          if (step && isFinite(octave)){
+            const stepToSemitone = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+            const base = stepToSemitone[step];
+            if (base != null){
+              const midi = (octave + 1) * 12 + base + alter;
+              events.push({
+                startQN: entry.startQNAbs,
+                posQNInMeasure: entry.startQNInMeasure,
+                measureQN: beatsNum * (4 / beatType),
+                measureIndex: mi,
+                midi
+              });
             }
           }
-          if (!isChord) posDiv += durDiv;
         }
         absQN += beatsNum * (4/beatType);
       }
-      events.sort((a,b)=> a.startQN - b.startQN);
+      events.sort((a,b)=> {
+        if (a.startQN !== b.startQN) return a.startQN - b.startQN;
+        return (a.measureIndex || 0) - (b.measureIndex || 0);
+      });
       const grouped = [];
-      const eps = 1e-4;
+      const eps = 1e-3;
       for (const ev of events){
         const last = grouped[grouped.length - 1];
         if (last && Math.abs(ev.startQN - last.startQN) <= eps){
           last.expectedMidis.push(ev.midi);
         } else {
-          grouped.push({ startQN: ev.startQN, expectedMidis: [ev.midi] });
+          grouped.push({
+            startQN: ev.startQN,
+            posQNInMeasure: ev.posQNInMeasure,
+            measureQN: ev.measureQN,
+            measureIndex: ev.measureIndex,
+            expectedMidis: [ev.midi]
+          });
         }
       }
       return grouped;
@@ -420,9 +712,7 @@
                 const ySvg = (bb.absolutePosition.y + bb.size.height * 0.5) * scale;
                 const px = osmdToScorePx(xSvg, 0).x;
                 const py = osmdToScorePx(0, ySvg).y;
-                const list = candidates.byMeasure[i] && candidates.byMeasure[i].length
-                  ? candidates.byMeasure[i]
-                  : candidates.all;
+                const list = candidates.all;
                 const picked = pickClosestCandidate(list, px, py, used);
                 if (picked) noteEls.push(picked);
               }
@@ -448,6 +738,58 @@
     }catch(_){ return []; }
   }
 
+  function pickFallbackJudgeElements(ev, measureRects, candidates, used, neededCount, existingElements){
+    try{
+      if (!ev || !Array.isArray(measureRects) || !measureRects.length) return [];
+      const mi = (typeof ev.measureIndex === 'number') ? ev.measureIndex : -1;
+      if (mi < 0 || mi >= measureRects.length) return [];
+      const mr = measureRects[mi];
+      if (!mr) return [];
+      const perMeasureQN = (isFinite(ev.measureQN) && ev.measureQN > 0) ? ev.measureQN : 4;
+      const posQN = isFinite(ev.posQNInMeasure) ? ev.posQNInMeasure : 0;
+      const ratio = clamp(posQN / Math.max(0.0001, perMeasureQN), 0, 1);
+      const targetX = mr.x + mr.width * ratio;
+      const targetCount = Math.max(1, isFinite(neededCount) ? Math.round(neededCount) : (Array.isArray(ev.expectedMidis) ? ev.expectedMidis.length : 1));
+      const list = (candidates && Array.isArray(candidates.all)) ? candidates.all : [];
+      if (!list.length) return [];
+      const blocked = new Set(
+        Array.isArray(existingElements)
+          ? existingElements.filter(Boolean).map(el => getNotePaintTarget(el) || el)
+          : []
+      );
+      const softLeft = mr.x - Math.max(12, mr.width * 0.08);
+      const softRight = mr.x + mr.width + Math.max(6, mr.width * 0.04);
+      const midY = mr.y + (mr.height / 2);
+      const ranked = list
+        .filter(c => {
+          if (!c || !c.el) return false;
+          const paint = getNotePaintTarget(c.el) || c.el;
+          if (used.has(paint)) return false;
+          if (blocked.has(paint)) return false;
+          return true;
+        })
+        .map(c => {
+          const dx = Math.abs(c.cx - targetX);
+          const dy = Math.abs(c.cy - midY);
+          const outsideX = c.cx < softLeft ? (softLeft - c.cx) : (c.cx > softRight ? (c.cx - softRight) : 0);
+          const score = dx + (dy * 1.2) + (outsideX * 2.8);
+          return { c, dx, dy, outsideX, score };
+        })
+        .sort((a,b) => (a.score - b.score) || (a.outsideX - b.outsideX) || (a.dx - b.dx) || (a.dy - b.dy));
+      if (!ranked.length) return [];
+      const picked = [];
+      for (const item of ranked){
+        picked.push(item.c.el);
+        const paint = getNotePaintTarget(item.c.el) || item.c.el;
+        used.add(paint);
+        if (picked.length >= targetCount) break;
+      }
+      return picked;
+    }catch(_){
+      return [];
+    }
+  }
+
   function buildJudgeTimeline(measureRects, bpm){
     try{
       const xml = getCurrentMelodyXML();
@@ -455,32 +797,96 @@
       const grouped = parseJudgeEventsFromXML(xml);
       if (!grouped || !grouped.length) return [];
       const graphicEvents = buildGraphicJudgeEvents(measureRects);
-      let gi = 0;
+      const fallbackCandidates = collectNoteheadCandidates(measureRects);
+      const candidateClusters = buildCandidateClusters(fallbackCandidates.all);
+      const useClusterByOrder = candidateClusters.length >= grouped.length;
+      let clusterCursor = 0;
+      const fallbackUsed = new Set();
+      const usedGraphicIndices = new Set();
       const bpmSafe = Math.max(1, bpm || 80);
       const judgeWindows = computeJudgeWindows(bpmSafe);
       grouped.forEach(ev => {
-        while (gi < graphicEvents.length && graphicEvents[gi].timeQN + 0.02 < ev.startQN){
-          gi++;
+        const expectedCount = Math.max(1, Array.isArray(ev.expectedMidis) ? ev.expectedMidis.length : 1);
+        if (useClusterByOrder && clusterCursor < candidateClusters.length){
+          const cluster = candidateClusters[clusterCursor++];
+          if (cluster && Array.isArray(cluster.elements) && cluster.elements.length){
+            ev.elements = cluster.elements.slice(0, expectedCount);
+          }
         }
         let matched = null;
-        if (gi < graphicEvents.length && Math.abs(graphicEvents[gi].timeQN - ev.startQN) <= 0.04) {
-          matched = graphicEvents[gi];
-          gi++;
-        } else if (gi < graphicEvents.length) {
-          matched = graphicEvents[gi];
-          gi++;
+        let matchedIdx = -1;
+        let bestDiff = Infinity;
+        const preferMeasure = typeof ev.measureIndex === 'number';
+        const sameMeasureTolQN = 0.22;
+        const globalTolQN = 0.35;
+
+        if (!ev.elements && preferMeasure){
+          for (let i = 0; i < graphicEvents.length; i++){
+            if (usedGraphicIndices.has(i)) continue;
+            const ge = graphicEvents[i];
+            if (!ge || ge.measureIndex !== ev.measureIndex) continue;
+            const diff = Math.abs(ge.timeQN - ev.startQN);
+            if (diff < bestDiff){
+              bestDiff = diff;
+              matched = ge;
+              matchedIdx = i;
+            }
+          }
+          if (!(matched && bestDiff <= sameMeasureTolQN)){
+            matched = null;
+            matchedIdx = -1;
+            bestDiff = Infinity;
+          }
         }
-        if (matched){
+
+        if (!ev.elements && !matched){
+          for (let i = 0; i < graphicEvents.length; i++){
+            if (usedGraphicIndices.has(i)) continue;
+            const ge = graphicEvents[i];
+            if (!ge) continue;
+            const diff = Math.abs(ge.timeQN - ev.startQN);
+            if (diff < bestDiff){
+              bestDiff = diff;
+              matched = ge;
+              matchedIdx = i;
+            }
+          }
+          if (!(matched && bestDiff <= globalTolQN)){
+            matched = null;
+            matchedIdx = -1;
+          }
+        }
+
+        if (!ev.elements && matched){
+          usedGraphicIndices.add(matchedIdx);
           ev.elements = matched.elements || [];
-          ev.measureIndex = matched.measureIndex;
+          if (typeof ev.measureIndex !== 'number' && typeof matched.measureIndex === 'number') {
+            ev.measureIndex = matched.measureIndex;
+          }
+        }
+        if (!Array.isArray(ev.elements)) ev.elements = [];
+        if (ev.elements.length < expectedCount){
+          const need = expectedCount - ev.elements.length;
+          const fallbackEls = pickFallbackJudgeElements(ev, measureRects, fallbackCandidates, fallbackUsed, need, ev.elements);
+          if (fallbackEls.length) ev.elements = ev.elements.concat(fallbackEls);
+        }
+        ev.elements = dedupeElementsByPaintTarget(ev.elements);
+        if (ev.elements.length > expectedCount){
+          ev.elements = ev.elements.slice(0, expectedCount);
         }
         ev.timeSec = ev.startQN * (60 / Math.max(1, bpm));
         ev.strictTolSec = judgeWindows.strict;
         ev.startWindowSec = ev.timeSec - ev.strictTolSec;
         ev.endWindowSec = ev.timeSec + ev.strictTolSec;
+        ev.expectedMidis = Array.from(buildExpectedMidiSet(ev.expectedMidis)).sort((a,b)=>a-b);
+        ev.expectedMidiSet = buildExpectedMidiSet(ev.expectedMidis);
+        ev.hitMidis = new Set();
+        ev.targets = buildJudgeTargets(ev.expectedMidis, ev.elements);
+        ev.firstHitSec = null;
+        ev.firstHitRawSec = null;
         ev.judged = false;
       });
-      return grouped;
+      return grouped.filter(ev => Array.isArray(ev.expectedMidis) && ev.expectedMidis.length);
     }catch(_){ return []; }
   }
 
@@ -489,28 +895,24 @@
     state.judgeStartMs = startMs;
     state.judgeIndex = 0;
     state.judgeGateUntilSec = 0;
-    const windowMs = Math.max(90, Math.min(220, state.judgeWindowMs || 160));
-    const fallbackTolSec = windowMs / 1000;
+    if (Array.isArray(state.judgeEvents)) {
+      state.judgeEvents.forEach((ev) => {
+        if (!ev) return;
+        ev.judged = false;
+        ev.expectedMidiSet = buildExpectedMidiSet(ev.expectedMidis);
+        ev.hitMidis = new Set();
+        ev.targets = buildJudgeTargets(ev.expectedMidis, ev.elements);
+        ev.firstHitSec = null;
+        ev.firstHitRawSec = null;
+      });
+    }
     state.judgeTimerId = setInterval(() => {
       if (!state.active) return;
       const nowMs = performance.now();
       const nowSec = (nowMs - state.judgeStartMs) / 1000;
-      while (state.judgeIndex < state.judgeEvents.length){
-        const ev = state.judgeEvents[state.judgeIndex];
-        if (ev.judged) { state.judgeIndex++; continue; }
-        const endTolSec = (isFinite(ev.strictTolSec) && ev.strictTolSec > 0) ? ev.strictTolSec : fallbackTolSec;
-        const endSec = (typeof ev.endWindowSec === 'number') ? ev.endWindowSec : (ev.timeSec + endTolSec);
-        if (nowSec > endSec){
-          if (state.calibrationEnabled){
-            markJudgeEvent(ev, 'wrong');
-          } else {
-            ev.judged = true;
-          }
-          state.judgeIndex++;
-          continue;
-        }
-        break;
-      }
+      const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
+      const judgeWindows = computeJudgeWindows(bpmVal);
+      settleExpiredJudgeEvents(nowSec, judgeWindows);
     }, 80);
   }
 
@@ -522,67 +924,67 @@
     state.judgeEvents = [];
   }
 
+  function settleExpiredJudgeEvents(nowSec, judgeWindows){
+    while (state.judgeIndex < state.judgeEvents.length){
+      const ev = state.judgeEvents[state.judgeIndex];
+      if (!ev || ev.judged){
+        state.judgeIndex++;
+        continue;
+      }
+      const window = getJudgeEventWindow(ev, judgeWindows, state.judgeIndex === 0);
+      if (nowSec <= window.closeEnd) break;
+      if (state.calibrationEnabled){
+        finalizeJudgeEventAsMiss(ev);
+      } else {
+        ev.judged = true;
+      }
+      state.judgeIndex++;
+    }
+  }
+
   function handleJudgeInput(midi){
     if (!state.active || !toggleEl || !toggleEl.checked) return;
     if (!state.judgeEvents || !state.judgeEvents.length || !state.judgeStartMs) return;
+    if (!isFinite(midi)) return;
     const nowSecRaw = (performance.now() - state.judgeStartMs) / 1000;
     const nowSec = (state.calibrationEnabled && state.calibrationOffsetSec)
       ? (nowSecRaw - state.calibrationOffsetSec)
       : nowSecRaw;
     const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
     const judgeWindows = computeJudgeWindows(bpmVal);
+    settleExpiredJudgeEvents(nowSec, judgeWindows);
     if (state.judgeGateUntilSec && nowSec <= state.judgeGateUntilSec) return;
     if (state.judgeGateUntilSec && nowSec > state.judgeGateUntilSec) {
       state.judgeGateUntilSec = 0;
     }
     const ev = state.judgeEvents[state.judgeIndex];
     if (!ev || ev.judged) return;
-    const strictTolSec = (isFinite(ev.strictTolSec) && ev.strictTolSec > 0)
-      ? ev.strictTolSec
-      : judgeWindows.strict;
-    const startSec = (typeof ev.startWindowSec === 'number') ? ev.startWindowSec : (ev.timeSec - strictTolSec);
-    const endSec = (typeof ev.endWindowSec === 'number') ? ev.endWindowSec : (ev.timeSec + strictTolSec);
+    const window = getJudgeEventWindow(ev, judgeWindows, state.judgeIndex === 0);
+    if (nowSec < window.acceptStart) return;
+    if (nowSec > window.acceptEnd) return;
 
-    if (nowSec < startSec) return;
-    if (nowSec > endSec) return;
+    ensureJudgeEventRuntime(ev);
+    const targets = Array.isArray(ev.targets) ? ev.targets : [];
+    if (!targets.length) return;
+    const pendingMatches = targets.filter(t => t && t.status !== 'correct' && isFinite(t.midi) && t.midi === midi);
+    if (!pendingMatches.length) return;
 
-    const expected = Array.isArray(ev.expectedMidis) ? ev.expectedMidis : [];
-    const pitchClass = (n) => ((n % 12) + 12) % 12;
-    let match = false;
-    let matchedBase = null;
+    pendingMatches.forEach((target) => {
+      markJudgeTarget(target, 'correct');
+    });
+    if (!Number.isFinite(ev.firstHitSec)) ev.firstHitSec = nowSec;
+    if (!Number.isFinite(ev.firstHitRawSec)) ev.firstHitRawSec = nowSecRaw;
 
-    if (expected.length){
-      if (state.judgeOctShift == null){
-        const pc = pitchClass(midi);
-        for (const target of expected){
-          if (pitchClass(target) === pc){
-            match = true;
-            matchedBase = target;
-            break;
-          }
-        }
-      } else {
-        const shift = state.judgeOctShift;
-        match = expected.some(target => midi === (target + 12 * shift));
-      }
+    if (!isJudgeEventComplete(ev)) return;
+
+    ev.judged = true;
+    if (state.calibrationEnabled && Number.isFinite(ev.firstHitRawSec)){
+      const delta = Math.max(-0.16, Math.min(0.16, ev.firstHitRawSec - ev.timeSec));
+      const nextOffset = (state.calibrationOffsetSec * 0.84) + (delta * 0.16);
+      state.calibrationOffsetSec = Math.max(-0.25, Math.min(0.25, nextOffset));
     }
-
-    if (match){
-      const errorSec = nowSec - ev.timeSec;
-      const absErrorSec = Math.abs(errorSec);
-      const timingStatus = absErrorSec <= strictTolSec ? 'correct' : 'wrong';
-      markJudgeEvent(ev, timingStatus);
-      if (state.calibrationEnabled){
-        const delta = nowSecRaw - ev.timeSec;
-        const nextOffset = (state.calibrationOffsetSec * 0.7) + (delta * 0.3);
-        state.calibrationOffsetSec = Math.max(-0.25, Math.min(0.25, nextOffset));
-      }
-      if (state.judgeOctShift == null && matchedBase != null){
-        state.judgeOctShift = Math.round((midi - matchedBase) / 12);
-      }
-      state.judgeGateUntilSec = endSec;
-      state.judgeIndex++;
-    }
+    state.judgeGateUntilSec = nowSec + 0.03;
+    state.judgeIndex++;
   }
 
   function applyCalibrationAuto(connected){
@@ -626,7 +1028,7 @@
     if (modalModeToggle) modalModeToggle.checked = !!(toggleEl && toggleEl.checked);
     if (cursorToggle && !hasCursorPref) cursorToggle.checked = true;
     if (metronomeToggle && !hasMetronomePref) metronomeToggle.checked = true;
-    if (hideToggle && !hasHidePref) hideToggle.checked = true;
+    if (hideToggle && !hasHidePref) hideToggle.checked = false;
     if (calibrationToggle && !isMidiConnected()) {
       calibrationToggle.checked = false;
       state.calibrationEnabled = false;
@@ -660,7 +1062,7 @@
     const bpm = Math.max(40, Math.min(240, parseInt(($('challengeBPM').value||'80'), 10)));
     const cursorEnabled = $('challengeCursorToggle') ? $('challengeCursorToggle').checked : true;
     const metronomeEnabled = $('challengeMetronomeToggle') ? $('challengeMetronomeToggle').checked : true;
-    const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : true;
+    const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : false;
     const calibrationEnabled = $('challengeCalibrationToggle') ? $('challengeCalibrationToggle').checked : false;
     try { localStorage.setItem('ic_chord_challenge_settings', JSON.stringify({ prep, bpm, cursor: cursorEnabled, metronome: metronomeEnabled, hide: hideEnabled, calibration: calibrationEnabled })); } catch(_) {}
     state.calibrationEnabled = calibrationEnabled;
@@ -1802,36 +2204,26 @@
         measureStarts.push(absQN);
         const measureTotalQN = beatsNum * (4/beatType); // 一小节的四分拍总数
         measureTotals.push(measureTotalQN);
-        let posDiv = 0;
-        const notes = Array.from(m.querySelectorAll('note'));
-        for (let ni=0; ni<notes.length; ni++){
-          const n = notes[ni];
-          const isRest = !!n.querySelector('rest');
-          const durEl = n.querySelector('duration');
-          const durDiv = durEl ? Math.max(0, parseInt(durEl.textContent||'0',10)||0) : 0;
-          const durQN = durDiv / divisions; // 四分拍单位
-          const isChord = !!n.querySelector('chord');
-          const ties = Array.from(n.querySelectorAll('tie')).map(x=>x.getAttribute('type'));
-          const hasStart = ties.includes('start');
-          const hasStop = ties.includes('stop');
-          const startQNAbs = absQN + (posDiv/divisions);
-          const startQNInMeasure = (posDiv/divisions);
-          if (hasStart){
+        const entries = collectMeasureNoteEntries(m, divisions, absQN);
+        for (const entry of entries){
+          const isRest = !!entry.isRest;
+          const durDiv = entry.durDiv;
+          const durQN = entry.durQN; // 四分拍单位
+          const startQNAbs = entry.startQNAbs;
+          const startQNInMeasure = entry.startQNInMeasure;
+          if (entry.hasStart){
             if (!tieOpen){ tieOpen = true; tieDurDiv = durDiv; tieIsRest = isRest; tieStartAbsQN = startQNAbs; }
             else { tieDurDiv += durDiv; }
-          } else if (hasStop && tieOpen){
+          } else if (entry.hasStop && tieOpen){
             tieDurDiv += durDiv;
             const durQNsum = tieDurDiv / divisions;
             events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: tieStartAbsQN, durBeats: durQNsum, isRest: tieIsRest });
             tieOpen = false; tieDurDiv = 0; tieIsRest = false;
           } else if (tieOpen){
             tieDurDiv += durDiv; // tie延续
-          } else {
-            if (!isChord){
-              events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: startQNAbs, durBeats: durQN, isRest });
-            }
+          } else if (!entry.isChord){
+            events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: startQNAbs, durBeats: durQN, isRest });
           }
-          if (!isChord) posDiv += durDiv; // chord后续音不推进时间
         }
         absQN += measureTotalQN;
       }
@@ -2390,7 +2782,6 @@
     state.noteEvents = buildNoteTimeline(bpm);
     clearJudgementStyles();
     state.judgeWindowMs = Math.max(90, Math.min(220, (60 / Math.max(1, bpm)) * 0.35 * 1000));
-    state.judgeOctShift = null;
     const judgeWindows = computeJudgeWindows(bpm);
     state.judgeBeatDurationSec = judgeWindows.beatSec;
     state.judgeEvents = buildJudgeTimeline(state.measureRects, bpm);
@@ -2427,7 +2818,6 @@
     if (state.metronomeTimerId) { clearInterval(state.metronomeTimerId); state.metronomeTimerId = null; }
     if (state.rafId) { cancelAnimationFrame(state.rafId); state.rafId = null; }
     stopJudgeTimeline();
-    state.judgeOctShift = null;
     state.judgeBeatDurationSec = 0;
     state.calibrationEnabled = false;
     state.calibrationOffsetSec = 0;
@@ -2469,7 +2859,7 @@
       stopChallenge({ keepToggle: true, keepAuto: true });
       const cursorEnabled = $('challengeCursorToggle') ? $('challengeCursorToggle').checked : true;
       const metronomeEnabled = $('challengeMetronomeToggle') ? $('challengeMetronomeToggle').checked : true;
-      const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : true;
+      const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : false;
       if (toggleEl.checked) startChallenge(prep, bpm, cursorEnabled, metronomeEnabled, hideEnabled);
     } else {
       stopChallenge();

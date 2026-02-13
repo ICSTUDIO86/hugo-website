@@ -2,7 +2,7 @@
  * IC Studio - 增强功能和声系统
  * Enhanced Functional Harmony System
  *
- * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club
+ * Copyright © 2026. All rights reserved. Igor Chen - icstudio.club
  */
 
 /**

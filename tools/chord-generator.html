@@ -136,28 +136,8 @@
         } catch(e) { console.warn('采样器初始化失败:', e); }
       });
     </script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function(){
-        try {
-          if (window.ReactGrab && typeof window.ReactGrab.init === 'function') {
-            window.ReactGrab.init();
-          }
-          const api = window.ReactGrab && typeof window.ReactGrab.getGlobalApi === 'function'
-            ? window.ReactGrab.getGlobalApi()
-            : null;
-          if (api) {
-            window.addEventListener('keydown', function(event){
-              if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'g' || event.key === 'G')) {
-                api.toggle();
-              }
-            });
-          }
-        } catch(_) {}
-      });
-    </script>
     <link rel="stylesheet" href="./IC 和弦视奏工具_files/chord-responsive-styles.css">
 
-    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="container">
@@ -536,7 +516,7 @@
                 <strong>Cognote</strong> - 专业级和弦视奏生成器
             </p>
             <p style="margin: 8px 0 0 0; font-size: 13px; opacity: 0.8;">
-                Copyright © 2025. All rights reserved. Igor Chen -
+                Copyright © 2026. All rights reserved. Igor Chen -
                 <a href="https://icstudio.club/" target="_blank" style="color: var(--primary-orange); text-decoration: none;">icstudio.club</a>
             </p>
         </div>
@@ -1220,7 +1200,7 @@
                     <div class="control-group">
                         <label for="challengeHideToggle" data-i18n="challenge.hide">隐藏</label>
                         <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                            <input type="checkbox" id="challengeHideToggle" checked style="opacity: 0; width: 0; height: 0;">
+                            <input type="checkbox" id="challengeHideToggle" style="opacity: 0; width: 0; height: 0;">
                             <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
                                 <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
                             </span>

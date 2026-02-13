@@ -470,7 +470,7 @@
     <link rel="prefetch" href="melody-generator.html">
     <link rel="prefetch" href="interval-generator.html">
     <link rel="prefetch" href="chord-generator.html">
-    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ml5@1/dist/ml5.min.js"></script>
 </head>
 <body class="jianpu-theme">
     <div class="container">
@@ -737,7 +737,7 @@
                 <strong>Cognote</strong> - 专业级视奏旋律生成器
             </p>
             <p style="margin: 8px 0 0 0; font-size: 13px; opacity: 0.8;">
-                Copyright © 2025. All rights reserved. Igor Chen - 
+                Copyright © 2026. All rights reserved. Igor Chen - 
                 <a href="https://icstudio.club/" target="_blank" style="color: var(--primary-blue); text-decoration: none;">icstudio.club</a>
             </p>
         </div>
@@ -805,7 +805,7 @@
                     <div class="control-group">
                         <label for="challengeHideToggle" data-i18n="challenge.hide">隐藏</label>
                         <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                            <input type="checkbox" id="challengeHideToggle" checked style="opacity: 0; width: 0; height: 0;">
+                            <input type="checkbox" id="challengeHideToggle" style="opacity: 0; width: 0; height: 0;">
                             <span class="slider" style="position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
                                 <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
                             </span>
@@ -932,6 +932,24 @@
                             </select>
                         </div>
                         <div class="midi-status" id="midiStatusText" data-i18n="midi.status.disabled">MIDI 已关闭</div>
+                    </div>
+                    <!-- 麦克风输入 -->
+                    <div class="settings-section" id="micSettingsSection">
+                        <div class="settings-section-title" data-i18n="settings.mic">麦克风输入</div>
+                        <div class="midi-settings-row">
+                            <span data-i18n="mic.enable">启用</span>
+                            <label class="toggle-container">
+                                <input type="checkbox" id="micEnableToggle" class="toggle-input">
+                                <span class="toggle-slider"><span class="toggle-button"></span></span>
+                            </label>
+                        </div>
+                        <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
+                            <label for="micDeviceSelect" data-i18n="mic.device">设备</label>
+                            <select id="micDeviceSelect" class="midi-select" disabled>
+                                <option value="">-</option>
+                            </select>
+                        </div>
+                        <div class="midi-status" id="micStatusText" data-i18n="mic.status.disabled">麦克风已关闭</div>
                     </div>
                 </div>
             </div>
@@ -2512,6 +2530,20 @@
                 'midi.status.connected': '已连接: {device}',
                 'midi.status.disconnected': '设备已断开',
                 'midi.status.disabled': 'MIDI 已关闭',
+                'settings.mic': '麦克风输入',
+                'mic.enable': '启用',
+                'mic.device': '设备',
+                'mic.device.unknown': '麦克风 {index}',
+                'mic.status.unsupported': '当前浏览器不支持麦克风输入',
+                'mic.status.permission': '未授权麦克风访问',
+                'mic.status.permissionNeeded': '请允许麦克风权限以显示设备名称',
+                'mic.status.error': '麦克风启动失败',
+                'mic.status.nodevice': '未检测到麦克风设备',
+                'mic.status.ready': '麦克风已就绪',
+                'mic.status.readyDevice': '麦克风已就绪: {device}',
+                'mic.status.listening': '麦克风监听中',
+                'mic.status.listeningDevice': '麦克风监听中: {device}',
+                'mic.status.disabled': '麦克风已关闭',
                 'settings.metronome': '节拍器',
                 'settings.tempo': '速度 (BPM)',
                 'settings.startMetronome': '开始节拍器',
@@ -2696,6 +2728,20 @@
                 'midi.status.connected': '已連接: {device}',
                 'midi.status.disconnected': '裝置已斷開',
                 'midi.status.disabled': 'MIDI 已關閉',
+                'settings.mic': '麥克風輸入',
+                'mic.enable': '啟用',
+                'mic.device': '裝置',
+                'mic.device.unknown': '麥克風 {index}',
+                'mic.status.unsupported': '目前瀏覽器不支援麥克風輸入',
+                'mic.status.permission': '未授權麥克風存取',
+                'mic.status.permissionNeeded': '請允許麥克風權限以顯示裝置名稱',
+                'mic.status.error': '麥克風啟動失敗',
+                'mic.status.nodevice': '未偵測到麥克風裝置',
+                'mic.status.ready': '麥克風已就緒',
+                'mic.status.readyDevice': '麥克風已就緒: {device}',
+                'mic.status.listening': '麥克風監聽中',
+                'mic.status.listeningDevice': '麥克風監聽中: {device}',
+                'mic.status.disabled': '麥克風已關閉',
                 'settings.metronome': '節拍器',
                 'settings.tempo': '速度 (BPM)',
                 'settings.startMetronome': '開始節拍器',
@@ -2880,6 +2926,20 @@
                 'midi.status.connected': 'Connected: {device}',
                 'midi.status.disconnected': 'Device disconnected',
                 'midi.status.disabled': 'MIDI is off',
+                'settings.mic': 'Microphone Input',
+                'mic.enable': 'Enable',
+                'mic.device': 'Device',
+                'mic.device.unknown': 'Microphone {index}',
+                'mic.status.unsupported': 'Microphone input is not supported in this browser',
+                'mic.status.permission': 'Microphone access not authorized',
+                'mic.status.permissionNeeded': 'Allow microphone access to show device names',
+                'mic.status.error': 'Failed to start microphone',
+                'mic.status.nodevice': 'No microphone devices detected',
+                'mic.status.ready': 'Microphone is ready',
+                'mic.status.readyDevice': 'Microphone is ready: {device}',
+                'mic.status.listening': 'Microphone listening',
+                'mic.status.listeningDevice': 'Microphone listening: {device}',
+                'mic.status.disabled': 'Microphone is off',
                 'settings.metronome': 'Metronome',
                 'settings.tempo': 'Tempo (BPM)',
                 'settings.startMetronome': 'Start Metronome',

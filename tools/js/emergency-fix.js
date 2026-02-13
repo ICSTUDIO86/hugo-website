@@ -2,7 +2,7 @@
  * IC Studio 视奏工具 - 紧急修复工具
  * Emergency Fix Tool
  * 
- * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club
+ * Copyright © 2026. All rights reserved. Igor Chen - icstudio.club
  * 
  * Author: Igor Chen
  * Website: https://icstudio.club

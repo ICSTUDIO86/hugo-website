@@ -2,7 +2,7 @@
  * IC Studio 音程视奏工具 - 小调变体音处理模块（统一模式选择系统）
  * Minor Scale Alterations Module for Interval Generator
  *
- * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club
+ * Copyright © 2026. All rights reserved. Igor Chen - icstudio.club
  *
  * Author: Igor Chen
  * Website: https://icstudio.club

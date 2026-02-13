@@ -5,10 +5,22 @@
     (function() {
       var isFile = location.protocol === 'file:' || location.origin === 'null';
       if (!isFile) return;
+      // Internal testing default: allow file:// unless explicitly forced.
+      var forceOnline = false;
+      try {
+        var params = new URLSearchParams(location.search || '');
+        forceOnline = params.get('enforceOnline') === '1' || localStorage.getItem('ic_force_online') === '1';
+      } catch (e) {}
+      if (!forceOnline) {
+        try {
+          console.info('🧪 内部测试模式：已放行 file:// 协议');
+        } catch (e) {}
+        return;
+      }
       try {
         console.warn('🚫 检测到file://协议，已阻止');
       } catch (e) {}
-      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
+      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,"Helvetica Neue","PingFang SC","Segoe UI",sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
       document.open();
       document.write(html);
       document.close();
@@ -32,7 +44,6 @@
     <script src="IC 节奏视奏工具/rhythm.js?v=20260203" defer></script>
     <script src="assets/js/midi-input.js?v=1" defer></script>
     <script src="assets/js/rhythm-challenge-mode.js" defer></script>
-    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="container">
@@ -195,7 +206,7 @@
                 <strong>Cognote</strong> - 专业级节奏视奏训练工具
             </p>
             <p style="margin: 8px 0 0 0; font-size: 13px; opacity: 0.8;">
-                Copyright © 2025. All rights reserved. Igor Chen -
+                Copyright © 2026. All rights reserved. Igor Chen -
                 <a href="https://icstudio.club/" target="_blank" style="color: var(--primary-blue); text-decoration: none;">icstudio.club</a>
             </p>
         </div>
@@ -322,8 +333,8 @@
                             <div class="frequency-item" id="freq-dotted-quarter-item" style="display: none;">
                                 <label for="freq-dotted-quarter" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="rhythm.freq.dottedQuarter">附点四分音符频率:</label>
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="range" id="freq-dotted-quarter" min="0" max="100" value="60" style="flex: 1;">
-                                    <span id="freq-dotted-quarter-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">60%</span>
+                                    <input type="range" id="freq-dotted-quarter" min="0" max="100" value="28" style="flex: 1;">
+                                    <span id="freq-dotted-quarter-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">28%</span>
                                 </div>
                             </div>
                             <div class="frequency-item" id="freq-quarter-item">
@@ -343,8 +354,8 @@
                             <div class="frequency-item" id="freq-eighth-item">
                                 <label for="freq-eighth" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="frequency.eighth">八分音符频率:</label>
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="range" id="freq-eighth" min="0" max="100" value="15" style="flex: 1;">
-                                    <span id="freq-eighth-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">15%</span>
+                                    <input type="range" id="freq-eighth" min="0" max="100" value="52" style="flex: 1;">
+                                    <span id="freq-eighth-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">52%</span>
                                 </div>
                             </div>
                             <div class="frequency-item" id="freq-sixteenth-item">
@@ -585,7 +596,7 @@
                     <div class="control-group">
                         <label for="challengeHideToggle" data-i18n="challenge.hide">隐藏</label>
                         <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                            <input type="checkbox" id="challengeHideToggle" checked style="opacity: 0; width: 0; height: 0;">
+                            <input type="checkbox" id="challengeHideToggle" style="opacity: 0; width: 0; height: 0;">
                             <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
                                 <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
                             </span>

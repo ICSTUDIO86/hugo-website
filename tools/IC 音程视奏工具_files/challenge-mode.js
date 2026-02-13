@@ -34,7 +34,7 @@
     cursorHeight: null,
     cursorEnabled: true,
     metronomeEnabled: true,
-    hideEnabled: true,
+    hideEnabled: false,
     autoRestart: false,
     lastBeatTimeMs: 0,
     nextCountInDelayMs: 0,
@@ -1027,7 +1027,7 @@
     if (modalModeToggle) modalModeToggle.checked = !!(toggleEl && toggleEl.checked);
     if (cursorToggle && !hasCursorPref) cursorToggle.checked = true;
     if (metronomeToggle && !hasMetronomePref) metronomeToggle.checked = true;
-    if (hideToggle && !hasHidePref) hideToggle.checked = true;
+    if (hideToggle && !hasHidePref) hideToggle.checked = false;
     if (calibrationToggle && !isMidiConnected()) {
       calibrationToggle.checked = false;
       state.calibrationEnabled = false;
@@ -1061,7 +1061,7 @@
     const bpm = Math.max(40, Math.min(240, parseInt(($('challengeBPM').value||'80'), 10)));
     const cursorEnabled = $('challengeCursorToggle') ? $('challengeCursorToggle').checked : true;
     const metronomeEnabled = $('challengeMetronomeToggle') ? $('challengeMetronomeToggle').checked : true;
-    const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : true;
+    const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : false;
     const calibrationEnabled = $('challengeCalibrationToggle') ? $('challengeCalibrationToggle').checked : false;
     try { localStorage.setItem('ic_interval_challenge_settings', JSON.stringify({ prep, bpm, cursor: cursorEnabled, metronome: metronomeEnabled, hide: hideEnabled, calibration: calibrationEnabled })); } catch(_) {}
     state.calibrationEnabled = calibrationEnabled;
@@ -3327,7 +3327,7 @@
       stopChallenge({ keepToggle: true, keepAuto: true });
       const cursorEnabled = $('challengeCursorToggle') ? $('challengeCursorToggle').checked : true;
       const metronomeEnabled = $('challengeMetronomeToggle') ? $('challengeMetronomeToggle').checked : true;
-      const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : true;
+      const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : false;
       if (toggleEl.checked) startChallenge(prep, bpm, cursorEnabled, metronomeEnabled, hideEnabled);
     } else {
       stopChallenge();

@@ -41,6 +41,7 @@
             windowSec: 0.08,
             judgedElements: new Set()
         },
+        compoundFrequencyAdjusted: false,
         restAlignObserver: null,
         restAlignLock: false,
         lastSettings: null,
@@ -169,7 +170,7 @@
             'challenge.calibration': '输入校准',
             'challenge.cursorHint': '光标开关：光标用于提示当前应演奏的位置，count-in结束后出现并随节奏跳动。',
             'challenge.hideHint': '隐藏开关：开启后，系统在进入下一小节时会自动遮挡上一小节，仅保留当前阅读区。',
-            'challenge.calibration.hintSingle': '校准模式（单声部）：任意音高均可，只判断节奏。',
+            'challenge.calibration.hintSingle': '校准模式（单声部）：任意音高均可，只判断节奏。可直接用键盘 F / J 作为校准输入（无需 MIDI）。',
             'challenge.calibration.hintDual': '校准模式（双声部）：MIDI 的 Do 为低声部、Sol 为高声部；无 MIDI 可用键盘 F（底鼓/低声部）/ J（军鼓/高声部）输入。',
             'challenge.calibration.correct': '校准正确',
             'challenge.calibration.wrong': '校准错误',
@@ -331,7 +332,7 @@
             'challenge.calibration': '輸入校準',
             'challenge.cursorHint': '光標開關：光標用於提示當前應演奏的位置，count-in 結束後出現並隨節奏跳動。',
             'challenge.hideHint': '隱藏開關：開啟後，系統在進入下一小節時會自動遮擋上一小節，僅保留當前閱讀區。',
-            'challenge.calibration.hintSingle': '校準模式（單聲部）：任意音高皆可，只判斷節奏。',
+            'challenge.calibration.hintSingle': '校準模式（單聲部）：任意音高皆可，只判斷節奏。可直接用鍵盤 F / J 作為校準輸入（無需 MIDI）。',
             'challenge.calibration.hintDual': '校準模式（雙聲部）：MIDI 的 Do 為低聲部、Sol 為高聲部；未連接 MIDI 也可用鍵盤 F（底鼓/低聲部）/ J（軍鼓/高聲部）輸入。',
             'challenge.calibration.correct': '校準正確',
             'challenge.calibration.wrong': '校準錯誤',
@@ -493,7 +494,7 @@
             'challenge.calibration': 'Input Calibration',
             'challenge.cursorHint': 'Cursor: shows the current position; appears after count-in and moves with the rhythm.',
             'challenge.hideHint': 'Hide: when enabled, previous measures are masked as you advance.',
-            'challenge.calibration.hintSingle': 'Calibration (single voice): any pitch is accepted; timing only.',
+            'challenge.calibration.hintSingle': 'Calibration (single voice): any pitch is accepted; timing only. You can use keyboard F / J as calibration input without MIDI.',
             'challenge.calibration.hintDual': 'Calibration (two voices): MIDI C = low voice, G = high voice; without MIDI use F (kick/low) / J (snare/high).',
             'challenge.calibration.correct': 'Correct',
             'challenge.calibration.wrong': 'Wrong',
@@ -1642,6 +1643,25 @@
             if (freqDupletItem) freqDupletItem.style.display = 'block';
             if (freqQuadrupletItem) freqQuadrupletItem.style.display = 'block';
 
+            // Rebalance legacy defaults for compound meters:
+            // prioritize eighth-note pulse and avoid dotted-quarter over-dominance.
+            const freqDottedQuarter = document.getElementById('freq-dotted-quarter');
+            const freqEighth = document.getElementById('freq-eighth');
+            const freqDottedEighth = document.getElementById('freq-dotted-eighth');
+            if (freqDottedQuarter && freqEighth && !state.compoundFrequencyAdjusted) {
+                const dq = parseInt(freqDottedQuarter.value || '0', 10);
+                const e = parseInt(freqEighth.value || '0', 10);
+                const looksLegacyDefaults = (dq === 60 && e === 15) || (dq >= 55 && e <= 22);
+                if (looksLegacyDefaults) {
+                    freqDottedQuarter.value = '28';
+                    freqEighth.value = '52';
+                    if (freqDottedEighth && parseInt(freqDottedEighth.value || '0', 10) > 35) {
+                        freqDottedEighth.value = '24';
+                    }
+                }
+                state.compoundFrequencyAdjusted = true;
+            }
+
             updateFrequencyLabels();
             return;
         }
@@ -2042,9 +2062,15 @@
         let weight = Math.pow(userFreq / 100, 1.6);
         if (RHYTHM_NOTATION_RULES.isCompoundTimeSignature(settings.timeSignature)) {
             if (mappedDuration === 'eighth') {
-                weight *= 1.45;
+                weight *= 2.2;
+            } else if (mappedDuration === 'dotted-quarter') {
+                weight *= 0.18;
+            } else if (mappedDuration === 'dotted-eighth') {
+                weight *= 0.7;
+            } else if (mappedDuration === 'dotted-half') {
+                weight *= 0.45;
             } else if (mappedDuration === 'quarter') {
-                weight *= 0.6;
+                weight *= 0.35;
             }
         }
         return weight;
@@ -2740,6 +2766,58 @@
     function splitEventByBeatRules(event, beats, startPosition, timeSignature, notesForRules) {
         const epsilon = 0.00001;
         if (beats <= epsilon) return [];
+        const endPosition = startPosition + beats;
+        const getCompoundMainBeatBounds = (position) => {
+            if (!RHYTHM_NOTATION_RULES.isCompoundTimeSignature(timeSignature)) return null;
+            const info = RHYTHM_NOTATION_RULES.getCompoundInfo(timeSignature);
+            if (!info) return null;
+            const tolerance = 0.0001;
+            const beatIndex = Math.floor((position + tolerance) / info.mainBeatLength);
+            const beatStart = beatIndex * info.mainBeatLength;
+            const beatEnd = beatStart + info.mainBeatLength;
+            return { info, beatStart, beatEnd };
+        };
+        const hasSixteenthInMainBeat = (beatStart, beatEnd) => {
+            const tolerance = 0.0001;
+            let currentPos = 0;
+            for (const note of (Array.isArray(notesForRules) ? notesForRules : [])) {
+                if (!note || note.isTriplet) {
+                    if (note && Number.isFinite(note.beats)) currentPos += note.beats;
+                    continue;
+                }
+                const noteBeats = Number(note.beats);
+                if (!Number.isFinite(noteBeats) || noteBeats <= 0) continue;
+                const noteStart = currentPos;
+                const noteEnd = noteStart + noteBeats;
+                const overlaps = noteEnd > beatStart + tolerance && noteStart < beatEnd - tolerance;
+                if (overlaps && Math.abs(noteBeats - 0.25) < 0.001) {
+                    return true;
+                }
+                currentPos = noteEnd;
+            }
+            return false;
+        };
+        const compoundBounds = getCompoundMainBeatBounds(startPosition);
+        if (compoundBounds) {
+            const { beatStart, beatEnd } = compoundBounds;
+            const requireInternalEighthClarity = hasSixteenthInMainBeat(beatStart, beatEnd);
+            if (requireInternalEighthClarity) {
+                const tolerance = 0.0001;
+                for (let p = beatStart + 0.5; p < beatEnd - tolerance; p += 0.5) {
+                    const splitAt = Math.round(p * 10000) / 10000;
+                    if (splitAt > startPosition + tolerance && splitAt < endPosition - tolerance) {
+                        const firstDuration = splitAt - startPosition;
+                        const secondDuration = beats - firstDuration;
+                        if (firstDuration > epsilon && secondDuration > epsilon) {
+                            return [
+                                ...splitEventByBeatRules(event, firstDuration, startPosition, timeSignature, notesForRules),
+                                ...splitEventByBeatRules(event, secondDuration, splitAt, timeSignature, notesForRules)
+                            ];
+                        }
+                    }
+                }
+            }
+        }
         const crossInfo = RHYTHM_NOTATION_RULES.detectsCrossBeatsWithLocalRhythm(
             startPosition,
             beats,
@@ -3207,6 +3285,14 @@
         if (!RHYTHM_NOTATION_RULES.isCompoundTimeSignature(timeSignature)) return events;
         const compoundInfo = RHYTHM_NOTATION_RULES.getCompoundInfo(timeSignature);
         if (!compoundInfo) return events;
+        const spansInternalEighthBoundary = (startPos, endPos, beatStart, beatEnd, tolerance) => {
+            for (let p = beatStart + 0.5; p < beatEnd - tolerance; p += 0.5) {
+                if (startPos < p - tolerance && endPos > p + tolerance) {
+                    return true;
+                }
+            }
+            return false;
+        };
         let merged = [...events];
         let changed = true;
         let iterations = 0;
@@ -3256,9 +3342,35 @@
                 const beatEnd = beatStart + compoundInfo.mainBeatLength;
                 const withinMainBeat = startPos >= beatStart - tol && endPos <= beatEnd + tol;
                 const hasTie = !current.rest && (current.tieType || next.tieType);
+                const hasSixteenthInMainBeat = (() => {
+                    if (!withinMainBeat) return false;
+                    let pos = 0;
+                    for (const note of notesForRules) {
+                        const nb = Number(note && note.beats);
+                        if (!Number.isFinite(nb) || nb <= 0) continue;
+                        const noteStart = pos;
+                        const noteEnd = noteStart + nb;
+                        const overlaps = noteEnd > beatStart + tol && noteStart < beatEnd - tol;
+                        if (overlaps && !note.isTriplet && Math.abs(nb - 0.25) < 0.001) return true;
+                        pos = noteEnd;
+                    }
+                    return false;
+                })();
+                const allowTieMerge = hasTie && !hasSixteenthInMainBeat;
+                const crossesInternalEighthBoundary = spansInternalEighthBoundary(
+                    startPos,
+                    endPos,
+                    beatStart,
+                    beatEnd,
+                    tol
+                );
+                if (withinMainBeat && hasSixteenthInMainBeat && crossesInternalEighthBoundary) {
+                    position += beats;
+                    continue;
+                }
                 const allowWithinBeatMerge = withinMainBeat && (
                     current.rest
-                    || hasTie
+                    || allowTieMerge
                     || (!current.rest && spanMatchesHierarchy(startPos, endPos, timeSignature)
                         && areAllEventsSameTypeInSpan(merged, startPos, endPos, false))
                 );

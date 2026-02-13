@@ -2,7 +2,7 @@
  * IC Studio 视奏工具 - 专业级视奏旋律生成器
  * Professional Music Sight-Reading Tool - Final Version
  * 
- * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club
+ * Copyright © 2026. All rights reserved. Igor Chen - icstudio.club
  * 
  * Author: Igor Chen
  * Website: https://icstudio.club
@@ -460,6 +460,20 @@ const SLIDE_ARTICULATION_TYPES = ['glissando', 'slide-in', 'slide-out'];
 const TWO_NOTE_TECHNIQUE_TYPES = ['hammer-on', 'pull-off', 'glissando'];
 const MAX_SLIDES_PER_MELODY = 2;
 const SLIDE_UNLIMITED_THRESHOLD = 60;
+const MIN_SLIDE_NOTE_BEATS = 0.5; // 不允许在比八分音符更快（如16分）的位置出现slide
+// 默认权重：三种slide尽量接近，普通slide轻微偏高
+const DEFAULT_SLIDE_TYPE_WEIGHTS = Object.freeze({
+    glissando: 0.45,
+    'slide-in': 0.275,
+    'slide-out': 0.275
+});
+const DIRECTIONAL_SLIDE_CHANCE_SCALE = 0.8; // 提升方向滑音的可见性，使三者更接近均衡
+const SLIDE_OUT_CHANCE_BIAS = 0.72; // 结尾位天然更容易命中，额外压低 slide-out
+const CUSTOM_SLIDE_ANCHOR_OFFSET_X = 0; // 使用音头中心点作为锚点，无需额外水平修正
+const CUSTOM_SLIDE_ANCHOR_OFFSET_Y = 0; // 使用音头中心点作为锚点，无需额外垂直修正
+const CUSTOM_SLIDE_NOTE_GAP_PX = 2.2; // 所有slide线段与音头之间保留轻微间隙
+const CUSTOM_SLIDE_IN_OUT_LENGTH_PX = 30; // slide-in/out比普通slide更长，便于视觉区分
+const CUSTOM_SLIDE_IN_OUT_DIAGONAL_OFFSET_PX = CUSTOM_SLIDE_IN_OUT_LENGTH_PX / Math.SQRT2; // 45°时x/y分量相等
 
 function isSlideArticulationType(type) {
     return SLIDE_ARTICULATION_TYPES.includes(type);
@@ -467,6 +481,26 @@ function isSlideArticulationType(type) {
 
 function isTwoNoteTechniqueType(type) {
     return TWO_NOTE_TECHNIQUE_TYPES.includes(type);
+}
+
+function getNoteBeatsForSlide(note, fallbackFn = null) {
+    if (!note) return null;
+    if (typeof note.beats === 'number' && Number.isFinite(note.beats)) {
+        return note.beats;
+    }
+    const duration = typeof note.duration === 'string' ? note.duration : '';
+    if (fallbackFn && duration) {
+        const fallbackBeats = fallbackFn(duration);
+        if (typeof fallbackBeats === 'number' && Number.isFinite(fallbackBeats)) {
+            return fallbackBeats;
+        }
+    }
+    return null;
+}
+
+function isSlideDurationAllowed(note, fallbackFn = null) {
+    const beats = getNoteBeatsForSlide(note, fallbackFn);
+    return typeof beats === 'number' && beats >= MIN_SLIDE_NOTE_BEATS;
 }
 
 function mapSlideFrequencyToExpectedSlides(slideFrequency) {
@@ -523,8 +557,50 @@ function getSlideInOutChance(slideFrequency, isLongNote, slideType = 'slide-in')
     const maxChance = slideType === 'slide-out' ? 0.96 : 0.94;
     const baseChance = minChance + (maxChance - minChance) * curvedRatio;
     const longNoteBoost = isLongNote ? 0.06 : 0;
+    const typeBias = slideType === 'slide-out' ? SLIDE_OUT_CHANCE_BIAS : 1;
+    const directionalChance = (baseChance + longNoteBoost) * DIRECTIONAL_SLIDE_CHANCE_SCALE * typeBias;
+    return Math.max(0, Math.min(1, directionalChance));
+}
 
-    return Math.max(0, Math.min(1, baseChance + longNoteBoost));
+function getDefaultSlideTypeWeight(type) {
+    return DEFAULT_SLIDE_TYPE_WEIGHTS[type] || 0;
+}
+
+function chooseWeightedSlideType(candidates, randomGenerator = null) {
+    if (!Array.isArray(candidates) || candidates.length === 0) return null;
+
+    const weighted = candidates
+        .map(candidate => {
+            const chance = Math.max(0, Math.min(1, Number(candidate.chance) || 0));
+            const weight = getDefaultSlideTypeWeight(candidate.type);
+            return {
+                ...candidate,
+                chance,
+                weight,
+                score: chance * weight
+            };
+        })
+        .filter(item => item.score > 0);
+
+    if (!weighted.length) return null;
+
+    const totalScore = weighted.reduce((sum, item) => sum + item.score, 0);
+    const triggerChance = Math.max(0, Math.min(1, totalScore));
+    const triggerRoll = randomGenerator ? randomGenerator.nextFloat() : Math.random();
+    if (triggerRoll >= triggerChance) {
+        return null;
+    }
+
+    let cursor = (randomGenerator ? randomGenerator.nextFloat() : Math.random()) * totalScore;
+
+    for (const item of weighted) {
+        cursor -= item.score;
+        if (cursor <= 0) {
+            return item;
+        }
+    }
+
+    return weighted[weighted.length - 1];
 }
 
 function canAssignSlideWithState(state, requestedType) {
@@ -3304,13 +3380,16 @@ class IntelligentMelodyGenerator {
         // 🔥 最后一道防线：全局演奏法安全检查
         const cadenceAligned = this.enforceFinalChordTone(melody);
         const sanitizedMelody = this.sanitizeArticulations(cadenceAligned);
-        const slurSafeMelody = this.removeStaccatoFromSlurStarts(sanitizedMelody);
+        const tiePlacedSlideMelody = this.normalizeSlidePlacementOnTiedNotes(sanitizedMelody);
+        const slurSafeMelody = this.removeStaccatoFromSlurStarts(tiePlacedSlideMelody);
         const glissSanitizedMelody = this.sanitizeGlissandoPairs(slurSafeMelody);
         const glissReadyMelody = this.ensureAtLeastOneGlissando(glissSanitizedMelody);
-        const pairSafeMelody = this.sanitizeTwoNoteArticulationConflicts(glissReadyMelody);
+        const tiePlacedAfterFallbackMelody = this.normalizeSlidePlacementOnTiedNotes(glissReadyMelody);
+        const pairSafeMelody = this.sanitizeTwoNoteArticulationConflicts(tiePlacedAfterFallbackMelody);
         const nonConsecutiveSlideMelody = this.sanitizeConsecutiveSlides(pairSafeMelody);
         const singleTechniqueMelody = this.sanitizeSingleTechniquePerNote(nonConsecutiveSlideMelody);
-        const slideLimitedMelody = this.enforceSlideLimitPerMelody(singleTechniqueMelody);
+        const speedSafeSlideMelody = this.sanitizeSlideMinimumDuration(singleTechniqueMelody);
+        const slideLimitedMelody = this.enforceSlideLimitPerMelody(speedSafeSlideMelody);
         
         console.log(`✅ 旋律生成完成: ${this.stats.noteCount}音符 ${this.stats.restCount}休止 休止比例${(this.stats.restRatio*100).toFixed(1)}%`);
         
@@ -3939,6 +4018,8 @@ class IntelligentMelodyGenerator {
                     prePreviousElement &&
                     prePreviousElement.type === 'note' &&
                     isSlideArticulationType(prePreviousElement.articulation);
+                const previousSlideAllowed = isSlideDurationAllowed(previousElement, this.durationToBeats?.bind(this));
+                const currentSlideAllowed = isSlideDurationAllowed(noteObject, this.durationToBeats?.bind(this));
                 if (
                     userSettings.articulations.enabled &&
                     this.clef === 'treble' &&
@@ -3949,6 +4030,8 @@ class IntelligentMelodyGenerator {
                     previousElement.type === 'note' &&
                     typeof previousElement.midi === 'number' &&
                     !previousElement.articulation &&
+                    previousSlideAllowed &&
+                    currentSlideAllowed &&
                     !wouldCreateConsecutiveSlide
                 ) {
                     const interval = Math.abs(noteObject.midi - previousElement.midi);
@@ -12018,52 +12101,68 @@ class IntelligentMelodyGenerator {
                 console.log(`🚫 PULL-OFF禁止: 用户未选择pull-off技巧`);
             }
             
-            // Glissando (/) - 连接两个音符的滑音，适用于较大音程
-            // 强制禁止跨小节：不在第一个和最后一个音符使用
-            // glissando标记应该放在起始音符上，连接到下一个音符
-            if (!selectedArticulation && !previousNoteHasSlide && artSettings.guitar.includes('glissando') && this.canAssignSlideArticulation('glissando') && !isLastNote && noteIndex < measureNotes.length - 1) {
-                const nextNote = measureNotes[noteIndex + 1];
-                if (nextNote && nextNote.type === 'note' && nextNote.midi) {
-                    const interval = Math.abs(nextNote.midi - note.midi);
-                    const isDifferentPitch = interval >= 1;
-                    // 普通slide只要求连接两个不同音高；小音程降低概率，大音程提高概率
-                    const isReasonableRange = interval <= 12;
-                    const glissChance = interval <= 2 ? 0.55 : 0.9;
-                    
-                    if (isDifferentPitch && isReasonableRange && this.random.nextFloat() < glissChance) {
-                        selectedArticulation = 'glissando';
-                        console.log(`✅ 选择吉他技巧: Glissando: ${note.midi} -> ${nextNote.midi} (音程：${interval}半音)`);
-                    }
-                }
-            }
+            const noteBeatsForSlide = typeof note.beats === 'number' ? note.beats : this.durationToBeats(note.duration || 'quarter');
+            const isEighthOrLonger = noteBeatsForSlide >= MIN_SLIDE_NOTE_BEATS;
+            const isLongNote = noteBeatsForSlide > 1;
 
             const slideFrequency = this.slideAssignmentState?.slideFrequency ?? getUserFrequency('articulation', 'slide');
-            
-            // Slide In (/↗) - 乐句开头或重拍，制造进入感
-            if (!selectedArticulation && !previousNoteHasSlide && artSettings.guitar.includes('slide-in') && this.canAssignSlideArticulation('slide-in')) {
-                const noteBeats = typeof note.beats === 'number' ? note.beats : this.durationToBeats(note.duration || 'quarter');
-                const isQuarterOrLonger = noteBeats >= 1;
-                const isLongNote = noteBeats > 1;
-                const isEntryPoint = isFirstNote || (isStrongBeat && this.random.nextFloat() < 0.5);
-                const slideInChance = getSlideInOutChance(slideFrequency, isLongNote, 'slide-in');
-                
-                if (isQuarterOrLonger && isEntryPoint && this.random.nextFloat() < slideInChance) {
-                    selectedArticulation = 'slide-in';
-                    console.log(`✅ 选择吉他技巧: slide-in (beats=${noteBeats})`);
+
+            // Slide 家族（glissando / slide-in / slide-out）统一加权选择：
+            // 默认权重保证普通slide > slide-in + slide-out
+            if (!selectedArticulation && !previousNoteHasSlide && isEighthOrLonger) {
+                const slideCandidates = [];
+
+                // Glissando (/) - 连接当前音符到下一个音符
+                if (artSettings.guitar.includes('glissando') && this.canAssignSlideArticulation('glissando') && !isLastNote && noteIndex < measureNotes.length - 1) {
+                    const nextNote = measureNotes[noteIndex + 1];
+                    if (nextNote && nextNote.type === 'note' && nextNote.midi) {
+                        const interval = Math.abs(nextNote.midi - note.midi);
+                        const isDifferentPitch = interval >= 1;
+                        const isReasonableRange = interval <= 12;
+                        if (isDifferentPitch && isReasonableRange) {
+                            const glissChance = interval <= 2 ? 0.55 : 0.9;
+                            slideCandidates.push({
+                                type: 'glissando',
+                                chance: glissChance,
+                                interval,
+                                targetMidi: nextNote.midi
+                            });
+                        }
+                    }
                 }
-            }
-            
-            // Slide Out (↘\) - 乐句结尾，作为收尾装饰
-            if (!selectedArticulation && !previousNoteHasSlide && artSettings.guitar.includes('slide-out') && this.canAssignSlideArticulation('slide-out')) {
-                const noteBeats = typeof note.beats === 'number' ? note.beats : this.durationToBeats(note.duration || 'quarter');
-                const isQuarterOrLonger = noteBeats >= 1;
-                const isLongNote = noteBeats > 1;
-                const isEndingPoint = isLastNote || (noteIndex >= measureNotes.length - 2);
-                const slideOutChance = getSlideInOutChance(slideFrequency, isLongNote, 'slide-out');
-                
-                if (isQuarterOrLonger && isEndingPoint && this.random.nextFloat() < slideOutChance) {
-                    selectedArticulation = 'slide-out';
-                    console.log(`✅ 选择吉他技巧: slide-out (beats=${noteBeats})`);
+
+                // Slide In (/↗) - 乐句开头或重拍
+                if (artSettings.guitar.includes('slide-in') && this.canAssignSlideArticulation('slide-in')) {
+                    const isEntryPoint = isFirstNote || (isStrongBeat && this.random.nextFloat() < 0.5);
+                    if (isEntryPoint) {
+                        slideCandidates.push({
+                            type: 'slide-in',
+                            chance: getSlideInOutChance(slideFrequency, isLongNote, 'slide-in'),
+                            beats: noteBeatsForSlide
+                        });
+                    }
+                }
+
+                // Slide Out (↘\) - 乐句结尾
+                if (artSettings.guitar.includes('slide-out') && this.canAssignSlideArticulation('slide-out')) {
+                    const isEndingPoint = isLastNote || (noteIndex >= measureNotes.length - 2);
+                    if (isEndingPoint) {
+                        slideCandidates.push({
+                            type: 'slide-out',
+                            chance: getSlideInOutChance(slideFrequency, isLongNote, 'slide-out'),
+                            beats: noteBeatsForSlide
+                        });
+                    }
+                }
+
+                const selectedSlide = chooseWeightedSlideType(slideCandidates, this.random);
+                if (selectedSlide) {
+                    selectedArticulation = selectedSlide.type;
+                    if (selectedSlide.type === 'glissando') {
+                        console.log(`✅ 选择吉他技巧: Glissando: ${note.midi} -> ${selectedSlide.targetMidi} (音程：${selectedSlide.interval}半音, 权重=${selectedSlide.weight.toFixed(2)})`);
+                    } else {
+                        console.log(`✅ 选择吉他技巧: ${selectedSlide.type} (beats=${noteBeatsForSlide}, 权重=${selectedSlide.weight.toFixed(2)})`);
+                    }
                 }
             }
         }
@@ -12208,6 +12307,93 @@ class IntelligentMelodyGenerator {
         return measures;
     }
 
+    getTieAwareSlideTargetIndex(notes, index, articulation) {
+        if (!Array.isArray(notes)) return index;
+        const current = notes[index];
+        if (!current || current.type !== 'note' || !current.tied) return index;
+
+        const moveForward = articulation === 'glissando' || articulation === 'slide-out';
+        const moveBackward = articulation === 'slide-in';
+        if (!moveForward && !moveBackward) return index;
+
+        if (moveForward) {
+            let cursor = index;
+            while (cursor + 1 < notes.length) {
+                const from = notes[cursor];
+                const next = notes[cursor + 1];
+                if (!next || next.type !== 'note' || !next.tied) break;
+                if (typeof from.midi === 'number' && typeof next.midi === 'number' && from.midi !== next.midi) break;
+                if (next.tieType !== 'continue' && next.tieType !== 'stop') break;
+                cursor += 1;
+                if (next.tieType === 'stop') break;
+            }
+            return cursor;
+        }
+
+        let cursor = index;
+        while (cursor - 1 >= 0) {
+            const prev = notes[cursor - 1];
+            const to = notes[cursor];
+            if (!prev || prev.type !== 'note' || !prev.tied) break;
+            if (typeof prev.midi === 'number' && typeof to.midi === 'number' && prev.midi !== to.midi) break;
+            if (prev.tieType !== 'start' && prev.tieType !== 'continue') break;
+            cursor -= 1;
+            if (prev.tieType === 'start') break;
+        }
+        return cursor;
+    }
+
+    normalizeSlidePlacementOnTiedNotes(measures) {
+        if (!Array.isArray(measures) || measures.length === 0) {
+            return measures;
+        }
+
+        let moved = 0;
+
+        for (let measureIndex = 0; measureIndex < measures.length; measureIndex++) {
+            const measure = measures[measureIndex];
+            if (!Array.isArray(measure?.notes)) continue;
+
+            const notes = measure.notes;
+            for (let noteIndex = 0; noteIndex < notes.length; noteIndex++) {
+                const note = notes[noteIndex];
+                if (!note || note.type !== 'note' || !isSlideArticulationType(note.articulation) || !note.tied) {
+                    continue;
+                }
+
+                const targetIndex = this.getTieAwareSlideTargetIndex(notes, noteIndex, note.articulation);
+                if (targetIndex === noteIndex) continue;
+
+                const target = notes[targetIndex];
+                if (!target || target.type !== 'note') continue;
+                if (typeof note.midi === 'number' && typeof target.midi === 'number' && note.midi !== target.midi) {
+                    continue;
+                }
+
+                const previousTargetArticulation = target.articulation;
+                target.articulation = note.articulation;
+                if (note.forceGlissandoStart) {
+                    target.forceGlissandoStart = true;
+                    note.forceGlissandoStart = false;
+                }
+                if (note.needsGlissandoStop) {
+                    target.needsGlissandoStop = true;
+                    note.needsGlissandoStop = false;
+                }
+
+                note.articulation = null;
+                moved++;
+                console.log(`🔁 连线音符slide重定位: 小节${measureIndex + 1} 音符${noteIndex + 1} -> 音符${targetIndex + 1} (${target.articulation}${previousTargetArticulation && previousTargetArticulation !== target.articulation ? `, 覆盖${previousTargetArticulation}` : ''})`);
+            }
+        }
+
+        if (moved > 0) {
+            console.log(`✅ 连线音符slide位置修正完成: 共重定位${moved}个`);
+        }
+
+        return measures;
+    }
+
     removeStaccatoFromSlurStarts(measures) {
         let removed = 0;
 
@@ -12290,6 +12476,8 @@ class IntelligentMelodyGenerator {
                     next?.type === 'note' &&
                     typeof current.midi === 'number' &&
                     typeof next.midi === 'number' &&
+                    isSlideDurationAllowed(current, this.durationToBeats?.bind(this)) &&
+                    isSlideDurationAllowed(next, this.durationToBeats?.bind(this)) &&
                     current.midi !== next.midi &&
                     Math.abs(next.midi - current.midi) <= 12 &&
                     !currentHasArticulation &&
@@ -12328,6 +12516,8 @@ class IntelligentMelodyGenerator {
                     next?.type === 'note' &&
                     typeof current.midi === 'number' &&
                     typeof next.midi === 'number' &&
+                    isSlideDurationAllowed(current, this.durationToBeats?.bind(this)) &&
+                    isSlideDurationAllowed(next, this.durationToBeats?.bind(this)) &&
                     current.midi !== next.midi &&
                     Math.abs(next.midi - current.midi) <= 12;
 
@@ -12473,6 +12663,8 @@ class IntelligentMelodyGenerator {
                         next?.type === 'note' &&
                         typeof current.midi === 'number' &&
                         typeof next.midi === 'number' &&
+                        isSlideDurationAllowed(current, this.durationToBeats?.bind(this)) &&
+                        isSlideDurationAllowed(next, this.durationToBeats?.bind(this)) &&
                         current.midi !== next.midi &&
                         Math.abs(next.midi - current.midi) <= 12;
                     if (!validGliss) {
@@ -12514,6 +12706,40 @@ class IntelligentMelodyGenerator {
 
         if (removed > 0) {
             console.log(`✅ 单音单技巧清理完成: 移除${removed}个冲突或无效双音技巧`);
+        }
+
+        return measures;
+    }
+
+    sanitizeSlideMinimumDuration(measures) {
+        if (!Array.isArray(measures) || measures.length === 0) {
+            return measures;
+        }
+
+        let removed = 0;
+
+        for (let measureIndex = 0; measureIndex < measures.length; measureIndex++) {
+            const measure = measures[measureIndex];
+            if (!Array.isArray(measure?.notes)) continue;
+
+            for (let noteIndex = 0; noteIndex < measure.notes.length; noteIndex++) {
+                const note = measure.notes[noteIndex];
+                if (!note || note.type !== 'note' || !isSlideArticulationType(note.articulation)) continue;
+
+                const durationAllowed = isSlideDurationAllowed(note, this.durationToBeats?.bind(this));
+                if (durationAllowed) continue;
+
+                const removedType = note.articulation;
+                note.articulation = null;
+                note.forceGlissandoStart = false;
+                note.needsGlissandoStop = false;
+                removed++;
+                console.log(`🚫 移除过短时值slide: 小节${measureIndex + 1} 音符${noteIndex + 1} 的${removedType}`);
+            }
+        }
+
+        if (removed > 0) {
+            console.log(`✅ 过短时值slide清理完成: 移除${removed}个（最小时值=八分音符）`);
         }
 
         return measures;
@@ -13596,6 +13822,8 @@ class MusicXMLBuilder {
                                     nextNote.type === 'note' &&
                                     typeof note.midi === 'number' &&
                                     typeof nextNote.midi === 'number' &&
+                                    isSlideDurationAllowed(note, this.durationToBeats?.bind(this)) &&
+                                    isSlideDurationAllowed(nextNote, this.durationToBeats?.bind(this)) &&
                                     nextNote.midi !== note.midi &&
                                     Math.abs(nextNote.midi - note.midi) <= 12;
 
@@ -14933,13 +15161,21 @@ function getOSMDGraphicalNotePoints() {
                             if (!abs) continue;
                             const size = bbox && (bbox.size || bbox.Size || bbox.extent || bbox.Extent);
 
-                            const x = (abs.x ?? abs.X ?? 0) * unitToPx;
+                            const xLeft = (abs.x ?? abs.X ?? 0) * unitToPx;
                             const yBase = (abs.y ?? abs.Y ?? 0) * unitToPx;
+                            const widthValue = size ? (size.width ?? size.x ?? size.X) : 0;
                             const heightValue = size ? (size.height ?? size.y ?? size.Y) : 0;
-                            const y = yBase + ((typeof heightValue === 'number' && heightValue > 0) ? (heightValue * unitToPx * 0.5) : 0);
+                            const noteHeadWidth = (typeof widthValue === 'number' && widthValue > 0)
+                                ? widthValue * unitToPx
+                                : 9.5 * (osmd.zoom || 1);
+                            const noteHeadHeight = (typeof heightValue === 'number' && heightValue > 0)
+                                ? heightValue * unitToPx
+                                : 7.5 * (osmd.zoom || 1);
+                            const x = xLeft;
+                            const y = yBase + noteHeadHeight * 0.5;
 
                             if (!pickedPoint || x < pickedPoint.x) {
-                                pickedPoint = { x, y, measureIndex };
+                                pickedPoint = { x, y, measureIndex, noteHeadWidth, noteHeadHeight };
                             }
                         }
                     }
@@ -14982,52 +15218,81 @@ function buildCustomSlideSegments(melodyData, notePoints) {
     }
 
     const segments = [];
+    const toAnchorPoint = (point) => ({
+        x: point.x + CUSTOM_SLIDE_ANCHOR_OFFSET_X,
+        y: point.y + CUSTOM_SLIDE_ANCHOR_OFFSET_Y
+    });
+    const estimateNoteHeadRadius = (point) => {
+        const w = (typeof point?.noteHeadWidth === 'number' && point.noteHeadWidth > 0) ? point.noteHeadWidth : 9.5;
+        const h = (typeof point?.noteHeadHeight === 'number' && point.noteHeadHeight > 0) ? point.noteHeadHeight : 7.5;
+        const majorAxis = Math.max(w, h);
+        return Math.max(4.5, Math.min(12, majorAxis * 0.45));
+    };
+    const moveOutsideNoteHead = (center, toward, radius, padding = CUSTOM_SLIDE_NOTE_GAP_PX) => {
+        const dx = toward.x - center.x;
+        const dy = toward.y - center.y;
+        const length = Math.hypot(dx, dy);
+        if (length < 0.001) {
+            return { x: center.x + radius + padding, y: center.y };
+        }
+        const factor = (radius + padding) / length;
+        return {
+            x: center.x + dx * factor,
+            y: center.y + dy * factor
+        };
+    };
+
     for (let i = 0; i < mapped.length; i++) {
         const current = mapped[i];
         const articulation = current.note.articulation;
         if (!articulation) continue;
+        const currentAnchor = toAnchorPoint(current.point);
+        const currentRadius = estimateNoteHeadRadius(current.point);
 
         if (articulation === 'glissando') {
             const next = mapped[i + 1];
             if (!next) continue;
+            const nextAnchor = toAnchorPoint(next.point);
+            const nextRadius = estimateNoteHeadRadius(next.point);
 
             const forwardDistance = next.point.x - current.point.x;
             if (forwardDistance < 12) continue; // 避免跨行或反向连接导致错误线条
 
-            const x1 = current.point.x + 6;
-            const y1 = current.point.y;
-            const x2 = next.point.x - 6;
-            const y2 = next.point.y;
+            const startPoint = moveOutsideNoteHead(currentAnchor, nextAnchor, currentRadius);
+            const endPoint = moveOutsideNoteHead(nextAnchor, currentAnchor, nextRadius);
+            if (endPoint.x - startPoint.x < 4) continue;
 
             segments.push({
                 type: 'glissando',
-                d: `M ${x1.toFixed(2)} ${y1.toFixed(2)} L ${x2.toFixed(2)} ${y2.toFixed(2)}`
+                d: `M ${startPoint.x.toFixed(2)} ${startPoint.y.toFixed(2)} L ${endPoint.x.toFixed(2)} ${endPoint.y.toFixed(2)}`
             });
             continue;
         }
 
         if (articulation === 'slide-in') {
-            const x2 = current.point.x - 2;
-            const y2 = current.point.y;
-            const x1 = x2 - 22;
-            const y1 = y2 + 10;
+            const rawStart = {
+                x: currentAnchor.x - CUSTOM_SLIDE_IN_OUT_DIAGONAL_OFFSET_PX,
+                y: currentAnchor.y + CUSTOM_SLIDE_IN_OUT_DIAGONAL_OFFSET_PX
+            };
+            const endPoint = moveOutsideNoteHead(currentAnchor, rawStart, currentRadius, CUSTOM_SLIDE_NOTE_GAP_PX);
 
             segments.push({
                 type: 'slide-in',
-                d: `M ${x1.toFixed(2)} ${y1.toFixed(2)} L ${x2.toFixed(2)} ${y2.toFixed(2)}`
+                d: `M ${rawStart.x.toFixed(2)} ${rawStart.y.toFixed(2)} L ${endPoint.x.toFixed(2)} ${endPoint.y.toFixed(2)}`
             });
             continue;
         }
 
         if (articulation === 'slide-out') {
-            const x1 = current.point.x + 2;
-            const y1 = current.point.y;
-            const x2 = x1 + 22;
-            const y2 = y1 + 10;
+            const rawEnd = {
+                x: currentAnchor.x + CUSTOM_SLIDE_IN_OUT_DIAGONAL_OFFSET_PX,
+                y: currentAnchor.y + CUSTOM_SLIDE_IN_OUT_DIAGONAL_OFFSET_PX
+            };
+            const startPoint = moveOutsideNoteHead(currentAnchor, rawEnd, currentRadius, CUSTOM_SLIDE_NOTE_GAP_PX);
 
             segments.push({
                 type: 'slide-out',
-                d: `M ${x1.toFixed(2)} ${y1.toFixed(2)} L ${x2.toFixed(2)} ${y2.toFixed(2)}`
+                d: `M ${startPoint.x.toFixed(2)} ${startPoint.y.toFixed(2)} L ${rawEnd.x.toFixed(2)} ${rawEnd.y.toFixed(2)}`
             });
         }
     }
@@ -23381,6 +23646,8 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                 prePrevGeneratedNote &&
                 prePrevGeneratedNote.type === 'note' &&
                 isSlideArticulationType(prePrevGeneratedNote.articulation);
+            const prevSlideAllowed = isSlideDurationAllowed(prevGeneratedNote, durationToBeats6_8);
+            const currentSlideAllowed = isSlideDurationAllowed(noteObject, durationToBeats6_8);
             if (
                 clef === 'treble' &&
                 Array.isArray(userSettings.articulations.guitar) &&
@@ -23390,11 +23657,15 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                 prevGeneratedNote.type === 'note' &&
                 typeof prevGeneratedNote.midi === 'number' &&
                 !prevGeneratedNote.articulation &&
+                prevSlideAllowed &&
+                currentSlideAllowed &&
                 !wouldCreateConsecutiveSlide
             ) {
                 const interval = Math.abs(noteObject.midi - prevGeneratedNote.midi);
                 if (interval >= 1 && interval <= 12) {
-                    const linkChance = interval <= 2 ? 0.16 : 0.32;
+                    const baseLinkChance = interval <= 2 ? 0.16 : 0.32;
+                    const glissWeightBoost = 1 + getDefaultSlideTypeWeight('glissando');
+                    const linkChance = Math.min(0.85, baseLinkChance * glissWeightBoost);
                     if (random.nextFloat() < linkChance) {
                         prevGeneratedNote.articulation = 'glissando';
                         if (consumeSlideWithState(activeSlideState, 'glissando')) {
@@ -23488,27 +23759,36 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                             }
                         }
 
-                        // Slide In/Out（6/8拍）：优先落在四分及以上时值
+                        // Slide In/Out（6/8拍）：不允许出现在比八分音符更快的时值上
                         const noteBeats = typeof note.beats === 'number' ? note.beats : durationToBeats6_8(note.duration || 'quarter');
-                        const isQuarterOrLonger = noteBeats >= 1;
+                        const isEighthOrLonger = noteBeats >= MIN_SLIDE_NOTE_BEATS;
                         const isLongNote = noteBeats > 1;
                         const isEntryPoint = noteSequenceIndex === 0;
-                        const isEndingPoint = noteSequenceIndex >= Math.max(0, totalPlayableNotesInPattern - 2);
+                        const isEndingPoint = noteSequenceIndex === Math.max(0, totalPlayableNotesInPattern - 1);
+                        const shortPatternDirectionalScale = totalPlayableNotesInPattern <= 2 ? 0.75 : 1;
                         const slideFrequency = activeSlideState?.slideFrequency ?? getUserFrequency('articulation', 'slide');
 
-                        if (!selectedArticulation && !previousNoteHasSlide && artSettings.guitar.includes('slide-in') && canAssignSlideWithState(activeSlideState, 'slide-in')) {
-                            const slideInChance = getSlideInOutChance(slideFrequency, isLongNote, 'slide-in');
-                            if (isQuarterOrLonger && isEntryPoint && this.random.nextFloat() < slideInChance) {
-                                selectedArticulation = 'slide-in';
-                                console.log(`✅ 6/8拍选择吉他技巧: slide-in (beats=${noteBeats})`);
+                        if (!selectedArticulation && !previousNoteHasSlide && isEighthOrLonger) {
+                            const directionalCandidates = [];
+                            if (artSettings.guitar.includes('slide-in') && canAssignSlideWithState(activeSlideState, 'slide-in') && isEntryPoint) {
+                                directionalCandidates.push({
+                                    type: 'slide-in',
+                                    chance: getSlideInOutChance(slideFrequency, isLongNote, 'slide-in') * shortPatternDirectionalScale,
+                                    beats: noteBeats
+                                });
                             }
-                        }
+                            if (artSettings.guitar.includes('slide-out') && canAssignSlideWithState(activeSlideState, 'slide-out') && isEndingPoint) {
+                                directionalCandidates.push({
+                                    type: 'slide-out',
+                                    chance: getSlideInOutChance(slideFrequency, isLongNote, 'slide-out') * shortPatternDirectionalScale,
+                                    beats: noteBeats
+                                });
+                            }
 
-                        if (!selectedArticulation && !previousNoteHasSlide && artSettings.guitar.includes('slide-out') && canAssignSlideWithState(activeSlideState, 'slide-out')) {
-                            const slideOutChance = getSlideInOutChance(slideFrequency, isLongNote, 'slide-out');
-                            if (isQuarterOrLonger && isEndingPoint && this.random.nextFloat() < slideOutChance) {
-                                selectedArticulation = 'slide-out';
-                                console.log(`✅ 6/8拍选择吉他技巧: slide-out (beats=${noteBeats})`);
+                            const selectedDirectional = chooseWeightedSlideType(directionalCandidates, this.random);
+                            if (selectedDirectional) {
+                                selectedArticulation = selectedDirectional.type;
+                                console.log(`✅ 6/8拍选择吉他技巧: ${selectedDirectional.type} (beats=${noteBeats}, 权重=${selectedDirectional.weight.toFixed(2)})`);
                             }
                         }
                     }

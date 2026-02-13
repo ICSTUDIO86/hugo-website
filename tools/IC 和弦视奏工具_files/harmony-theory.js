@@ -2,7 +2,7 @@
  * IC Studio - 和声理论基础模块
  * Harmony Theory Foundation Module
  *
- * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club
+ * Copyright © 2026. All rights reserved. Igor Chen - icstudio.club
  *
  * Author: Igor Chen
  * Website: https://icstudio.club

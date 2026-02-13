@@ -2,7 +2,7 @@
  * IC Studio - Voice Leading 分析器
  * Voice Leading Analyzer
  *
- * Copyright © 2025. All rights reserved. Igor Chen - icstudio.club
+ * Copyright © 2026. All rights reserved. Igor Chen - icstudio.club
  *
  * Author: Igor Chen
  * Website: https://icstudio.club
