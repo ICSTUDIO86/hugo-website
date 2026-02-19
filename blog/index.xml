@@ -1,4 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>IC Blog on IC Studio</title><link>https://icstudio.club/blog/</link><description>Recent content in IC Blog on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Fri, 13 Feb 2026 11:04:26 +0100</lastBuildDate><atom:link href="https://icstudio.club/blog/index.xml" rel="self" type="application/rss+xml"/><item><title>我讨厌“读书”</title><link>https://icstudio.club/blog/i-hate-reading/</link><pubDate>Fri, 21 Nov 2025 00:00:00 +0000</pubDate><guid>https://icstudio.club/blog/i-hate-reading/</guid><description>&lt;p>我必须承认：我真的不太喜欢读书。&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>IC Blog on IC Studio</title><link>https://icstudio.club/blog/</link><description>Recent content in IC Blog on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Thu, 19 Feb 2026 01:04:31 +0100</lastBuildDate><atom:link href="https://icstudio.club/blog/index.xml" rel="self" type="application/rss+xml"/><item><title>一根断弦带来的意外启发</title><link>https://icstudio.club/blog/broken-string-rubber-band-improv-engineering/</link><pubDate>Wed, 18 Feb 2026 00:00:00 +0000</pubDate><guid>https://icstudio.club/blog/broken-string-rubber-band-improv-engineering/</guid><description>&lt;h2 id="一根断弦引发的连锁反应">一根断弦引发的连锁反应&lt;/h2>
+&lt;p>今天练琴时，一弦突然断了。问题不大，但新买的 09 号弦还在快递路上，家里只剩下一套 10 号弦。&lt;/p>
+&lt;p>对于带浮动琴桥的电吉他来说，换弦规格不是小事。原本按照 09 弦调校的张力，一旦换成拉力更大的 10 弦，琴桥就会被拉高，弦距上升，手感立刻变得陌生。&lt;/p>
+&lt;p>但练习不能停，我决定先换上 10 弦再说。&lt;/p>
+&lt;h2 id="小补充什么是琴桥">小补充：什么是琴桥？&lt;/h2>
+&lt;p>浮动琴桥的核心就是张力平衡：琴弦向前拉，背部弹簧向后拉，两边拉力相等时，琴桥停在合适的位置。弦越粗，弦的拉力就越大，就需要更大的向后拉力来抵消，否则琴桥就会被拉高，弦距随之升高。&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/broken-string-photo-4.webp" alt="浮动琴桥张力平衡示意图">&lt;/p>
+&lt;h2 id="三个不够四个太多">三个不够，四个太多&lt;/h2>
+&lt;p>今天换上 10 弦之后，琴桥果然被拉高。我开始测试不同的配置。三个弹簧时，琴桥太高；四个弹簧时，琴桥被压得几乎没有浮动空间。虽然不至于打品，但弦距降低之后的手感非常不习惯。&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/broken-string-photo-1.jpg" alt="10 号弦安装后琴桥抬高">&lt;/p>
+&lt;p>我一度陷入一个典型的二选一困境：要么太高，要么太低，看起来没有一个理想解。&lt;/p>
+&lt;h2 id="意外的发现">意外的发现&lt;/h2>
+&lt;p>就在我准备接受现实的时候，打算用四个弹簧忍几天时，我看到桌上有一个橡皮筋。突然想到，如果弹簧负责提供向后的拉力，那么是否可以通过额外增加一点点张力来微调平衡？ 于是我在弹簧上加绑了几个橡皮筋。&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/broken-string-photo-2.jpg" alt="背部弹簧与橡皮筋微调方案">&lt;/p>
+&lt;p>结果出乎意料。琴桥的高度回到了一个非常自然、非常舒服的位置，不高不低，刚刚好。系统重新达到了一个新的平衡。&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/broken-string-photo-3.jpg" alt="微调后琴桥高度回到舒适位置">&lt;/p></description></item><item><title>我讨厌“读书”</title><link>https://icstudio.club/blog/i-hate-reading/</link><pubDate>Fri, 21 Nov 2025 00:00:00 +0000</pubDate><guid>https://icstudio.club/blog/i-hate-reading/</guid><description>&lt;p>我必须承认：我真的不太喜欢读书。&lt;/p>
 &lt;p>不是因为不想学习，而是读书这件事对我来说非常&lt;strong>不自然&lt;/strong>。我读得慢、理解得也慢；稍微加快一点速度，内容就像从指缝里滑过去一样，根本抓不住。&lt;/p>
 &lt;h2 id="人类真正习惯的输入方式">人类真正习惯的输入方式&lt;/h2>
 &lt;p>大概两年前，我偶然看到 Greg Wilson 的一个非常棒的&lt;a href="https://www.youtube.com/watch?v=ewXvFQByRqY&amp;amp;t=1276s">视频&lt;/a>，对“为什么阅读这么难”做了一个非常有趣的解释：&lt;/p>
