@@ -1,19 +1,34 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>The Real Book on IC Studio</title>
-    <link>http://localhost:1313/tags/the-real-book/</link>
-    <description>Recent content in The Real Book on IC Studio</description>
-    <generator>Hugo</generator>
-    <language>zh-cn</language>
-    <lastBuildDate>Tue, 29 Apr 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/the-real-book/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>如何用 The Real Book 自学？从和声、视奏到即兴准备的实战方法</title>
-      <link>http://localhost:1313/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/real-book-self-study-zh/</link>
-      <pubDate>Tue, 29 Apr 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/real-book-self-study-zh/</guid>
-      <description>&lt;p&gt;很多人把 The Real Book 当成一本“爵士曲谱合集”，但如果你真的长期用下来，就会发现它更像是一套训练系统。你可以用同一首歌，同时训练和声连接、旋律反应、指板定位，以及后续即兴所需要的听觉判断。关键不在于你弹了多少首，而在于你是否把每一首都练成了可复用的方法。&lt;/p&gt;&#xA;&lt;h2 id=&#34;the-real-book-的核心价值不是曲子多而是信息干净&#34;&gt;The Real Book 的核心价值，不是“曲子多”，而是“信息干净”&lt;/h2&gt;&#xA;&lt;p&gt;The Real Book 大多数页面只有两类信息：旋律线和和弦代号。它没有把所有按法都替你写好，这恰恰是它最有价值的地方。因为你必须亲自决定每个和弦怎么落在指板上、每条旋律在什么把位完成、每个段落如何保持声音连贯。你被迫做这些决定的过程，本身就是训练。&lt;/p&gt;&#xA;&lt;p&gt;&lt;img src=&#34;http://localhost:1313/images/real-book/real-book-lead-sheet-example.png&#34; alt=&#34;The Real Book 的谱面总览示例&#34;&gt;&lt;/p&gt;&#xA;&lt;p&gt;当你不再把它当“照着弹的书”，而是当“做决定的素材库”，学习效率会明显不一样。&lt;/p&gt;&#xA;&lt;h2 id=&#34;先用和声训练把看见和弦就能下手这件事练出来&#34;&gt;先用和声训练，把“看见和弦就能下手”这件事练出来&lt;/h2&gt;&#xA;&lt;p&gt;以《Alice in Wonderland》为例，Real Book 给了你一条完整进行，但不会替你安排指法。这个空白就是练习入口。你可以先给自己一个明确限制，比如只在第五品附近活动，只用一套弦组，只做小范围连接。限制越清晰，反而越容易听到声部之间的关系，也越容易把注意力放在“连接质量”而不是“手忙脚乱换把”。&lt;/p&gt;&#xA;&lt;p&gt;&lt;img src=&#34;http://localhost:1313/images/real-book/real-book-harmony-drop2-example.png&#34; alt=&#34;第五品附近的 Drop 2 和声连接示例&#34;&gt;&lt;/p&gt;&#xA;&lt;figure style=&#34;text-align: center; margin: 20px auto; width: 100%;&#34;&gt;&#xA;  &lt;div style=&#34;display: flex; justify-content: center;&#34;&gt;&#xA;    &lt;audio controls preload=&#34;auto&#34; style=&#34;max-width: 100%; display: inline-block !important; margin: 0 auto;&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/real-book/real-book-voice-leading-example.mp3&#34; type=&#34;audio/mpeg&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/real-book/real-book-voice-leading-example.mp3&#34; type=&#34;audio/mp3&#34;&gt;&#xA;      &lt;source src=&#34;http://localhost:1313/audio/real-book/real-book-voice-leading-example.mp3&#34; type=&#34;audio/wav&#34;&gt;&#xA;      您的浏览器不支持音频播放。&#xA;    &lt;/audio&gt;&#xA;  &lt;/div&gt;&#xA;  &#xA;  &lt;figcaption style=&#34;margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;&#34;&gt;&#xA;    和声连接中的声部变化听感示例&#xA;  &lt;/figcaption&gt;&#xA;  &#xA;&lt;/figure&gt;&#xA;  &#xA;&lt;p&gt;在这个阶段，速度不用快。真正要练的是两件事：第一，你能不能快速读懂和弦代号并立刻落到可用按法；第二，你能不能让相邻和弦之间尽量保持最小移动。如果这两件事稳定下来，你的伴奏能力会比单纯背更多和弦形状提升得更快。&lt;/p&gt;&#xA;&lt;h2 id=&#34;再用旋律训练把读谱变成反应&#34;&gt;再用旋律训练，把“读谱”变成“反应”&lt;/h2&gt;&#xA;&lt;p&gt;很多人卡在视奏，不是因为完全不会识谱，而是因为反应链太长：看到音符，先在脑中算音名，再去找指板位置。Real Book 的旋律线很适合缩短这条链路。&lt;/p&gt;&#xA;&lt;p&gt;练习初期可以短暂标注音名，但目标一定是尽快撤掉标注。你可以先固定在一个把位里把整段旋律弹顺，再换到另一个把位重复同一段。这样做的意义不是“会更多版本”，而是建立你对同一音高在不同区域的快速映射。久而久之，你会发现自己不再依赖“算”，而是越来越接近“看见就知道在哪里”。&lt;/p&gt;&#xA;&lt;p&gt;&lt;img src=&#34;http://localhost:1313/images/real-book/real-book-melody-position-example.png&#34; alt=&#34;旋律音名与指板位置对应示例&#34;&gt;&lt;/p&gt;&#xA;&lt;h2 id=&#34;把同一首歌练成三种能力real-book-才会真正好用&#34;&gt;把同一首歌练成三种能力，Real Book 才会真正好用&lt;/h2&gt;&#xA;&lt;p&gt;很多人把一本书越练越窄，是因为只用它做一件事。更有效的做法是固定一首歌，循环做三种工作：先做和声连接，再做旋律定位，最后做简单即兴准备。这样你不是在“切题材”，而是在同一语境里不断加深理解。&lt;/p&gt;&#xA;&lt;p&gt;当和声与旋律都更熟之后，即兴就不再是“硬套一个音阶”。你会更清楚哪些音是和弦内音、哪些经过音会更自然、哪些地方需要收敛、哪些地方可以拉开线条。这时候即兴才真正从“碰运气”进入“有判断”。&lt;/p&gt;&#xA;&lt;h2 id=&#34;最容易踩的坑不是练得少而是练得散&#34;&gt;最容易踩的坑，不是练得少，而是练得散&lt;/h2&gt;&#xA;&lt;p&gt;The Real Book 很容易让人产生一个错觉：每天换新歌就是进步。实际上，如果每首都只弹一遍，你只是在重复“陌生感”，很难累积稳定能力。更现实的策略是每次只抓少量曲目，连续一段时间反复打磨同一批材料。你会更快看到自己在和声、旋律与反应速度上的真实变化。&lt;/p&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>The Real Book on IC Studio</title><link>https://icstudio.club/tags/the-real-book/</link><description>Recent content in The Real Book on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Tue, 29 Apr 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://icstudio.club/tags/the-real-book/index.xml" rel="self" type="application/rss+xml"/><item><title>如何用 The Real Book 自学？从和声、视奏到即兴准备的实战方法</title><link>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/real-book-self-study-zh/</link><pubDate>Tue, 29 Apr 2025 00:00:00 +0000</pubDate><guid>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/real-book-self-study-zh/</guid><description>&lt;p>很多人把 The Real Book 当成一本“爵士曲谱合集”，但如果你真的长期用下来，就会发现它更像是一套训练系统。你可以用同一首歌，同时训练和声连接、旋律反应、指板定位，以及后续即兴所需要的听觉判断。关键不在于你弹了多少首，而在于你是否把每一首都练成了可复用的方法。&lt;/p>
+&lt;h2 id="the-real-book-的核心价值不是曲子多而是信息干净">The Real Book 的核心价值，不是“曲子多”，而是“信息干净”&lt;/h2>
+&lt;p>The Real Book 大多数页面只有两类信息：旋律线和和弦代号。它没有把所有按法都替你写好，这恰恰是它最有价值的地方。因为你必须亲自决定每个和弦怎么落在指板上、每条旋律在什么把位完成、每个段落如何保持声音连贯。你被迫做这些决定的过程，本身就是训练。&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/real-book/real-book-lead-sheet-example.png" alt="The Real Book 的谱面总览示例">&lt;/p>
+&lt;p>当你不再把它当“照着弹的书”，而是当“做决定的素材库”，学习效率会明显不一样。&lt;/p>
+&lt;h2 id="先用和声训练把看见和弦就能下手这件事练出来">先用和声训练，把“看见和弦就能下手”这件事练出来&lt;/h2>
+&lt;p>以《Alice in Wonderland》为例，Real Book 给了你一条完整进行，但不会替你安排指法。这个空白就是练习入口。你可以先给自己一个明确限制，比如只在第五品附近活动，只用一套弦组，只做小范围连接。限制越清晰，反而越容易听到声部之间的关系，也越容易把注意力放在“连接质量”而不是“手忙脚乱换把”。&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/real-book/real-book-harmony-drop2-example.png" alt="第五品附近的 Drop 2 和声连接示例">&lt;/p>
+&lt;figure style="text-align: center; margin: 20px auto; width: 100%;">
+ &lt;div style="display: flex; justify-content: center;">
+ &lt;audio controls preload="auto" style="max-width: 100%; display: inline-block !important; margin: 0 auto;">
+ &lt;source src="https://icstudio.club/audio/real-book/real-book-voice-leading-example.mp3" type="audio/mpeg">
+ &lt;source src="https://icstudio.club/audio/real-book/real-book-voice-leading-example.mp3" type="audio/mp3">
+ &lt;source src="https://icstudio.club/audio/real-book/real-book-voice-leading-example.mp3" type="audio/wav">
+ 您的浏览器不支持音频播放。
+ &lt;/audio>
+ &lt;/div>
+ 
+ &lt;figcaption style="margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em;">
+ 和声连接中的声部变化听感示例
+ &lt;/figcaption>
+ 
+&lt;/figure>
+ 
+&lt;p>在这个阶段，速度不用快。真正要练的是两件事：第一，你能不能快速读懂和弦代号并立刻落到可用按法；第二，你能不能让相邻和弦之间尽量保持最小移动。如果这两件事稳定下来，你的伴奏能力会比单纯背更多和弦形状提升得更快。&lt;/p>
+&lt;h2 id="再用旋律训练把读谱变成反应">再用旋律训练，把“读谱”变成“反应”&lt;/h2>
+&lt;p>很多人卡在视奏，不是因为完全不会识谱，而是因为反应链太长：看到音符，先在脑中算音名，再去找指板位置。Real Book 的旋律线很适合缩短这条链路。&lt;/p>
+&lt;p>练习初期可以短暂标注音名，但目标一定是尽快撤掉标注。你可以先固定在一个把位里把整段旋律弹顺，再换到另一个把位重复同一段。这样做的意义不是“会更多版本”，而是建立你对同一音高在不同区域的快速映射。久而久之，你会发现自己不再依赖“算”，而是越来越接近“看见就知道在哪里”。&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/real-book/real-book-melody-position-example.png" alt="旋律音名与指板位置对应示例">&lt;/p>
+&lt;h2 id="把同一首歌练成三种能力real-book-才会真正好用">把同一首歌练成三种能力，Real Book 才会真正好用&lt;/h2>
+&lt;p>很多人把一本书越练越窄，是因为只用它做一件事。更有效的做法是固定一首歌，循环做三种工作：先做和声连接，再做旋律定位，最后做简单即兴准备。这样你不是在“切题材”，而是在同一语境里不断加深理解。&lt;/p>
+&lt;p>当和声与旋律都更熟之后，即兴就不再是“硬套一个音阶”。你会更清楚哪些音是和弦内音、哪些经过音会更自然、哪些地方需要收敛、哪些地方可以拉开线条。这时候即兴才真正从“碰运气”进入“有判断”。&lt;/p>
+&lt;h2 id="最容易踩的坑不是练得少而是练得散">最容易踩的坑，不是练得少，而是练得散&lt;/h2>
+&lt;p>The Real Book 很容易让人产生一个错觉：每天换新歌就是进步。实际上，如果每首都只弹一遍，你只是在重复“陌生感”，很难累积稳定能力。更现实的策略是每次只抓少量曲目，连续一段时间反复打磨同一批材料。你会更快看到自己在和声、旋律与反应速度上的真实变化。&lt;/p></description></item></channel></rss>
