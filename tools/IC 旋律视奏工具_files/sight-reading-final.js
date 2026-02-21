@@ -3120,8 +3120,17 @@ class IntelligentMelodyGenerator {
         this.cfConfig = {
             maxSpan: 16, // 不超过十度（16半音）
             peakOnce: true, // 保持单一最高音
-            climaxMinLeap: Math.max(4, Math.min(this.rules.maxJump || 12, Math.round((this.rules.maxJump || 12) * 0.6)))
+            climaxMinLeap: Math.max(4, Math.min(this.rules.maxJump || 12, Math.round((this.rules.maxJump || 12) * 0.6))),
+            largeLeapThreshold: Math.min(this.rules.maxJump || 12, 5),
+            largeLeapTarget: null
         };
+        const resolvedLargeLeapTarget = this.getLargeLeapTargetByMeasures(this.measures);
+        if (resolvedLargeLeapTarget && this.cfConfig.largeLeapThreshold >= 4) {
+            this.cfConfig.largeLeapTarget = resolvedLargeLeapTarget;
+            console.log(`🎯 大跳进目标: ${resolvedLargeLeapTarget.min}-${resolvedLargeLeapTarget.max}次 (阈值${this.cfConfig.largeLeapThreshold}半音)`);
+        } else if (resolvedLargeLeapTarget) {
+            console.log(`⚠️ 当前最大跳度${this.rules.maxJump}半音过小，暂不启用大跳进目标计数`);
+        }
         this.cfState = {
             minMidi: null,
             maxMidi: null,
@@ -3133,7 +3142,8 @@ class IntelligentMelodyGenerator {
             prevPrevMidi: null,
             lastInterval: null,
             midiHistory: [],
-            climaxLeapDone: false
+            climaxLeapDone: false,
+            largeLeapCount: 0
         };
         
         console.log(`🎯 构造函数中的maxJump: ${this.rules.maxJump}, 来源: ${userSettings.maxJump}`);
@@ -3182,7 +3192,8 @@ class IntelligentMelodyGenerator {
             minMidi: Infinity,
             maxMidi: -Infinity,
             maxInterval: 0,
-            restRatio: 0
+            restRatio: 0,
+            largeLeapCount: 0
         };
         
         // 解析拍号 - 正确处理复合拍子
@@ -8246,6 +8257,92 @@ class IntelligentMelodyGenerator {
         return this.cfConfig.climaxWindow;
     }
 
+    getLargeLeapTargetByMeasures(totalMeasures) {
+        const total = Number(totalMeasures);
+        if (!Number.isFinite(total)) return null;
+        if (total === 12) return { min: 2, max: 3 };
+        if (total === 16) return { min: 3, max: 4 };
+        return null;
+    }
+
+    tryGeneratePlannedLargeLeap(lastMidi, context = {}, consecutiveJumps = 0) {
+        if (lastMidi === null || lastMidi === undefined) return null;
+        const target = this.cfConfig.largeLeapTarget;
+        if (!target) return null;
+        if (consecutiveJumps > 0) return null;
+
+        const measureIndex = typeof context.measureIndex === 'number' ? context.measureIndex : null;
+        if (measureIndex === null) return null;
+
+        const currentCount = this.cfState.largeLeapCount || 0;
+        if (currentCount >= target.max) return null;
+
+        const totalMeasures = this.measures || context.totalMeasures || 0;
+        const remainingMeasures = Math.max(0, totalMeasures - measureIndex - 1);
+        const leapNeed = Math.max(0, target.min - currentCount);
+        const forceNow = leapNeed > 0 && remainingMeasures < leapNeed;
+
+        if (!forceNow) {
+            if (measureIndex === 0) return null;
+            if (context.isCadence) return null;
+            const inMiddleWindow = totalMeasures > 0
+                ? (measureIndex >= Math.floor(totalMeasures * 0.2) && measureIndex <= Math.ceil(totalMeasures * 0.85))
+                : true;
+            let chance = currentCount < target.min ? 0.34 : 0.16;
+            if (inMiddleWindow) chance += 0.08;
+            if (context.isMeasureStart) chance += 0.06;
+            if (this.random.nextFloat() > chance) return null;
+        }
+
+        const threshold = this.cfConfig.largeLeapThreshold || 5;
+        const maxJump = this.rules.maxJump || 12;
+        const currentMin = this.cfState.minMidi ?? lastMidi;
+        const currentMax = this.cfState.maxMidi ?? lastMidi;
+
+        let candidates = this.getScaleNotesInRange().filter((midi) => {
+            if (midi === lastMidi) return false;
+            const interval = Math.abs(midi - lastMidi);
+            if (interval < threshold || interval > maxJump) return false;
+            if (this.cfConfig.maxSpan) {
+                const nextMin = Math.min(currentMin, midi);
+                const nextMax = Math.max(currentMax, midi);
+                if (nextMax - nextMin > this.cfConfig.maxSpan) return false;
+            }
+            return true;
+        });
+
+        if (!candidates.length) {
+            if (forceNow) {
+                console.warn(`⚠️ 强制大跳进失败：当前无可用候选（阈值${threshold}半音）`);
+            }
+            return null;
+        }
+
+        if (this.cfConfig.peakOnce && this.cfState.peakCount >= 1) {
+            const nonHigherCandidates = candidates.filter((midi) => midi <= currentMax);
+            if (nonHigherCandidates.length) candidates = nonHigherCandidates;
+        }
+
+        if (this.cfState.climaxLeapDone) {
+            const downCandidates = candidates.filter((midi) => midi < lastMidi);
+            if (downCandidates.length) candidates = downCandidates;
+        }
+
+        const weights = candidates.map((midi) => {
+            const interval = Math.abs(midi - lastMidi);
+            let weight = interval >= (threshold + 2) ? 1.4 : 1;
+            if (forceNow) weight *= 1.2;
+            return weight;
+        });
+        const selected = this.random.weighted(candidates, weights);
+        if (forceNow) {
+            console.log(`🎯 强制补足大跳进: ${lastMidi} -> ${selected} (间隔${Math.abs(selected - lastMidi)}半音)`);
+        } else {
+            console.log(`🎯 计划大跳进候选: ${lastMidi} -> ${selected} (间隔${Math.abs(selected - lastMidi)}半音)`);
+        }
+        return selected;
+    }
+
     updateRepeatState(lastMidi, nextMidi) {
         if (typeof nextMidi !== 'number') return;
         const previousMidi = this.cfState.prevMidi ?? null;
@@ -8430,6 +8527,14 @@ class IntelligentMelodyGenerator {
             console.log(`🎵 [generateNextNote] 高潮跳进: MIDI ${climaxCandidate} -> ${validatedClimax} -> CF ${cfNote}`);
             return cfNote;
         }
+
+        const plannedLargeLeap = this.tryGeneratePlannedLargeLeap(lastMidi, context, consecutiveJumps);
+        if (plannedLargeLeap !== null) {
+            const validatedLargeLeap = this.validateAndCorrectMidi(plannedLargeLeap, "generateNextNote-计划大跳进");
+            const cfNote = this.applyCantusFirmusGuards(lastMidi, validatedLargeLeap, "generateNextNote-计划大跳进", context);
+            console.log(`🎵 [generateNextNote] 计划大跳进: MIDI ${plannedLargeLeap} -> ${validatedLargeLeap} -> CF ${cfNote}`);
+            return cfNote;
+        }
         
         // 级进优先：提高概率，保持CF级进主导
         const stepwiseChance = this.isJianpuTool ? 0.55 : 0.7;
@@ -8462,6 +8567,8 @@ class IntelligentMelodyGenerator {
         const prevMax = this.cfState.maxMidi;
 
         let adjusted = candidate;
+        const leapTarget = this.cfConfig.largeLeapTarget;
+        const leapThreshold = this.cfConfig.largeLeapThreshold || 5;
 
         if (typeof context.measureIndex === 'number' && !this.cfState.climaxLeapDone) {
             const { start } = this.getClimaxWindow();
@@ -8474,6 +8581,20 @@ class IntelligentMelodyGenerator {
                     const fallback = lastMidi !== null ? Math.min(lastMidi + 2, ceiling) : ceiling;
                     adjusted = this.validateAndCorrectMidi(fallback, `${label}-preclimax-cap`);
                 }
+            }
+        }
+
+        if (lastMidi !== null && leapTarget) {
+            const interval = Math.abs(adjusted - lastMidi);
+            const reachedLargeLeapCap = (this.cfState.largeLeapCount || 0) >= leapTarget.max;
+            if (interval >= leapThreshold && reachedLargeLeapCap) {
+                const fallbackNote = this.generateStepwiseReturn(
+                    lastMidi,
+                    this.cfState.lastInterval ? Math.sign(this.cfState.lastInterval) : 0
+                );
+                const fallbackInterval = Math.abs(fallbackNote - lastMidi);
+                adjusted = this.validateAndCorrectMidi(fallbackNote, `${label}-large-leap-cap`);
+                console.log(`🚧 大跳进上限保护: 已达${this.cfState.largeLeapCount}/${leapTarget.max}次，${interval}半音 -> ${fallbackInterval}半音`);
             }
         }
 
@@ -8558,6 +8679,25 @@ class IntelligentMelodyGenerator {
             const alt = this.pickAlternateMelodyNote(lastMidi, { avoid, preferThird: true });
             if (alt !== null && alt !== adjusted) {
                 adjusted = this.validateAndCorrectMidi(alt, `${label}-avoid-pattern`);
+            }
+        }
+
+        if (lastMidi !== null && leapTarget) {
+            let finalInterval = Math.abs(adjusted - lastMidi);
+            const reachedCap = (this.cfState.largeLeapCount || 0) >= leapTarget.max;
+            if (finalInterval >= leapThreshold && reachedCap) {
+                const fallbackNote = this.generateStepwiseReturn(
+                    lastMidi,
+                    this.cfState.lastInterval ? Math.sign(this.cfState.lastInterval) : 0
+                );
+                adjusted = this.validateAndCorrectMidi(fallbackNote, `${label}-large-leap-final-cap`);
+                finalInterval = Math.abs(adjusted - lastMidi);
+                console.log(`🚧 最终大跳进上限保护: 目标上限${leapTarget.max}次，改写为${finalInterval}半音`);
+            }
+            if (finalInterval >= leapThreshold) {
+                this.cfState.largeLeapCount = (this.cfState.largeLeapCount || 0) + 1;
+                this.stats.largeLeapCount = this.cfState.largeLeapCount;
+                console.log(`🎯 大跳进计数: ${this.cfState.largeLeapCount}/${leapTarget.max} (阈值${leapThreshold}半音, 实际${finalInterval}半音)`);
             }
         }
 
@@ -15214,7 +15354,12 @@ function buildCustomSlideSegments(melodyData, notePoints) {
 
     const mapped = [];
     for (let i = 0; i < mappedCount; i++) {
-        mapped.push({ note: noteEntries[i].note, point: notePoints[i] });
+        mapped.push({
+            note: noteEntries[i].note,
+            point: notePoints[i],
+            measureIndex: noteEntries[i].measureIndex,
+            noteIndex: noteEntries[i].noteIndex
+        });
     }
 
     const segments = [];
@@ -15252,6 +15397,12 @@ function buildCustomSlideSegments(melodyData, notePoints) {
         if (articulation === 'glissando') {
             const next = mapped[i + 1];
             if (!next) continue;
+
+            const measureNotes = melodyData?.melody?.[current.measureIndex]?.notes;
+            const immediateNextRaw = Array.isArray(measureNotes) ? measureNotes[current.noteIndex + 1] : null;
+            const isImmediateAdjacentPair = immediateNextRaw && immediateNextRaw.type === 'note' && immediateNextRaw === next.note;
+            if (!isImmediateAdjacentPair) continue;
+
             const nextAnchor = toAnchorPoint(next.point);
             const nextRadius = estimateNoteHeadRadius(next.point);
 
@@ -24691,11 +24842,13 @@ function generate68MeasureWithBeatClarity(measureNumber, currentMidi, scale, use
                 }
                 // Glissando: 较大音程（3-12半音） - 仅当用户选择了glissando时
                 // 避免跨小节：使用简单但有效的检查
+                const nextNote = i < notes.length - 1 ? notes[i + 1] : null;
+                const hasImmediatePlayableNextNote = !!(nextNote && !nextNote.isRest && nextNote.midi);
                 if (!articulationApplied && userSettings.articulations.guitar.includes('glissando') && 
                          Math.abs(interval) >= 3 && Math.abs(interval) <= 12 && 
                          canAssignSlideWithState(activeSlideState, 'glissando') &&
                          lastArticulation !== 'glissando' && // 不能连续两个glissando
-                         i < notes.length - 1 && // 确保不是最后一个音符
+                         hasImmediatePlayableNextNote && // slide必须连接到紧邻的下一个非休止符
                          random.nextFloat() < 0.95) { // 提高概率以便测试
                     if (consumeSlideWithState(activeSlideState, 'glissando')) {
                         currentNote.articulation = 'glissando';

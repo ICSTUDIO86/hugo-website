@@ -526,20 +526,7 @@
 
                 <div class="control-group">
                     <label data-i18n="controls.measures">小节数</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="measures-2" name="measures" value="2">
-                            <label for="measures-2" data-i18n="controls.measures2">2小节</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="measures-4" name="measures" value="4" checked="">
-                            <label for="measures-4" data-i18n="controls.measures4">4小节</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="measures-8" name="measures" value="8">
-                            <label for="measures-8" data-i18n="controls.measures8">8小节</label>
-                        </div>
-                    </div>
+                    <button class="btn-secondary" onclick="openMeasureSettings()" id="measureSettingsBtn" data-i18n="controls.measuresSettings">小节设置</button>
                 </div>
 
                 <div class="control-group">
@@ -1456,6 +1443,47 @@
         </div>
     </div>
 
+    <!-- 小节设置弹窗 -->
+    <div id="measureModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3 data-i18n="modal.measure.title">小节设置</h3>
+                <button class="close-btn" onclick="closeMeasureSettings()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="rhythm-section">
+                    <h4 style="margin-bottom: 15px;" data-i18n="modal.measure.selection">选择小节数</h4>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item">
+                            <input type="radio" id="measures-2" name="measures" value="2">
+                            <span data-i18n="controls.measures2">2小节</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" id="measures-4" name="measures" value="4" checked="">
+                            <span data-i18n="controls.measures4">4小节</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" id="measures-8" name="measures" value="8">
+                            <span data-i18n="controls.measures8">8小节</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" id="measures-12" name="measures" value="12">
+                            <span data-i18n="controls.measures12">12小节</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" id="measures-16" name="measures" value="16">
+                            <span data-i18n="controls.measures16">16小节</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn-primary" onclick="saveMeasureSettings()" data-i18n="button.save">保存设置</button>
+                    <button class="btn-secondary" onclick="closeMeasureSettings()" data-i18n="button.cancel">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 音程跨度设置弹窗 -->
     <div id="intervalModal" class="modal" style="display: none;">
         <div class="modal-content">
@@ -1669,6 +1697,39 @@
 
         function closeSettings() {
             closeSettingsModal();
+        }
+
+        let previousMeasureSelection = '4';
+
+        function getSelectedMeasureValue() {
+            const checked = document.querySelector('input[name="measures"]:checked');
+            return checked ? checked.value : '4';
+        }
+
+        function setSelectedMeasureValue(value) {
+            const target = document.querySelector(`input[name="measures"][value="${value}"]`);
+            if (target) target.checked = true;
+        }
+
+        function openMeasureSettings() {
+            previousMeasureSelection = getSelectedMeasureValue();
+            const modal = document.getElementById('measureModal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+        }
+
+        function closeMeasureSettings() {
+            setSelectedMeasureValue(previousMeasureSelection);
+            const modal = document.getElementById('measureModal');
+            if (!modal) return;
+            modal.style.display = 'none';
+        }
+
+        function saveMeasureSettings() {
+            previousMeasureSelection = getSelectedMeasureValue();
+            const modal = document.getElementById('measureModal');
+            if (!modal) return;
+            modal.style.display = 'none';
         }
         
         // 功能选择器控制
@@ -2487,6 +2548,9 @@
                 'controls.measures2': '2小节',
                 'controls.measures4': '4小节',
                 'controls.measures8': '8小节',
+                'controls.measures12': '12小节',
+                'controls.measures16': '16小节',
+                'controls.measuresSettings': '小节设置',
                 'controls.key': '调号',
                 'controls.keySettings': '调号设置',
                 'controls.time': '拍号',
@@ -2557,6 +2621,8 @@
                 'modal.articulation.title': 'Articulations',
                 'modal.challenge.title': '挑战模式',
                 'modal.metronomePattern.title': '节拍器节奏型',
+                'modal.measure.title': '小节设置',
+                'modal.measure.selection': '选择小节数',
                 'metronomePattern.enable': '启用自定义节奏',
                 'metronomePattern.subdivision': '细分',
                 'metronomePattern.subdivision.beat': '每拍1下',
@@ -2685,6 +2751,9 @@
                 'controls.measures2': '2小節',
                 'controls.measures4': '4小節',
                 'controls.measures8': '8小節',
+                'controls.measures12': '12小節',
+                'controls.measures16': '16小節',
+                'controls.measuresSettings': '小節設置',
                 'controls.key': '調號',
                 'controls.keySettings': '調號設置',
                 'controls.time': '拍號',
@@ -2755,6 +2824,8 @@
                 'modal.articulation.title': 'Articulations',
                 'modal.challenge.title': '挑戰模式',
                 'modal.metronomePattern.title': '節拍器節奏型',
+                'modal.measure.title': '小節設置',
+                'modal.measure.selection': '選擇小節數',
                 'metronomePattern.enable': '啟用自訂節奏',
                 'metronomePattern.subdivision': '細分',
                 'metronomePattern.subdivision.beat': '每拍1下',
@@ -2883,6 +2954,9 @@
                 'controls.measures2': '2 Measures',
                 'controls.measures4': '4 Measures',
                 'controls.measures8': '8 Measures',
+                'controls.measures12': '12 Measures',
+                'controls.measures16': '16 Measures',
+                'controls.measuresSettings': 'Measure Settings',
                 'controls.key': 'Key Signature',
                 'controls.keySettings': 'Key Settings',
                 'controls.time': 'Time Signature',
@@ -2953,6 +3027,8 @@
                 'modal.articulation.title': 'Articulations',
                 'modal.challenge.title': 'Challenge Mode',
                 'modal.metronomePattern.title': 'Metronome Pattern',
+                'modal.measure.title': 'Measure Settings',
+                'modal.measure.selection': 'Select Measure Count',
                 'metronomePattern.enable': 'Enable custom pattern',
                 'metronomePattern.subdivision': 'Subdivision',
                 'metronomePattern.subdivision.beat': '1 per beat',
@@ -4881,6 +4957,7 @@
                 'articulationModal',
                 'keySignatureModal',
                 'timeSignatureModal',
+                'measureModal',
                 'intervalModal',
                 'clefModal',
                 'challengeModal',
@@ -4920,6 +4997,11 @@
                                 case 'timeSignatureModal':
                                     if (typeof closeTimeSignatureSettings === 'function') {
                                         closeTimeSignatureSettings();
+                                    }
+                                    break;
+                                case 'measureModal':
+                                    if (typeof closeMeasureSettings === 'function') {
+                                        closeMeasureSettings();
                                     }
                                     break;
                                 case 'intervalModal':

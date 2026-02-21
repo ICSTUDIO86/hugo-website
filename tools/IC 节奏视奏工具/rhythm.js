@@ -128,6 +128,9 @@
             'controls.measures2': '2小节',
             'controls.measures4': '4小节',
             'controls.measures8': '8小节',
+            'controls.measures12': '12小节',
+            'controls.measures16': '16小节',
+            'controls.measuresSettings': '小节设置',
             'controls.difficulty': '难度预设',
             'controls.metronome': '节拍器',
             'controls.metronomePattern': '节拍器节奏型',
@@ -161,6 +164,8 @@
             'modal.voice.selection': '声部模式',
             'modal.challenge.title': '挑战模式',
             'modal.metronomePattern.title': '节拍器节奏型',
+            'modal.measure.title': '小节设置',
+            'modal.measure.selection': '选择小节数',
             'challenge.prepTime': '准备时间（秒）',
             'challenge.bpm': 'BPM',
             'challenge.cursor': '光标',
@@ -290,6 +295,9 @@
             'controls.measures2': '2小節',
             'controls.measures4': '4小節',
             'controls.measures8': '8小節',
+            'controls.measures12': '12小節',
+            'controls.measures16': '16小節',
+            'controls.measuresSettings': '小節設置',
             'controls.difficulty': '難度預設',
             'controls.metronome': '節拍器',
             'controls.metronomePattern': '節拍器節奏型',
@@ -323,6 +331,8 @@
             'modal.voice.selection': '聲部模式',
             'modal.challenge.title': '挑戰模式',
             'modal.metronomePattern.title': '節拍器節奏型',
+            'modal.measure.title': '小節設置',
+            'modal.measure.selection': '選擇小節數',
             'challenge.prepTime': '準備時間（秒）',
             'challenge.bpm': 'BPM',
             'challenge.cursor': '光標',
@@ -452,6 +462,9 @@
             'controls.measures2': '2 bars',
             'controls.measures4': '4 bars',
             'controls.measures8': '8 bars',
+            'controls.measures12': '12 bars',
+            'controls.measures16': '16 bars',
+            'controls.measuresSettings': 'Measure Settings',
             'controls.difficulty': 'Difficulty Preset',
             'controls.metronome': 'Metronome',
             'controls.metronomePattern': 'Metronome Pattern',
@@ -485,6 +498,8 @@
             'modal.voice.selection': 'Voice Options',
             'modal.challenge.title': 'Challenge Mode',
             'modal.metronomePattern.title': 'Metronome Pattern',
+            'modal.measure.title': 'Measure Settings',
+            'modal.measure.selection': 'Select Measure Count',
             'challenge.prepTime': 'Prep Time (sec)',
             'challenge.bpm': 'BPM',
             'challenge.cursor': 'Cursor',
@@ -661,6 +676,7 @@
         dark: '☀️'
     };
     let openModalCount = 0;
+    let previousMeasureCountSelection = '4';
 
     function clampNumber(value, min, max, fallback) {
         const num = parseInt(value, 10);
@@ -1511,6 +1527,40 @@
         }
 
         closeTimeSignatureSettings();
+    }
+
+    function getSelectedMeasureCountValue() {
+        const checked = document.querySelector('input[name="measureCount"]:checked');
+        return checked ? checked.value : '4';
+    }
+
+    function setSelectedMeasureCountValue(value) {
+        const target = document.querySelector(`input[name="measureCount"][value="${value}"]`);
+        if (target) target.checked = true;
+    }
+
+    function openMeasureSettings() {
+        previousMeasureCountSelection = getSelectedMeasureCountValue();
+        const modal = document.getElementById('measureSettingsModal');
+        if (modal) {
+            showModal(modal);
+        }
+    }
+
+    function closeMeasureSettings() {
+        setSelectedMeasureCountValue(previousMeasureCountSelection);
+        const modal = document.getElementById('measureSettingsModal');
+        if (modal) {
+            hideModal(modal);
+        }
+    }
+
+    function saveMeasureSettings() {
+        previousMeasureCountSelection = getSelectedMeasureCountValue();
+        const modal = document.getElementById('measureSettingsModal');
+        if (modal) {
+            hideModal(modal);
+        }
     }
 
     function updateRhythmOptionsForTimeSignature(timeSignature) {
@@ -5839,6 +5889,7 @@
         updatePracticeCountDisplay(0);
         setupModalAutoSave('rhythmSettingsModal', saveRhythmSettings);
         setupModalAutoSave('timeSignatureModal', saveTimeSignatureSettings);
+        setupModalAutoSave('measureSettingsModal', saveMeasureSettings);
         setupModalAutoSave('voiceSettingsModal', saveVoiceSettings);
         setupModalAutoSave('metronomePatternModal', saveMetronomePatternSettingsAndClose);
         setupModalAutoSave('settingsModal', closeSettingsModal);
@@ -5949,6 +6000,9 @@
     window.openTimeSignatureSettings = openTimeSignatureSettings;
     window.closeTimeSignatureSettings = closeTimeSignatureSettings;
     window.saveTimeSignatureSettings = saveTimeSignatureSettings;
+    window.openMeasureSettings = openMeasureSettings;
+    window.closeMeasureSettings = closeMeasureSettings;
+    window.saveMeasureSettings = saveMeasureSettings;
     window.openVoiceSettings = openVoiceSettings;
     window.closeVoiceSettings = closeVoiceSettings;
     window.saveVoiceSettings = saveVoiceSettings;

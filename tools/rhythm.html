@@ -98,11 +98,7 @@
                 </div>
                 <div class="control-group" style="min-width: 160px;">
                     <label data-i18n="controls.measures">小节数</label>
-                    <div class="radio-group">
-                        <label class="radio-item"><input type="radio" name="measureCount" value="2"> <span data-i18n="controls.measures2">2小节</span></label>
-                        <label class="radio-item"><input type="radio" name="measureCount" value="4" checked> <span data-i18n="controls.measures4">4小节</span></label>
-                        <label class="radio-item"><input type="radio" name="measureCount" value="8"> <span data-i18n="controls.measures8">8小节</span></label>
-                    </div>
+                    <button class="btn-secondary" onclick="openMeasureSettings()" id="measureSettingsBtn" data-i18n="controls.measuresSettings">小节设置</button>
                 </div>
                 
                 <div class="control-group" style="min-width: 200px;">
@@ -451,6 +447,46 @@
                 <div class="modal-buttons">
                     <button class="btn-primary" onclick="saveTimeSignatureSettings()" data-i18n="button.save">保存设置</button>
                     <button class="btn-secondary" onclick="closeTimeSignatureSettings()" data-i18n="button.cancel">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="measureSettingsModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3 data-i18n="modal.measure.title">小节设置</h3>
+                <button class="close-btn" onclick="closeMeasureSettings()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="rhythm-section">
+                    <h4 data-i18n="modal.measure.selection">选择小节数</h4>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item">
+                            <input type="radio" id="measure-2" name="measureCount" value="2">
+                            <span data-i18n="controls.measures2">2小节</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" id="measure-4" name="measureCount" value="4" checked>
+                            <span data-i18n="controls.measures4">4小节</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" id="measure-8" name="measureCount" value="8">
+                            <span data-i18n="controls.measures8">8小节</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" id="measure-12" name="measureCount" value="12">
+                            <span data-i18n="controls.measures12">12小节</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="radio" id="measure-16" name="measureCount" value="16">
+                            <span data-i18n="controls.measures16">16小节</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="btn-primary" onclick="saveMeasureSettings()" data-i18n="button.save">保存设置</button>
+                    <button class="btn-secondary" onclick="closeMeasureSettings()" data-i18n="button.cancel">取消</button>
                 </div>
             </div>
         </div>
