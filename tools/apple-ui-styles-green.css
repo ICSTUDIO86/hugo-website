@@ -1,6 +1,6 @@
 /*!
- * Apple-inspired Minimalist UI for Sight-Reading Generator
- * IC Studio 视奏工具 - 专业级视奏旋律生成器
+ * Apple-inspired Minimalist UI for Interval Sight-Reading Generator
+ * IC Studio 视奏工具 - 专业级音程视奏生成器
  * 
  * Copyright © 2026. All rights reserved. Igor Chen - icstudio.club
  * 
@@ -9,50 +9,46 @@
  * Email: icstudio@fastmail.com
  */
 :root {
-    /* Apple-style color palette - Light Mode */
-    --primary-blue: #007AFF;
-    --secondary-blue: #5AC8FA;
+    /* Apple-style color palette - Light Mode - Green Theme */
+    --primary-green: #34C759;
+    --secondary-green: #30D158;
     --neutral-white: #FFFFFF;
     --neutral-light: #F2F2F7;
     --neutral-medium: #C7C7CC;
     --neutral-dark: #8E8E93;
     --neutral-black: #1D1D1F;
-    --accent-green: #34C759;
+    --accent-blue: #007AFF;
     --accent-orange: #FF9500;
     --accent-purple: #AF52DE;
     --background-blur: rgba(255, 255, 255, 0.8);
     --card-shadow: rgba(0, 0, 0, 0.04);
     --card-shadow-hover: rgba(0, 0, 0, 0.08);
-    --card-shadow-focus: rgba(0, 122, 255, 0.15);
+    --card-shadow-focus: rgba(52, 199, 89, 0.15);
     --border-color: rgba(0, 0, 0, 0.06);
     --border-color-medium: rgba(0, 0, 0, 0.08);
     --body-bg: #f5f5f7;
-    --info-bg: #f8f9fa;
-    --info-border: #e9ecef;
-    --secondary-text: #6c757d;
-    --heading-text: #495057;
     
     /* Typography system */
     --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     --font-mono: 'SF Mono', Monaco, Menlo, monospace;
 }
 
-/* Dark mode color palette - Apple-inspired blue-gray theme */
+/* Dark mode color palette - Apple-inspired green-gray theme */
 [data-theme="dark"] {
-    --primary-blue: #0A84FF;
-    --secondary-blue: #64D2FF;
+    --primary-green: #30D158;
+    --secondary-green: #64D2FF;
     --neutral-white: #2C2C2E;      /* Cards/containers */
     --neutral-light: #3A3A3C;      /* Slightly lighter containers */
     --neutral-medium: #48484A;     /* Input fields, borders */
     --neutral-dark: #8E8E93;       /* Secondary text */
     --neutral-black: #F2F2F7;      /* Primary text */
-    --accent-green: #32D74B;
+    --accent-blue: #007AFF;
     --accent-orange: #FF9F0A;
     --accent-purple: #BF5AF2;
     --background-blur: rgba(44, 44, 46, 0.8);
     --card-shadow: rgba(0, 0, 0, 0.4);
     --card-shadow-hover: rgba(0, 0, 0, 0.6);
-    --card-shadow-focus: rgba(10, 132, 255, 0.3);
+    --card-shadow-focus: rgba(48, 209, 88, 0.3);
     --border-color: rgba(255, 255, 255, 0.15);
     --border-color-medium: rgba(255, 255, 255, 0.25);
     --body-bg: #1D1D1F;            /* Apple-style dark gray background */
@@ -129,14 +125,14 @@ body {
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
     z-index: 1;
-    border-top: 8px solid #007bff58/* base accent line */
+    border-top: 8px solid #34c75958/* base accent line */
 }
 
 
 
 /* Header - Apple style */
 .header {
-    background: #007bff05;
+    background: #34c75905;
     color: #1d1d1f;
     padding: 40px 30px;
     text-align: center;
@@ -216,8 +212,8 @@ select, input {
 
 select:focus, input:focus {
     outline: none;
-    border-color: #007aff;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px var(--card-shadow-focus);
     background: #ffffff !important;
     transform: translateY(-1px);
 }
@@ -231,8 +227,8 @@ select:hover, input:hover {
 
 select:active, select:focus:active {
     background: #ffffff !important;
-    border-color: #007aff;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px var(--card-shadow-focus);
 }
 
 select option {
@@ -258,19 +254,19 @@ input[type="range"]::-webkit-slider-thumb {
     width: 20px;
     height: 20px;
     background: #ffffff;
-    border: 4px solid #007aff;
+    border: 4px solid var(--primary-green);
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     box-shadow: 
         0 2px 8px rgba(0, 0, 0, 0.08),
-        0 4px 16px rgba(0, 122, 255, 0.12);
+        0 4px 16px rgba(52, 199, 89, 0.12);
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
-    border-color: #0056cc;
+    border-color: #28A745;
     transform: scale(1.1);
-    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 4px 16px rgba(52, 199, 89, 0.3);
 }
 
 input[type="range"]::-webkit-slider-thumb:active {
@@ -281,7 +277,7 @@ input[type="range"]::-moz-range-thumb {
     width: 20px;
     height: 20px;
     background: #ffffff;
-    border: 2px solid #007aff;
+    border: 2px solid var(--primary-green);
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -293,7 +289,7 @@ input[type="range"]::-moz-range-thumb {
     width: 32px;
     height: 32px;
     padding: 0;
-    background: var(--primary-blue);
+    background: var(--primary-green);
     border: none;
     border-radius: 50%;
     color: #FFFFFF;
@@ -303,18 +299,18 @@ input[type="range"]::-moz-range-thumb {
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
 }
 
 .metronome-toggle-btn:hover {
-    background: #005FCC;
+    background: #28A745;
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+    box-shadow: 0 4px 16px rgba(52, 199, 89, 0.4);
 }
 
 .metronome-toggle-btn:active {
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
 }
 
 .metronome-toggle-btn.active {
@@ -337,12 +333,12 @@ input[type="range"]::-moz-range-thumb {
 
 /* Dark mode metronome button */
 [data-theme="dark"] .metronome-toggle-btn {
-    background: var(--primary-blue) !important;
+    background: var(--primary-green) !important;
     color: #FFFFFF !important;
 }
 
 [data-theme="dark"] .metronome-toggle-btn:hover {
-    background: #1E8FFF !important;
+    background: #32D74B !important;
 }
 
 [data-theme="dark"] .metronome-toggle-btn.active {
@@ -371,8 +367,8 @@ input[type="range"]::-moz-range-thumb {
 
 .bpm-input:focus {
     outline: none;
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 2px rgba(52, 199, 89, 0.2);
     background: var(--neutral-white);
     cursor: text;
 }
@@ -384,14 +380,14 @@ input[type="range"]::-moz-range-thumb {
     border-color: var(--border-color) !important;
 }
 
-[data-theme="dark"] .bpm-input:hover {
+[data-theme="dark"] .bmp-input:hover {
     background: var(--neutral-medium) !important;
     border-color: var(--border-color-medium) !important;
 }
 
 [data-theme="dark"] .bpm-input:focus {
     background: var(--neutral-light) !important;
-    border-color: var(--primary-blue) !important;
+    border-color: var(--primary-green) !important;
 }
 
 /* Main page metronome control styling */
@@ -399,6 +395,17 @@ input[type="range"]::-moz-range-thumb {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.metronome-label-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.metronome-label-row label {
+    margin-bottom: 0;
 }
 
 /* Reduce spacing specifically for metronome group */
@@ -423,8 +430,8 @@ input[type="range"]::-moz-range-thumb {
 
 .bpm-input-control:focus {
     outline: none;
-    border-color: #007aff;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px var(--card-shadow-focus);
     background: #ffffff !important;
     transform: translateY(-1px);
 }
@@ -450,21 +457,21 @@ input[type="range"]::-moz-range-thumb {
 
 [data-theme="dark"] .bpm-input-control:focus {
     background: var(--neutral-light) !important;
-    border-color: var(--primary-blue) !important;
+    border-color: var(--primary-green) !important;
 }
 
 /* BPM拖动状态样式 */
 .bpm-input-control.dragging {
     background: var(--neutral-light) !important;
-    border-color: var(--primary-blue) !important;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    border-color: var(--primary-green) !important;
+    box-shadow: 0 0 0 3px var(--card-shadow-focus);
     cursor: ns-resize !important;
     transform: translateY(-1px);
 }
 
 [data-theme="dark"] .bpm-input-control.dragging {
     background: var(--neutral-medium) !important;
-    border-color: var(--primary-blue) !important;
+    border-color: var(--primary-green) !important;
     box-shadow: 0 0 0 3px var(--card-shadow-focus);
     cursor: ns-resize !important;
     transform: translateY(-1px);
@@ -524,16 +531,38 @@ input[type="range"]::-moz-range-thumb {
     letter-spacing: 0.5px;
 }
 
-.metronome-label-row {
+.metronome-play-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: var(--primary-green);
+    border: none;
+    border-radius: 50%;
+    color: #FFFFFF;
+    font-size: 12px;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    gap: 8px;
-    margin-bottom: 6px;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
-.metronome-label-row label {
-    margin: 0;
+.metronome-play-btn:hover {
+    background: #28A745;
+    transform: scale(1.05);
+}
+
+.metronome-play-btn:active {
+    transform: scale(0.95);
+}
+
+.metronome-play-btn.active {
+    background: var(--accent-orange);
+    animation: header-metronome-pulse 0.6s ease-in-out infinite alternate;
+}
+
+.metronome-play-btn.active:hover {
+    background: #E6850E;
 }
 
 .metronome-settings-btn {
@@ -562,40 +591,6 @@ input[type="range"]::-moz-range-thumb {
     transform: translateY(0);
 }
 
-.metronome-play-btn {
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    background: var(--primary-blue);
-    border: none;
-    border-radius: 50%;
-    color: #FFFFFF;
-    font-size: 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.metronome-play-btn:hover {
-    background: #005FCC;
-    transform: scale(1.05);
-}
-
-.metronome-play-btn:active {
-    transform: scale(0.95);
-}
-
-.metronome-play-btn.active {
-    background: var(--accent-orange);
-    animation: header-metronome-pulse 0.6s ease-in-out infinite alternate;
-}
-
-.metronome-play-btn.active:hover {
-    background: #E6850E;
-}
-
 .metronome-beat-indicator {
     width: 8px;
     height: 8px;
@@ -606,10 +601,10 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .metronome-beat-indicator.beat {
-    background: var(--accent-green);
+    background: var(--primary-green);
     transform: scale(1.5);
     opacity: 1;
-    box-shadow: 0 0 6px var(--accent-green);
+    box-shadow: 0 0 6px var(--primary-green);
 }
 
 @keyframes header-metronome-pulse {
@@ -645,12 +640,12 @@ input[type="range"]::-moz-range-thumb {
 }
 
 [data-theme="dark"] .metronome-play-btn {
-    background: var(--primary-blue) !important;
+    background: var(--primary-green) !important;
     color: #FFFFFF !important;
 }
 
 [data-theme="dark"] .metronome-play-btn:hover {
-    background: #1E8FFF !important;
+    background: #32D74B !important;
 }
 
 [data-theme="dark"] .metronome-play-btn.active {
@@ -673,7 +668,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 [data-theme="dark"] .metronome-beat-indicator.beat {
-    background: var(--accent-green) !important;
+    background: var(--primary-green) !important;
 }
 
 .metronome-pattern-row {
@@ -693,34 +688,6 @@ input[type="range"]::-moz-range-thumb {
 
 .metronome-pattern-toggle-group .toggle-container {
     flex-shrink: 0;
-}
-
-/* Match interval tool: use native checkbox for metronome pattern toggle */
-.metronome-pattern-toggle-group .toggle-container {
-    width: auto;
-    height: auto;
-    display: inline-block;
-}
-
-.metronome-pattern-toggle-group .toggle-input {
-    opacity: 1;
-    width: auto;
-    height: auto;
-    position: static;
-}
-
-.metronome-pattern-toggle-group .toggle-slider {
-    display: none;
-    position: static;
-    width: auto;
-    height: auto;
-    background: transparent;
-    box-shadow: none;
-    border-radius: 0;
-}
-
-.metronome-pattern-toggle-group .toggle-button {
-    display: none;
 }
 
 .metronome-pattern-select {
@@ -774,29 +741,88 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .metronome-pattern-step.beat-start {
-    border-color: var(--primary-blue);
-    color: var(--primary-blue);
+    border-color: var(--primary-green);
+    color: var(--primary-green);
 }
 
 .metronome-pattern-step.active {
-    background: #007aff;
+    background: var(--primary-green);
     color: #ffffff;
-    border-color: #007aff;
-    box-shadow: 0 3px 6px rgba(0, 122, 255, 0.3);
+    border-color: var(--primary-green);
+    box-shadow: 0 3px 6px rgba(52, 199, 89, 0.3);
 }
 
 .metronome-pattern-step.active.beat-start {
-    background: #007aff;
-    border-color: #007aff;
-    box-shadow: 0 3px 6px rgba(0, 122, 255, 0.3);
+    background: var(--primary-green);
+    border-color: var(--primary-green);
+    box-shadow: 0 3px 6px rgba(52, 199, 89, 0.3);
+}
+
+/* Toggle switches (match melody switcher style) */
+.toggle-container {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+}
+
+.toggle-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    background: var(--neutral-light);
+    border-radius: 999px;
+    transition: all 0.25s ease;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.toggle-button {
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: var(--neutral-white);
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    transition: all 0.25s ease;
+}
+
+.toggle-input:checked + .toggle-slider {
+    background: var(--primary-green);
+}
+
+.toggle-input:checked + .toggle-slider .toggle-button {
+    transform: translateX(24px);
+    box-shadow: 0 4px 10px rgba(52, 199, 89, 0.35);
+}
+
+[data-theme="dark"] .toggle-slider {
+    background: #2d2d30;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .toggle-button {
+    background: #1f1f22;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .toggle-input:checked + .toggle-slider {
+    background: var(--primary-green);
 }
 
 .metronome-pattern-step.bar-start {
-    box-shadow: inset 0 0 0 2px rgba(0, 122, 255, 0.35);
+    box-shadow: inset 0 0 0 2px rgba(52, 199, 89, 0.35);
 }
 
 .metronome-pattern-step.active.bar-start {
-    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), 0 6px 16px rgba(0, 71, 163, 0.45);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), 0 3px 6px rgba(52, 199, 89, 0.3);
 }
 
 [data-theme="dark"] .metronome-pattern-select {
@@ -820,8 +846,6 @@ input[type="range"]::-moz-range-thumb {
     border-color: var(--border-color) !important;
     color: var(--neutral-black) !important;
 }
-
-/* Original spacing restored */
 
 /* Radio button styling */
 .radio-group {
@@ -848,7 +872,7 @@ input[type="range"]::-moz-range-thumb {
     cursor: pointer;
     width: 18px;
     height: 18px;
-    accent-color: #007aff;
+    accent-color: var(--primary-green);
     cursor: pointer;
 }
 
@@ -938,27 +962,27 @@ button {
 
 .btn-primary {
     padding: 14px 28px;
-    background: #007aff;
+    background: var(--primary-green);
     color: white;
-    border-color: #007aff;
-    box-shadow:  0 3px 6px rgba(0, 122, 255, 0.3);
+    border-color: var(--primary-green);
+    box-shadow:  0 3px 6px rgba(52, 199, 89, 0.3);
     font-size: 1.1rem;
     font-weight: 600;
 }
 
 .btn-primary:hover {
-    background: #005FCC;
-    border-color: #0056cc;
+    background: #28A745;
+    border-color: #28A745;
     transform: translateY(-2px);
     box-shadow: 
-        0 8px 24px rgba(0, 122, 255, 0.35),
+        0 8px 24px rgba(52, 199, 89, 0.35),
         inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .btn-primary:active {
     transform: translateY(-1px);
     box-shadow: 
-        0 4px 16px rgba(0, 122, 255, 0.25),
+        0 4px 16px rgba(52, 199, 89, 0.25),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
@@ -1015,7 +1039,7 @@ button {
 /* Score container with Apple-style card - MUSIC CLARITY OPTIMIZED */
 .score-container {
     padding: 50px 40px;
-    background: #007bff05;
+    background: #34c75905;
     min-height: 550px;
     display: flex;
     justify-content: center;
@@ -1025,7 +1049,7 @@ button {
 
 /* Force score container to always be light for music sheet visibility */
 [data-theme="dark"] .score-container {
-    background: #007bff05;
+    background: #34c75905;
 }
 
 [data-theme="dark"] #score {
@@ -1047,7 +1071,7 @@ button {
     transform: translateX(-50%);
     width: 60px;
     height: 4px;
-    background: linear-gradient(90deg, var(--primary-blue), var(--accent-purple));
+    background: linear-gradient(90deg, var(--primary-green), var(--accent-purple));
     border-radius: 2px;
     opacity: 0.25;
 }
@@ -1055,6 +1079,7 @@ button {
 #score {
     width: 100%;
     max-width: 1200px;
+    margin: 0 auto; /* 确保容器在页面中居中 */
     background: #FFFFFF; /* 纯白背景确保乐谱清晰 */
     border-radius: 16px;
     border: 1px solid var(--border-color);
@@ -1062,13 +1087,29 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 
+    box-shadow:
         0 2px 16px rgba(0, 0, 0, 0.04),
         0 8px 32px rgba(0, 0, 0, 0.02),
         inset 0 1px 0 rgba(255, 255, 255, 0.6);
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     overflow: visible;
     position: relative;
+}
+
+/* 确保SVG元素在容器内居中显示 */
+#score svg {
+    margin: 0 auto !important;
+    display: block !important;
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+/* Melody hidden state - matches melody sight-reading tool */
+#score svg.melody-hidden {
+    opacity: 0 !important;
+    filter: blur(10px) !important;
 }
 
 #score:hover {
@@ -1082,7 +1123,7 @@ button {
 #score:focus-within {
     box-shadow: 
         0 4px 24px var(--card-shadow-focus),
-        0 12px 48px rgba(0, 122, 255, 0.08),
+        0 12px 48px rgba(52, 199, 89, 0.08),
         inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
@@ -1150,7 +1191,7 @@ button {
     align-items: center !important;
     position: relative !important;
     z-index: 10001 !important;
-    border-top: 14px solid #007bff83/* base accent line */
+    border-top: 14px solid #34c75983/* base accent line */
 }
 
 .modal-header::before {
@@ -1161,7 +1202,7 @@ button {
     transform: translateX(-50%);
     width: 40px;
     height: 2px;
-    background: linear-gradient(90deg, var(--primary-blue), var(--accent-purple));
+    background: linear-gradient(90deg, var(--primary-green), var(--accent-purple));
     border-radius: 1px;
     opacity: 0.3;
 }
@@ -1269,9 +1310,9 @@ button {
 .checkbox-item input[type="checkbox"] {
     width: 22px;
     height: 22px;
-    accent-color: #007aff;
+    accent-color: var(--primary-green);
     cursor: pointer;
-    border-radius: 4px var(--primary-blue), var(--accent-purple);
+    border-radius: 4px var(--primary-green), var(--accent-purple);
 }
 
 .checkbox-item span {
@@ -1281,45 +1322,13 @@ button {
     letter-spacing: -0.01em;
 }
 
-/* Advanced settings section */
-#rhythmAdvancedSettings, #articulationAdvancedSettings {
-    background: var(--neutral-soft);
-    border-radius: 12px;
-    border: 1px solid var(--primary-blue), var(--accent-purple);
-    padding: 24px;
-    margin-top: 24px;
-}
-
-.rhythm-frequency-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-.frequency-item {
-    background: #f2f2f7;
-    border: 1px solid #d2d2d7;
-    padding: 16px;
-    border-radius: 10px;
-}
-
-.frequency-item label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #1d1d1f;
-    margin-bottom: 8px;
-    text-transform: none;
-    font-variant: normal;
-}
-
 /* Modal buttons */
 .modal-buttons {
     display: flex !important;
     gap: 12px !important;
     justify-content: flex-end !important;
-    margin-top: 0 !important;
-    padding: 20px 32px 28px 32px !important; /* top right bottom left: align with header/body side paddings */
+    margin-top: 32px !important;
+    padding-top: 24px !important;
     border-top: 1px solid var(--border-color) !important;
     position: relative !important;
     z-index: 10002 !important;
@@ -1329,6 +1338,26 @@ button {
 /* All modal elements should be interactive */
 .modal *, .modal-content *, .modal-body *, .modal-header *, .modal-buttons * {
     pointer-events: auto !important;
+    position: relative !important;
+}
+
+/* Restore switch layout inside challenge modal (avoid relative override) */
+#challengeModal .switch {
+    position: relative !important;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+#challengeModal .switch .slider {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block;
+}
+
+#challengeModal .switch .slider-button {
+    position: absolute !important;
+    display: block;
 }
 
 /* Empty score message */
@@ -1341,630 +1370,118 @@ button {
     letter-spacing: -0.01em;
 }
 
-/* Hide OSMD elements */
-.osmd-title,
-.osmd-subtitle, 
-.osmd-composer,
-.osmd-lyricist,
-.osmd-credits,
-.osmd-part-name,
-text[class*="title"],
-text[class*="Title"], 
-text[class*="composer"],
-text[class*="Composer"],
-text[class*="part-name"],
-text[class*="PartName"] {
-    display: none !important;
-    visibility: hidden !important;
-}
-
-#score svg {
-    display: block !important;
-    margin: 0 auto !important;
-    border-radius: 8px;
-    transition: opacity 0.3s ease, filter 0.3s ease;
-}
-
-/* Melody hidden state */
-#score svg.melody-hidden {
-    opacity: 0 !important;
-    filter: blur(10px) !important;
-}
-
-
-/* Responsive design with Apple-style breakpoints */
-@media (max-width: 599px) {
-    body { 
-        padding: 12px; 
-    }
-    
-    .container {
-        border-radius: 12px;
-    }
-    
-    .header { 
-        padding: 32px 24px; 
-    }
-    
-    .header h1 { 
-        font-size: 2rem; 
-    }
-    
-    .controls { 
-        padding: 24px; 
-    }
-    
-    .control-row { 
-        flex-direction: column; 
-        align-items: stretch;
-        gap: 20px; 
-    }
-    
-    .buttons { 
-        flex-direction: column;
-        gap: 16px;
-    }
-    
-    .button-group {
-        justify-content: center;
-    }
-    
-    .checkbox-grid { 
-        grid-template-columns: 1fr; 
-    }
-    
-    .modal-content { 
-        width: 95%;
-        border-radius: 12px;
-    }
-    
-    .modal-body {
-        padding: 24px;
-    }
-    
-    .score-container { 
-        padding: 16px; 
-    }
-    
-    #score { 
-        border-radius: 8px;
-        min-height: 240px; 
-    }
-    
-    button {
-        padding: 12px 24px;
-        font-size: 1rem;
-    }
-    
-    .btn-primary {
-        padding: 16px 32px;
-        font-size: 1.1rem;
-    }
-}
-
-@media (min-width: 600px) and (max-width: 899px) {
-    .score-container { 
-        padding: 24px; 
-    }
-    
-    .control-row { 
-        gap: 20px; 
-    }
-}
-
-@media (min-width: 900px) {
-    .control-row { 
-        gap: 28px; 
-    }
-    
-    .container:hover {
-        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
-        transform: translateY(-2px);
-    }
-}
-
-/* Toggle switches for display options */
-.toggle-container {
+/* Function Selector & Settings Dropdown Styles */
+.header {
     position: relative;
-    display: inline-block;
-    width: 52px;
-    height: 28px;
 }
 
-.toggle-input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.toggle-slider {
-    position: absolute;
-    inset: 0;
-    cursor: pointer;
-    background: var(--neutral-light);
-    border-radius: 999px;
-    transition: all 0.25s ease;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
-}
-
-.toggle-button {
-    position: absolute;
-    height: 22px;
-    width: 22px;
-    left: 3px;
-    bottom: 3px;
-    background: var(--neutral-white);
-    border-radius: 50%;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-    transition: all 0.25s ease;
-}
-
-.toggle-input:checked + .toggle-slider {
-    background: var(--primary-blue);
-}
-
-.toggle-input:checked + .toggle-slider .toggle-button {
-    transform: translateX(24px);
-    box-shadow: 0 4px 10px rgba(0, 122, 255, 0.35);
-}
-
-[data-theme="dark"] .toggle-slider {
-    background: #2d2d30;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
-}
-
-[data-theme="dark"] .toggle-button {
-    background: #1f1f22;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-}
-
-[data-theme="dark"] .toggle-input:checked + .toggle-slider {
-    background: #4f8bff;
-}
-
-/* Notation panel below the score */
-.aux-notation {
-    margin-top: 12px;
-    padding: 12px 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    background: var(--neutral-white);
-    box-shadow: 0 4px 18px var(--card-shadow);
-}
-
-.notation-line {
+.function-selector {
+    position: relative;
     display: flex;
+    flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
-    margin-top: 6px;
+    z-index: 9998;
 }
 
-.notation-line:first-child {
-    margin-top: 0;
-}
-
-.notation-label {
-    font-weight: 600;
-    color: var(--neutral-dark);
-    min-width: 54px;
-    font-size: 0.95rem;
-}
-
-.notation-content {
-    flex: 1;
-    font-family: var(--font-mono);
-    color: var(--neutral-black);
-    word-break: break-word;
-    line-height: 1.6;
-}
-
-[data-theme="dark"] .aux-notation {
-    background: rgba(30, 30, 32, 0.9);
-    border-color: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
-}
-
-[data-theme="dark"] .notation-label {
-    color: #b0b0b5;
-}
-
-[data-theme="dark"] .notation-content {
-    color: #e9ecef;
-}
-
-/* Practice counter */
-.practice-counter {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 4px 8px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background: none;
-    color: var(--text-color);
-}
-
-.practice-counter-actions {
+.function-btn {
+    background: var(--primary-green);
+    border: 1px solid var(--primary-green);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #FFFFFF !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     gap: 8px;
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    white-space: nowrap;
+    min-width: 120px;
+    justify-content: center;
 }
 
-.practice-counter-actions .btn-secondary {
-    padding: 4px 12px;
-    min-width: 36px;
-    border-radius: 6px;
-    background: none;
-    border: 1px solid var(--border-color);
-    box-shadow: none;
-    font-weight: 700;
+.function-btn:hover {
+    background: #28A745;
+    border-color: #28A745;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 16px rgba(52, 199, 89, 0.4);
+    transform: translateY(-1px);
 }
 
-.practice-counter-actions .btn-secondary:hover {
-    background: var(--neutral-light);
+.function-btn:active {
+    background: #1E7E34;
+    color: #FFFFFF !important;
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3);
 }
 
-[data-theme="dark"] .practice-counter-actions .btn-secondary {
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #f0f0f0;
-}
-
-[data-theme="dark"] .practice-counter-actions .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.06);
-}
-
-.practice-counter-actions span {
-    min-width: 32px;
-    text-align: center;
-    font-weight: 700;
-}
-
-[data-theme="dark"] .practice-counter {
-    background: none;
-    border-color: rgba(255, 255, 255, 0.12);
-}
-
-/* Note: Dark mode is now controlled by data-theme attribute instead of prefers-color-scheme */
-
-/* Smooth animations and micro-interactions */
-* {
-    scroll-behavior: smooth;
-}
-
-button, .checkbox-item, select, input {
-    will-change: transform;
-}
-
-/* CRITICAL FIX: Ensure buttons are clickable */
-button {
-    pointer-events: auto !important;
-    z-index: 100 !important;
-    position: relative !important;
-    cursor: pointer !important;
-}
-
-/* Ensure all interactive elements are clickable */
-select, input, .radio-item, .checkbox-item {
-    pointer-events: auto !important;
-    z-index: 50 !important;
-    position: relative !important;
-}
-
-/* Fix for any potential overlay blocking clicks */
-.control-row, .buttons, .button-group {
-    pointer-events: auto !important;
-    position: relative !important;
-    z-index: 10 !important;
-}
-
-/* Ensure no pseudo-elements block clicks */
-button::before,
-button::after {
-    pointer-events: none !important;
-}
-
-/* Focus indicators for accessibility */
-button:focus-visible,
-select:focus-visible,
-input:focus-visible,
-.checkbox-item:focus-within {
-    outline: 2px solid var(--primary-blue);
-    outline-offset: 2px;
-}
-
-/* 添加伪元素来创建更复杂的音乐装饰 */
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
+.function-menu {
+    position: absolute;
+    top: calc(100% + 8px);
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-        /* 高音谱号暗示 - 椭圆形装饰 */
-        radial-gradient(ellipse 3px 8px at 25% 25%, rgba(0, 0, 0, 0.025) 40%, transparent 41%),
-        radial-gradient(ellipse 8px 3px at 75% 75%, rgba(0, 0, 0, 0.025) 40%, transparent 41%),
-        /* 音符连线暗示 */
-        linear-gradient(30deg, transparent 48%, rgba(0, 0, 0, 0.02) 49%, rgba(0, 0, 0, 0.02) 51%, transparent 52%),
-        linear-gradient(-30deg, transparent 48%, rgba(0, 0, 0, 0.02) 49%, rgba(0, 0, 0, 0.02) 51%, transparent 52%),
-        /* 骰子面暗示 */
-        linear-gradient(90deg, rgba(0, 0, 0, 0.012) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(0, 0, 0, 0.012) 1px, transparent 1px);
-    background-size: 
-        400px 400px, 350px 350px,
-        300px 300px, 280px 280px,
-        120px 120px, 120px 120px;
-    background-position: 
-        100px 150px, 250px 300px,
-        0 100px, 200px 50px,
-        0 0, 0 0;
-    pointer-events: none;
-    z-index: -1;
-}
-
-/* Dark mode background decorations */
-[data-theme="dark"] body::before {
-    background-image: 
-        /* 高音谱号暗示 - 椭圆形装饰 (白色在深色背景上) */
-        radial-gradient(ellipse 3px 8px at 25% 25%, rgba(255, 255, 255, 0.04) 40%, transparent 41%),
-        radial-gradient(ellipse 8px 3px at 75% 75%, rgba(255, 255, 255, 0.04) 40%, transparent 41%),
-        /* 音符连线暗示 */
-        linear-gradient(30deg, transparent 48%, rgba(255, 255, 255, 0.03) 49%, rgba(255, 255, 255, 0.03) 51%, transparent 52%),
-        linear-gradient(-30deg, transparent 48%, rgba(255, 255, 255, 0.03) 49%, rgba(255, 255, 255, 0.03) 51%, transparent 52%),
-        /* 骰子面暗示 */
-        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-}
-
-/* Dark mode styles for all UI elements */
-[data-theme="dark"] .container {
     background: var(--neutral-white);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    border-radius: 16px;
+    box-shadow: 0 12px 48px var(--card-shadow-hover);
+    overflow: visible;
+    z-index: 9999;
+    min-width: 180px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border: 1px solid var(--border-color);
 }
 
-[data-theme="dark"] .controls {
-    background: transparent;
+.function-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
-/* Dark mode buttons */
-[data-theme="dark"] .btn-primary {
-    background: var(--primary-blue) !important;
-    color: #FFFFFF !important;
-    border-color: var(--primary-blue) !important;
-    box-shadow: 0 4px 20px rgba(10, 132, 255, 0.3);
-}
-
-[data-theme="dark"] .btn-primary:hover {
-    background: #1E8FFF !important;
-    box-shadow: 0 6px 25px rgba(10, 132, 255, 0.4);
-}
-
-[data-theme="dark"] .btn-secondary {
-    background: var(--neutral-light) !important;
-    color: var(--neutral-black) !important;
-    border-color: var(--border-color) !important;
-}
-
-[data-theme="dark"] .btn-secondary:hover {
-    background: var(--neutral-medium) !important;
-}
-
-/* Dark mode form elements */
-[data-theme="dark"] select {
-    background: var(--neutral-light) !important;
-    color: var(--neutral-black) !important;
-    border-color: var(--border-color) !important;
-}
-
-[data-theme="dark"] select:hover {
-    background: var(--neutral-medium) !important;
-    border-color: var(--border-color-medium) !important;
-}
-
-[data-theme="dark"] input[type="range"] {
-    background: var(--neutral-medium);
-}
-
-[data-theme="dark"] input[type="range"]::-webkit-slider-thumb {
-    background: #FFFFFF;
-    border-color: var(--primary-blue);
-}
-
-[data-theme="dark"] input[type="radio"] {
-    border-color: var(--border-color-medium);
-}
-
-[data-theme="dark"] input[type="radio"]:checked {
-    background-color: var(--primary-blue);
-    border-color: var(--primary-blue);
-}
-
-/* Dark mode text colors */
-[data-theme="dark"] label,
-[data-theme="dark"] .control-group label {
-    color: var(--neutral-black) !important;
-}
-
-[data-theme="dark"] span {
-    color: #FFFFFF !important;
-}
-
-/* Dark mode modal styling */
-[data-theme="dark"] .modal {
-    background: rgba(0, 0, 0, 0.8) !important;
-}
-
-[data-theme="dark"] .modal-content {
-    background: var(--neutral-white) !important;
-    border-color: var(--border-color) !important;
-    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.8) !important;
-}
-
-[data-theme="dark"] .modal-header {
-    background: var(--neutral-white) !important;
-    border-bottom-color: var(--border-color) !important;
-}
-
-[data-theme="dark"] .modal-header h3 {
-    color: var(--neutral-black) !important;
-}
-
-[data-theme="dark"] .modal-body {
-    background: var(--neutral-white) !important;
-    color: var(--neutral-black) !important;
-}
-
-/* Dark mode checkbox and form elements in modals */
-[data-theme="dark"] .checkbox-item {
-    background: var(--neutral-light) !important;
-    border-color: var(--border-color) !important;
-}
-
-[data-theme="dark"] .checkbox-item:hover {
-    background: var(--neutral-medium) !important;
-}
-
-[data-theme="dark"] .checkbox-item span {
-    color: var(--neutral-black) !important;
-}
-
-[data-theme="dark"] .checkbox-item input[type="checkbox"] {
-    accent-color: var(--primary-blue) !important;
-}
-
-/* Dark mode advanced settings sections */
-[data-theme="dark"] #rhythmAdvancedSettings,
-[data-theme="dark"] #articulationAdvancedSettings {
-    background: var(--neutral-light) !important;
-    border-color: var(--border-color) !important;
-}
-
-[data-theme="dark"] .frequency-item {
-    background: var(--neutral-medium) !important;
-    border-color: var(--border-color) !important;
-}
-
-[data-theme="dark"] .frequency-item label {
-    color: var(--neutral-black) !important;
-}
-
-[data-theme="dark"] .rhythm-section h4 {
-    color: var(--neutral-black) !important;
-}
-
-/* Dark mode radio items in modals */
-[data-theme="dark"] .radio-item {
-    background: transparent !important;
-}
-
-[data-theme="dark"] .radio-item:hover {
-    background: var(--neutral-light) !important;
-}
-
-[data-theme="dark"] .radio-item label {
-    color: var(--neutral-black) !important;
-}
-
-[data-theme="dark"] .radio-item input[type="radio"] {
-    accent-color: var(--primary-blue) !important;
-}
-
-/* Dark mode close button */
-[data-theme="dark"] .close-modal,
-[data-theme="dark"] .close-btn {
-    background: var(--neutral-medium) !important;
-    color: var(--neutral-black) !important;
-}
-
-[data-theme="dark"] .close-modal:hover,
-[data-theme="dark"] .close-btn:hover {
-    background: var(--neutral-light) !important;
-    color: var(--neutral-black) !important;
-}
-
-/* Dark mode select all button */
-[data-theme="dark"] .btn-select-all {
-    background: var(--neutral-light) !important;
-    color: var(--neutral-black) !important;
-    border-color: var(--border-color) !important;
-}
-
-[data-theme="dark"] .btn-select-all:hover {
-    background: var(--neutral-medium) !important;
-}
-
-/* Dark mode header styling */
-[data-theme="dark"] .header {
-    background: var(--neutral-white) !important;
-    border-bottom-color: var(--border-color) !important;
-}
-
-[data-theme="dark"] .header h1 {
-    color: var(--neutral-black) !important;
-}
-
-[data-theme="dark"] .header p {
-    color: var(--neutral-dark) !important;
-}
-
-/* Dark mode controls section */
-[data-theme="dark"] .controls {
-    background: var(--neutral-white) !important;
-    border-bottom-color: var(--border-color) !important;
-}
-
-[data-theme="dark"] .control-row {
-    background: transparent !important;
-}
-
-/* Dark mode theme switcher styling in dark mode */
-[data-theme="dark"] .theme-switcher {
-    background: var(--neutral-light) !important;
-    border-color: var(--border-color) !important;
-    color: var(--neutral-black) !important;
-}
-
-[data-theme="dark"] .theme-switcher:hover {
-    background: var(--neutral-medium) !important;
-}
-
-/* Dark mode language switcher adjustments */
-[data-theme="dark"] .language-btn {
-    background: var(--primary-blue) !important;
-    border-color: var(--primary-blue) !important;
-    color: #FFFFFF !important;
-    box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4);
-}
-
-[data-theme="dark"] .language-btn:hover {
-    background: #1E8FFF !important;
-    border-color: #1E8FFF !important;
-    box-shadow: 0 4px 16px rgba(10, 132, 255, 0.5);
-}
-
-[data-theme="dark"] .language-menu {
-    background: var(--neutral-white) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-}
-
-[data-theme="dark"] .language-option {
-    background: var(--neutral-white) !important;
-    color: var(--neutral-black) !important;
-}
-
-[data-theme="dark"] .language-option:hover {
-    background: var(--neutral-light) !important;
-    color: var(--primary-blue) !important;
-}
-
-[data-theme="dark"] .language-option:active {
-    background: var(--primary-blue) !important;
-    color: #FFFFFF !important;
-}
-
-/* Settings Dropdown Styles */
-.header {
+.function-option {
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--neutral-black);
+    background: var(--neutral-white);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
     position: relative;
+    z-index: 10000;
+}
+
+.function-option:first-child {
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.function-option:last-child {
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+/* 功能菜单悬浮风格（与简谱一致：淡色背景 + 主题色文字） */
+.function-option:hover,
+.function-option:focus {
+    background: rgba(52, 199, 89, 0.12);
+    color: #1F8A3B;
+}
+
+.function-option:active {
+    background: #28A745;
+    color: #FFFFFF;
+}
+
+.function-icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
 }
 
 .settings-dropdown {
@@ -2008,6 +1525,7 @@ body::before {
     transform: translateY(0);
     box-shadow: 0 2px 8px var(--card-shadow);
 }
+
 .settings-menu {
     position: absolute;
     top: calc(100% + 8px);
@@ -2073,13 +1591,13 @@ body::before {
 
 .theme-option:hover,
 .language-option:hover {
-    background: var(--primary-blue);
+    background: var(--primary-green);
     color: #FFFFFF;
 }
 
 .theme-option:active,
 .language-option:active {
-    background: #005FCC;
+    background: #28A745;
     color: #FFFFFF;
 }
 
@@ -2089,307 +1607,7 @@ body::before {
     text-align: center;
 }
 
-/* Metronome Controls Styles */
-.metronome-controls {
-    padding: 16px 0;
-}
-
-.metronome-tempo {
-    margin-bottom: 16px;
-}
-
-.metronome-tempo label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--neutral-dark);
-    margin-bottom: 8px;
-}
-
-.tempo-input-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.tempo-input {
-    width: 80px;
-    padding: 8px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    text-align: center;
-    background: var(--neutral-white);
-    color: var(--neutral-black);
-}
-
-.tempo-input:focus {
-    outline: none;
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
-}
-
-.tempo-preset-buttons {
-    display: flex;
-    gap: 6px;
-}
-
-.tempo-preset {
-    padding: 6px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--neutral-light);
-    color: var(--neutral-black);
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.tempo-preset:hover {
-    background: var(--primary-blue);
-    color: #FFFFFF;
-    border-color: var(--primary-blue);
-}
-
-.metronome-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.metronome-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: var(--primary-blue);
-    color: #FFFFFF;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.metronome-btn:hover {
-    background: #005FCC;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-}
-
-.metronome-btn.active {
-    background: var(--accent-orange);
-}
-
-.metronome-btn.active:hover {
-    background: #E6850E;
-}
-
-.metronome-icon {
-    font-size: 16px;
-}
-
-.metronome-indicator {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--neutral-medium);
-    transition: all 0.1s ease;
-}
-
-.metronome-indicator.beat {
-    background: var(--accent-green);
-    transform: scale(1.3);
-    box-shadow: 0 0 8px var(--accent-green);
-}
-
-/* Dark mode metronome styles */
-[data-theme="dark"] .tempo-input {
-    background: var(--neutral-light) !important;
-    color: var(--neutral-black) !important;
-    border-color: var(--border-color) !important;
-}
-
-[data-theme="dark"] .tempo-preset {
-    background: var(--neutral-medium) !important;
-    color: var(--neutral-black) !important;
-    border-color: var(--border-color) !important;
-}
-
-[data-theme="dark"] .tempo-preset:hover {
-    background: var(--primary-blue) !important;
-    color: #FFFFFF !important;
-}
-
-[data-theme="dark"] .metronome-btn {
-    background: var(--primary-blue) !important;
-    color: #FFFFFF !important;
-}
-
-[data-theme="dark"] .metronome-btn:hover {
-    background: #1E8FFF !important;
-}
-
-[data-theme="dark"] .metronome-btn.active {
-    background: var(--accent-orange) !important;
-}
-
-[data-theme="dark"] .metronome-indicator {
-    background: var(--neutral-medium) !important;
-}
-
-[data-theme="dark"] .metronome-indicator.beat {
-    background: var(--accent-green) !important;
-}
-
-/* Dark mode settings styles */
-[data-theme="dark"] .settings-btn {
-    background: var(--neutral-light) !important;
-    border-color: var(--border-color) !important;
-    color: var(--neutral-black) !important;
-}
-
-[data-theme="dark"] .settings-btn:hover {
-    background: var(--neutral-medium) !important;
-    border-color: var(--border-color-medium) !important;
-}
-
-[data-theme="dark"] .settings-menu {
-    background: var(--neutral-white) !important;
-    border-color: var(--border-color) !important;
-    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.8) !important;
-    z-index: 9999 !important;
-}
-
-[data-theme="dark"] .settings-section-title {
-    background: var(--neutral-light) !important;
-    color: #FFFFFF !important;
-}
-
-[data-theme="dark"] .theme-option, 
-[data-theme="dark"] .language-option {
-    background: var(--neutral-white) !important;
-    color: var(--neutral-black) !important;
-}
-
-[data-theme="dark"] .theme-option:hover,
-[data-theme="dark"] .language-option:hover {
-    background: var(--primary-blue) !important;
-    color: #FFFFFF !important;
-}
-
-[data-theme="dark"] .theme-option:active,
-[data-theme="dark"] .language-option:active {
-    background: #005FCC !important;
-    color: #FFFFFF !important;
-}
-
-/* Dark mode function selector styles */
-[data-theme="dark"] .function-btn {
-    background: var(--primary-blue) !important;
-    border-color: var(--primary-blue) !important;
-    color: #FFFFFF !important;
-}
-
-[data-theme="dark"] .function-btn span {
-    color: #FFFFFF !important;
-}
-
-[data-theme="dark"] .function-btn:hover {
-    background: #1E8FFF !important;
-    border-color: #1E8FFF !important;
-}
-
-[data-theme="dark"] .function-btn:active {
-    background: #0056CC !important;
-}
-
-[data-theme="dark"] .function-menu {
-    background: var(--neutral-white) !important;
-    border-color: var(--border-color) !important;
-    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.8) !important;
-}
-
-[data-theme="dark"] .function-option {
-    background: var(--neutral-white) !important;
-    color: var(--neutral-black) !important;
-}
-
-/* 深色模式下的悬浮颜色 */
-[data-theme="dark"] .function-option:hover {
-    color: #FFFFFF !important;
-}
-
-/* 旋律视奏 - 蓝色 */
-[data-theme="dark"] .function-option:nth-child(1):hover {
-    background: #007AFF !important;
-}
-
-/* 音程视奏 - 绿色 */
-[data-theme="dark"] .function-option:nth-child(2):hover {
-    background: #34C759 !important;
-}
-
-/* 和弦视奏 - 橙色 */
-[data-theme="dark"] .function-option:nth-child(3):hover {
-    background: #FF9500 !important;
-}
-
-[data-theme="dark"] .function-option:active {
-    background: #0056CC !important;
-    color: #FFFFFF !important;
-}
-
-/* Dark mode melody visibility button */
-[data-theme="dark"] .melody-visibility-btn {
-    background: var(--neutral-light) !important;
-    border-color: var(--border-color) !important;
-    color: var(--neutral-black) !important;
-}
-
-[data-theme="dark"] .melody-visibility-btn:hover {
-    background: var(--neutral-medium) !important;
-    border-color: var(--border-color-medium) !important;
-}
-
-[data-theme="dark"] .melody-visibility-btn.hidden-state {
-    background: var(--accent-orange) !important;
-    color: #FFFFFF !important;
-    border-color: var(--accent-orange) !important;
-}
-
-[data-theme="dark"] .melody-visibility-btn.hidden-state:hover {
-    background: #E6850E !important;
-    border-color: #E6850E !important;
-}
-
-/* Language Switcher Styles (legacy - keep for compatibility) */
-
-/* Override global button styles specifically for language button */
-button.language-btn {
-    color: #FFFFFF !important;
-    background: #007AFF !important;
-}
-
-button.language-btn:hover {
-    color: #FFFFFF !important;
-    background: #0056CC !important;
-}
-
-button.language-btn:active {
-    color: #FFFFFF !important;
-    background: #004499 !important;
-}
-
-button.language-btn:focus {
-    color: #FFFFFF !important;
-    background: #007AFF !important;
-}
-
+/* Header controls layout */
 .header-content {
     display: flex;
     justify-content: center;
@@ -2417,309 +1635,383 @@ button.language-btn:focus {
     padding: 0 0;
 }
 
-/* Function Selector Styles */
-.function-selector {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    z-index: 9998;
-}
-
-.function-btn {
-    background: var(--primary-blue);
-    border: 1px solid var(--primary-blue);
-    border-radius: 12px;
-    padding: 10px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    color: #FFFFFF !important;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
-    white-space: nowrap;
-    min-width: 120px;
-    justify-content: center;
-}
-
-.function-btn span {
+/* Dark mode function selector styles */
+[data-theme="dark"] .function-btn {
+    background: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
     color: #FFFFFF !important;
 }
 
-.function-btn:hover {
-    background: #0056CC;
-    border-color: #0056CC;
-    color: #FFFFFF !important;
-    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
-    transform: translateY(-1px);
+[data-theme="dark"] .function-btn:hover {
+    background: #32D74B !important;
+    border-color: #32D74B !important;
 }
 
-.function-btn:active {
-    background: #004499;
-    color: #FFFFFF !important;
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+[data-theme="dark"] .function-btn:active {
+    background: #28A745 !important;
 }
 
-.function-menu {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    background: var(--neutral-white);
-    border-radius: 16px;
-    box-shadow: 0 12px 48px var(--card-shadow-hover);
-    overflow: visible;
-    z-index: 9999;
-    min-width: 180px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    border: 1px solid var(--border-color);
-}
-
-.function-menu.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.function-option {
-    padding: 14px 20px;
-    font-size: 14px;
-    font-weight: 400;
-    color: var(--neutral-black);
-    background: var(--neutral-white);
-    cursor: pointer;
-    transition: all 0.15s ease;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    white-space: nowrap;
-    position: relative;
-    z-index: 10000;
-}
-
-.function-option:first-child {
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-}
-
-.function-option:last-child {
-    border-bottom-left-radius: 16px;
-    border-bottom-right-radius: 16px;
-}
-
-/* 为不同功能设置特定的悬浮颜色 */
-.function-option:hover {
-    color: #FFFFFF;
-}
-
-/* 旋律视奏 - 蓝色 */
-.function-option:nth-child(1):hover {
-    background: #007AFF;
-}
-
-/* 音程视奏 - 绿色 */
-.function-option:nth-child(2):hover {
-    background: #34C759;
-}
-
-/* 和弦视奏 - 橙色 */
-.function-option:nth-child(3):hover {
-    background: #FF9500;
-}
-
-.function-option:active {
-    background: #0056CC;
-    color: #FFFFFF;
-}
-
-.function-icon {
-    font-size: 16px;
-    width: 20px;
-    text-align: center;
-}
-
-/* Theme Switcher Styles */
-.theme-switcher {
-    background: var(--neutral-white);
-    border: 1px solid var(--border-color);
-    border-radius: 50%;
-    width: 44px;
-    height: 44px;
-    font-size: 18px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px var(--card-shadow);
-}
-
-.theme-switcher:hover {
-    background: var(--neutral-light);
-    box-shadow: 0 4px 16px var(--card-shadow-hover);
-    transform: translateY(-1px);
-}
-
-.theme-switcher:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px var(--card-shadow);
-}
-
-/* Override global button styles for theme switcher */
-button.theme-switcher {
-    color: var(--neutral-black) !important;
+[data-theme="dark"] .function-menu {
     background: var(--neutral-white) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.8) !important;
 }
 
-button.theme-switcher:hover {
+[data-theme="dark"] .function-option {
+    background: var(--neutral-white) !important;
     color: var(--neutral-black) !important;
+}
+
+/* 深色模式下的悬浮颜色 */
+[data-theme="dark"] .function-option:hover,
+[data-theme="dark"] .function-option:focus {
+    background: rgba(48, 209, 88, 0.2) !important;
+    color: var(--primary-green) !important;
+}
+
+[data-theme="dark"] .function-option:active {
+    background: #28A745 !important;
+    color: #FFFFFF !important;
+}
+
+/* Dark mode settings styles */
+[data-theme="dark"] .settings-btn {
+    background: var(--neutral-light) !important;
+    border-color: var(--border-color) !important;
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] .settings-btn:hover {
+    background: var(--neutral-medium) !important;
+    border-color: var(--border-color-medium) !important;
+}
+
+[data-theme="dark"] .settings-menu {
+    background: var(--neutral-white) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.8) !important;
+    z-index: 9999 !important;
+}
+
+[data-theme="dark"] .settings-section-title {
+    background: var(--neutral-light) !important;
+    color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .theme-option 
+[data-theme="dark"] .language-option {
+    background: var(--neutral-white) !important;
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] .theme-option:hover,
+[data-theme="dark"] .language-option:hover {
+    background: var(--primary-green) !important;
+    color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .theme-option:active,
+[data-theme="dark"] .language-option:active {
+    background: #28A745 !important;
+    color: #FFFFFF !important;
+}
+
+/* Dark mode styles for all UI elements */
+[data-theme="dark"] .container {
+    background: var(--neutral-white);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .controls {
+    background: transparent;
+}
+
+/* Dark mode buttons */
+[data-theme="dark"] .btn-primary {
+    background: var(--primary-green) !important;
+    color: #FFFFFF !important;
+    border-color: var(--primary-green) !important;
+    box-shadow: 0 4px 20px rgba(48, 209, 88, 0.3);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+    background: #32D74B !important;
+    box-shadow: 0 6px 25px rgba(48, 209, 88, 0.4);
+}
+
+[data-theme="dark"] .btn-secondary {
+    background: var(--neutral-light) !important;
+    color: var(--neutral-black) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+    background: var(--neutral-medium) !important;
+}
+
+/* Dark mode melody visibility button */
+[data-theme="dark"] .melody-visibility-btn {
+    background: var(--neutral-light) !important;
+    border-color: var(--border-color) !important;
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] .melody-visibility-btn:hover {
+    background: var(--neutral-medium) !important;
+    border-color: var(--border-color-medium) !important;
+}
+
+[data-theme="dark"] .melody-visibility-btn.hidden-state {
+    background: var(--accent-orange) !important;
+    color: #FFFFFF !important;
+    border-color: var(--accent-orange) !important;
+}
+
+[data-theme="dark"] .melody-visibility-btn.hidden-state:hover {
+    background: #E6850E !important;
+    border-color: #E6850E !important;
+}
+
+/* Dark mode form elements */
+[data-theme="dark"] select {
+    background: var(--neutral-light) !important;
+    color: var(--neutral-black) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] select:hover {
+    background: var(--neutral-medium) !important;
+    border-color: var(--border-color-medium) !important;
+}
+
+[data-theme="dark"] input[type="range"] {
+    background: var(--neutral-medium);
+}
+
+[data-theme="dark"] input[type="range"]::-webkit-slider-thumb {
+    background: #FFFFFF;
+    border-color: var(--primary-green);
+}
+
+[data-theme="dark"] input[type="radio"] {
+    border-color: var(--border-color-medium);
+}
+
+[data-theme="dark"] input[type="radio"]:checked {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+}
+
+/* Dark mode text colors */
+[data-theme="dark"] label,
+[data-theme="dark"] .control-group label {
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] span {
+    color: #FFFFFF !important;
+}
+
+/* Dark mode modal styling */
+[data-theme="dark"] .modal {
+    background: rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-theme="dark"] .modal-content {
+    background: var(--neutral-white) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.8) !important;
+}
+
+[data-theme="dark"] .modal-header {
+    background: var(--neutral-white) !important;
+    border-bottom-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .modal-header h3 {
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] .modal-body {
+    background: var(--neutral-white) !important;
+    color: var(--neutral-black) !important;
+}
+
+/* Dark mode checkbox and form elements in modals */
+[data-theme="dark"] .checkbox-item {
+    background: var(--neutral-light) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .checkbox-item:hover {
+    background: var(--neutral-medium) !important;
+}
+
+[data-theme="dark"] .checkbox-item span {
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] .checkbox-item input[type="checkbox"] {
+    accent-color: var(--primary-green) !important;
+}
+
+[data-theme="dark"] .close-modal,
+[data-theme="dark"] .close-btn {
+    background: var(--neutral-medium) !important;
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] .close-modal:hover,
+[data-theme="dark"] .close-btn:hover {
+    background: var(--neutral-light) !important;
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] .btn-select-all {
+    background: var(--neutral-light) !important;
+    color: var(--neutral-black) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .btn-select-all:hover {
+    background: var(--neutral-medium) !important;
+}
+
+/* Dark mode header styling */
+[data-theme="dark"] .header {
+    background: var(--neutral-white) !important;
+    border-bottom-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .header h1 {
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] .header p {
+    color: var(--neutral-dark) !important;
+}
+
+/* Dark mode controls section */
+[data-theme="dark"] .controls {
+    background: var(--neutral-white) !important;
+    border-bottom-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .control-row {
+    background: transparent !important;
+}
+
+/* Dark mode rhythm section */
+[data-theme="dark"] .rhythm-section h4 {
+    color: var(--neutral-black) !important;
+}
+
+/* Dark mode radio items in modals */
+[data-theme="dark"] .radio-item {
+    background: transparent !important;
+}
+
+[data-theme="dark"] .radio-item:hover {
     background: var(--neutral-light) !important;
 }
 
-.language-switcher {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+[data-theme="dark"] .radio-item label {
+    color: var(--neutral-black) !important;
 }
 
-.language-btn {
-    background: #007AFF;
-    border: 1px solid #007AFF;
-    border-radius: 12px;
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    color: #FFFFFF !important;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
-    white-space: nowrap;
-    min-width: 120px;
-    justify-content: center;
+[data-theme="dark"] .radio-item input[type="radio"] {
+    accent-color: var(--primary-green) !important;
 }
 
-.language-btn:hover {
-    background: #0056CC;
-    border-color: #0056CC;
-    color: #FFFFFF !important;
-    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
-    transform: translateY(-1px);
-}
-
-.language-btn:active {
-    background: #004499;
-    color: #FFFFFF !important;
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
-}
-
-/* 风格3: 毛玻璃效果 - 备选方案2 
-.language-btn {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
-    padding: 12px 20px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--neutral-black);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    white-space: nowrap;
-    min-width: 140px;
-    justify-content: center;
-}
-
-.language-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-}
-
-.language-btn:active {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-}
-*/
-
-.language-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 8px;
-    background: #FFFFFF;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px var(--card-shadow-hover);
-    overflow: hidden;
-    z-index: 1000;
-    min-width: 140px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.2s ease;
-}
-
-/* Show menu on hover */
-.language-switcher:hover .language-menu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.language-option {
-    padding: 12px 16px;
-    font-size: 14px;
-    font-weight: 400;
-    color: #1d1d1f;
-    background: #FFFFFF;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-}
-
-.language-option:hover {
-    background: #E3F2FD !important;
-    color: #007AFF !important;
-}
-
-.language-option:active {
-    background: #007AFF !important;
-    color: #FFFFFF !important;
-}
-
-/* Additional override for language options */
-.language-menu .language-option:hover {
-    background: #E3F2FD !important;
-    color: #1d1d1f !important;
-}
-
-.language-menu .language-option:active {
-    background: #007AFF !important;
-    color: #FFFFFF !important;
-}
-
-/* Note: Language switcher dark mode styles are handled by [data-theme="dark"] selectors */
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
+/* Responsive design with Apple-style breakpoints */
+@media (max-width: 599px) {
+    body { 
+        padding: 12px; 
+    }
+    
+    .container {
+        border-radius: 12px;
+    }
+    
+    .header { 
+        padding: 32px 24px; 
+    }
+    
+    .header h1 { 
+        font-size: 2rem; 
+    }
+    
+    .controls { 
+        padding: 24px; 
+    }
+    
+    .control-row { 
+        flex-direction: column; 
+        align-items: stretch;
+        gap: 20px; 
+    }
+    
+    .buttons { 
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .button-group {
+        justify-content: center;
+    }
+    
+    .checkbox-grid { 
+        grid-template-columns: 1fr; 
+    }
+    
+    .modal-content { 
+        width: 95%;
+        border-radius: 12px;
+    }
+    
+    .modal-body {
+        padding: 24px;
+    }
+    
+    .score-container { 
+        padding: 6px; 
+    }
+    
+    #score { 
+        border-radius: 8px;
+        min-height: 180px;
+        max-width: calc(100vw - 20px);
+        width: 100%;
+        padding: 10px;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+    
+    /* Mobile music notation adjustments - 更紧凑的移动端显示 */
+    #score svg {
+        max-width: 100% !important;
+        width: auto !important;
+        height: auto !important;
+        min-width: 280px;
+        overflow: visible;
+    }
+    
+    /* Ensure music fits mobile screens */
+    #score .osmd-container {
+        max-width: 100% !important;
+        overflow-x: auto;
+    }
+    
+    button {
+        padding: 12px 24px;
+        font-size: 1rem;
+    }
+    
+    .btn-primary {
+        padding: 16px 32px;
+        font-size: 1.1rem;
+    }
+    
     .header-content {
         flex-direction: column;
         gap: 20px;
@@ -2741,6 +2033,20 @@ button.theme-switcher:hover {
         flex-wrap: wrap;
     }
     
+    .function-selector {
+        align-items: center;
+    }
+    
+    .function-menu {
+        left: 50%;
+        transform: translateX(-50%) translateY(-10px);
+        min-width: 180px;
+    }
+    
+    .function-menu.show {
+        transform: translateX(-50%) translateY(0);
+    }
+    
     .settings-dropdown {
         align-items: center;
     }
@@ -2759,177 +2065,85 @@ button.theme-switcher:hover {
         min-width: 120px;
         padding: 12px 20px;
     }
-
-    .function-selector {
-        align-items: center;
-    }
-
-    .function-menu {
-        left: 50%;
-        transform: translateX(-50%) translateY(-10px);
-        min-width: 200px;
-    }
-
-    .function-menu.show {
-        transform: translateX(-50%) translateY(0);
-    }
-
+    
     .function-btn {
         min-width: 140px;
         padding: 12px 20px;
     }
-
-    .metronome-compact {
-        padding: 6px 10px;
-        gap: 6px;
-    }
-    
-    .bpm-display {
-        width: 40px;
-        font-size: 13px;
-    }
-    
-    .metronome-play-btn {
-        width: 26px;
-        height: 26px;
-        font-size: 11px;
-    }
-    
-    .metronome-beat-indicator {
-        width: 6px;
-        height: 6px;
-    }
 }
 
-/* Mobile landscape optimization - 手机横屏优化 */
-@media (orientation: landscape) and (max-height: 599px) {
+/* Ultra-small mobile devices (phones in portrait) */
+@media (max-width: 480px) {
     body {
-        padding: 0;
-        margin: 0;
+        padding: 2px;
     }
     
     .container {
-        border-radius: 4px;
-        margin: 0;
+        border-radius: 6px;
     }
     
-    .header {
-        padding: 8px 4px;
+    .score-container { 
+        padding: 2px; 
     }
     
-    .header h1 {
-        font-size: 1.4rem;
-    }
-    
-    .controls {
-        padding: 6px;
-    }
-    
-    .score-container {
-        padding: 0;
-    }
-    
-    #score {
+    #score { 
         min-height: 160px;
         max-width: calc(100vw - 8px);
-        width: calc(100vw - 8px);
-        padding: 3px;
+        padding: 6px;
         margin: 0;
-        border-radius: 4px;
     }
     
-    /* 横屏时旋律可以更大 */
+    /* Tighter mobile music display - 更紧凑的音乐显示 */
     #score svg {
-        max-width: 100% !important;
-        width: auto !important;
-        height: auto !important;
-        min-width: 300px;
-        display: block !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
+        min-width: 240px;
     }
     
-    #score .osmd-container {
-        max-width: 100% !important;
-        width: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        border: none !important;
+    .header h1 { 
+        font-size: 1.75rem; 
+    }
+    
+    .controls { 
+        padding: 16px; 
     }
     
     button {
-        padding: 4px 8px;
-        font-size: 0.8rem;
-    }
-    
-    .btn-primary {
-        padding: 6px 12px;
-        font-size: 0.85rem;
+        padding: 10px 20px;
+        font-size: 0.9rem;
     }
 }
 
 /* Extreme small mobile devices (very small phones) */
 @media (max-width: 360px) {
     body {
-        padding: 0;
-        margin: 0;
-    }
-    
-    .container {
-        border-radius: 2px;
-        margin: 0;
+        padding: 1px;
     }
     
     .score-container { 
-        padding: 0; 
+        padding: 1px; 
     }
     
     #score { 
-        min-height: 180px;
-        max-width: calc(100vw - 6px);
-        width: calc(100vw - 6px);
-        padding: 2px;
+        min-height: 140px;
+        max-width: calc(100vw - 4px);
+        padding: 4px;
         margin: 0;
-        border-radius: 2px;
     }
     
-    /* 极度紧凑的音乐显示 - 完全无边距 */
+    /* Minimal mobile music display */
     #score svg {
-        min-width: 150px;
-        display: block !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-    }
-    
-    #score .osmd-container {
-        max-width: 100% !important;
-        width: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        border: none !important;
-    }
-    
-    .header { 
-        padding: 12px 2px; 
+        min-width: 200px;
     }
     
     .header h1 { 
-        font-size: 1.4rem; 
+        font-size: 1.5rem; 
     }
     
     .controls { 
-        padding: 4px; 
+        padding: 12px; 
     }
     
     button {
-        padding: 4px 8px;
-        font-size: 0.8rem;
-    }
-    
-    .btn-primary {
-        padding: 6px 12px;
+        padding: 8px 16px;
         font-size: 0.85rem;
     }
 }
@@ -2953,4 +2167,329 @@ button.theme-switcher:hover {
         box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
         transform: translateY(-2px);
     }
+}
+
+/* Note: Dark mode is now controlled by data-theme attribute instead of prefers-color-scheme */
+
+/* Practice counter */
+.practice-counter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: none;
+    color: var(--text-color);
+}
+
+.practice-counter-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.practice-counter-actions .btn-secondary {
+    padding: 4px 12px;
+    min-width: 36px;
+    border-radius: 6px;
+    background: none;
+    border: 1px solid var(--border-color);
+    box-shadow: none;
+    font-weight: 700;
+}
+
+.practice-counter-actions .btn-secondary:hover {
+    background: var(--neutral-light);
+}
+
+[data-theme="dark"] .practice-counter-actions .btn-secondary {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #f0f0f0;
+}
+
+[data-theme="dark"] .practice-counter-actions .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.practice-counter-actions span {
+    min-width: 32px;
+    text-align: center;
+    font-weight: 700;
+}
+
+[data-theme="dark"] .practice-counter {
+    background: none;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Smooth animations and micro-interactions */
+* {
+    scroll-behavior: smooth;
+}
+
+button, .checkbox-item, select, input {
+    will-change: transform;
+}
+
+/* CRITICAL FIX: Ensure buttons are clickable */
+button {
+    pointer-events: auto !important;
+    z-index: 100 !important;
+    position: relative !important;
+    cursor: pointer !important;
+}
+
+/* Ensure all interactive elements are clickable */
+select, input, .radio-item, .checkbox-item {
+    pointer-events: auto !important;
+    z-index: 50 !important;
+    position: relative !important;
+}
+
+/* Fix for any potential overlay blocking clicks */
+.control-row, .buttons, .button-group {
+    pointer-events: auto !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+/* Mobile landscape optimization - 手机横屏优化 */
+@media (orientation: landscape) and (max-height: 599px) {
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
+    .container {
+        border-radius: 4px;
+        margin: 0;
+    }
+
+    .header {
+        padding: 8px 4px;
+    }
+
+    .header h1 {
+        font-size: 1.4rem;
+    }
+
+    .controls {
+        padding: 6px;
+    }
+
+    .score-container {
+        padding: 0;
+    }
+
+    #score {
+        min-height: 160px;
+        max-width: calc(100vw - 8px);
+        width: calc(100vw - 8px);
+        padding: 3px;
+        margin: 0;
+        border-radius: 4px;
+    }
+
+    /* 横屏时旋律可以更大 */
+    #score svg {
+        max-width: 100% !important;
+        width: auto !important;
+        height: auto !important;
+        min-width: 300px;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    #score .osmd-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+    }
+
+    button {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+    }
+
+    .btn-primary {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Extreme small mobile devices (very small phones) */
+@media (max-width: 360px) {
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
+    .container {
+        border-radius: 2px;
+        margin: 0;
+    }
+
+    .score-container {
+        padding: 0;
+    }
+
+    #score {
+        min-height: 180px;
+        max-width: calc(100vw - 6px);
+        width: calc(100vw - 6px);
+        padding: 2px;
+        margin: 0;
+        border-radius: 2px;
+    }
+
+    /* 极度紧凑的音乐显示 - 完全无边距 */
+    #score svg {
+        min-width: 150px;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    #score .osmd-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+    }
+
+    .header {
+        padding: 12px 2px;
+    }
+
+    .header h1 {
+        font-size: 1.4rem;
+    }
+
+    .controls {
+        padding: 4px;
+    }
+
+    button {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+    }
+
+    .btn-primary {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (min-width: 600px) and (max-width: 899px) {
+    .score-container {
+        padding: 24px;
+    }
+
+    .control-row {
+        gap: 20px;
+    }
+}
+
+@media (min-width: 900px) {
+    .control-row {
+        gap: 28px;
+    }
+
+    .container:hover {
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+    }
+}
+
+/* Ensure no pseudo-elements block clicks */
+button::before,
+button::after {
+    pointer-events: none !important;
+}
+
+/* Focus indicators for accessibility */
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+.checkbox-item:focus-within {
+    outline: 2px solid var(--primary-green);
+    outline-offset: 2px;
+}
+
+/* 添加伪元素来创建更复杂的音乐装饰 */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        /* 高音谱号暗示 - 椭圆形装饰 */
+        radial-gradient(ellipse 3px 8px at 25% 25%, rgba(0, 0, 0, 0.025) 40%, transparent 41%),
+        radial-gradient(ellipse 8px 3px at 75% 75%, rgba(0, 0, 0, 0.025) 40%, transparent 41%),
+        /* 音符连线暗示 */
+        linear-gradient(30deg, transparent 48%, rgba(0, 0, 0, 0.02) 49%, rgba(0, 0, 0, 0.02) 51%, transparent 52%),
+        linear-gradient(-30deg, transparent 48%, rgba(0, 0, 0, 0.02) 49%, rgba(0, 0, 0, 0.02) 51%, transparent 52%),
+        /* 骰子面暗示 */
+        linear-gradient(90deg, rgba(0, 0, 0, 0.012) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.012) 1px, transparent 1px);
+    background-size: 
+        400px 400px, 350px 350px,
+        300px 300px, 280px 280px,
+        120px 120px, 120px 120px;
+    background-position: 
+        100px 150px, 250px 300px,
+        0 100px, 200px 50px,
+        0 0, 0 0;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Dark mode background decorations */
+[data-theme="dark"] body::before {
+    background-image:
+        /* 高音谱号暗示 - 椭圆形装饰 (白色在深色背景上) */
+        radial-gradient(ellipse 3px 8px at 25% 25%, rgba(255, 255, 255, 0.04) 40%, transparent 41%),
+        radial-gradient(ellipse 8px 3px at 75% 75%, rgba(255, 255, 255, 0.04) 40%, transparent 41%),
+        /* 音符连线暗示 */
+        linear-gradient(30deg, transparent 48%, rgba(255, 255, 255, 0.03) 49%, rgba(255, 255, 255, 0.03) 51%, transparent 52%),
+        linear-gradient(-30deg, transparent 48%, rgba(255, 255, 255, 0.03) 49%, rgba(255, 255, 255, 0.03) 51%, transparent 52%),
+        /* 骰子面暗示 */
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* Dark mode advanced settings sections - 高级设置区域深色模式 */
+[data-theme="dark"] #rhythmAdvancedSettings,
+[data-theme="dark"] #articulationAdvancedSettings {
+    background: var(--neutral-light) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] #rhythmAdvancedSettings h4,
+[data-theme="dark"] #articulationAdvancedSettings h4 {
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] #rhythmAdvancedSettings p,
+[data-theme="dark"] #articulationAdvancedSettings p {
+    color: var(--neutral-dark) !important;
+}
+
+[data-theme="dark"] #rhythmAdvancedSettings label,
+[data-theme="dark"] #articulationAdvancedSettings label {
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] #rhythmAdvancedSettings span,
+[data-theme="dark"] #articulationAdvancedSettings span {
+    color: var(--primary-green) !important;
 }

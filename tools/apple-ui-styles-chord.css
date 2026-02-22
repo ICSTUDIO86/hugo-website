@@ -1,29 +1,29 @@
 /*!
- * Apple-inspired Minimalist UI for Sight-Reading Generator
- * IC Studio 视奏工具 - 专业级视奏旋律生成器
- * 
+ * Apple-inspired Minimalist UI for Chord Sight-Reading Generator
+ * IC Studio 视奏工具 - 专业级和弦视奏生成器
+ *
  * Copyright © 2026. All rights reserved. Igor Chen - icstudio.club
- * 
+ *
  * Author: Igor Chen
  * Website: https://icstudio.club
  * Email: icstudio@fastmail.com
  */
 :root {
-    /* Apple-style color palette - Light Mode */
-    --primary-blue: #007AFF;
-    --secondary-blue: #5AC8FA;
+    /* Apple-style color palette - Light Mode - Orange Theme */
+    --primary-orange: #FF9500;
+    --secondary-orange: #FF9F0A;
     --neutral-white: #FFFFFF;
     --neutral-light: #F2F2F7;
     --neutral-medium: #C7C7CC;
     --neutral-dark: #8E8E93;
     --neutral-black: #1D1D1F;
     --accent-green: #34C759;
-    --accent-orange: #FF9500;
+    --accent-blue: #FF9500;
     --accent-purple: #AF52DE;
     --background-blur: rgba(255, 255, 255, 0.8);
     --card-shadow: rgba(0, 0, 0, 0.04);
     --card-shadow-hover: rgba(0, 0, 0, 0.08);
-    --card-shadow-focus: rgba(0, 122, 255, 0.15);
+    --card-shadow-focus: rgba(255, 149, 0, 0.15);
     --border-color: rgba(0, 0, 0, 0.06);
     --border-color-medium: rgba(0, 0, 0, 0.08);
     --body-bg: #f5f5f7;
@@ -37,22 +37,22 @@
     --font-mono: 'SF Mono', Monaco, Menlo, monospace;
 }
 
-/* Dark mode color palette - Apple-inspired blue-gray theme */
+/* Dark mode color palette - Apple-inspired orange-gray theme */
 [data-theme="dark"] {
-    --primary-blue: #0A84FF;
-    --secondary-blue: #64D2FF;
+    --primary-orange: #FF9F0A;
+    --secondary-orange: #FFAD33;
     --neutral-white: #2C2C2E;      /* Cards/containers */
     --neutral-light: #3A3A3C;      /* Slightly lighter containers */
     --neutral-medium: #48484A;     /* Input fields, borders */
     --neutral-dark: #8E8E93;       /* Secondary text */
     --neutral-black: #F2F2F7;      /* Primary text */
     --accent-green: #32D74B;
-    --accent-orange: #FF9F0A;
+    --accent-blue: #FF9F0A;
     --accent-purple: #BF5AF2;
     --background-blur: rgba(44, 44, 46, 0.8);
     --card-shadow: rgba(0, 0, 0, 0.4);
     --card-shadow-hover: rgba(0, 0, 0, 0.6);
-    --card-shadow-focus: rgba(10, 132, 255, 0.3);
+    --card-shadow-focus: rgba(255, 159, 10, 0.3);
     --border-color: rgba(255, 255, 255, 0.15);
     --border-color-medium: rgba(255, 255, 255, 0.25);
     --body-bg: #1D1D1F;            /* Apple-style dark gray background */
@@ -129,14 +129,14 @@ body {
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
     z-index: 1;
-    border-top: 8px solid #007bff58/* base accent line */
+    border-top: 8px solid #FF950058/* base accent line */
 }
 
 
 
 /* Header - Apple style */
 .header {
-    background: #007bff05;
+    background: #FF950005;
     color: #1d1d1f;
     padding: 40px 30px;
     text-align: center;
@@ -182,6 +182,7 @@ body {
 .control-row:last-of-type {
     justify-content: center;
     margin-bottom: 0;
+    margin-top: 24px;
 }
 
 .control-group {
@@ -216,8 +217,8 @@ select, input {
 
 select:focus, input:focus {
     outline: none;
-    border-color: #007aff;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    border-color: #FF9500;
+    box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.15);
     background: #ffffff !important;
     transform: translateY(-1px);
 }
@@ -231,8 +232,8 @@ select:hover, input:hover {
 
 select:active, select:focus:active {
     background: #ffffff !important;
-    border-color: #007aff;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    border-color: #FF9500;
+    box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.15);
 }
 
 select option {
@@ -258,19 +259,19 @@ input[type="range"]::-webkit-slider-thumb {
     width: 20px;
     height: 20px;
     background: #ffffff;
-    border: 4px solid #007aff;
+    border: 4px solid #FF9500;
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     box-shadow: 
         0 2px 8px rgba(0, 0, 0, 0.08),
-        0 4px 16px rgba(0, 122, 255, 0.12);
+        0 4px 16px rgba(255, 149, 0, 0.12);
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
-    border-color: #0056cc;
+    border-color: #E6850E;
     transform: scale(1.1);
-    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 4px 16px rgba(255, 149, 0, 0.3);
 }
 
 input[type="range"]::-webkit-slider-thumb:active {
@@ -281,7 +282,7 @@ input[type="range"]::-moz-range-thumb {
     width: 20px;
     height: 20px;
     background: #ffffff;
-    border: 2px solid #007aff;
+    border: 2px solid #FF9500;
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -293,7 +294,7 @@ input[type="range"]::-moz-range-thumb {
     width: 32px;
     height: 32px;
     padding: 0;
-    background: var(--primary-blue);
+    background: var(--primary-orange);
     border: none;
     border-radius: 50%;
     color: #FFFFFF;
@@ -303,18 +304,18 @@ input[type="range"]::-moz-range-thumb {
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 149, 0, 0.3);
 }
 
 .metronome-toggle-btn:hover {
-    background: #005FCC;
+    background: #E6850E;
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+    box-shadow: 0 4px 16px rgba(255, 149, 0, 0.4);
 }
 
 .metronome-toggle-btn:active {
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 149, 0, 0.3);
 }
 
 .metronome-toggle-btn.active {
@@ -337,12 +338,12 @@ input[type="range"]::-moz-range-thumb {
 
 /* Dark mode metronome button */
 [data-theme="dark"] .metronome-toggle-btn {
-    background: var(--primary-blue) !important;
+    background: var(--primary-orange) !important;
     color: #FFFFFF !important;
 }
 
 [data-theme="dark"] .metronome-toggle-btn:hover {
-    background: #1E8FFF !important;
+    background: #FFAD33 !important;
 }
 
 [data-theme="dark"] .metronome-toggle-btn.active {
@@ -371,8 +372,8 @@ input[type="range"]::-moz-range-thumb {
 
 .bpm-input:focus {
     outline: none;
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 2px rgba(255, 149, 0, 0.2);
     background: var(--neutral-white);
     cursor: text;
 }
@@ -391,7 +392,7 @@ input[type="range"]::-moz-range-thumb {
 
 [data-theme="dark"] .bpm-input:focus {
     background: var(--neutral-light) !important;
-    border-color: var(--primary-blue) !important;
+    border-color: var(--primary-orange) !important;
 }
 
 /* Main page metronome control styling */
@@ -423,8 +424,8 @@ input[type="range"]::-moz-range-thumb {
 
 .bpm-input-control:focus {
     outline: none;
-    border-color: #007aff;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    border-color: #FF9500;
+    box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.15);
     background: #ffffff !important;
     transform: translateY(-1px);
 }
@@ -450,21 +451,21 @@ input[type="range"]::-moz-range-thumb {
 
 [data-theme="dark"] .bpm-input-control:focus {
     background: var(--neutral-light) !important;
-    border-color: var(--primary-blue) !important;
+    border-color: var(--primary-orange) !important;
 }
 
 /* BPM拖动状态样式 */
 .bpm-input-control.dragging {
     background: var(--neutral-light) !important;
-    border-color: var(--primary-blue) !important;
-    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    border-color: var(--primary-orange) !important;
+    box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.15);
     cursor: ns-resize !important;
     transform: translateY(-1px);
 }
 
 [data-theme="dark"] .bpm-input-control.dragging {
     background: var(--neutral-medium) !important;
-    border-color: var(--primary-blue) !important;
+    border-color: var(--primary-orange) !important;
     box-shadow: 0 0 0 3px var(--card-shadow-focus);
     cursor: ns-resize !important;
     transform: translateY(-1px);
@@ -566,7 +567,7 @@ input[type="range"]::-moz-range-thumb {
     width: 28px;
     height: 28px;
     padding: 0;
-    background: var(--primary-blue);
+    background: var(--primary-orange);
     border: none;
     border-radius: 50%;
     color: #FFFFFF;
@@ -579,7 +580,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .metronome-play-btn:hover {
-    background: #005FCC;
+    background: #E6850E;
     transform: scale(1.05);
 }
 
@@ -645,12 +646,12 @@ input[type="range"]::-moz-range-thumb {
 }
 
 [data-theme="dark"] .metronome-play-btn {
-    background: var(--primary-blue) !important;
+    background: var(--primary-orange) !important;
     color: #FFFFFF !important;
 }
 
 [data-theme="dark"] .metronome-play-btn:hover {
-    background: #1E8FFF !important;
+    background: #FFAD33 !important;
 }
 
 [data-theme="dark"] .metronome-play-btn.active {
@@ -693,34 +694,6 @@ input[type="range"]::-moz-range-thumb {
 
 .metronome-pattern-toggle-group .toggle-container {
     flex-shrink: 0;
-}
-
-/* Match interval tool: use native checkbox for metronome pattern toggle */
-.metronome-pattern-toggle-group .toggle-container {
-    width: auto;
-    height: auto;
-    display: inline-block;
-}
-
-.metronome-pattern-toggle-group .toggle-input {
-    opacity: 1;
-    width: auto;
-    height: auto;
-    position: static;
-}
-
-.metronome-pattern-toggle-group .toggle-slider {
-    display: none;
-    position: static;
-    width: auto;
-    height: auto;
-    background: transparent;
-    box-shadow: none;
-    border-radius: 0;
-}
-
-.metronome-pattern-toggle-group .toggle-button {
-    display: none;
 }
 
 .metronome-pattern-select {
@@ -774,29 +747,88 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .metronome-pattern-step.beat-start {
-    border-color: var(--primary-blue);
-    color: var(--primary-blue);
+    border-color: var(--primary-orange);
+    color: var(--primary-orange);
 }
 
 .metronome-pattern-step.active {
-    background: #007aff;
+    background: #FF9500;
     color: #ffffff;
-    border-color: #007aff;
-    box-shadow: 0 3px 6px rgba(0, 122, 255, 0.3);
+    border-color: #FF9500;
+    box-shadow: 0 3px 6px rgba(255, 149, 0, 0.3);
 }
 
 .metronome-pattern-step.active.beat-start {
-    background: #007aff;
-    border-color: #007aff;
-    box-shadow: 0 3px 6px rgba(0, 122, 255, 0.3);
+    background: #FF9500;
+    border-color: #FF9500;
+    box-shadow: 0 3px 6px rgba(255, 149, 0, 0.3);
 }
 
 .metronome-pattern-step.bar-start {
-    box-shadow: inset 0 0 0 2px rgba(0, 122, 255, 0.35);
+    box-shadow: inset 0 0 0 2px rgba(255, 149, 0, 0.35);
 }
 
 .metronome-pattern-step.active.bar-start {
-    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), 0 6px 16px rgba(0, 71, 163, 0.45);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35), 0 6px 16px rgba(170, 95, 0, 0.45);
+}
+
+/* Toggle switches (match melody switcher style) */
+.toggle-container {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+}
+
+.toggle-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    background: var(--neutral-light);
+    border-radius: 999px;
+    transition: all 0.25s ease;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.toggle-button {
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: var(--neutral-white);
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    transition: all 0.25s ease;
+}
+
+.toggle-input:checked + .toggle-slider {
+    background: var(--primary-orange);
+}
+
+.toggle-input:checked + .toggle-slider .toggle-button {
+    transform: translateX(24px);
+    box-shadow: 0 4px 10px rgba(255, 149, 0, 0.35);
+}
+
+[data-theme="dark"] .toggle-slider {
+    background: #2d2d30;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .toggle-button {
+    background: #1f1f22;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .toggle-input:checked + .toggle-slider {
+    background: var(--primary-orange);
 }
 
 [data-theme="dark"] .metronome-pattern-select {
@@ -848,7 +880,7 @@ input[type="range"]::-moz-range-thumb {
     cursor: pointer;
     width: 18px;
     height: 18px;
-    accent-color: #007aff;
+    accent-color: #FF9500;
     cursor: pointer;
 }
 
@@ -938,27 +970,27 @@ button {
 
 .btn-primary {
     padding: 14px 28px;
-    background: #007aff;
+    background: #FF9500;
     color: white;
-    border-color: #007aff;
-    box-shadow:  0 3px 6px rgba(0, 122, 255, 0.3);
+    border-color: #FF9500;
+    box-shadow:  0 3px 6px rgba(255, 149, 0, 0.3);
     font-size: 1.1rem;
     font-weight: 600;
 }
 
 .btn-primary:hover {
-    background: #005FCC;
-    border-color: #0056cc;
+    background: #E6850E;
+    border-color: #E6850E;
     transform: translateY(-2px);
     box-shadow: 
-        0 8px 24px rgba(0, 122, 255, 0.35),
+        0 8px 24px rgba(255, 149, 0, 0.35),
         inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .btn-primary:active {
     transform: translateY(-1px);
     box-shadow: 
-        0 4px 16px rgba(0, 122, 255, 0.25),
+        0 4px 16px rgba(255, 149, 0, 0.25),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
@@ -1015,7 +1047,7 @@ button {
 /* Score container with Apple-style card - MUSIC CLARITY OPTIMIZED */
 .score-container {
     padding: 50px 40px;
-    background: #007bff05;
+    background: #FF950005;
     min-height: 550px;
     display: flex;
     justify-content: center;
@@ -1025,7 +1057,7 @@ button {
 
 /* Force score container to always be light for music sheet visibility */
 [data-theme="dark"] .score-container {
-    background: #007bff05;
+    background: #FF950005;
 }
 
 [data-theme="dark"] #score {
@@ -1047,7 +1079,7 @@ button {
     transform: translateX(-50%);
     width: 60px;
     height: 4px;
-    background: linear-gradient(90deg, var(--primary-blue), var(--accent-purple));
+    background: linear-gradient(90deg, var(--primary-orange), var(--accent-purple));
     border-radius: 2px;
     opacity: 0.25;
 }
@@ -1072,19 +1104,29 @@ button {
 }
 
 #score:hover {
-    box-shadow: 
+    box-shadow:
         0 4px 24px rgba(0, 0, 0, 0.06),
         0 12px 48px rgba(0, 0, 0, 0.04),
         inset 0 1px 0 rgba(255, 255, 255, 0.8);
     transform: translateY(-2px);
+    cursor: pointer;
+}
+
+#score:active {
+    transform: translateY(-1px);
+    box-shadow:
+        0 2px 16px rgba(0, 0, 0, 0.04),
+        0 8px 32px rgba(0, 0, 0, 0.02),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 #score:focus-within {
-    box-shadow: 
+    box-shadow:
         0 4px 24px var(--card-shadow-focus),
-        0 12px 48px rgba(0, 122, 255, 0.08),
+        0 12px 48px rgba(255, 149, 0, 0.08),
         inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
+
 
 /* Apple-style modals - FIXED */
 .modal {
@@ -1150,7 +1192,7 @@ button {
     align-items: center !important;
     position: relative !important;
     z-index: 10001 !important;
-    border-top: 14px solid #007bff83/* base accent line */
+    border-top: 14px solid #FF950083/* base accent line */
 }
 
 .modal-header::before {
@@ -1161,7 +1203,7 @@ button {
     transform: translateX(-50%);
     width: 40px;
     height: 2px;
-    background: linear-gradient(90deg, var(--primary-blue), var(--accent-purple));
+    background: linear-gradient(90deg, var(--primary-orange), var(--accent-purple));
     border-radius: 1px;
     opacity: 0.3;
 }
@@ -1230,6 +1272,47 @@ button {
     line-height: 1.4;
 }
 
+#challengeModal .switch {
+    position: relative !important;
+    display: inline-block !important;
+    width: 60px;
+    height: 34px;
+}
+
+#challengeModal .switch input {
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+#challengeModal .switch .slider {
+    position: absolute !important;
+    inset: 0 !important;
+    cursor: pointer;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+#challengeModal .switch .slider .slider-button {
+    position: absolute !important;
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: #ffffff;
+    transition: 0.4s;
+    border-radius: 50%;
+    transform: translateX(0px);
+}
+
+#challengeModal .modal-hint {
+    font-size: 0.9rem;
+    color: var(--secondary-text);
+    margin: 0;
+    line-height: 1.4;
+}
+
 /* Checkbox styling */
 .rhythm-section {
     margin-bottom: 32px;
@@ -1269,9 +1352,9 @@ button {
 .checkbox-item input[type="checkbox"] {
     width: 22px;
     height: 22px;
-    accent-color: #007aff;
+    accent-color: #FF9500;
     cursor: pointer;
-    border-radius: 4px var(--primary-blue), var(--accent-purple);
+    border-radius: 4px var(--primary-orange), var(--accent-purple);
 }
 
 .checkbox-item span {
@@ -1285,7 +1368,7 @@ button {
 #rhythmAdvancedSettings, #articulationAdvancedSettings {
     background: var(--neutral-soft);
     border-radius: 12px;
-    border: 1px solid var(--primary-blue), var(--accent-purple);
+    border: 1px solid var(--primary-orange), var(--accent-purple);
     padding: 24px;
     margin-top: 24px;
 }
@@ -1318,8 +1401,8 @@ button {
     display: flex !important;
     gap: 12px !important;
     justify-content: flex-end !important;
-    margin-top: 0 !important;
-    padding: 20px 32px 28px 32px !important; /* top right bottom left: align with header/body side paddings */
+    margin-top: 32px !important;
+    padding-top: 24px !important;
     border-top: 1px solid var(--border-color) !important;
     position: relative !important;
     z-index: 10002 !important;
@@ -1329,6 +1412,7 @@ button {
 /* All modal elements should be interactive */
 .modal *, .modal-content *, .modal-body *, .modal-header *, .modal-buttons * {
     pointer-events: auto !important;
+    position: relative !important;
 }
 
 /* Empty score message */
@@ -1339,6 +1423,7 @@ button {
     font-weight: 450;
     padding: 40px;
     letter-spacing: -0.01em;
+    pointer-events: none; /* 允许点击事件穿透到父容器 */
 }
 
 /* Hide OSMD elements */
@@ -1364,6 +1449,28 @@ text[class*="PartName"] {
     border-radius: 8px;
     transition: opacity 0.3s ease, filter 0.3s ease;
 }
+
+/* 确保所有子元素居中 - 完全参考旋律视奏工具的样式 */
+#score > * {
+    margin: 0 auto !important;
+    display: block !important;
+}
+
+/* 特别处理OSMD生成的内容 */
+#score .osmd-container {
+    width: 100% !important;
+    text-align: center !important;
+}
+
+/* 确保SVG完全居中 */
+#score svg,
+#score .osmd-container svg {
+    margin: 0 auto !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
 
 /* Melody hidden state */
 #score svg.melody-hidden {
@@ -1463,114 +1570,7 @@ text[class*="PartName"] {
     }
 }
 
-/* Toggle switches for display options */
-.toggle-container {
-    position: relative;
-    display: inline-block;
-    width: 52px;
-    height: 28px;
-}
-
-.toggle-input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.toggle-slider {
-    position: absolute;
-    inset: 0;
-    cursor: pointer;
-    background: var(--neutral-light);
-    border-radius: 999px;
-    transition: all 0.25s ease;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
-}
-
-.toggle-button {
-    position: absolute;
-    height: 22px;
-    width: 22px;
-    left: 3px;
-    bottom: 3px;
-    background: var(--neutral-white);
-    border-radius: 50%;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-    transition: all 0.25s ease;
-}
-
-.toggle-input:checked + .toggle-slider {
-    background: var(--primary-blue);
-}
-
-.toggle-input:checked + .toggle-slider .toggle-button {
-    transform: translateX(24px);
-    box-shadow: 0 4px 10px rgba(0, 122, 255, 0.35);
-}
-
-[data-theme="dark"] .toggle-slider {
-    background: #2d2d30;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
-}
-
-[data-theme="dark"] .toggle-button {
-    background: #1f1f22;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-}
-
-[data-theme="dark"] .toggle-input:checked + .toggle-slider {
-    background: #4f8bff;
-}
-
-/* Notation panel below the score */
-.aux-notation {
-    margin-top: 12px;
-    padding: 12px 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    background: var(--neutral-white);
-    box-shadow: 0 4px 18px var(--card-shadow);
-}
-
-.notation-line {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-top: 6px;
-}
-
-.notation-line:first-child {
-    margin-top: 0;
-}
-
-.notation-label {
-    font-weight: 600;
-    color: var(--neutral-dark);
-    min-width: 54px;
-    font-size: 0.95rem;
-}
-
-.notation-content {
-    flex: 1;
-    font-family: var(--font-mono);
-    color: var(--neutral-black);
-    word-break: break-word;
-    line-height: 1.6;
-}
-
-[data-theme="dark"] .aux-notation {
-    background: rgba(30, 30, 32, 0.9);
-    border-color: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
-}
-
-[data-theme="dark"] .notation-label {
-    color: #b0b0b5;
-}
-
-[data-theme="dark"] .notation-content {
-    color: #e9ecef;
-}
+/* Note: Dark mode is now controlled by data-theme attribute instead of prefers-color-scheme */
 
 /* Practice counter */
 .practice-counter {
@@ -1624,7 +1624,15 @@ text[class*="PartName"] {
     border-color: rgba(255, 255, 255, 0.12);
 }
 
-/* Note: Dark mode is now controlled by data-theme attribute instead of prefers-color-scheme */
+/* 🎵 超小屏幕和弦代号适配 */
+@media (max-width: 479px) {
+    .chord-symbol,
+    svg .chord-symbol,
+    svg text.chord-symbol {
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+    }
+}
 
 /* Smooth animations and micro-interactions */
 * {
@@ -1668,7 +1676,7 @@ button:focus-visible,
 select:focus-visible,
 input:focus-visible,
 .checkbox-item:focus-within {
-    outline: 2px solid var(--primary-blue);
+    outline: 2px solid var(--primary-orange);
     outline-offset: 2px;
 }
 
@@ -1728,15 +1736,15 @@ body::before {
 
 /* Dark mode buttons */
 [data-theme="dark"] .btn-primary {
-    background: var(--primary-blue) !important;
+    background: var(--primary-orange) !important;
     color: #FFFFFF !important;
-    border-color: var(--primary-blue) !important;
-    box-shadow: 0 4px 20px rgba(10, 132, 255, 0.3);
+    border-color: var(--primary-orange) !important;
+    box-shadow: 0 4px 20px rgba(255, 159, 10, 0.3);
 }
 
 [data-theme="dark"] .btn-primary:hover {
-    background: #1E8FFF !important;
-    box-shadow: 0 6px 25px rgba(10, 132, 255, 0.4);
+    background: #FFAD33 !important;
+    box-shadow: 0 6px 25px rgba(255, 159, 10, 0.4);
 }
 
 [data-theme="dark"] .btn-secondary {
@@ -1767,7 +1775,7 @@ body::before {
 
 [data-theme="dark"] input[type="range"]::-webkit-slider-thumb {
     background: #FFFFFF;
-    border-color: var(--primary-blue);
+    border-color: var(--primary-orange);
 }
 
 [data-theme="dark"] input[type="radio"] {
@@ -1775,8 +1783,8 @@ body::before {
 }
 
 [data-theme="dark"] input[type="radio"]:checked {
-    background-color: var(--primary-blue);
-    border-color: var(--primary-blue);
+    background-color: var(--primary-orange);
+    border-color: var(--primary-orange);
 }
 
 /* Dark mode text colors */
@@ -1829,7 +1837,7 @@ body::before {
 }
 
 [data-theme="dark"] .checkbox-item input[type="checkbox"] {
-    accent-color: var(--primary-blue) !important;
+    accent-color: var(--primary-orange) !important;
 }
 
 /* Dark mode advanced settings sections */
@@ -1866,7 +1874,7 @@ body::before {
 }
 
 [data-theme="dark"] .radio-item input[type="radio"] {
-    accent-color: var(--primary-blue) !important;
+    accent-color: var(--primary-orange) !important;
 }
 
 /* Dark mode close button */
@@ -1930,16 +1938,16 @@ body::before {
 
 /* Dark mode language switcher adjustments */
 [data-theme="dark"] .language-btn {
-    background: var(--primary-blue) !important;
-    border-color: var(--primary-blue) !important;
+    background: var(--primary-orange) !important;
+    border-color: var(--primary-orange) !important;
     color: #FFFFFF !important;
-    box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4);
+    box-shadow: 0 2px 8px rgba(255, 159, 10, 0.4);
 }
 
 [data-theme="dark"] .language-btn:hover {
-    background: #1E8FFF !important;
-    border-color: #1E8FFF !important;
-    box-shadow: 0 4px 16px rgba(10, 132, 255, 0.5);
+    background: #FFAD33 !important;
+    border-color: #FFAD33 !important;
+    box-shadow: 0 4px 16px rgba(255, 159, 10, 0.5);
 }
 
 [data-theme="dark"] .language-menu {
@@ -1954,11 +1962,11 @@ body::before {
 
 [data-theme="dark"] .language-option:hover {
     background: var(--neutral-light) !important;
-    color: var(--primary-blue) !important;
+    color: var(--primary-orange) !important;
 }
 
 [data-theme="dark"] .language-option:active {
-    background: var(--primary-blue) !important;
+    background: var(--primary-orange) !important;
     color: #FFFFFF !important;
 }
 
@@ -2073,13 +2081,13 @@ body::before {
 
 .theme-option:hover,
 .language-option:hover {
-    background: var(--primary-blue);
+    background: var(--primary-orange);
     color: #FFFFFF;
 }
 
 .theme-option:active,
 .language-option:active {
-    background: #005FCC;
+    background: #E6850E;
     color: #FFFFFF;
 }
 
@@ -2127,8 +2135,8 @@ body::before {
 
 .tempo-input:focus {
     outline: none;
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 2px rgba(255, 149, 0, 0.2);
 }
 
 .tempo-preset-buttons {
@@ -2149,9 +2157,9 @@ body::before {
 }
 
 .tempo-preset:hover {
-    background: var(--primary-blue);
+    background: var(--primary-orange);
     color: #FFFFFF;
-    border-color: var(--primary-blue);
+    border-color: var(--primary-orange);
 }
 
 .metronome-actions {
@@ -2165,7 +2173,7 @@ body::before {
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    background: var(--primary-blue);
+    background: var(--primary-orange);
     color: #FFFFFF;
     border: none;
     border-radius: 8px;
@@ -2176,9 +2184,9 @@ body::before {
 }
 
 .metronome-btn:hover {
-    background: #005FCC;
+    background: #E6850E;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
 }
 
 .metronome-btn.active {
@@ -2221,17 +2229,17 @@ body::before {
 }
 
 [data-theme="dark"] .tempo-preset:hover {
-    background: var(--primary-blue) !important;
+    background: var(--primary-orange) !important;
     color: #FFFFFF !important;
 }
 
 [data-theme="dark"] .metronome-btn {
-    background: var(--primary-blue) !important;
+    background: var(--primary-orange) !important;
     color: #FFFFFF !important;
 }
 
 [data-theme="dark"] .metronome-btn:hover {
-    background: #1E8FFF !important;
+    background: #FFAD33 !important;
 }
 
 [data-theme="dark"] .metronome-btn.active {
@@ -2270,7 +2278,7 @@ body::before {
     color: #FFFFFF !important;
 }
 
-[data-theme="dark"] .theme-option, 
+[data-theme="dark"] .theme-option
 [data-theme="dark"] .language-option {
     background: var(--neutral-white) !important;
     color: var(--neutral-black) !important;
@@ -2278,20 +2286,20 @@ body::before {
 
 [data-theme="dark"] .theme-option:hover,
 [data-theme="dark"] .language-option:hover {
-    background: var(--primary-blue) !important;
+    background: var(--primary-orange) !important;
     color: #FFFFFF !important;
 }
 
 [data-theme="dark"] .theme-option:active,
 [data-theme="dark"] .language-option:active {
-    background: #005FCC !important;
+    background: #E6850E !important;
     color: #FFFFFF !important;
 }
 
 /* Dark mode function selector styles */
 [data-theme="dark"] .function-btn {
-    background: var(--primary-blue) !important;
-    border-color: var(--primary-blue) !important;
+    background: var(--primary-orange) !important;
+    border-color: var(--primary-orange) !important;
     color: #FFFFFF !important;
 }
 
@@ -2300,12 +2308,12 @@ body::before {
 }
 
 [data-theme="dark"] .function-btn:hover {
-    background: #1E8FFF !important;
-    border-color: #1E8FFF !important;
+    background: #FFAD33 !important;
+    border-color: #FFAD33 !important;
 }
 
 [data-theme="dark"] .function-btn:active {
-    background: #0056CC !important;
+    background: #E6850E !important;
 }
 
 [data-theme="dark"] .function-menu {
@@ -2320,27 +2328,14 @@ body::before {
 }
 
 /* 深色模式下的悬浮颜色 */
-[data-theme="dark"] .function-option:hover {
-    color: #FFFFFF !important;
-}
-
-/* 旋律视奏 - 蓝色 */
-[data-theme="dark"] .function-option:nth-child(1):hover {
-    background: #007AFF !important;
-}
-
-/* 音程视奏 - 绿色 */
-[data-theme="dark"] .function-option:nth-child(2):hover {
-    background: #34C759 !important;
-}
-
-/* 和弦视奏 - 橙色 */
-[data-theme="dark"] .function-option:nth-child(3):hover {
-    background: #FF9500 !important;
+[data-theme="dark"] .function-option:hover,
+[data-theme="dark"] .function-option:focus {
+    background: rgba(255, 159, 10, 0.2) !important;
+    color: var(--primary-orange) !important;
 }
 
 [data-theme="dark"] .function-option:active {
-    background: #0056CC !important;
+    background: #E6850E !important;
     color: #FFFFFF !important;
 }
 
@@ -2372,22 +2367,22 @@ body::before {
 /* Override global button styles specifically for language button */
 button.language-btn {
     color: #FFFFFF !important;
-    background: #007AFF !important;
+    background: #FF9500 !important;
 }
 
 button.language-btn:hover {
     color: #FFFFFF !important;
-    background: #0056CC !important;
+    background: #E6850E !important;
 }
 
 button.language-btn:active {
     color: #FFFFFF !important;
-    background: #004499 !important;
+    background: #CC6600 !important;
 }
 
 button.language-btn:focus {
     color: #FFFFFF !important;
-    background: #007AFF !important;
+    background: #FF9500 !important;
 }
 
 .header-content {
@@ -2427,8 +2422,8 @@ button.language-btn:focus {
 }
 
 .function-btn {
-    background: var(--primary-blue);
-    border: 1px solid var(--primary-blue);
+    background: var(--primary-orange);
+    border: 1px solid var(--primary-orange);
     border-radius: 12px;
     padding: 10px 16px;
     font-size: 14px;
@@ -2439,7 +2434,7 @@ button.language-btn:focus {
     display: flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 149, 0, 0.3);
     white-space: nowrap;
     min-width: 120px;
     justify-content: center;
@@ -2450,18 +2445,18 @@ button.language-btn:focus {
 }
 
 .function-btn:hover {
-    background: #0056CC;
-    border-color: #0056CC;
+    background: #E6850E;
+    border-color: #E6850E;
     color: #FFFFFF !important;
-    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+    box-shadow: 0 4px 16px rgba(255, 149, 0, 0.4);
     transform: translateY(-1px);
 }
 
 .function-btn:active {
-    background: #004499;
+    background: #CC6600;
     color: #FFFFFF !important;
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 149, 0, 0.3);
 }
 
 .function-menu {
@@ -2513,28 +2508,15 @@ button.language-btn:focus {
     border-bottom-right-radius: 16px;
 }
 
-/* 为不同功能设置特定的悬浮颜色 */
-.function-option:hover {
-    color: #FFFFFF;
-}
-
-/* 旋律视奏 - 蓝色 */
-.function-option:nth-child(1):hover {
-    background: #007AFF;
-}
-
-/* 音程视奏 - 绿色 */
-.function-option:nth-child(2):hover {
-    background: #34C759;
-}
-
-/* 和弦视奏 - 橙色 */
-.function-option:nth-child(3):hover {
-    background: #FF9500;
+/* 功能菜单悬浮风格（与简谱一致：淡色背景 + 主题色文字） */
+.function-option:hover,
+.function-option:focus {
+    background: rgba(255, 149, 0, 0.12);
+    color: #C76A00;
 }
 
 .function-option:active {
-    background: #0056CC;
+    background: #E6850E;
     color: #FFFFFF;
 }
 
@@ -2590,8 +2572,8 @@ button.theme-switcher:hover {
 }
 
 .language-btn {
-    background: #007AFF;
-    border: 1px solid #007AFF;
+    background: #FF9500;
+    border: 1px solid #FF9500;
     border-radius: 12px;
     padding: 8px 16px;
     font-size: 14px;
@@ -2602,25 +2584,25 @@ button.theme-switcher:hover {
     display: flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 149, 0, 0.3);
     white-space: nowrap;
     min-width: 120px;
     justify-content: center;
 }
 
 .language-btn:hover {
-    background: #0056CC;
-    border-color: #0056CC;
+    background: #E6850E;
+    border-color: #E6850E;
     color: #FFFFFF !important;
-    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.4);
+    box-shadow: 0 4px 16px rgba(255, 149, 0, 0.4);
     transform: translateY(-1px);
 }
 
 .language-btn:active {
-    background: #004499;
+    background: #CC6600;
     color: #FFFFFF !important;
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 149, 0, 0.3);
 }
 
 /* 风格3: 毛玻璃效果 - 备选方案2 
@@ -2696,23 +2678,23 @@ button.theme-switcher:hover {
 }
 
 .language-option:hover {
-    background: #E3F2FD !important;
-    color: #007AFF !important;
+    background: #FFF3E6 !important;
+    color: #FF9500 !important;
 }
 
 .language-option:active {
-    background: #007AFF !important;
+    background: #FF9500 !important;
     color: #FFFFFF !important;
 }
 
 /* Additional override for language options */
 .language-menu .language-option:hover {
-    background: #E3F2FD !important;
+    background: #FFF3E6 !important;
     color: #1d1d1f !important;
 }
 
 .language-menu .language-option:active {
-    background: #007AFF !important;
+    background: #FF9500 !important;
     color: #FFFFFF !important;
 }
 
@@ -2932,11 +2914,19 @@ button.theme-switcher:hover {
         padding: 6px 12px;
         font-size: 0.85rem;
     }
+
+    /* 🎵 移动端和弦代号样式适配 */
+    .chord-symbol,
+    svg .chord-symbol,
+    svg text.chord-symbol {
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+    }
 }
 
 @media (min-width: 600px) and (max-width: 899px) {
-    .score-container { 
-        padding: 24px; 
+    .score-container {
+        padding: 24px;
     }
     
     .control-row { 
@@ -2953,4 +2943,287 @@ button.theme-switcher:hover {
         box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
         transform: translateY(-2px);
     }
+}
+/* 功能分析面板样式 */
+.analysis-panel {
+    width: 100%;
+    max-width: 1200px;
+    background: var(--neutral-white);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    margin-top: 20px;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    overflow: hidden;
+}
+
+.analysis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.analysis-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--neutral-black);
+}
+
+.toggle-btn {
+    background: var(--primary-orange);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.analysis-content {
+    padding: 20px;
+}
+
+.chord-analysis-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    align-items: center;
+}
+
+.chord-function {
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+/* 功能分析面板内容样式 */
+.progression-info {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-orange);
+}
+
+.progression-info h4 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--neutral-black);
+}
+
+.progression-info p {
+    margin: 6px 0;
+    color: var(--neutral-gray-dark);
+}
+
+.chord-analysis {
+    margin-bottom: 20px;
+}
+
+.chord-analysis h4 {
+    margin: 0 0 16px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--neutral-black);
+}
+
+.chord-list {
+    display: grid;
+    gap: 12px;
+}
+
+.chord-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.chord-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+}
+
+/* 🎵 和弦代号核心样式 */
+.chord-symbol {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--neutral-black);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    text-anchor: middle;
+    dominant-baseline: hanging;
+}
+
+/* 🎵 SVG内的和弦代号元素 */
+svg .chord-symbol,
+svg text.chord-symbol {
+    font-weight: 600 !important;
+    font-size: 1.1rem !important;
+    fill: var(--neutral-black) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+.chord-function {
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: var(--primary-orange-light);
+    color: var(--primary-orange);
+}
+
+.chord-roman {
+    font-family: 'Times New Roman', serif;
+    font-weight: 600;
+    color: var(--neutral-gray-dark);
+}
+
+.chord-tension {
+    font-size: 0.8rem;
+    color: var(--neutral-gray);
+}
+
+.progression-suggestions {
+    padding: 16px;
+    background: #e8f5e8;
+    border-radius: 12px;
+    border-left: 4px solid #28a745;
+}
+
+.progression-suggestions h4 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--neutral-black);
+}
+
+.progression-suggestions ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.progression-suggestions li {
+    margin: 6px 0;
+    color: var(--neutral-gray-dark);
+}
+
+.analysis-footer {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.close-btn {
+    background: var(--neutral-gray-light);
+    color: var(--neutral-gray-dark);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    background: var(--neutral-gray);
+    color: white;
+}
+
+.function-tonic { background: #d4edda; color: #155724; }
+.function-subdominant { background: #fff3cd; color: #856404; }
+.function-dominant { background: #f8d7da; color: #721c24; }
+.function-subtonic { background: #d1ecf1; color: #0c5460; }
+
+.progression-summary {
+    margin-top: 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    border-left: 4px solid var(--primary-orange);
+}
+
+/* 隐藏功能样式 */
+.melody-hidden {
+    transition: opacity 0.3s ease, filter 0.3s ease !important;
+}
+
+.melody-visibility-btn.hidden-state {
+    background: rgba(255, 149, 0, 0.1);
+    border: 1px solid var(--primary-orange);
+}
+
+.melody-visibility-btn {
+    transition: all 0.2s ease;
+}
+
+/* SVG隐藏动画 */
+svg.melody-hidden {
+    opacity: 0 !important;
+    filter: blur(10px) !important;
+    transition: opacity 0.3s ease, filter 0.3s ease !important;
+}
+
+
+/* 功能说明信息框 - 支持 Dark Mode */
+.voicing-info {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    border-left: 3px solid var(--primary-orange);
+}
+
+/* Light mode - 浅橙色背景 */
+:root .voicing-info {
+    background: #fff8f0;
+}
+
+.voicing-info h5 {
+    margin: 0 0 8px 0;
+    color: var(--primary-orange);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.voicing-info ul {
+    margin: 0;
+    padding-left: 16px;
+    font-size: 12px;
+}
+
+:root .voicing-info ul {
+    color: #666;
+}
+
+.voicing-info li {
+    margin-bottom: 4px;
+}
+
+.voicing-info strong {
+    font-weight: 600;
+}
+
+/* Dark mode - 深色背景，橙色强调 */
+[data-theme="dark"] .voicing-info {
+    background: rgba(255, 159, 10, 0.08);
+}
+
+[data-theme="dark"] .voicing-info ul {
+    color: var(--neutral-dark);
+}
+
+[data-theme="dark"] .voicing-info strong {
+    color: var(--neutral-black);
 }

@@ -54,7 +54,7 @@
     "articulations": {
       "icon": "💻",
       "title": "多设备适配",
-      "description": "为电脑、iPad 与手机专门设计界面。软件版目前只支持电脑端，移动端可通过 PWA 安装使用。"
+      "description": "为电脑、iPad 与手机专门设计界面。软件版目前支持 macOS、Windows 和 Linux 电脑端系统，移动端可通过 PWA 安装使用。"
     },
 
     "multiInstrument": {

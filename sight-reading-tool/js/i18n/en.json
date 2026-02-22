@@ -61,7 +61,7 @@
     "articulations": {
     "icon": "💻",
     "title": "Multi-Device Support",
-    "description": "Optimized interfaces for desktop, iPad, and mobile. The software version currently supports desktop only, while mobile users can install it as a PWA."
+    "description": "Optimized interfaces for desktop, iPad, and mobile. The desktop software currently supports macOS, Windows, and Linux, while mobile users can install it as a PWA."
     },
 
     "multiInstrument": {

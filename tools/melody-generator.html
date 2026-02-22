@@ -1134,6 +1134,18 @@
                             <input type="radio" id="measures-16" name="measures" value="16">
                             <span data-i18n="controls.measures16">16小节</span>
                         </label>
+                        <label class="checkbox-item">
+                            <input type="radio" id="measures-custom" name="measures" value="10">
+                            <span data-i18n="controls.measuresCustom">自定义小节数</span>
+                        </label>
+                    </div>
+                    <div style="margin-top: 12px; padding: 12px; border: 1px dashed var(--border-color); border-radius: 10px; background: var(--neutral-white);">
+                        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <label for="measures-custom-value" style="min-width: 88px;" data-i18n="controls.measuresCustomInput">自定义</label>
+                            <input type="number" id="measures-custom-value" min="1" max="32" step="1" value="10" style="width: 90px;" oninput="syncCustomMeasureValue()">
+                            <span data-i18n="controls.measures">小节数</span>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 12px; color: var(--neutral-dark);" data-i18n="controls.measuresCustomHint">支持 1-32 小节，生成逻辑会自动贴近现有 2/4/8/12/16 档位。</div>
                     </div>
                 </div>
                 <div class="modal-buttons">
@@ -1346,34 +1358,108 @@
             closeSettingsModal();
         }
 
+        const measurePresetValues = [2, 4, 8, 12, 16];
         let previousMeasureSelection = '4';
+        let previousCustomMeasureValue = '10';
 
-        function getSelectedMeasureValue() {
-            const checked = document.querySelector('input[name="measures"]:checked');
-            return checked ? checked.value : '4';
+        function clampCustomMeasureValue(rawValue) {
+            const parsed = parseInt(rawValue, 10);
+            if (!Number.isFinite(parsed)) return 10;
+            return Math.max(1, Math.min(32, parsed));
         }
 
-        function setSelectedMeasureValue(value) {
-            const target = document.querySelector(`input[name="measures"][value="${value}"]`);
-            if (target) target.checked = true;
+        function getMeasureLogicCount(measureCount) {
+            const count = Number(measureCount);
+            if (!Number.isFinite(count)) return 4;
+            if (count <= 2) return 2;
+            if (count <= 4) return 4;
+            if (count <= 8) return 8;
+            if (count <= 12) return 12;
+            return 16;
         }
+
+        function syncCustomMeasureValue() {
+            const input = document.getElementById('measures-custom-value');
+            const customRadio = document.getElementById('measures-custom');
+            if (!input || !customRadio) return;
+            const clamped = clampCustomMeasureValue(input.value);
+            input.value = String(clamped);
+            customRadio.value = String(clamped);
+        }
+
+        function getSelectedMeasureInput() {
+            return document.querySelector('input[name="measures"]:checked');
+        }
+
+        function getSelectedMeasureSelectionKey() {
+            const selected = getSelectedMeasureInput();
+            if (!selected) return '4';
+            return selected.id === 'measures-custom' ? 'custom' : selected.value;
+        }
+
+        function setSelectedMeasureSelectionKey(key) {
+            if (key === 'custom') {
+                const customRadio = document.getElementById('measures-custom');
+                if (customRadio) customRadio.checked = true;
+                return;
+            }
+            const target = document.querySelector(`input[name="measures"][value="${key}"]`);
+            if (target) {
+                target.checked = true;
+                return;
+            }
+            const fallback = document.getElementById('measures-4');
+            if (fallback) fallback.checked = true;
+        }
+
+        function getSelectedMeasureConfig() {
+            syncCustomMeasureValue();
+            const selected = getSelectedMeasureInput();
+            let actual = selected ? parseInt(selected.value, 10) : 4;
+            if (!Number.isFinite(actual)) actual = 4;
+            actual = Math.max(1, Math.min(32, actual));
+            return {
+                actual,
+                logic: getMeasureLogicCount(actual),
+                isPreset: measurePresetValues.includes(actual)
+            };
+        }
+
+        window.getSelectedMeasureConfig = getSelectedMeasureConfig;
+        window.getCurrentMeasureCount = function() {
+            return getSelectedMeasureConfig().actual;
+        };
+        window.getCurrentMeasureLogicCount = function() {
+            return getSelectedMeasureConfig().logic;
+        };
 
         function openMeasureSettings() {
-            previousMeasureSelection = getSelectedMeasureValue();
+            syncCustomMeasureValue();
+            previousMeasureSelection = getSelectedMeasureSelectionKey();
+            const customInput = document.getElementById('measures-custom-value');
+            previousCustomMeasureValue = customInput ? customInput.value : previousCustomMeasureValue;
             const modal = document.getElementById('measureModal');
             if (!modal) return;
             modal.style.display = 'flex';
         }
 
         function closeMeasureSettings() {
-            setSelectedMeasureValue(previousMeasureSelection);
+            const customInput = document.getElementById('measures-custom-value');
+            if (customInput) {
+                customInput.value = previousCustomMeasureValue;
+            }
+            syncCustomMeasureValue();
+            setSelectedMeasureSelectionKey(previousMeasureSelection);
             const modal = document.getElementById('measureModal');
             if (!modal) return;
             modal.style.display = 'none';
         }
 
         function saveMeasureSettings() {
-            previousMeasureSelection = getSelectedMeasureValue();
+            syncCustomMeasureValue();
+            previousMeasureSelection = getSelectedMeasureSelectionKey();
+            const customInput = document.getElementById('measures-custom-value');
+            previousCustomMeasureValue = customInput ? customInput.value : previousCustomMeasureValue;
             const modal = document.getElementById('measureModal');
             if (!modal) return;
             modal.style.display = 'none';
@@ -2160,6 +2246,9 @@
                 'controls.measures8': '8小节',
                 'controls.measures12': '12小节',
                 'controls.measures16': '16小节',
+                'controls.measuresCustom': '自定义小节数',
+                'controls.measuresCustomInput': '自定义',
+                'controls.measuresCustomHint': '支持 1-32 小节，生成逻辑会自动贴近现有 2/4/8/12/16 档位。',
                 'controls.key': '调号',
                 'controls.keySettings': '调号设置',
                 'controls.time': '拍号',
@@ -2368,6 +2457,9 @@
                 'controls.measures8': '8小節',
                 'controls.measures12': '12小節',
                 'controls.measures16': '16小節',
+                'controls.measuresCustom': '自訂小節數',
+                'controls.measuresCustomInput': '自訂',
+                'controls.measuresCustomHint': '支援 1-32 小節，生成邏輯會自動貼近既有 2/4/8/12/16 檔位。',
                 'controls.key': '調號',
                 'controls.keySettings': '調號設置',
                 'controls.time': '拍號',
@@ -2576,6 +2668,9 @@
                 'controls.measures8': '8 Measures',
                 'controls.measures12': '12 Measures',
                 'controls.measures16': '16 Measures',
+                'controls.measuresCustom': 'Custom Measure Count',
+                'controls.measuresCustomInput': 'Custom',
+                'controls.measuresCustomHint': 'Supports 1-32 measures. Generation logic maps to existing 2/4/8/12/16 presets.',
                 'controls.key': 'Key Signature',
                 'controls.keySettings': 'Key Settings',
                 'controls.time': 'Time Signature',
