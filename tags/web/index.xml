@@ -132,6 +132,20 @@
  &lt;button type="submit" class="bg-blue-500 text-white p-2 rounded">发送&lt;/button>
  &lt;/form>
 &lt;/div>
-&lt;p>或者你通过我的主邮件联系我：icstudio@fastmail.com&lt;/p>
+&lt;h2 id="许愿池--产品建议">许愿池 / 产品建议&lt;/h2>
+&lt;div id="wishpool-form" class="p-6 bg-zinc-100 rounded-3xl">
+ &lt;p class="mb-4">
+ 如果你对 IC Studio 有任何想法，欢迎随时告诉我。无论是内容方向、工具开发，还是产品功能优化，我都很想听听你的建议。
+ &lt;/p>
+ &lt;ul class="list-disc pl-6 space-y-1 mb-5">
+ &lt;li>你希望我未来做什么新主题&lt;/li>
+ &lt;li>你希望我研发什么新工具&lt;/li>
+ &lt;li>你希望我在产品里增加什么新功能&lt;/li>
+ &lt;/ul>
+ &lt;p class="mb-0">
+ 直接用上面的联系表单发给我就可以，我都会认真看。
+ &lt;/p>
+&lt;/div>
+&lt;p>你也可以直接发邮件给我：主邮箱 &lt;a href="mailto:icstudio@fastmail.com">icstudio@fastmail.com&lt;/a>&lt;/p>
 &lt;p>副邮箱：chenigor0806@gmail.com&lt;/p>
-&lt;p>如果只是单纯聊天，欢迎你在我的视频底下留言，或者在哔哩哔哩私信我。（我尽量每条信息都读）&lt;/p></description></item></channel></rss>
+&lt;p>如果只是想聊聊天，也欢迎在我的视频下留言，或者在哔哩哔哩私信我，我都会尽量看并回复。&lt;/p></description></item></channel></rss>
