@@ -3,9 +3,17 @@
  * 缓存策略和离线支持
  */
 
-const CACHE_NAME = 'ic-studio-v1.2.0';
-const STATIC_CACHE = 'ic-studio-static-v1.2.0';
-const DYNAMIC_CACHE = 'ic-studio-dynamic-v1.2.0';
+const CACHE_NAME = 'ic-studio-v1.3.1';
+const STATIC_CACHE = 'ic-studio-static-v1.3.1';
+const DYNAMIC_CACHE = 'ic-studio-dynamic-v1.3.1';
+
+// 这些路径是快速迭代的应用页面，避免被 SW 缓存导致首屏白屏
+const NO_CACHE_PATH_PREFIXES = [
+  '/fretlab',
+  '/fretlab/',
+  '/fretlab-tool',
+  '/fretlab-tool/'
+];
 
 // 需要缓存的静态资源
 const STATIC_ASSETS = [
@@ -25,9 +33,16 @@ const STATIC_ASSETS = [
 const CACHE_STRATEGIES = {
   // 静态资源：缓存优先（CSS使用网络优先以支持强制刷新）
   static: {
-    pattern: /\.(js|png|jpg|jpeg|gif|svg|webp|woff|woff2)$/,
+    pattern: /\.(png|jpg|jpeg|gif|svg|webp|woff|woff2)$/,
     strategy: 'cache-first',
     maxAge: 30 * 24 * 60 * 60 * 1000 // 30天
+  },
+
+  // JS 文件：网络优先，避免缓存旧 bundle 导致白屏
+  js: {
+    pattern: /\.js$/,
+    strategy: 'network-first',
+    maxAge: 24 * 60 * 60 * 1000 // 1天
   },
   
   // CSS文件：网络优先，确保强制刷新时能获取最新样式
@@ -90,7 +105,7 @@ self.addEventListener('activate', event => {
           cacheNames
             .filter(cacheName => {
               return cacheName.startsWith('ic-studio-') && 
-                     !cacheName.includes('v1.2.0');
+                     !cacheName.includes('v1.3.1');
             })
             .map(cacheName => {
               console.log('Deleting old cache:', cacheName);
@@ -119,6 +134,18 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') {
     return;
   }
+
+  // FretLab 相关页面和资源始终直连网络，避免旧缓存造成首开白屏
+  if (shouldBypassCache(url.pathname)) {
+    event.respondWith(
+      fetch(request, { cache: 'no-store' })
+        .catch(async () => {
+          const cachedResponse = await getCachedResponse(request);
+          return cachedResponse || getOfflineResponse(request);
+        })
+    );
+    return;
+  }
   
   // 检查是否是强制刷新（Shift+Command+R）
   // 如果是强制刷新，直接从网络获取，跳过Service Worker缓存
@@ -134,6 +161,10 @@ self.addEventListener('fetch', event => {
     handleRequest(request, strategy)
   );
 });
+
+function shouldBypassCache(pathname) {
+  return NO_CACHE_PATH_PREFIXES.some(prefix => pathname.startsWith(prefix));
+}
 
 // 确定缓存策略
 function getCacheStrategy(request) {

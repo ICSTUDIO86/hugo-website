@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IC Fretboard Lab</title>
+    <link rel="icon" type="image/png" href="assets/fl-favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <script
+      src="//unpkg.com/react-grab/dist/index.global.js"
+      crossorigin="anonymous"
+      defer
+    ></script>
+  </head>
+  <body>
+    <div class="app">
+      <header class="app__header">
+        <div>
+          <div
+            id="languageSwitch"
+            class="lang-switch"
+            role="group"
+            aria-label="Language Switch"
+            data-i18n-aria-label="lang.switch.aria"
+          >
+            <button type="button" class="lang-switch__btn" data-ui-lang="zh">中文</button>
+            <button type="button" class="lang-switch__btn" data-ui-lang="en">EN</button>
+          </div>
+          <div class="header-tool-buttons">
+              <button
+                id="paletteToggleBtn"
+                type="button"
+                class="header-tool-btn palette-launch-btn"
+                data-i18n-aria-label="palette.toggle"
+                aria-controls="shapePaletteDrawer"
+                aria-expanded="false"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 3.5c-4.8 0-8.8 3.3-8.8 7.7 0 3.6 2.8 6.7 6.6 7.4.8.1 1.2.5 1.2 1.1 0 .7.6 1.3 1.4 1.3 4.7 0 8.1-3.4 8.1-7.6 0-5.7-4.7-9.9-10.5-9.9Z"
+                />
+                <circle cx="8.1" cy="10.1" r="1.15" />
+                <circle cx="11" cy="8.4" r="1.05" />
+                <circle cx="14.2" cy="8.8" r="1.05" />
+                <circle cx="16.2" cy="11.4" r="1.05" />
+              </svg>
+              <span class="sr-only" data-i18n="palette.toggle">Palette</span>
+            </button>
+            <div class="export-menu-wrap">
+              <button
+                id="exportToggleBtn"
+                type="button"
+                class="header-tool-btn export-launch-btn"
+                data-i18n-aria-label="export.button"
+                aria-controls="exportMenu"
+                aria-expanded="false"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 4.2v9.2" />
+                  <path d="M8.7 10.8 12 14.2l3.3-3.4" />
+                  <path d="M5 16.8c2.2-.3 4.6-.4 7-.4s4.8.1 7 .4" />
+                  <path d="M6.2 19.2h11.6" />
+                </svg>
+                <span class="sr-only" data-i18n="export.button">Export</span>
+              </button>
+              <div id="exportMenu" class="export-menu" aria-hidden="true">
+                <button type="button" data-export-format="png" data-i18n="export.option.png">PNG</button>
+                <button type="button" data-export-format="svg" data-i18n="export.option.svg">SVG</button>
+                <button type="button" data-export-format="pdf" data-i18n="export.option.pdf">PDF</button>
+              </div>
+            </div>
+          </div>
+          <img
+            class="app__logo"
+            src="assets/fretlab-logo.png"
+            alt="IC Fretboard Lab (FreeBoardLab)"
+          />
+        </div>
+      </header>
+
+      <div id="licenseStatusBanner" class="license-status-banner" role="status" aria-live="polite"></div>
+
+      <main class="app__body">
+        <section class="board-panel">
+          <div class="board-panel__fretboard">
+            <div id="fretboardStack" class="fretboard-stack">
+              <svg id="fretboardSvg" class="fretboard-svg" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+            <div class="board-inline-controls">
+              <label>
+                <span data-i18n="controls.fretCount">品格数量</span>
+                <input
+                  id="fretsInput"
+                  type="number"
+                  min="1"
+                  max="72"
+                  step="1"
+                  list="fretsList"
+                  value="12"
+                />
+                <datalist id="fretsList">
+                  <option value="12"></option>
+                  <option value="24"></option>
+                  <option value="36"></option>
+                </datalist>
+              </label>
+              <label>
+                <span data-i18n="controls.notePreference">音名偏好</span>
+                <select id="notePreferenceSelect">
+                  <option value="sharps" data-i18n="controls.notePreference.sharps">升号优先</option>
+                  <option value="flats" data-i18n="controls.notePreference.flats">降号优先</option>
+                </select>
+              </label>
+              <button id="clearMarkersBtn" class="ghost-btn block-btn" data-i18n="controls.clearMarkers">
+                清空标记
+              </button>
+              <button id="flipBoardBtn" type="button" class="ghost-btn block-btn" data-i18n="controls.flipBoard">
+                翻转指板
+              </button>
+              <div class="board-count-controls" aria-label="Fretboard Count">
+                <button id="removeBoardBtn" type="button" class="ghost-btn board-count-btn" aria-label="减少指板图">
+                  −
+                </button>
+                <button id="addBoardBtn" type="button" class="ghost-btn board-count-btn" aria-label="增加指板图">
+                  +
+                </button>
+              </div>
+            </div>
+            <div class="board-drop-hint" data-i18n="board.dropHint">拖拽指形到指板任意位置</div>
+          </div>
+        </section>
+
+        <section class="control-panel">
+          <div class="panel recorder-panel" hidden>
+            <div class="panel__header">
+              <h2 data-i18n="recorder.title">录制指型（MVP）</h2>
+              <p class="panel__subhead" data-i18n="recorder.subhead">
+                在指板上点出形状，设根音锚点后导出模板
+              </p>
+            </div>
+            <div class="recorder-actions">
+              <button id="recordShapeStartBtn" class="ghost-btn" data-i18n="recorder.start">开始录制</button>
+              <button id="recordShapeCancelBtn" class="ghost-btn" data-i18n="recorder.cancel">取消录制</button>
+              <button id="recordShapeExportBtn" class="ghost-btn" data-i18n="recorder.export">生成模板</button>
+              <button id="recordShapeCopyBtn" class="ghost-btn" data-i18n="recorder.copy">复制结果</button>
+            </div>
+            <p id="recordShapeStatus" class="recorder-status" data-i18n="recorder.status.idle">未开始录制</p>
+            <div class="recorder-grid">
+              <label>
+                <span data-i18n="recorder.field.name">名称</span>
+                <input
+                  id="recordShapeNameInput"
+                  type="text"
+                  placeholder="例如：C-Linked Position"
+                  data-i18n-placeholder="recorder.placeholder.name"
+                />
+              </label>
+              <label>
+                <span data-i18n="recorder.field.mode">模式</span>
+                <input
+                  id="recordShapeModeInput"
+                  type="text"
+                  placeholder="例如：Major Scale Position"
+                  data-i18n-placeholder="recorder.placeholder.mode"
+                />
+              </label>
+              <label>
+                <span data-i18n="recorder.field.system">系统</span>
+                <input
+                  id="recordShapeSystemInput"
+                  type="text"
+                  placeholder="例如：CAGED × 3NPS"
+                  data-i18n-placeholder="recorder.placeholder.system"
+                />
+              </label>
+              <label>
+                <span data-i18n="recorder.field.collection">收编备注</span>
+                <input
+                  id="recordShapeCollectionInput"
+                  type="text"
+                  placeholder="例如：五个大调音阶"
+                  data-i18n-placeholder="recorder.placeholder.collection"
+                />
+              </label>
+            </div>
+            <div>
+              <div class="recorder-row-title" data-i18n="recorder.markerList.title">
+                已标记点（点按钮设为根音锚点）
+              </div>
+              <div id="recordShapeMarkerList" class="recorder-marker-list"></div>
+            </div>
+            <div id="recordShapeWarnings" class="recorder-warnings"></div>
+            <label class="recorder-output-wrap">
+              <span data-i18n="recorder.output.label">导出结果（可直接发给我收编）</span>
+              <textarea
+                id="recordShapeOutput"
+                readonly
+                placeholder="生成后会出现 JS 模板"
+                data-i18n-placeholder="recorder.output.placeholder"
+              ></textarea>
+            </label>
+          </div>
+
+        </section>
+      </main>
+
+      <div id="paletteBackdrop" class="palette-backdrop" aria-hidden="true"></div>
+      <aside id="shapePaletteDrawer" class="palette-drawer" aria-hidden="true">
+        <div class="panel library-panel palette-panel">
+          <div class="panel__header palette-panel__header">
+            <h2 data-i18n="library.title">Library</h2>
+            <button id="paletteCloseBtn" type="button" class="palette-close-btn" aria-label="Close Palette">
+              ×
+            </button>
+          </div>
+          <div id="shapeLibrary" class="shape-library"></div>
+        </div>
+      </aside>
+
+      <footer class="app__footer">
+        <p class="app__footer-line app__footer-line--brand">
+          <strong>IC Fretboard Lab</strong>
+          <span data-i18n="footer.tagline">认知吉他指板训练工具</span>
+        </p>
+        <p class="app__footer-line">
+          <span data-i18n="footer.copyrightPrefix">版权所有 © 2026 · Igor Chen ·</span>
+          <a href="https://icstudio.club/" target="_blank" rel="noopener noreferrer">icstudio.club</a>
+        </p>
+      </footer>
+    </div>
+    <script type="module" src="app.js"></script>
+    <script defer>
+      if (window.ReactGrab?.init) {
+        window.ReactGrab.init();
+      }
+    </script>
+  </body>
+</html>

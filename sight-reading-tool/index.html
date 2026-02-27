@@ -646,6 +646,33 @@
         text-align: center;
       }
     }
+
+    /* AnimatedContent-like reveal for cards */
+    .animated-content-item {
+      opacity: 0;
+      filter: blur(12px);
+      transform: translate3d(0, var(--ac-distance, 24px), 0) scale(0.985);
+      transition:
+        opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) var(--ac-delay, 0ms),
+        transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) var(--ac-delay, 0ms),
+        filter 0.9s cubic-bezier(0.16, 1, 0.3, 1) var(--ac-delay, 0ms);
+      will-change: opacity, transform, filter;
+    }
+
+    .animated-content-item.is-visible {
+      opacity: 1;
+      filter: blur(0);
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .animated-content-item {
+        opacity: 1;
+        filter: none;
+        transform: none;
+        transition: none;
+      }
+    }
   </style>
 
   <!-- JSON-LD Structured Data -->
@@ -1797,6 +1824,7 @@
       console.log('✅ Cognote 视奏工具页面已加载');
       handleInputChange();
       initPaymentModeToggle();
+      initAnimatedContentCards();
     });
 
     function initPaymentModeToggle() {
@@ -1819,6 +1847,47 @@
           }
         });
       });
+    }
+
+    function initAnimatedContentCards() {
+      const animationGroups = [
+        { selector: '#payment-section .payment-wrapper', step: 0, distance: 18 },
+        { selector: '#features .feature-card', step: 90, distance: 26 },
+        { selector: '#payment-section .payment-card, #payment-section .gumroad-wrapper, #payment-section .single-product-card', step: 90, distance: 24 },
+        { selector: '.faq-section .faq-item', step: 80, distance: 20 }
+      ];
+
+      const animatedItems = [];
+      animationGroups.forEach((group) => {
+        const nodes = document.querySelectorAll(group.selector);
+        nodes.forEach((node, index) => {
+          node.classList.add('animated-content-item');
+          node.style.setProperty('--ac-delay', `${index * group.step}ms`);
+          node.style.setProperty('--ac-distance', `${group.distance}px`);
+          animatedItems.push(node);
+        });
+      });
+
+      if (!animatedItems.length) return;
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduceMotion) {
+        animatedItems.forEach((node) => node.classList.add('is-visible'));
+        return;
+      }
+
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-visible');
+          obs.unobserve(entry.target);
+        });
+      }, {
+        threshold: 0.16,
+        rootMargin: '0px 0px -6% 0px'
+      });
+
+      animatedItems.forEach((node) => observer.observe(node));
     }
 
     // ========== Header 菜单和搜索功能 ==========
@@ -1876,6 +1945,20 @@
         closeIcon.classList.add('hidden');
       }
     }
+  </script>
+
+  <!-- React Grab -->
+  <script
+    src="//unpkg.com/react-grab/dist/index.global.js"
+    crossorigin="anonymous"
+    defer
+  ></script>
+  <script>
+    window.addEventListener('load', function() {
+      if (window.ReactGrab && typeof window.ReactGrab.init === 'function') {
+        window.ReactGrab.init();
+      }
+    });
   </script>
 
   <!-- 国际化系统 - 延迟加载 -->

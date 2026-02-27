@@ -5500,8 +5500,8 @@ function applyVoicingToProgression(chordProgression, key) {
 
             // 确保音域参数有效
             if (rangeMin === null || rangeMax === null || isNaN(rangeMin) || isNaN(rangeMax)) {
-                console.warn(`⚠️ 音域参数无效: rangeMin=${rangeMin}, rangeMax=${rangeMax}，使用默认值55-88`);
-                rangeMin = 55;
+                console.warn(`⚠️ 音域参数无效: rangeMin=${rangeMin}, rangeMax=${rangeMax}，使用默认值52-88`);
+                rangeMin = 52;
                 rangeMax = 88;
             }
 
@@ -14110,7 +14110,7 @@ function saveClefSettings() {
 
 // 音域记忆系统 - 保存每个谱号的当前音域设置
 const clefRangeMemory = {
-    'treble': { min: 55, max: 88 },  // G3-E6
+    'treble': { min: 52, max: 88 },  // E3-E6
     'bass': { min: 40, max: 64 },    // E2-E4
     'grand_staff': { min: 40, max: 88 }  // E2-E6 (完整钢琴音域)
 };
@@ -14228,9 +14228,9 @@ function setRangeForClef(clef) {
         console.log(`🎼 设置${clef}谱号音域: ${minNote}-${maxNote} (MIDI ${rangeSettings.min}-${rangeSettings.max})`);
     } else {
         // 默认使用高音谱号音域
-        rangeMinSelect.value = '55'; // G3
+        rangeMinSelect.value = '52'; // E3
         rangeMaxSelect.value = '88'; // E6
-        console.log('🎼 设置默认音域: G3-E6');
+        console.log('🎼 设置默认音域: E3-E6');
     }
 
     console.log(`🔄 当前活跃谱号已更新为: ${currentActiveClef}`);
