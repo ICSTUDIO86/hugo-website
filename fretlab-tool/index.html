@@ -7,6 +7,8 @@
     <link rel="icon" type="image/png" href="assets/fl-favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- React Grab (analytics/debug) -->
+    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -226,6 +228,25 @@
         </p>
       </footer>
     </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        try {
+          if (window.ReactGrab && typeof window.ReactGrab.init === 'function') {
+            window.ReactGrab.init();
+          }
+          const api = window.ReactGrab && typeof window.ReactGrab.getGlobalApi === 'function'
+            ? window.ReactGrab.getGlobalApi()
+            : null;
+          if (api) {
+            window.addEventListener('keydown', function (event) {
+              if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'g' || event.key === 'G')) {
+                api.toggle();
+              }
+            });
+          }
+        } catch (_) {}
+      });
+    </script>
     <script type="module" src="app.js"></script>
   </body>
 </html>

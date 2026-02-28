@@ -15,6 +15,8 @@
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="/fretlab/fretlab-logo.png" />
+    <!-- React Grab (analytics/debug) -->
+    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
     <script type="module" crossorigin src="/fretlab/assets/index.js"></script>
     <link rel="stylesheet" crossorigin href="/fretlab/assets/index.css">
   </head>
@@ -23,5 +25,72 @@
     <div id="root"></div>
     <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.0"></script>
     <script defer src="/fretlab/js/fretlab-payment.js?v=1.1.15"></script>
+    <script>
+      (function () {
+        var TITLE_SCALE = 0.92;
+        var MIN_WIDTH = 20;
+        var rafId = 0;
+
+        function applyUnderlineWidths() {
+          var root = document.getElementById('root');
+          if (!root) return;
+          var sections = root.querySelectorAll('section');
+          sections.forEach(function (section) {
+            var title = section.querySelector('h1, h2');
+            var line = section.querySelector('svg.block');
+            if (!title || !line) return;
+            var titleWidth = title.getBoundingClientRect().width;
+            if (!titleWidth || titleWidth <= 0) return;
+            var targetWidth = Math.max(MIN_WIDTH, Math.floor(titleWidth * TITLE_SCALE));
+            line.style.width = targetWidth + 'px';
+            line.style.maxWidth = '100%';
+          });
+        }
+
+        function scheduleApply() {
+          if (rafId) cancelAnimationFrame(rafId);
+          rafId = requestAnimationFrame(applyUnderlineWidths);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+          scheduleApply();
+          window.addEventListener('resize', scheduleApply);
+
+          var root = document.getElementById('root');
+          if (!root) return;
+
+          var observer = new MutationObserver(function () {
+            scheduleApply();
+          });
+          observer.observe(root, {
+            childList: true,
+            subtree: true,
+            characterData: true
+          });
+
+          setTimeout(scheduleApply, 100);
+          setTimeout(scheduleApply, 400);
+        });
+      })();
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        try {
+          if (window.ReactGrab && typeof window.ReactGrab.init === 'function') {
+            window.ReactGrab.init();
+          }
+          const api = window.ReactGrab && typeof window.ReactGrab.getGlobalApi === 'function'
+            ? window.ReactGrab.getGlobalApi()
+            : null;
+          if (api) {
+            window.addEventListener('keydown', function (event) {
+              if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'g' || event.key === 'G')) {
+                api.toggle();
+              }
+            });
+          }
+        } catch (_) {}
+      });
+    </script>
   </body>
 </html>
