@@ -25,7 +25,10 @@ const STATIC_ASSETS = [
   '/js/performance-optimizer.js',
   '/images/ICLOGO.png',
   '/images/sight-reading-tool.png',
+  '/images/five-limit-lattice.png',
   '/tools/melody-generator.html',
+  '/just-intonation/harmonic_lattice_dualmode.html',
+  '/just-intonation/harmonic_lattice.js',
   '/manifest.json'
 ];
 
@@ -80,9 +83,20 @@ self.addEventListener('install', event => {
   
   event.waitUntil(
     caches.open(STATIC_CACHE)
-      .then(cache => {
+      .then(async cache => {
         console.log('Caching static assets...');
-        return cache.addAll(STATIC_ASSETS);
+        const results = await Promise.allSettled(
+          STATIC_ASSETS.map(asset => cache.add(asset))
+        );
+
+        const failedAssets = results
+          .map((result, index) => ({ result, asset: STATIC_ASSETS[index] }))
+          .filter(({ result }) => result.status === 'rejected')
+          .map(({ asset }) => asset);
+
+        if (failedAssets.length) {
+          console.warn('Some static assets failed to cache:', failedAssets);
+        }
       })
       .then(() => {
         console.log('Static assets cached successfully');

@@ -15,8 +15,6 @@
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="/fretlab/fretlab-logo.png" />
-    <!-- React Grab (analytics/debug) -->
-    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
     <script type="module" crossorigin src="/fretlab/assets/index.js"></script>
     <link rel="stylesheet" crossorigin href="/fretlab/assets/index.css">
   </head>
@@ -72,25 +70,6 @@
           setTimeout(scheduleApply, 400);
         });
       })();
-    </script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        try {
-          if (window.ReactGrab && typeof window.ReactGrab.init === 'function') {
-            window.ReactGrab.init();
-          }
-          const api = window.ReactGrab && typeof window.ReactGrab.getGlobalApi === 'function'
-            ? window.ReactGrab.getGlobalApi()
-            : null;
-          if (api) {
-            window.addEventListener('keydown', function (event) {
-              if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'g' || event.key === 'G')) {
-                api.toggle();
-              }
-            });
-          }
-        } catch (_) {}
-      });
     </script>
   </body>
 </html>
