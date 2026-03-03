@@ -255,11 +255,15 @@
       width: max-content;
       gap: 1.25rem;
       will-change: transform;
-      animation: feedback-loop-scroll 54s linear infinite;
+      --feedback-loop-distance: 0px;
+      --feedback-loop-duration: 54s;
+      animation: feedback-loop-scroll var(--feedback-loop-duration) linear infinite;
+      animation-play-state: paused;
+      transform: translate3d(0, 0, 0);
     }
 
-    .feedback-loop-mask:hover .feedback-loop-track {
-      animation-play-state: paused;
+    .feedback-section.is-looping .feedback-loop-track {
+      animation-play-state: running;
     }
 
     .feedback-loop-group {
@@ -294,10 +298,10 @@
 
     @keyframes feedback-loop-scroll {
       from {
-        transform: translateX(0);
+        transform: translate3d(0, 0, 0);
       }
       to {
-        transform: translateX(calc(-50% - 0.625rem));
+        transform: translate3d(calc(-1 * var(--feedback-loop-distance)), 0, 0);
       }
     }
 
@@ -311,10 +315,6 @@
     @media (max-width: 640px) {
       .feedback-section {
         padding: 72px 0 78px;
-      }
-
-      .feedback-loop-track {
-        animation-duration: 42s;
       }
 
       .feedback-loop-card {
@@ -2081,6 +2081,7 @@
       syncHeroToolImagesWithLanguage();
       initHeroCardSwap();
       initFeedbackAuthorColors();
+      initFeedbackLoopMarquee();
       initPaymentModeToggle();
       initUpdateLogModal();
       initAnimatedContentCards();
@@ -2094,7 +2095,6 @@
       if (!cards.length) return;
       const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
       let introPlayed = false;
-      let introObserver = null;
 
       cards.forEach((card) => {
         if (card.dataset.heroClickBound === '1') return;
@@ -2107,10 +2107,6 @@
 
       const clearCardInlineStyles = () => {
         swapRoot.classList.remove('is-ready');
-        if (introObserver) {
-          introObserver.disconnect();
-          introObserver = null;
-        }
         cards.forEach((card) => {
           if (window.gsap) window.gsap.killTweensOf(card);
           card.style.removeProperty('transform');
@@ -2199,20 +2195,7 @@
         };
 
         if (!introPlayed && window.gsap) {
-          if ('IntersectionObserver' in window) {
-            introObserver = new IntersectionObserver((entries) => {
-              if (!entries.some((entry) => entry.isIntersecting)) return;
-              introObserver.disconnect();
-              introObserver = null;
-              playIntro();
-            }, {
-              threshold: 0.24,
-              rootMargin: '0px 0px -8% 0px'
-            });
-            introObserver.observe(swapRoot);
-          } else {
-            playIntro();
-          }
+          playIntro();
         } else {
           swapRoot.classList.add('is-ready');
           introPlayed = true;
@@ -2379,6 +2362,69 @@
       });
 
       observer.observe(feedbackSection, { childList: true, subtree: true });
+    }
+
+    function initFeedbackLoopMarquee() {
+      const section = document.querySelector('.feedback-section');
+      const track = section ? section.querySelector('.feedback-loop-track') : null;
+      const primaryGroup = track ? track.querySelector('.feedback-loop-group:first-child') : null;
+      if (!section || !track || !primaryGroup) return;
+
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduceMotion) {
+        section.classList.remove('is-looping');
+        track.style.setProperty('--feedback-loop-distance', '0px');
+        return;
+      }
+
+      // 保证至少有一组克隆，避免循环边界出现空窗
+      if (!track.querySelector('.feedback-loop-group[aria-hidden="true"]')) {
+        const clone = primaryGroup.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        track.appendChild(clone);
+      }
+
+      const updateMetrics = () => {
+        const trackStyle = window.getComputedStyle(track);
+        const gapRaw = trackStyle.columnGap || trackStyle.gap || '0px';
+        const gap = Number.parseFloat(gapRaw) || 0;
+        const groupWidth = primaryGroup.getBoundingClientRect().width;
+        const distance = Math.max(1, groupWidth + gap);
+        const speedPxPerSec = window.matchMedia('(max-width: 640px)').matches ? 44 : 56;
+        const durationSec = distance / speedPxPerSec;
+        track.style.setProperty('--feedback-loop-distance', `${distance}px`);
+        track.style.setProperty('--feedback-loop-duration', `${durationSec.toFixed(3)}s`);
+      };
+
+      updateMetrics();
+
+      let loopStarted = false;
+      const startLoop = () => {
+        if (loopStarted) return;
+        loopStarted = true;
+        section.classList.add('is-looping');
+      };
+
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          startLoop();
+          observer.disconnect();
+        }, {
+          threshold: 0.14,
+          rootMargin: '0px 0px -6% 0px'
+        });
+        observer.observe(section);
+      } else {
+        startLoop();
+      }
+
+      let resizeTimer = null;
+      const onResize = () => {
+        if (resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(updateMetrics, 120);
+      };
+      window.addEventListener('resize', onResize, { passive: true });
     }
 
     function initUpdateLogModal() {

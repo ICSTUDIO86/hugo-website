@@ -319,10 +319,6 @@ body {
   animation-play-state: paused;
 }
 
-.hero-card-swap[data-layout="bounce"]:not(.is-ready) .hero-tool-card {
-  opacity: 0;
-}
-
 .hero-card-swap[data-layout="bounce"].is-ready .hero-tool-card {
   animation-play-state: running;
 }
