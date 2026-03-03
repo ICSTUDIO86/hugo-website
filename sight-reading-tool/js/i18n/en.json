@@ -1,10 +1,21 @@
 {
   "hero": {
-    "titleLine1": "Improve Your",
-    "titleHighlight": "Sight Reading",
-    "titleLine2": "Start Here",
-    "subtitle": "Professional sight reading tools designed for musicians",
-    "featureHighlight": "Fully Customizable",
+    "titleLine1": "Truly Master",
+    "titleLine2": "Every Note You See",
+    "titleLine3": "",
+    "titleHighlight": "Stay in Sync",
+    "subtitle": "Professional Sight-Reading Training System",
+    "featureHighlight": "Built for Musicians Who Practice Seriously",
+    "toolPanelTitle": "Five Core Tools",
+    "toolBadge": "Core Tool",
+    "toolBadges": {
+      "melody": "Melody Tool",
+      "interval": "Interval Tool",
+      "chord": "Chord Tool",
+      "jianpu": "Jianpu Tool",
+      "rhythm": "Rhythm Tool"
+    },
+    "openTool": "Open Tool →",
     "featureText": "Practice Experience",
     "btnPurchase": "Buy Now",
     "btnTry": "Try Now",
@@ -38,6 +49,34 @@
     "rhythm": {
       "title": "Rhythm Sight Reading Generator",
       "description": "Focused rhythm training with single-line percussion staff, density controls, and syncopation settings to build timing and groove."
+    }
+  },
+
+  "feedback": {
+    "title": "User Feedback",
+    "subtitle": "Real practice experiences from musicians currently using Cognote",
+    "note": "All feedback below comes from real users after practice.",
+    "items": {
+      "yuxian": {
+        "author": "雨の弦",
+        "quote": "Practicing just 30 minutes a day clearly deepened my fretboard position awareness. The random rhythms are challenging, but very helpful."
+      },
+      "imagonx": {
+        "author": "iMaGonX",
+        "quote": "My staff-reading speed improved a lot, and I can now quickly locate notes on the fretboard. Arpeggios plus speaking note names out loud works very well."
+      },
+      "niukuier": {
+        "author": "牛奎尔",
+        "quote": "I mainly use the melody sight-reading mode. My reading speed is faster than before, and my fretboard interval memory has improved too."
+      },
+      "daniel": {
+        "author": "Daniel",
+        "quote": "An excellent music-practice tool. It feels like opening the prologue of a sacred book. With consistency, it can truly lead you deeper into music."
+      },
+      "xiaobo": {
+        "author": "骁博Hpa",
+        "quote": "After a period of practice, my staff-reading speed became noticeably faster. It's convenient to use right away, and the challenge level is great."
+      }
     }
   },
 

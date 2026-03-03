@@ -142,6 +142,11 @@ class I18n {
     // 更新语言切换器按钮状态
     this.updateLanguageSwitcher();
 
+    // 广播语言变化，供页面其他模块同步（如 Hero 图片）
+    window.dispatchEvent(new CustomEvent('ic-language-changed', {
+      detail: { lang: this.currentLang }
+    }));
+
     console.log(`✅ Language switched to: ${lang}`);
   }
 
@@ -179,6 +184,11 @@ class I18n {
 
     // 更新切换器状态
     this.updateLanguageSwitcher();
+
+    // 初始化后广播一次当前语言
+    window.dispatchEvent(new CustomEvent('ic-language-changed', {
+      detail: { lang: this.currentLang }
+    }));
 
     console.log('✅ i18n system initialized');
   }

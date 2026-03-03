@@ -84,6 +84,7 @@ class IntervalSettings {
             timeSignature: ts,
             tempo: this.getTempo(),
             measureCount: this.getMeasureCount(),
+            measureLogicCount: this.getMeasureLogicCount(),
             practiceMode: this.getPracticeMode(),
             clef: clef,
             rangeMin: smartRange.min,
@@ -241,6 +242,12 @@ class IntervalSettings {
      * @returns {number} 小节数
      */
     getMeasureCount() {
+        if (typeof window !== 'undefined' && typeof window.getSelectedMeasureConfig === 'function') {
+            const config = window.getSelectedMeasureConfig();
+            if (config && Number.isFinite(config.actual) && config.actual >= 1 && config.actual <= 32) {
+                return config.actual;
+            }
+        }
         const radios = document.getElementsByName('measures');
         for (const radio of radios) {
             if (radio.checked) {
@@ -251,6 +258,16 @@ class IntervalSettings {
             }
         }
         return 4; // 默认4小节
+    }
+
+    getMeasureLogicCount() {
+        if (typeof window !== 'undefined' && typeof window.getSelectedMeasureConfig === 'function') {
+            const config = window.getSelectedMeasureConfig();
+            if (config && Number.isFinite(config.logic)) {
+                return config.logic;
+            }
+        }
+        return this.getMeasureCount();
     }
 
     /**

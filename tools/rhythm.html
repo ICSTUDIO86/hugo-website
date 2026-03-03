@@ -133,7 +133,7 @@
                         <label for="metronomeBpm" data-i18n="controls.metronome">节拍器</label>
                     </div>
                     <div class="metronome-control">
-                        <input type="number" id="metronomeBpm" min="30" max="220" value="80" class="bpm-input-control">
+                        <input type="number" id="metronomeBpm" min="1" max="999" value="80" class="bpm-input-control">
                         <button class="metronome-play-btn" id="metronomeToggleBtn" title="开始/停止节拍器">
                             🎵
                         </button>
@@ -254,6 +254,14 @@
                             </select>
                         </div>
                         <div class="midi-status" id="midiStatusText" data-i18n="midi.status.disabled">MIDI 已关闭</div>
+                    </div>
+                    <div class="settings-section" id="parameterExchangeSection">
+                        <div style="display: flex; gap: 8px; width: 100%;">
+                            <button type="button" class="btn-secondary" style="flex: 1;" onclick="saveToolParameters()">保存参数</button>
+                            <button type="button" class="btn-secondary" style="flex: 1;" onclick="resetToolParameters()">重置参数</button>
+                            <button type="button" class="btn-secondary" style="flex: 1;" onclick="importToolParameters()">导入参数</button>
+                        </div>
+                        <input type="file" id="parameterImportFileInput" accept=".json,application/json" style="display: none;">
                     </div>
 
                 </div>
@@ -515,11 +523,11 @@
                     <h4 data-i18n="modal.voice.selection">声部模式</h4>
                     <div class="checkbox-grid">
                         <label class="checkbox-item">
-                            <input type="radio" name="voiceOption" value="1">
+                            <input type="radio" id="voiceOptionRadio1" name="voiceOption" value="1">
                             <span data-i18n="voices.single">单声部</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" name="voiceOption" value="2">
+                            <input type="radio" id="voiceOptionRadio2" name="voiceOption" value="2">
                             <span data-i18n="voices.double">双声部</span>
                         </label>
                     </div>
@@ -619,7 +627,7 @@
                     </div>
                     <div class="control-group">
                         <label for="challengeBPM" data-i18n="challenge.bpm">BPM</label>
-                        <input type="number" id="challengeBPM" min="40" max="240" step="1" value="80">
+                        <input type="number" id="challengeBPM" min="1" max="999" step="1" value="80">
                     </div>
                 </div>
                 <div class="control-row">

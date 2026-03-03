@@ -8260,8 +8260,14 @@ class IntelligentMelodyGenerator {
     getLargeLeapTargetByMeasures(totalMeasures) {
         const total = Number(totalMeasures);
         if (!Number.isFinite(total)) return null;
-        if (total === 12) return { min: 2, max: 3 };
-        if (total === 16) return { min: 3, max: 4 };
+        let logicMeasures = 4;
+        if (total <= 2) logicMeasures = 2;
+        else if (total <= 4) logicMeasures = 4;
+        else if (total <= 8) logicMeasures = 8;
+        else if (total <= 12) logicMeasures = 12;
+        else logicMeasures = 16;
+        if (logicMeasures === 12) return { min: 2, max: 3 };
+        if (logicMeasures === 16) return { min: 3, max: 4 };
         return null;
     }
 
@@ -18279,7 +18285,12 @@ async function generateMelody() {
     
     try {
         // 🔥 新逻辑：从多选设置中获取参数
-        const measures = parseInt(document.querySelector('input[name="measures"]:checked').value);
+        const measureConfig = typeof window.getSelectedMeasureConfig === 'function'
+            ? window.getSelectedMeasureConfig()
+            : null;
+        const measures = measureConfig
+            ? measureConfig.actual
+            : parseInt(document.querySelector('input[name="measures"]:checked').value);
         
         // 从用户设置的多选列表中随机选择
         const keySignature = getRandomFromArray(userSettings.allowedKeys);

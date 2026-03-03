@@ -130,6 +130,9 @@
             'controls.measures8': '8小节',
             'controls.measures12': '12小节',
             'controls.measures16': '16小节',
+            'controls.measuresCustom': '自定义小节数',
+            'controls.measuresCustomInput': '自定义',
+            'controls.measuresCustomHint': '支持 1-32 小节，生成逻辑会自动贴近现有 2/4/8/12/16 档位。',
             'controls.measuresSettings': '小节设置',
             'controls.difficulty': '难度预设',
             'controls.metronome': '节拍器',
@@ -156,6 +159,7 @@
             'controls.practiceAdd': '+',
             'controls.practiceReset': '-',
             'controls.play': '播放',
+            'controls.pause': '暂停',
             'controls.stop': '停止',
             'modal.rhythm.title': '节奏设置',
             'modal.timeSignature.title': '拍号设置',
@@ -297,6 +301,9 @@
             'controls.measures8': '8小節',
             'controls.measures12': '12小節',
             'controls.measures16': '16小節',
+            'controls.measuresCustom': '自訂小節數',
+            'controls.measuresCustomInput': '自訂',
+            'controls.measuresCustomHint': '支援 1-32 小節，生成邏輯會自動貼近既有 2/4/8/12/16 檔位。',
             'controls.measuresSettings': '小節設置',
             'controls.difficulty': '難度預設',
             'controls.metronome': '節拍器',
@@ -323,6 +330,7 @@
             'controls.practiceAdd': '+',
             'controls.practiceReset': '-',
             'controls.play': '播放',
+            'controls.pause': '暫停',
             'controls.stop': '停止',
             'modal.rhythm.title': '節奏設置',
             'modal.timeSignature.title': '拍號設置',
@@ -464,6 +472,9 @@
             'controls.measures8': '8 bars',
             'controls.measures12': '12 bars',
             'controls.measures16': '16 bars',
+            'controls.measuresCustom': 'Custom Measure Count',
+            'controls.measuresCustomInput': 'Custom',
+            'controls.measuresCustomHint': 'Supports 1-32 measures. Generation logic maps to existing 2/4/8/12/16 presets.',
             'controls.measuresSettings': 'Measure Settings',
             'controls.difficulty': 'Difficulty Preset',
             'controls.metronome': 'Metronome',
@@ -490,6 +501,7 @@
             'controls.practiceAdd': '+',
             'controls.practiceReset': '-',
             'controls.play': 'Play',
+            'controls.pause': 'Pause',
             'controls.stop': 'Stop',
             'modal.rhythm.title': 'Rhythm Settings',
             'modal.timeSignature.title': 'Time Signature Settings',
@@ -1186,7 +1198,7 @@
     function updatePlayButtonState(isPlaying) {
         const btn = document.getElementById('playRhythmBtn');
         if (!btn) return;
-        btn.textContent = getTranslation(isPlaying ? 'controls.stop' : 'controls.play');
+        btn.textContent = getTranslation(isPlaying ? 'controls.pause' : 'controls.play');
     }
 
     function applyTranslations() {
@@ -1267,6 +1279,335 @@
 
     function closeSettings() {
         closeSettingsModal();
+    }
+
+    const toolParameterConfig = {
+        toolKey: 'rhythm',
+        toolName: '节奏',
+        storageKey: 'cognote_tool_parameters_rhythm',
+        schemaVersion: 1,
+        defaultTheme: 'light',
+        defaultLanguage: 'zh-CN'
+    };
+    let toolParameterDefaultSnapshot = null;
+
+    function getToolParameterControls() {
+        return Array.from(document.querySelectorAll('input[id], select[id], textarea[id]')).filter((control) => {
+            if (!control || !control.id) return false;
+            if (control.id === 'parameterImportFileInput') return false;
+            const type = String(control.type || '').toLowerCase();
+            return type !== 'file';
+        });
+    }
+
+    function getToolParameterControlsById(controlId) {
+        return getToolParameterControls().filter((control) => control.id === controlId);
+    }
+
+    function captureToolParameterSnapshot(useDefault) {
+        const snapshot = {};
+        const seenIds = new Set();
+        getToolParameterControls().forEach((control) => {
+            if (seenIds.has(control.id)) return;
+            seenIds.add(control.id);
+            const tag = control.tagName.toLowerCase();
+            const type = String(control.type || '').toLowerCase();
+            const state = { tag, type };
+            if (tag === 'select') {
+                if (control.multiple) {
+                    const selected = Array.from(control.options)
+                        .filter((option) => useDefault ? option.defaultSelected : option.selected)
+                        .map((option) => option.value);
+                    state.value = selected;
+                } else if (useDefault) {
+                    const defaultOption = Array.from(control.options).find((option) => option.defaultSelected);
+                    state.value = defaultOption ? defaultOption.value : (control.options[0] ? control.options[0].value : control.value);
+                } else {
+                    state.value = control.value;
+                }
+            } else if (type === 'checkbox' || type === 'radio') {
+                state.checked = useDefault ? control.defaultChecked : control.checked;
+            } else {
+                state.value = useDefault ? control.defaultValue : control.value;
+            }
+            snapshot[control.id] = state;
+        });
+        return snapshot;
+    }
+
+    function applyToolParameterSnapshot(snapshot) {
+        if (!snapshot || typeof snapshot !== 'object') return 0;
+        let changedCount = 0;
+        Object.keys(snapshot).forEach((id) => {
+            const state = snapshot[id];
+            if (!state || typeof state !== 'object') return;
+            const controls = getToolParameterControlsById(id);
+            if (!controls.length) return;
+            controls.forEach((control) => {
+                const tag = control.tagName.toLowerCase();
+                const type = String(control.type || '').toLowerCase();
+                let changed = false;
+
+                if (tag === 'select') {
+                    if (control.multiple) {
+                        const selectedValues = Array.isArray(state.value) ? state.value.map(String) : [];
+                        Array.from(control.options).forEach((option) => {
+                            const nextSelected = selectedValues.includes(option.value);
+                            if (option.selected !== nextSelected) {
+                                option.selected = nextSelected;
+                                changed = true;
+                            }
+                        });
+                    } else {
+                        const nextValue = state.value == null ? '' : String(state.value);
+                        if (control.value !== nextValue) {
+                            control.value = nextValue;
+                            changed = true;
+                        }
+                    }
+                } else if (type === 'checkbox') {
+                    const nextChecked = !!state.checked;
+                    if (control.checked !== nextChecked) {
+                        control.checked = nextChecked;
+                        changed = true;
+                    }
+                } else if (type === 'radio') {
+                    if (state.checked) {
+                        if (!control.checked) {
+                            control.checked = true;
+                            changed = true;
+                        }
+                    }
+                } else {
+                    const nextValue = state.value == null ? '' : String(state.value);
+                    if (control.value !== nextValue) {
+                        control.value = nextValue;
+                        changed = true;
+                    }
+                }
+
+                if (changed) {
+                    changedCount += 1;
+                    control.dispatchEvent(new Event('input', { bubbles: true }));
+                    control.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+        });
+        return changedCount;
+    }
+
+    function buildToolParameterPayload(snapshot) {
+        const language = (typeof currentLanguage !== 'undefined' && currentLanguage)
+            ? currentLanguage
+            : (localStorage.getItem('preferredLanguage') || toolParameterConfig.defaultLanguage);
+        return {
+            schema: 'cognote-parameters',
+            version: toolParameterConfig.schemaVersion,
+            toolKey: toolParameterConfig.toolKey,
+            toolName: toolParameterConfig.toolName,
+            exportedAt: new Date().toISOString(),
+            preferences: {
+                theme: document.documentElement.getAttribute('data-theme') || toolParameterConfig.defaultTheme,
+                language
+            },
+            controls: snapshot
+        };
+    }
+
+    function applyToolParameterPreferences(preferences) {
+        if (!preferences || typeof preferences !== 'object') return;
+        const nextTheme = typeof preferences.theme === 'string' ? preferences.theme : '';
+        const nextLanguage = typeof preferences.language === 'string' ? preferences.language : '';
+        if (nextTheme) {
+            if (typeof setTheme === 'function') {
+                try { setTheme(nextTheme); } catch (_) {
+                    document.documentElement.setAttribute('data-theme', nextTheme);
+                }
+            } else {
+                document.documentElement.setAttribute('data-theme', nextTheme);
+            }
+        }
+        if (nextLanguage && typeof switchLanguage === 'function') {
+            try { switchLanguage(nextLanguage); } catch (_) {}
+        }
+    }
+
+    function finalizeToolParameterApply() {
+        const syncFnNames = [
+            'saveRhythmSettings',
+            'saveTimeSignatureSettings',
+            'saveMeasureSettings',
+            'saveVoiceSettings',
+            'saveMetronomePatternSettings',
+            'saveOstinatoState',
+            'updateMetronomePatternTimeSig',
+            'updateMetronomePatternUI',
+            'updateOstinatoPatternTimeSig',
+            'updateOstinatoPatternUI',
+            'updateOstinatoUI',
+            'updateDensityLabels',
+            'updateFrequencyLabels',
+            'applyTranslations'
+        ];
+        syncFnNames.forEach((name) => {
+            const fn = window[name];
+            if (typeof fn === 'function') {
+                try { fn(); } catch (_) {}
+            }
+        });
+        if (typeof window.updateRhythmOptionsForTimeSignature === 'function') {
+            try {
+                const timeSignatureSelect = document.getElementById('timeSignature');
+                window.updateRhythmOptionsForTimeSignature(timeSignatureSelect ? timeSignatureSelect.value : '4/4');
+            } catch (_) {}
+        }
+    }
+
+    function persistToolParameterPayload(payload) {
+        try {
+            localStorage.setItem(toolParameterConfig.storageKey, JSON.stringify(payload));
+        } catch (_) {}
+    }
+
+    function readSavedToolParameterPayload() {
+        try {
+            const raw = localStorage.getItem(toolParameterConfig.storageKey);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object') return null;
+            if (parsed.toolKey !== toolParameterConfig.toolKey) return null;
+            if (!parsed.controls || typeof parsed.controls !== 'object') return null;
+            return parsed;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function downloadToolParameterPayload(payload) {
+        const fileName = `Cognote ${toolParameterConfig.toolName}参数.json`;
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    function ensureToolParameterFeedbackModal() {
+        let modal = document.getElementById('toolParameterFeedbackModal');
+        if (modal) return modal;
+        modal = document.createElement('div');
+        modal.id = 'toolParameterFeedbackModal';
+        modal.className = 'modal';
+        modal.style.display = 'none';
+        modal.innerHTML = [
+            '<div class="modal-content" style="max-width: 420px;">',
+            '  <div class="modal-header">',
+            '    <h3>参数提示</h3>',
+            '    <button class="close-btn" type="button" aria-label="关闭">×</button>',
+            '  </div>',
+            '  <div class="modal-body">',
+            '    <p id="toolParameterFeedbackText" style="margin: 0; line-height: 1.6;"></p>',
+            '    <div class="modal-buttons" style="margin-top: 16px;">',
+            '      <button type="button" class="btn-primary">确定</button>',
+            '    </div>',
+            '  </div>',
+            '</div>'
+        ].join('');
+        const closeModal = () => { modal.style.display = 'none'; };
+        const closeBtn = modal.querySelector('.close-btn');
+        const confirmBtn = modal.querySelector('.btn-primary');
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (confirmBtn) confirmBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) closeModal();
+        });
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    function showToolParameterFeedback(message) {
+        const modal = ensureToolParameterFeedbackModal();
+        const textEl = document.getElementById('toolParameterFeedbackText');
+        if (textEl) textEl.textContent = message;
+        showModal(modal);
+    }
+
+    function saveToolParameters() {
+        const snapshot = captureToolParameterSnapshot(false);
+        const payload = buildToolParameterPayload(snapshot);
+        persistToolParameterPayload(payload);
+        downloadToolParameterPayload(payload);
+        showToolParameterFeedback('参数已保存到本地并导出文件。');
+    }
+
+    function resetToolParameters() {
+        if (!toolParameterDefaultSnapshot) {
+            toolParameterDefaultSnapshot = captureToolParameterSnapshot(true);
+        }
+        applyToolParameterPreferences({
+            theme: toolParameterConfig.defaultTheme,
+            language: toolParameterConfig.defaultLanguage
+        });
+        const changedCount = applyToolParameterSnapshot(toolParameterDefaultSnapshot);
+        finalizeToolParameterApply();
+        const payload = buildToolParameterPayload(captureToolParameterSnapshot(false));
+        persistToolParameterPayload(payload);
+        showToolParameterFeedback(changedCount > 0 ? `参数已重置为默认值（更新 ${changedCount} 项）。` : '参数已重置为默认值。');
+    }
+
+    function importToolParameters() {
+        const fileInput = document.getElementById('parameterImportFileInput');
+        if (!fileInput) {
+            alert('导入控件不可用。');
+            return;
+        }
+        fileInput.value = '';
+        fileInput.click();
+    }
+
+    async function handleToolParameterFileImport(file) {
+        if (!file) return;
+        try {
+            const text = await file.text();
+            const parsed = JSON.parse(text);
+            if (!parsed || typeof parsed !== 'object' || !parsed.controls || typeof parsed.controls !== 'object') {
+                throw new Error('bad-format');
+            }
+            if (parsed.toolKey !== toolParameterConfig.toolKey) {
+                alert(`导入失败：该文件属于${parsed.toolName || '其他'}工具，请导入 ${toolParameterConfig.toolName} 参数文件。`);
+                return;
+            }
+            applyToolParameterPreferences(parsed.preferences);
+            const changedCount = applyToolParameterSnapshot(parsed.controls);
+            finalizeToolParameterApply();
+            const payload = buildToolParameterPayload(captureToolParameterSnapshot(false));
+            persistToolParameterPayload(payload);
+            showToolParameterFeedback(changedCount > 0 ? `参数导入成功，已更新 ${changedCount} 项。` : '参数导入完成，未检测到差异。');
+        } catch (_) {
+            alert('导入失败：文件格式不正确。');
+        }
+    }
+
+    function initializeToolParameterExchange() {
+        toolParameterDefaultSnapshot = captureToolParameterSnapshot(true);
+        const fileInput = document.getElementById('parameterImportFileInput');
+        if (fileInput && fileInput.dataset.bound !== 'true') {
+            fileInput.dataset.bound = 'true';
+            fileInput.addEventListener('change', async (event) => {
+                const file = event.target && event.target.files ? event.target.files[0] : null;
+                await handleToolParameterFileImport(file);
+            });
+        }
+        const savedPayload = readSavedToolParameterPayload();
+        if (savedPayload && savedPayload.controls) {
+            applyToolParameterPreferences(savedPayload.preferences);
+            applyToolParameterSnapshot(savedPayload.controls);
+            finalizeToolParameterApply();
+        }
     }
 
     function toggleFunctionSelector() {
@@ -1529,18 +1870,91 @@
         closeTimeSignatureSettings();
     }
 
+    const measurePresetValues = [2, 4, 8, 12, 16];
+    let previousCustomMeasureCount = '10';
+
+    function clampCustomMeasureValue(rawValue) {
+        const parsed = parseInt(rawValue, 10);
+        if (!Number.isFinite(parsed)) return 10;
+        return Math.max(1, Math.min(32, parsed));
+    }
+
+    function getMeasureLogicCount(measureCount) {
+        const count = Number(measureCount);
+        if (!Number.isFinite(count)) return 4;
+        if (count <= 2) return 2;
+        if (count <= 4) return 4;
+        if (count <= 8) return 8;
+        if (count <= 12) return 12;
+        return 16;
+    }
+
+    function syncCustomMeasureValue() {
+        const input = document.getElementById('measure-custom-value');
+        const customRadio = document.getElementById('measure-custom');
+        if (!input || !customRadio) return;
+        const clamped = clampCustomMeasureValue(input.value);
+        input.value = String(clamped);
+        customRadio.value = String(clamped);
+    }
+
+    function getSelectedMeasureCountInput() {
+        return document.querySelector('input[name="measureCount"]:checked');
+    }
+
+    function getSelectedMeasureCountSelectionKey() {
+        const checked = getSelectedMeasureCountInput();
+        if (!checked) return '4';
+        return checked.id === 'measure-custom' ? 'custom' : checked.value;
+    }
+
     function getSelectedMeasureCountValue() {
-        const checked = document.querySelector('input[name="measureCount"]:checked');
+        syncCustomMeasureValue();
+        const checked = getSelectedMeasureCountInput();
         return checked ? checked.value : '4';
     }
 
-    function setSelectedMeasureCountValue(value) {
-        const target = document.querySelector(`input[name="measureCount"][value="${value}"]`);
-        if (target) target.checked = true;
+    function setSelectedMeasureCountSelectionKey(key) {
+        if (key === 'custom') {
+            const custom = document.getElementById('measure-custom');
+            if (custom) custom.checked = true;
+            return;
+        }
+        const target = document.querySelector(`input[name="measureCount"][value="${key}"]`);
+        if (target) {
+            target.checked = true;
+            return;
+        }
+        const fallback = document.getElementById('measure-4');
+        if (fallback) fallback.checked = true;
     }
 
+    function getSelectedMeasureConfig() {
+        syncCustomMeasureValue();
+        const checked = getSelectedMeasureCountInput();
+        let actual = checked ? parseInt(checked.value, 10) : 4;
+        if (!Number.isFinite(actual)) actual = 4;
+        actual = Math.max(1, Math.min(32, actual));
+        return {
+            actual,
+            logic: getMeasureLogicCount(actual),
+            isPreset: measurePresetValues.includes(actual)
+        };
+    }
+
+    window.getSelectedMeasureConfig = getSelectedMeasureConfig;
+    window.getCurrentMeasureCount = function() {
+        return getSelectedMeasureConfig().actual;
+    };
+    window.getCurrentMeasureLogicCount = function() {
+        return getSelectedMeasureConfig().logic;
+    };
+
     function openMeasureSettings() {
-        previousMeasureCountSelection = getSelectedMeasureCountValue();
+        syncCustomMeasureValue();
+        previousMeasureCountSelection = getSelectedMeasureCountSelectionKey();
+        const customInput = document.getElementById('measure-custom-value');
+        previousCustomMeasureCount = customInput ? customInput.value : previousCustomMeasureCount;
         const modal = document.getElementById('measureSettingsModal');
         if (modal) {
             showModal(modal);
@@ -1548,7 +1962,10 @@
     }
 
     function closeMeasureSettings() {
-        setSelectedMeasureCountValue(previousMeasureCountSelection);
+        const customInput = document.getElementById('measure-custom-value');
+        if (customInput) customInput.value = previousCustomMeasureCount;
+        syncCustomMeasureValue();
+        setSelectedMeasureCountSelectionKey(previousMeasureCountSelection);
         const modal = document.getElementById('measureSettingsModal');
         if (modal) {
             hideModal(modal);
@@ -1556,7 +1973,10 @@
     }
 
     function saveMeasureSettings() {
-        previousMeasureCountSelection = getSelectedMeasureCountValue();
+        syncCustomMeasureValue();
+        previousMeasureCountSelection = getSelectedMeasureCountSelectionKey();
+        const customInput = document.getElementById('measure-custom-value');
+        previousCustomMeasureCount = customInput ? customInput.value : previousCustomMeasureCount;
         const modal = document.getElementById('measureSettingsModal');
         if (modal) {
             hideModal(modal);
@@ -1899,8 +2319,7 @@
     }
 
     function getMeasureCount() {
-        const checked = document.querySelector('input[name="measureCount"]:checked');
-        return checked ? parseInt(checked.value, 10) : 4;
+        return getSelectedMeasureConfig().actual;
     }
 
     function isElementVisible(element) {
@@ -4835,7 +5254,7 @@
 
     function getCurrentTempo() {
         const bpmInput = document.getElementById('metronomeBpm');
-        const tempo = Math.max(1, parseInt(bpmInput?.value || '80', 10) || 80);
+        const tempo = Math.max(1, Math.min(999, parseInt(bpmInput?.value || '80', 10) || 80));
         return tempo;
     }
 
@@ -5802,6 +6221,109 @@
         }
     }
 
+    function bindBpmReactGrab(input) {
+        if (!input) return;
+        let isDragging = false;
+        let startY = 0;
+        let startValue = 0;
+        let dragTimeout = null;
+        let hasStartedDrag = false;
+
+        const clamp = (value) => {
+            if (!Number.isFinite(value)) return 80;
+            return Math.max(1, Math.min(999, value));
+        };
+
+        const handleDragStart = function(event) {
+            if (event.button !== undefined && event.button !== 0) return;
+            startY = event.clientY;
+            startValue = parseInt(this.value, 10);
+            if (!Number.isFinite(startValue)) startValue = 80;
+            hasStartedDrag = false;
+
+            dragTimeout = setTimeout(() => {
+                isDragging = true;
+                hasStartedDrag = true;
+                event.preventDefault();
+                document.body.style.userSelect = 'none';
+                document.body.style.webkitUserSelect = 'none';
+                document.body.style.mozUserSelect = 'none';
+                document.body.style.msUserSelect = 'none';
+                this.style.cursor = 'ns-resize';
+                this.classList.add('dragging');
+                this.blur();
+            }, 80);
+        };
+
+        const handlePointerDown = function(event) {
+            if (event.pointerType === 'mouse') return;
+            handleDragStart.call(this, event);
+        };
+
+        const handleMouseMove = function(event) {
+            if (!isDragging || !hasStartedDrag) return;
+            const deltaY = startY - event.clientY;
+            const nextValue = clamp(startValue + Math.round(deltaY));
+            input.value = String(nextValue);
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            event.preventDefault();
+            event.stopPropagation();
+        };
+
+        const handleMouseUp = function() {
+            if (dragTimeout) {
+                clearTimeout(dragTimeout);
+                dragTimeout = null;
+            }
+            if (!isDragging || !hasStartedDrag) return;
+            isDragging = false;
+            hasStartedDrag = false;
+            document.body.style.userSelect = '';
+            document.body.style.webkitUserSelect = '';
+            document.body.style.mozUserSelect = '';
+            document.body.style.msUserSelect = '';
+            input.style.cursor = '';
+            input.classList.remove('dragging');
+        };
+
+        input.addEventListener('mousedown', handleDragStart);
+        if ('PointerEvent' in window) {
+            input.addEventListener('pointerdown', handlePointerDown);
+        }
+        document.addEventListener('mousemove', handleMouseMove, true);
+        document.addEventListener('mouseup', handleMouseUp, true);
+        if ('PointerEvent' in window) {
+            document.addEventListener('pointermove', function(event) {
+                if (event.pointerType === 'mouse') return;
+                handleMouseMove(event);
+            }, true);
+            document.addEventListener('pointerup', function(event) {
+                if (event.pointerType === 'mouse') return;
+                handleMouseUp(event);
+            }, true);
+            document.addEventListener('pointercancel', function(event) {
+                if (event.pointerType === 'mouse') return;
+                handleMouseUp(event);
+            }, true);
+        }
+        input.addEventListener('mouseleave', function() {
+            if (dragTimeout && !isDragging) {
+                clearTimeout(dragTimeout);
+                dragTimeout = null;
+            }
+        });
+        input.addEventListener('blur', function() {
+            const normalized = clamp(parseInt(input.value, 10));
+            input.value = String(normalized);
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        input.addEventListener('contextmenu', function(event) {
+            if (isDragging) {
+                event.preventDefault();
+            }
+        });
+    }
+
     function bindEvents() {
         const secondaryDensity = document.getElementById('secondaryDensity');
         const voiceMode = document.getElementById('voiceMode');
@@ -5810,6 +6332,8 @@
         const previousBtn = document.getElementById('previousBtn');
         const nextBtn = document.getElementById('nextBtn');
         const metronomeBtn = document.getElementById('metronomeToggleBtn');
+        const metronomeBpmInput = document.getElementById('metronomeBpm');
+        const challengeBpmInput = document.getElementById('challengeBPM');
         const scoreContainer = document.getElementById('score');
         const ostinatoVoice = document.getElementById('ostinatoVoiceSelect');
         const timeSignatureSelect = document.getElementById('timeSignature');
@@ -5858,6 +6382,8 @@
         if (previousBtn) previousBtn.addEventListener('click', previousRhythm);
         if (nextBtn) nextBtn.addEventListener('click', nextRhythm);
         metronomeBtn.addEventListener('click', toggleMetronome);
+        if (metronomeBpmInput) bindBpmReactGrab(metronomeBpmInput);
+        if (challengeBpmInput) bindBpmReactGrab(challengeBpmInput);
         if (scoreContainer) {
             scoreContainer.addEventListener('click', () => {
                 triggerGenerate();
@@ -5893,6 +6419,7 @@
         setupModalAutoSave('voiceSettingsModal', saveVoiceSettings);
         setupModalAutoSave('metronomePatternModal', saveMetronomePatternSettingsAndClose);
         setupModalAutoSave('settingsModal', closeSettingsModal);
+        initializeToolParameterExchange();
         setEmptyScore();
 
         // ============ 跨工具同步监听机制 ============
@@ -5992,6 +6519,9 @@
     window.closeSettingsModal = closeSettingsModal;
     window.setTheme = setTheme;
     window.switchLanguage = switchLanguage;
+    window.saveToolParameters = saveToolParameters;
+    window.resetToolParameters = resetToolParameters;
+    window.importToolParameters = importToolParameters;
     window.switchFunction = switchFunction;
     window.openRhythmSettings = openRhythmSettings;
     window.closeRhythmSettings = closeRhythmSettings;

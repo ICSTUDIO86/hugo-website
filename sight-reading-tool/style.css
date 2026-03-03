@@ -174,15 +174,27 @@ body {
   position: relative;
   z-index: 10;
   text-align: center;
-  max-width: 900px;
+  width: min(94vw, 980px);
+  max-width: 980px;
   margin: 0 auto;
   animation: fade-in 1s ease-out;
 }
 
+.hero-layout {
+  display: block;
+}
+
+.hero-copy {
+  width: 100%;
+  max-width: min(94vw, 980px);
+  margin-inline: auto;
+  text-align: center;
+}
+
 .hero-title {
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-size: clamp(2.4rem, 4.8vw, 5.8rem);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.12;
   margin-bottom: 1.5rem;
 }
 
@@ -196,10 +208,15 @@ body {
   animation: float 3s ease-in-out infinite;
 }
 
+.hero-title-line-2 {
+  display: block;
+  white-space: nowrap;
+}
+
 .hero-subtitle {
-  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-size: clamp(1.1rem, 1.45vw, 1.78rem);
   color: hsl(var(--muted-foreground));
-  margin-bottom: 2rem;
+  margin-bottom: clamp(1.5rem, 2vw, 2.4rem);
   line-height: 1.6;
 }
 
@@ -212,20 +229,24 @@ body {
 .hero-buttons {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: clamp(0.85rem, 1vw, 1.25rem);
   justify-content: center;
   align-items: center;
-  margin-bottom: 3rem;
+  margin-bottom: clamp(1.9rem, 3vw, 3rem);
 }
 
 @media (min-width: 640px) {
   .hero-buttons {
     flex-direction: row;
+    justify-content: center;
   }
 }
 
 .hero-pill {
-  display: inline-flex;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
   padding: 0.75rem 1.5rem;
   border-radius: 9999px;
   background: hsl(var(--primary) / 0.2);
@@ -233,8 +254,157 @@ body {
   border: 2px solid hsl(var(--primary) / 0.3);
   color: hsl(var(--primary));
   font-weight: 600;
-  font-size: 1.125rem;
+  font-size: clamp(1rem, 1vw, 1.18rem);
   box-shadow: 0 4px 12px hsl(var(--primary) / 0.2);
+  margin-inline: auto;
+}
+
+.hero-cards-section {
+  position: relative;
+  padding: clamp(0.25rem, 1vw, 0.8rem) 1.5rem clamp(3rem, 5vw, 5.2rem);
+  overflow: hidden;
+  background: linear-gradient(to bottom, hsl(210 100% 98%), hsl(0 0% 100%));
+}
+
+.hero-cards-content {
+  width: min(96vw, 1700px);
+  max-width: 1700px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.hero-tools {
+  position: relative;
+  z-index: 2;
+  width: min(96vw, 1500px);
+  height: clamp(320px, 34vw, 540px);
+  margin: 0 auto;
+}
+
+.hero-card-swap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  perspective: none;
+  overflow: visible;
+  transform: none;
+  transform-origin: center center;
+}
+
+.hero-card-swap[data-layout="bounce"] {
+  width: 100%;
+  height: 100%;
+  top: auto;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  perspective: none;
+  transform: none;
+  transform-origin: center center;
+}
+
+.hero-card-swap[data-layout="bounce"] .hero-tool-card {
+  width: clamp(260px, 27vw, 430px);
+  height: auto;
+  aspect-ratio: 4 / 3;
+  transform-style: flat;
+  transform: translate(
+      calc(-50% + var(--bounce-x, 0%)),
+      calc(-50% + var(--bounce-y, 0%))
+    )
+    rotate(var(--bounce-rotate, 0deg));
+  animation: hero-bounce-card var(--bounce-duration, 3.8s) ease-in-out infinite;
+  animation-delay: var(--bounce-delay, 0s);
+}
+
+.hero-card-swap[data-layout="bounce"] .hero-tool-card:hover {
+  animation-play-state: paused;
+}
+
+.hero-tool-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  box-shadow:
+    0 18px 38px hsl(210 25% 30% / 0.24),
+    0 6px 14px hsl(210 30% 45% / 0.16);
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  transform-style: preserve-3d;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-origin: center center;
+}
+
+.hero-tool-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px hsl(0 0% 100% / 0.45);
+}
+
+.hero-tool-badge {
+  position: absolute;
+  top: 0.95rem;
+  left: 0.95rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.34rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: hsl(var(--primary));
+  background: hsl(var(--background) / 0.82);
+  border: 1px solid hsl(var(--primary) / 0.24);
+  backdrop-filter: blur(4px);
+}
+
+.hero-tool-badge.badge-melody {
+  color: hsl(210 100% 55%);
+}
+
+.hero-tool-badge.badge-jianpu {
+  color: hsl(140 80% 45%);
+}
+
+.hero-tool-badge.badge-rhythm {
+  color: hsl(38 92% 45%);
+}
+
+.hero-tool-badge.badge-chord {
+  color: hsl(330 80% 52%);
+}
+
+.hero-tool-badge.badge-interval {
+  color: hsl(190 90% 42%);
+}
+
+.hero-tool-media {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  border: none;
+  background: hsl(var(--card));
+}
+
+.hero-tool-media img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  object-position: center;
 }
 
 /* ==================== 按钮样式 ==================== */
@@ -962,6 +1132,28 @@ body {
   }
 }
 
+@keyframes hero-bounce-card {
+  0%,
+  100% {
+    transform:
+      translate(
+        calc(-50% + var(--bounce-x, 0%)),
+        calc(-50% + var(--bounce-y, 0%))
+      )
+      rotate(var(--bounce-rotate, 0deg))
+      translateY(0);
+  }
+  50% {
+    transform:
+      translate(
+        calc(-50% + var(--bounce-x, 0%)),
+        calc(-50% + var(--bounce-y, 0%))
+      )
+      rotate(var(--bounce-rotate, 0deg))
+      translateY(var(--bounce-lift, -14px));
+  }
+}
+
 @keyframes product-loop {
   from {
     transform: translateX(0);
@@ -990,13 +1182,65 @@ body {
 /* ==================== 响应式设计 ==================== */
 @media (max-width: 768px) {
   .hero {
-    min-height: 60vh;
-    padding: 3rem 1rem;
+    min-height: auto;
+    padding: 3.25rem 1rem 1.35rem;
   }
 
   .hero-float-2,
   .hero-float-3 {
     display: none;
+  }
+
+  .hero-layout {
+    display: block;
+  }
+
+  .hero-copy {
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .hero-title {
+    font-size: clamp(2.2rem, 8vw, 3rem);
+  }
+
+  .hero-buttons {
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .hero-pill {
+    margin-inline: auto;
+  }
+
+  .hero-tools {
+    width: min(96vw, 680px);
+    height: clamp(280px, 62vw, 420px);
+    margin: 0 auto;
+  }
+
+  .hero-card-swap {
+    width: 100%;
+    height: 100%;
+    transform: none;
+    transform-origin: center;
+    perspective: none;
+  }
+
+  .hero-card-swap[data-layout="bounce"] {
+    transform: none;
+  }
+
+  .hero-card-swap[data-layout="bounce"] .hero-tool-card {
+    width: min(48vw, 320px);
+    border-radius: 10px;
+  }
+
+  .hero-tool-card {
+    border-radius: 10px;
+    box-shadow: 0 8px 20px hsl(210 20% 35% / 0.16);
+    transform-style: flat;
   }
 
   .product-showcase,
@@ -1020,6 +1264,21 @@ body {
 
   .access-code-button {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-tools {
+    width: min(96vw, 430px);
+    height: clamp(250px, 72vw, 360px);
+  }
+
+  .hero-card-swap {
+    transform: none;
+  }
+
+  .hero-card-swap[data-layout="bounce"] .hero-tool-card {
+    width: min(48vw, 236px);
   }
 }
 

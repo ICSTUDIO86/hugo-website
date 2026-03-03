@@ -70,6 +70,45 @@
   };
 
   function $(id){ return document.getElementById(id); }
+  let isSyncingChallengeBpmInput = false;
+
+  function clampChallengeTempo(value){
+    const parsed = parseInt(value, 10);
+    if (!isFinite(parsed)) return 60;
+    return Math.max(1, Math.min(999, parsed));
+  }
+
+  function getUnifiedTempoFromHeader(){
+    try {
+      if (typeof getUnifiedMetronomeTempo === 'function') {
+        return clampChallengeTempo(getUnifiedMetronomeTempo());
+      }
+    } catch(_) {}
+    const headerInput = document.getElementById('headerMetronomeBpm');
+    return clampChallengeTempo(headerInput ? headerInput.value : 60);
+  }
+
+  function getChallengeTempoValue(){
+    const bpmInput = $('challengeBPM');
+    return clampChallengeTempo(bpmInput ? bpmInput.value : getUnifiedTempoFromHeader());
+  }
+
+  function syncTempoAcrossInputs(rawTempo){
+    const tempo = clampChallengeTempo(rawTempo);
+    if (typeof setMetronomeTempo === 'function') {
+      setMetronomeTempo(tempo);
+    } else {
+      const headerInput = document.getElementById('headerMetronomeBpm');
+      if (headerInput) headerInput.value = String(tempo);
+    }
+    const bpmInput = $('challengeBPM');
+    if (bpmInput && parseInt(bpmInput.value, 10) !== tempo) {
+      isSyncingChallengeBpmInput = true;
+      bpmInput.value = String(tempo);
+      isSyncingChallengeBpmInput = false;
+    }
+    return tempo;
+  }
 
   function isMidiConnected(){
     try {
@@ -894,7 +933,7 @@
     if (!js) return;
     const perfMs = performance.now();
     const nowSec = getNowSec(perfMs);
-    const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
+    const bpmVal = getChallengeTempoValue();
     const judgeWindows = computeJudgeWindows(bpmVal);
     if (state.judgeGateUntilSec && nowSec <= state.judgeGateUntilSec) return;
     if (state.judgeGateUntilSec && nowSec > state.judgeGateUntilSec) {
@@ -923,7 +962,7 @@
   function processJudgeQueue(nowPerf){
     if (!state.judgeEvents || !state.judgeEvents.length || !state.judgeStartMs) return;
     if (!state.judgeInputQueue || !state.judgeInputQueue.length) return;
-    const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
+    const bpmVal = getChallengeTempoValue();
     const judgeWindows = computeJudgeWindows(bpmVal);
     const gateUntil = state.judgeGateUntilSec || 0;
     if (gateUntil){
@@ -1024,6 +1063,9 @@
       if (hideToggle && typeof saved.hide === 'boolean') { hideToggle.checked = saved.hide; hasHidePref = true; }
       if (calibrationToggle && typeof saved.calibration === 'boolean') { calibrationToggle.checked = saved.calibration; }
     } catch(_) {}
+    if (bpm) {
+      syncTempoAcrossInputs(getUnifiedTempoFromHeader());
+    }
     if (modalModeToggle) modalModeToggle.checked = !!(toggleEl && toggleEl.checked);
     if (cursorToggle && !hasCursorPref) cursorToggle.checked = true;
     if (metronomeToggle && !hasMetronomePref) metronomeToggle.checked = true;
@@ -1058,7 +1100,7 @@
 
   async function confirmChallengeSetup(){
     const prep = Math.max(0, parseInt(($('challengePrepTime').value||'0'), 10));
-    const bpm = Math.max(40, Math.min(240, parseInt(($('challengeBPM').value||'80'), 10)));
+    const bpm = syncTempoAcrossInputs(getChallengeTempoValue());
     const cursorEnabled = $('challengeCursorToggle') ? $('challengeCursorToggle').checked : true;
     const metronomeEnabled = $('challengeMetronomeToggle') ? $('challengeMetronomeToggle').checked : true;
     const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : false;
@@ -3308,7 +3350,7 @@
     }
     if (toggleEl && toggleEl.checked && state.autoRestart){
       const prep = Math.max(0, parseInt(($('challengePrepTime')?.value || '0'), 10));
-      const bpm = Math.max(40, Math.min(240, parseInt(($('challengeBPM')?.value || '80'), 10)));
+      const bpm = syncTempoAcrossInputs(getChallengeTempoValue());
       if (prep === 0 && state.lastBeatTimeMs){
         const tsInfo = getTimeSignatureInfo();
         const beatMs = (60/Math.max(1,bpm)) * (4/tsInfo.den) * 1000;
@@ -3379,6 +3421,18 @@
     });
     updateModalModeToggleVisual();
   }
+
+  const challengeBpmEl = $('challengeBPM');
+  if (challengeBpmEl){
+    const onChallengeBpmChanged = () => {
+      if (isSyncingChallengeBpmInput) return;
+      const tempo = syncTempoAcrossInputs(challengeBpmEl.value);
+      challengeBpmEl.value = String(tempo);
+    };
+    challengeBpmEl.addEventListener('input', onChallengeBpmChanged);
+    challengeBpmEl.addEventListener('blur', onChallengeBpmChanged);
+  }
+  syncTempoAcrossInputs(getUnifiedTempoFromHeader());
 
   window.addEventListener('ic-midi-connection', (ev) => {
     const connected = !!(ev && ev.detail && ev.detail.connected);

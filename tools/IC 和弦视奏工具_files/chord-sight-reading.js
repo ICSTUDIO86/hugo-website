@@ -327,6 +327,8 @@ function testChordSymbolFunction() {
 let metronomeIsPlaying = false;
 let isPlayingChords = false;
 let currentPlayback = [];
+let chordPlaybackRunId = 0;
+let chordPlaybackFinishTimer = null;
 
 // 音乐理论引擎
 let harmonyTheory = null;
@@ -926,7 +928,9 @@ function getVoicingComplexityFactor(progression) {
     }
 
     // 获取用户选择的小节数
-    const userMeasures = parseInt(document.querySelector('input[name="measures"]:checked')?.value || '4');
+    const userMeasures = typeof window.getCurrentMeasureCount === 'function'
+        ? window.getCurrentMeasureCount()
+        : parseInt(document.querySelector('input[name="measures"]:checked')?.value || '4');
     console.log(`🎯 统一宽度模式: ${userMeasures}小节，启用基础调整策略`);
 
     // 统计可能影响宽度的因素
@@ -1084,7 +1088,9 @@ function generateChords() {
 
     try {
         // 获取当前设置
-        const measures = parseInt(document.querySelector('input[name="measures"]:checked')?.value || '4');
+        const measures = typeof window.getCurrentMeasureCount === 'function'
+            ? window.getCurrentMeasureCount()
+            : parseInt(document.querySelector('input[name="measures"]:checked')?.value || '4');
 
         // 🔧 修复 (2025-10-01): 检测功能和声模式，智能选择调号
         // 🔧 修复 (2025-10-02): 添加防御性检查，确保keys存在
@@ -1273,7 +1279,9 @@ function generateChords() {
 
         // 降级到简单模式
         console.log('🔄 启用降级模式...');
-        const fallbackMeasures = parseInt(document.querySelector('input[name="measures"]:checked')?.value || '4');
+        const fallbackMeasures = typeof window.getCurrentMeasureCount === 'function'
+            ? window.getCurrentMeasureCount()
+            : parseInt(document.querySelector('input[name="measures"]:checked')?.value || '4');
         generateSimpleChords(fallbackMeasures);
     }
 }
@@ -6649,7 +6657,9 @@ function displayChords(chords) {
 
                     // 🚨 第一层：绝对强制性小节布局控制系统
                     // 获取用户选择的小节数，确保与用户期望完全一致
-                    const userSelectedMeasures = parseInt(document.querySelector('input[name="measures"]:checked')?.value || '4');
+                    const userSelectedMeasures = typeof window.getCurrentMeasureCount === 'function'
+                        ? window.getCurrentMeasureCount()
+                        : parseInt(document.querySelector('input[name="measures"]:checked')?.value || '4');
                     const targetMeasuresPerLine = userSelectedMeasures === 2 ? 2 : 4; // 用户选择2小节就2小节一行，否则4小节一行
 
                     // 检测voicing复杂度，为复杂voicing应用更强制的布局控制
@@ -12357,6 +12367,11 @@ function playNote(frequency, startTime, duration, volume = 0.2) {
 
 // 停止当前播放
 function stopPlayback() {
+    chordPlaybackRunId += 1;
+    if (chordPlaybackFinishTimer) {
+        clearTimeout(chordPlaybackFinishTimer);
+        chordPlaybackFinishTimer = null;
+    }
     currentPlayback.forEach(osc => {
         try {
             osc.stop();
@@ -12373,6 +12388,34 @@ function stopPlayback() {
         playBtn.innerHTML = '播放';
     }
     console.log('⏹️ 播放已停止');
+}
+
+function getChordPlaybackTimeSignature() {
+    try {
+        const xml = (window.currentChords && window.currentChords.musicXML) || '';
+        if (!xml) return { beats: 4, beatType: 4 };
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xml, 'text/xml');
+        const timeEl = xmlDoc.querySelector('time');
+        const beats = parseInt(timeEl?.querySelector('beats')?.textContent || '4', 10);
+        const beatType = parseInt(timeEl?.querySelector('beat-type')?.textContent || '4', 10);
+        return {
+            beats: Number.isFinite(beats) && beats > 0 ? beats : 4,
+            beatType: Number.isFinite(beatType) && beatType > 0 ? beatType : 4
+        };
+    } catch (_) {
+        return { beats: 4, beatType: 4 };
+    }
+}
+
+function getChordBeatDuration(bpm, timeSignatureInfo) {
+    const safeBpm = Math.max(1, parseInt(bpm, 10) || 60);
+    const beatType = Math.max(1, parseInt(timeSignatureInfo?.beatType, 10) || 4);
+    return (60 / safeBpm) * (4 / beatType);
+}
+
+function getChordCountInBeats(timeSignatureInfo) {
+    return Math.max(1, parseInt(timeSignatureInfo?.beats, 10) || 4);
 }
 
 // 播放和弦
@@ -12425,12 +12468,14 @@ function directPlayTest() {
     }
 
     console.log('▶️ 开始播放和弦...');
+    chordPlaybackRunId += 1;
+    const currentRunId = chordPlaybackRunId;
     isPlayingChords = true;
 
     // 更新播放按钮
     const playBtn = document.getElementById('playMelodyBtn');
     if (playBtn) {
-        playBtn.innerHTML = '⏸️ 停止';
+        playBtn.innerHTML = '暂停';
     }
 
     // 🎵 获取页面上的BPM设定
@@ -12446,13 +12491,16 @@ function directPlayTest() {
     }
 
     const actualBPM = getCurrentBPM(); // 直接从页面获取BPM
-    const beatDuration = 60.0 / actualBPM;
+    const timeSignatureInfo = getChordPlaybackTimeSignature();
+    const beatDuration = getChordBeatDuration(actualBPM, timeSignatureInfo);
+    const countInBeats = getChordCountInBeats(timeSignatureInfo);
 
     const now = audioContext.currentTime;
-    let chordDuration = beatDuration * 4; // 每个和弦播放4拍，基于页面BPM设定
+    let chordDuration = beatDuration * countInBeats; // 每个和弦播放一小节，跟随拍号
     let needsCountIn = false;
+    let chordStartTime = null;
 
-    console.log(`🎵 播放速度设定: ${actualBPM} BPM, 每拍: ${beatDuration.toFixed(3)}s, 每个和弦: ${chordDuration.toFixed(3)}s`);
+    console.log(`🎵 播放速度设定: ${actualBPM} BPM, 拍号: ${timeSignatureInfo.beats}/${timeSignatureInfo.beatType}, 每拍: ${beatDuration.toFixed(3)}s, 每个和弦: ${chordDuration.toFixed(3)}s`);
 
     // 🎵 参考旋律视奏工具的隐藏检测逻辑
     function checkIfChordsHidden() {
@@ -12512,8 +12560,6 @@ function directPlayTest() {
             }
         }
 
-        // Count In: 4拍预备
-        const countInBeats = 4;
         const countInDuration = beatDuration * countInBeats;
         console.log(`🎵 Count In: ${countInBeats}拍预备，时长: ${countInDuration.toFixed(3)}秒`);
         console.log(`🎵 时机安排: Count In(${countInDuration.toFixed(1)}s) → 音频播放开始 → 节拍器对准拍子重启`);
@@ -12569,26 +12615,14 @@ function directPlayTest() {
     }
 
     // 🔧 智能播放时间：节拍器开启时对齐网格，关闭时立即响应
-    let chordStartTime;
-
     if (!needsCountIn) {
         const currentNow = audioContext.currentTime;
 
         if (typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning) {
-            // 🎵 节拍器开启 - 对齐全局网格确保同步
-            const currentBeatNumber = Math.floor(currentNow / beatDuration);
-            let nextBeatNumber = currentBeatNumber + 1;
-            chordStartTime = nextBeatNumber * beatDuration;
-
-            // 安全检查：确保 chordStartTime 至少在未来 50ms
             const minLookahead = 0.05;
-            if (chordStartTime < currentNow + minLookahead) {
-                nextBeatNumber++;
-                chordStartTime = nextBeatNumber * beatDuration;
-                console.log(`⚠️ 时间太近，跳到下一拍 (第${nextBeatNumber}拍)`);
-            }
-
-            console.log(`🎵 节拍器开启 - 同步到全局网格: BPM=${actualBPM}, 当前=${currentNow.toFixed(3)}s, 播放=${chordStartTime.toFixed(3)}s (第${nextBeatNumber}拍)`);
+            const firstBeatTime = Math.ceil((currentNow + minLookahead) / beatDuration) * beatDuration;
+            chordStartTime = firstBeatTime + (countInBeats * beatDuration);
+            console.log(`🎵 节拍器开启 - 先count-in ${countInBeats}拍，再开始和弦播放: BPM=${actualBPM}, 当前=${currentNow.toFixed(3)}s, 开始=${chordStartTime.toFixed(3)}s`);
         } else {
             // 🚀 节拍器关闭 - 立即播放，响应迅速
             chordStartTime = currentNow + 0.1;
@@ -12596,7 +12630,7 @@ function directPlayTest() {
         }
     } else {
         // needsCountIn 情况下的开始时间由 count-in 逻辑处理
-        chordStartTime = now + 0.1 + (beatDuration * 4); // 设置在count-in之后
+        chordStartTime = now + 0.1 + (beatDuration * countInBeats); // 设置在count-in之后
     }
 
     let totalNotesPlayed = 0;
@@ -12707,10 +12741,14 @@ function directPlayTest() {
 
     // 设置播放结束后的清理
     const totalDuration = chordsArray.length * chordDuration;
-    setTimeout(() => {
-        if (isPlayingChords) {
+    if (chordPlaybackFinishTimer) {
+        clearTimeout(chordPlaybackFinishTimer);
+    }
+    chordPlaybackFinishTimer = setTimeout(() => {
+        if (isPlayingChords && currentRunId === chordPlaybackRunId) {
             stopPlayback();
         }
+        chordPlaybackFinishTimer = null;
     }, totalDuration * 1000 + 500);
 
     console.log(`🎵 播放 ${chordsArray.length} 个和弦，总时长: ${totalDuration.toFixed(1)}秒`);
@@ -14102,7 +14140,7 @@ function saveClefSettings() {
 
 // 音域记忆系统 - 保存每个谱号的当前音域设置
 const clefRangeMemory = {
-    'treble': { min: 55, max: 88 },  // G3-E6
+    'treble': { min: 52, max: 88 },  // E3-E6
     'bass': { min: 40, max: 64 },    // E2-E4
     'grand_staff': { min: 40, max: 88 }  // E2-E6 (完整钢琴音域)
 };
@@ -14210,8 +14248,8 @@ function setRangeForClef(clef) {
         rangeMaxSelect.value = rangeSettings.max.toString();
 
         const noteNames = {
-            36: 'C2', 40: 'E2', 48: 'C3', 50: 'D3',
-            60: 'C4', 64: 'E4', 71: 'B4', 72: 'C5'
+            36: 'C2', 40: 'E2', 48: 'C3', 50: 'D3', 52: 'E3',
+            60: 'C4', 64: 'E4', 71: 'B4', 72: 'C5', 88: 'E6'
         };
 
         const minNote = noteNames[rangeSettings.min] || `MIDI${rangeSettings.min}`;
@@ -14220,9 +14258,9 @@ function setRangeForClef(clef) {
         console.log(`🎼 设置${clef}谱号音域: ${minNote}-${maxNote} (MIDI ${rangeSettings.min}-${rangeSettings.max})`);
     } else {
         // 默认使用高音谱号音域
-        rangeMinSelect.value = '55'; // G3
+        rangeMinSelect.value = '52'; // E3
         rangeMaxSelect.value = '88'; // E6
-        console.log('🎼 设置默认音域: G3-E6');
+        console.log('🎼 设置默认音域: E3-E6');
     }
 
     console.log(`🔄 当前活跃谱号已更新为: ${currentActiveClef}`);

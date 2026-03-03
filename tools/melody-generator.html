@@ -465,6 +465,14 @@
                     </div>
                     <div class="midi-status" id="micStatusText" data-i18n="mic.status.disabled">麦克风已关闭</div>
                 </div>
+                <div class="settings-section" id="parameterExchangeSection">
+                    <div style="display: flex; gap: 8px; width: 100%;">
+                        <button type="button" class="btn-secondary" style="flex: 1;" onclick="saveToolParameters()">保存参数</button>
+                        <button type="button" class="btn-secondary" style="flex: 1;" onclick="resetToolParameters()">重置参数</button>
+                        <button type="button" class="btn-secondary" style="flex: 1;" onclick="importToolParameters()">导入参数</button>
+                    </div>
+                    <input type="file" id="parameterImportFileInput" accept=".json,application/json" style="display: none;">
+                </div>
                 </div>
             </div>
         </div>
@@ -506,7 +514,7 @@
                     </div>
                     <div class="control-group">
                         <label for="challengeBPM" data-i18n="challenge.bpm">BPM</label>
-                        <input type="number" id="challengeBPM" min="40" max="240" step="1" value="80">
+                        <input type="number" id="challengeBPM" min="1" max="999" step="1" value="60">
                     </div>
                 </div>
                 <div class="control-row">
@@ -1358,6 +1366,330 @@
             closeSettingsModal();
         }
 
+        const toolParameterConfig = {
+            toolKey: 'melody',
+            toolName: '旋律',
+            storageKey: 'cognote_tool_parameters_melody',
+            schemaVersion: 1,
+            defaultTheme: 'light',
+            defaultLanguage: 'zh-CN'
+        };
+        let toolParameterDefaultSnapshot = null;
+
+        function getToolParameterControls() {
+            return Array.from(document.querySelectorAll('input[id], select[id], textarea[id]')).filter((control) => {
+                if (!control || !control.id) return false;
+                if (control.id === 'parameterImportFileInput') return false;
+                const type = String(control.type || '').toLowerCase();
+                return type !== 'file';
+            });
+        }
+
+        function getToolParameterControlsById(controlId) {
+            return getToolParameterControls().filter((control) => control.id === controlId);
+        }
+
+        function captureToolParameterSnapshot(useDefault) {
+            const snapshot = {};
+            const seenIds = new Set();
+            getToolParameterControls().forEach((control) => {
+                if (seenIds.has(control.id)) return;
+                seenIds.add(control.id);
+                const tag = control.tagName.toLowerCase();
+                const type = String(control.type || '').toLowerCase();
+                const state = { tag, type };
+                if (tag === 'select') {
+                    if (control.multiple) {
+                        const selected = Array.from(control.options)
+                            .filter((option) => useDefault ? option.defaultSelected : option.selected)
+                            .map((option) => option.value);
+                        state.value = selected;
+                    } else {
+                        if (useDefault) {
+                            const defaultOption = Array.from(control.options).find((option) => option.defaultSelected);
+                            state.value = defaultOption ? defaultOption.value : (control.options[0] ? control.options[0].value : control.value);
+                        } else {
+                            state.value = control.value;
+                        }
+                    }
+                } else if (type === 'checkbox' || type === 'radio') {
+                    state.checked = useDefault ? control.defaultChecked : control.checked;
+                } else {
+                    state.value = useDefault ? control.defaultValue : control.value;
+                }
+                snapshot[control.id] = state;
+            });
+            return snapshot;
+        }
+
+        function applyToolParameterSnapshot(snapshot) {
+            if (!snapshot || typeof snapshot !== 'object') return 0;
+            let changedCount = 0;
+            Object.keys(snapshot).forEach((id) => {
+                const state = snapshot[id];
+                if (!state || typeof state !== 'object') return;
+                const controls = getToolParameterControlsById(id);
+                if (!controls.length) return;
+                controls.forEach((control) => {
+                    const tag = control.tagName.toLowerCase();
+                    const type = String(control.type || '').toLowerCase();
+                    let changed = false;
+
+                    if (tag === 'select') {
+                        if (control.multiple) {
+                            const selectedValues = Array.isArray(state.value) ? state.value.map(String) : [];
+                            Array.from(control.options).forEach((option) => {
+                                const nextSelected = selectedValues.includes(option.value);
+                                if (option.selected !== nextSelected) {
+                                    option.selected = nextSelected;
+                                    changed = true;
+                                }
+                            });
+                        } else {
+                            const nextValue = state.value == null ? '' : String(state.value);
+                            if (control.value !== nextValue) {
+                                control.value = nextValue;
+                                changed = true;
+                            }
+                        }
+                    } else if (type === 'checkbox') {
+                        const nextChecked = !!state.checked;
+                        if (control.checked !== nextChecked) {
+                            control.checked = nextChecked;
+                            changed = true;
+                        }
+                    } else if (type === 'radio') {
+                        if (state.checked) {
+                            if (!control.checked) {
+                                control.checked = true;
+                                changed = true;
+                            }
+                        }
+                    } else {
+                        const nextValue = state.value == null ? '' : String(state.value);
+                        if (control.value !== nextValue) {
+                            control.value = nextValue;
+                            changed = true;
+                        }
+                    }
+
+                    if (changed) {
+                        changedCount += 1;
+                        control.dispatchEvent(new Event('input', { bubbles: true }));
+                        control.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            });
+            return changedCount;
+        }
+
+        function buildToolParameterPayload(snapshot) {
+            const language = (typeof currentLanguage !== 'undefined' && currentLanguage)
+                ? currentLanguage
+                : (localStorage.getItem('preferredLanguage') || toolParameterConfig.defaultLanguage);
+            return {
+                schema: 'cognote-parameters',
+                version: toolParameterConfig.schemaVersion,
+                toolKey: toolParameterConfig.toolKey,
+                toolName: toolParameterConfig.toolName,
+                exportedAt: new Date().toISOString(),
+                preferences: {
+                    theme: document.documentElement.getAttribute('data-theme') || toolParameterConfig.defaultTheme,
+                    language
+                },
+                controls: snapshot
+            };
+        }
+
+        function applyToolParameterPreferences(preferences) {
+            if (!preferences || typeof preferences !== 'object') return;
+            const nextTheme = typeof preferences.theme === 'string' ? preferences.theme : '';
+            const nextLanguage = typeof preferences.language === 'string' ? preferences.language : '';
+            if (nextTheme) {
+                if (typeof setTheme === 'function') {
+                    try { setTheme(nextTheme); } catch (_) {
+                        document.documentElement.setAttribute('data-theme', nextTheme);
+                    }
+                } else {
+                    document.documentElement.setAttribute('data-theme', nextTheme);
+                }
+            }
+            if (nextLanguage && typeof switchLanguage === 'function') {
+                try { switchLanguage(nextLanguage); } catch (_) {}
+            }
+        }
+
+        function finalizeToolParameterApply() {
+            const syncFnNames = [
+                'saveRhythmSettings',
+                'saveArticulationSettings',
+                'saveKeySettings',
+                'saveTimeSignatureSettings',
+                'saveIntervalSettings',
+                'saveClefSettings',
+                'saveMeasureSettings',
+                'saveMetronomePatternSettings',
+                'updateMetronomePatternTimeSig',
+                'updateMetronomePatternUI',
+                'applyTranslations'
+            ];
+            syncFnNames.forEach((name) => {
+                const fn = window[name];
+                if (typeof fn === 'function') {
+                    try { fn(); } catch (_) {}
+                }
+            });
+        }
+
+        function persistToolParameterPayload(payload) {
+            try {
+                localStorage.setItem(toolParameterConfig.storageKey, JSON.stringify(payload));
+            } catch (_) {}
+        }
+
+        function readSavedToolParameterPayload() {
+            try {
+                const raw = localStorage.getItem(toolParameterConfig.storageKey);
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                if (!parsed || typeof parsed !== 'object') return null;
+                if (parsed.toolKey !== toolParameterConfig.toolKey) return null;
+                if (!parsed.controls || typeof parsed.controls !== 'object') return null;
+                return parsed;
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function downloadToolParameterPayload(payload) {
+            const fileName = `Cognote ${toolParameterConfig.toolName}参数.json`;
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function ensureToolParameterFeedbackModal() {
+            let modal = document.getElementById('toolParameterFeedbackModal');
+            if (modal) return modal;
+            modal = document.createElement('div');
+            modal.id = 'toolParameterFeedbackModal';
+            modal.className = 'modal';
+            modal.style.display = 'none';
+            modal.innerHTML = [
+                '<div class="modal-content" style="max-width: 420px;">',
+                '  <div class="modal-header">',
+                '    <h3>参数提示</h3>',
+                '    <button class="close-btn" type="button" aria-label="关闭">×</button>',
+                '  </div>',
+                '  <div class="modal-body">',
+                '    <p id="toolParameterFeedbackText" style="margin: 0; line-height: 1.6;"></p>',
+                '    <div class="modal-buttons" style="margin-top: 16px;">',
+                '      <button type="button" class="btn-primary">确定</button>',
+                '    </div>',
+                '  </div>',
+                '</div>'
+            ].join('');
+            const closeModal = () => { modal.style.display = 'none'; };
+            const closeBtn = modal.querySelector('.close-btn');
+            const confirmBtn = modal.querySelector('.btn-primary');
+            if (closeBtn) closeBtn.addEventListener('click', closeModal);
+            if (confirmBtn) confirmBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) closeModal();
+            });
+            document.body.appendChild(modal);
+            return modal;
+        }
+
+        function showToolParameterFeedback(message) {
+            const modal = ensureToolParameterFeedbackModal();
+            const textEl = document.getElementById('toolParameterFeedbackText');
+            if (textEl) textEl.textContent = message;
+            modal.style.display = 'flex';
+        }
+
+        function saveToolParameters() {
+            const snapshot = captureToolParameterSnapshot(false);
+            const payload = buildToolParameterPayload(snapshot);
+            persistToolParameterPayload(payload);
+            downloadToolParameterPayload(payload);
+            showToolParameterFeedback('参数已保存到本地并导出文件。');
+        }
+
+        function resetToolParameters() {
+            if (!toolParameterDefaultSnapshot) {
+                toolParameterDefaultSnapshot = captureToolParameterSnapshot(true);
+            }
+            applyToolParameterPreferences({
+                theme: toolParameterConfig.defaultTheme,
+                language: toolParameterConfig.defaultLanguage
+            });
+            const changedCount = applyToolParameterSnapshot(toolParameterDefaultSnapshot);
+            finalizeToolParameterApply();
+            const payload = buildToolParameterPayload(captureToolParameterSnapshot(false));
+            persistToolParameterPayload(payload);
+            showToolParameterFeedback(changedCount > 0 ? `参数已重置为默认值（更新 ${changedCount} 项）。` : '参数已重置为默认值。');
+        }
+
+        function importToolParameters() {
+            const fileInput = document.getElementById('parameterImportFileInput');
+            if (!fileInput) {
+                alert('导入控件不可用。');
+                return;
+            }
+            fileInput.value = '';
+            fileInput.click();
+        }
+
+        async function handleToolParameterFileImport(file) {
+            if (!file) return;
+            try {
+                const text = await file.text();
+                const parsed = JSON.parse(text);
+                if (!parsed || typeof parsed !== 'object' || !parsed.controls || typeof parsed.controls !== 'object') {
+                    throw new Error('bad-format');
+                }
+                if (parsed.toolKey !== toolParameterConfig.toolKey) {
+                    alert(`导入失败：该文件属于${parsed.toolName || '其他'}工具，请导入 ${toolParameterConfig.toolName} 参数文件。`);
+                    return;
+                }
+                applyToolParameterPreferences(parsed.preferences);
+                const changedCount = applyToolParameterSnapshot(parsed.controls);
+                finalizeToolParameterApply();
+                const payload = buildToolParameterPayload(captureToolParameterSnapshot(false));
+                persistToolParameterPayload(payload);
+                showToolParameterFeedback(changedCount > 0 ? `参数导入成功，已更新 ${changedCount} 项。` : '参数导入完成，未检测到差异。');
+            } catch (_) {
+                alert('导入失败：文件格式不正确。');
+            }
+        }
+
+        function initializeToolParameterExchange() {
+            toolParameterDefaultSnapshot = captureToolParameterSnapshot(true);
+            const fileInput = document.getElementById('parameterImportFileInput');
+            if (fileInput && fileInput.dataset.bound !== 'true') {
+                fileInput.dataset.bound = 'true';
+                fileInput.addEventListener('change', async (event) => {
+                    const file = event.target && event.target.files ? event.target.files[0] : null;
+                    await handleToolParameterFileImport(file);
+                });
+            }
+            const savedPayload = readSavedToolParameterPayload();
+            if (savedPayload && savedPayload.controls) {
+                applyToolParameterPreferences(savedPayload.preferences);
+                applyToolParameterSnapshot(savedPayload.controls);
+                finalizeToolParameterApply();
+            }
+        }
+
+        window.addEventListener('load', initializeToolParameterExchange);
+
         const measurePresetValues = [2, 4, 8, 12, 16];
         let previousMeasureSelection = '4';
         let previousCustomMeasureValue = '10';
@@ -1906,6 +2238,27 @@
             }
         }
 
+        let isSyncingChallengeBpm = false;
+
+        function getUnifiedMetronomeTempo() {
+            const headerInput = document.getElementById('headerMetronomeBpm');
+            const parsed = parseInt(headerInput ? headerInput.value : metronomeTempo, 10);
+            if (!isNaN(parsed)) {
+                return Math.max(1, Math.min(999, parsed));
+            }
+            return Math.max(1, Math.min(999, metronomeTempo || 60));
+        }
+
+        function syncChallengeBpmFromHeader() {
+            const challengeInput = document.getElementById('challengeBPM');
+            if (!challengeInput) return;
+            const unifiedTempo = getUnifiedMetronomeTempo();
+            if (parseInt(challengeInput.value, 10) === unifiedTempo) return;
+            isSyncingChallengeBpm = true;
+            challengeInput.value = String(unifiedTempo);
+            isSyncingChallengeBpm = false;
+        }
+
         // 设置节拍器速度
         function setMetronomeTempo(bpm) {
             metronomeTempo = Math.max(1, Math.min(999, bpm));
@@ -1913,6 +2266,7 @@
             // 同步更新header输入框
             const headerInput = document.getElementById('headerMetronomeBpm');
             if (headerInput) headerInput.value = metronomeTempo;
+            syncChallengeBpmFromHeader();
             
             // 如果节拍器正在运行，重新启动以应用新速度
             if (isMetronomeRunning) {
@@ -1962,6 +2316,7 @@
 
             // 同步更新header输入框
             if (headerInput) headerInput.value = metronomeTempo;
+            syncChallengeBpmFromHeader();
 
             if (isMetronomeRunning) return;
 
@@ -2064,6 +2419,103 @@
         // 监听header中BPM输入框的变化
         document.addEventListener('DOMContentLoaded', function() {
             const headerSpeedInput = document.getElementById('headerMetronomeBpm');
+            const challengeBpmInput = document.getElementById('challengeBPM');
+            const clampTempoValue = function(rawValue, fallbackValue) {
+                const parsed = parseInt(rawValue, 10);
+                const baseValue = Number.isFinite(parsed) ? parsed : fallbackValue;
+                return Math.max(1, Math.min(999, baseValue));
+            };
+            const bindBpmReactGrab = function(input, fallbackValue) {
+                if (!input) return;
+                let isDragging = false;
+                let startY = 0;
+                let startValue = clampTempoValue(input.value, fallbackValue);
+                let dragTimeout = null;
+                let hasStartedDrag = false;
+
+                const handleDragStart = function(event) {
+                    if (event.button !== undefined && event.button !== 0) return;
+                    startY = event.clientY;
+                    startValue = clampTempoValue(this.value, fallbackValue);
+                    hasStartedDrag = false;
+
+                    dragTimeout = setTimeout(() => {
+                        isDragging = true;
+                        hasStartedDrag = true;
+                        event.preventDefault();
+                        document.body.style.userSelect = 'none';
+                        document.body.style.webkitUserSelect = 'none';
+                        document.body.style.mozUserSelect = 'none';
+                        document.body.style.msUserSelect = 'none';
+                        this.style.cursor = 'ns-resize';
+                        this.classList.add('dragging');
+                        this.blur();
+                    }, 80);
+                };
+
+                const handlePointerDown = function(event) {
+                    if (event.pointerType === 'mouse') return;
+                    handleDragStart.call(this, event);
+                };
+
+                const handleMouseMove = function(event) {
+                    if (!isDragging || !hasStartedDrag) return;
+                    const deltaY = startY - event.clientY;
+                    const nextValue = clampTempoValue(startValue + Math.round(deltaY), fallbackValue);
+                    input.value = String(nextValue);
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    event.preventDefault();
+                    event.stopPropagation();
+                };
+
+                const handleMouseUp = function() {
+                    if (dragTimeout) {
+                        clearTimeout(dragTimeout);
+                        dragTimeout = null;
+                    }
+                    if (!isDragging || !hasStartedDrag) return;
+                    isDragging = false;
+                    hasStartedDrag = false;
+                    document.body.style.userSelect = '';
+                    document.body.style.webkitUserSelect = '';
+                    document.body.style.mozUserSelect = '';
+                    document.body.style.msUserSelect = '';
+                    input.style.cursor = '';
+                    input.classList.remove('dragging');
+                };
+
+                input.addEventListener('mousedown', handleDragStart);
+                if ('PointerEvent' in window) {
+                    input.addEventListener('pointerdown', handlePointerDown);
+                }
+                document.addEventListener('mousemove', handleMouseMove, true);
+                document.addEventListener('mouseup', handleMouseUp, true);
+                if ('PointerEvent' in window) {
+                    document.addEventListener('pointermove', function(event) {
+                        if (event.pointerType === 'mouse') return;
+                        handleMouseMove(event);
+                    }, true);
+                    document.addEventListener('pointerup', function(event) {
+                        if (event.pointerType === 'mouse') return;
+                        handleMouseUp(event);
+                    }, true);
+                    document.addEventListener('pointercancel', function(event) {
+                        if (event.pointerType === 'mouse') return;
+                        handleMouseUp(event);
+                    }, true);
+                }
+                input.addEventListener('mouseleave', function() {
+                    if (dragTimeout && !isDragging) {
+                        clearTimeout(dragTimeout);
+                        dragTimeout = null;
+                    }
+                });
+                input.addEventListener('contextmenu', function(event) {
+                    if (isDragging) {
+                        event.preventDefault();
+                    }
+                });
+            };
             
             if (headerSpeedInput) {
                 // 实时输入验证
@@ -2105,112 +2557,36 @@
                     
                     setMetronomeTempo(value);
                 });
-
-                // BPM拖动功能实现
-                let isDragging = false;
-                let startY = 0;
-                let startValue = 0;
-                let dragTimeout = null;
-                let hasStartedDrag = false;
-                
-                // 鼠标按下事件
-                headerSpeedInput.addEventListener('mousedown', function(event) {
-                    // 只处理左键点击
-                    if (event.button !== 0) return;
-                    
-                    startY = event.clientY;
-                    startValue = parseInt(this.value) || 60;
-                    hasStartedDrag = false;
-                    
-                    console.log('BPM拖动: 鼠标按下', startValue);
-                    
-                    // 长按80ms后启动拖动模式
-                    dragTimeout = setTimeout(() => {
-                        isDragging = true;
-                        hasStartedDrag = true;
-                        
-                        console.log('BPM拖动: 启动拖动模式');
-                        
-                        // 防止文本选择和默认行为
-                        event.preventDefault();
-                        document.body.style.userSelect = 'none';
-                        document.body.style.webkitUserSelect = 'none';
-                        document.body.style.mozUserSelect = 'none';
-                        document.body.style.msUserSelect = 'none';
-                        
-                        // 添加拖动中的视觉反馈
-                        this.style.cursor = 'ns-resize';
-                        this.classList.add('dragging');
-                        this.blur(); // 失去焦点，避免键盘输入干扰
-                    }, 80);
-                });
-                
-                // 鼠标移动事件 - 绑定到全局
-                const handleMouseMove = function(event) {
-                    if (!isDragging || !hasStartedDrag) return;
-                    
-                    const deltaY = startY - event.clientY; // 向上为正，向下为负
-                    const sensitivity = 1; // 拖动灵敏度，每1像素改变1个BPM
-                    const newValue = Math.max(1, Math.min(999, startValue + Math.round(deltaY / sensitivity)));
-                    
-                    console.log('BPM拖动: 移动中', deltaY, newValue);
-                    
-                    headerSpeedInput.value = newValue;
-                    setMetronomeTempo(newValue);
-                    
-                    // 阻止默认行为
-                    event.preventDefault();
-                    event.stopPropagation();
-                };
-                
-                // 鼠标释放事件 - 绑定到全局
-                const handleMouseUp = function(event) {
-                    console.log('BPM拖动: 鼠标释放', isDragging);
-                    
-                    // 清除长按计时器
-                    if (dragTimeout) {
-                        clearTimeout(dragTimeout);
-                        dragTimeout = null;
-                    }
-                    
-                    if (isDragging && hasStartedDrag) {
-                        isDragging = false;
-                        hasStartedDrag = false;
-                        
-                        // 恢复文本选择
-                        document.body.style.userSelect = '';
-                        document.body.style.webkitUserSelect = '';
-                        document.body.style.mozUserSelect = '';
-                        document.body.style.msUserSelect = '';
-                        
-                        // 移除视觉反馈
-                        headerSpeedInput.style.cursor = '';
-                        headerSpeedInput.classList.remove('dragging');
-                        
-                        console.log('BPM拖动: 结束拖动模式');
-                    }
-                };
-                
-                // 绑定全局事件
-                document.addEventListener('mousemove', handleMouseMove, true);
-                document.addEventListener('mouseup', handleMouseUp, true);
-                
-                // 鼠标离开输入框时取消长按
-                headerSpeedInput.addEventListener('mouseleave', function(event) {
-                    if (dragTimeout && !isDragging) {
-                        clearTimeout(dragTimeout);
-                        dragTimeout = null;
-                        console.log('BPM拖动: 鼠标离开，取消长按');
-                    }
-                });
-                
-                // 防止右键菜单干扰
-                headerSpeedInput.addEventListener('contextmenu', function(event) {
-                    if (isDragging) {
-                        event.preventDefault();
-                    }
-                });
+                bindBpmReactGrab(headerSpeedInput, 60);
             }
+
+            if (challengeBpmInput) {
+                challengeBpmInput.addEventListener('input', function() {
+                    if (isSyncingChallengeBpm) return;
+                    let value = parseInt(this.value, 10);
+                    if (isNaN(value) || value < 1) {
+                        value = 1;
+                    } else if (value > 999) {
+                        value = 999;
+                    }
+                    this.value = String(value);
+                    setMetronomeTempo(value);
+                });
+                challengeBpmInput.addEventListener('blur', function() {
+                    if (isSyncingChallengeBpm) return;
+                    let value = parseInt(this.value, 10);
+                    if (isNaN(value) || value < 1) {
+                        value = 1;
+                    } else if (value > 999) {
+                        value = 999;
+                    }
+                    this.value = String(value);
+                    setMetronomeTempo(value);
+                });
+                bindBpmReactGrab(challengeBpmInput, clampTempoValue(headerSpeedInput ? headerSpeedInput.value : 60, 60));
+            }
+
+            syncChallengeBpmFromHeader();
             initializeMetronomePatternUI();
         });
         
@@ -3424,6 +3800,8 @@
         window.isPlayingMelody = false;
         window.melodyAudioCtx = null;
         window.melodyMetronomeSyncTimeout = null; // 节拍器同步的 setTimeout ID
+        window.melodyPlaybackRunId = 0;
+        window.melodyPlaybackFinishTimer = null;
 
         function directPlayTest() {
             console.log('🎵 直接播放被调用');
@@ -3431,12 +3809,17 @@
             if (window.isPlayingMelody) {
                 // 停止播放
                 window.isPlayingMelody = false;
+                window.melodyPlaybackRunId += 1;
 
                 // 🔧 清除节拍器同步的 setTimeout（如果存在）
                 if (window.melodyMetronomeSyncTimeout) {
                     clearTimeout(window.melodyMetronomeSyncTimeout);
                     window.melodyMetronomeSyncTimeout = null;
                     console.log('⏹️ 已清除节拍器同步定时器');
+                }
+                if (window.melodyPlaybackFinishTimer) {
+                    clearTimeout(window.melodyPlaybackFinishTimer);
+                    window.melodyPlaybackFinishTimer = null;
                 }
 
                 // 停止所有调度的播放
@@ -3468,6 +3851,15 @@
             }
 
             try {
+                window.melodyPlaybackRunId += 1;
+                window.isPlayingMelody = true;
+                window.melodyScheduledSounds = [];
+                if (window.melodyPlaybackFinishTimer) {
+                    clearTimeout(window.melodyPlaybackFinishTimer);
+                    window.melodyPlaybackFinishTimer = null;
+                }
+                updatePlayButton();
+
                 // 创建音频上下文
                 if (!window.melodyAudioCtx) {
                     window.melodyAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -3484,6 +3876,10 @@
                             return;
                         }
                         startMelodyPlayback();
+                    }).catch((error) => {
+                        console.error('❌ AudioContext恢复失败:', error);
+                        window.isPlayingMelody = false;
+                        updatePlayButton();
                     });
                 } else {
                     startMelodyPlayback();
@@ -3491,8 +3887,32 @@
 
             } catch (error) {
                 console.error('❌ 播放错误:', error);
+                window.isPlayingMelody = false;
+                updatePlayButton();
                 alert('播放出错: ' + error.message);
             }
+        }
+
+        function getPlaybackTempoFromMetronome() {
+            if (typeof getCurrentTempo === 'function') {
+                const currentTempo = parseInt(getCurrentTempo(), 10);
+                if (!isNaN(currentTempo)) {
+                    return Math.max(1, Math.min(999, currentTempo));
+                }
+            }
+            return getUnifiedMetronomeTempo();
+        }
+
+        function getBeatDurationByTimeSignature(tempo, melodyData) {
+            const safeTempo = Math.max(1, tempo || 60);
+            const ts = getTimeSignature(melodyData);
+            const denominator = Math.max(1, parseInt(ts?.denominator, 10) || 4);
+            return (60 / safeTempo) * (4 / denominator);
+        }
+
+        function getCountInBeatsFromTimeSignature(melodyData) {
+            const ts = getTimeSignature(melodyData);
+            return Math.max(1, parseInt(ts?.numerator, 10) || 4);
         }
 
         function startMelodyPlayback() {
@@ -3530,35 +3950,17 @@
                 console.log('🎼 隐藏模式激活，启动count-in + 节拍器');
                 playCountInThenMelody(melodyData);
             } else {
-                // 🔧 智能播放时间：节拍器开启时对齐网格，关闭时立即响应
-
-                // 获取当前速度
-                let tempo = 60;
-                if (typeof getCurrentTempo === 'function') {
-                    tempo = getCurrentTempo();
-                } else if (typeof metronomeTempo !== 'undefined') {
-                    tempo = metronomeTempo;
-                }
-
-                const beatDuration = 60.0 / tempo;
+                const tempo = getPlaybackTempoFromMetronome();
+                const beatDuration = getBeatDurationByTimeSignature(tempo, melodyData);
                 const now = window.melodyAudioCtx.currentTime;
                 let startTime;
 
                 if (typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning) {
-                    // 🎵 节拍器开启 - 对齐全局网格确保同步
-                    const currentBeatNumber = Math.floor(now / beatDuration);
-                    let nextBeatNumber = currentBeatNumber + 1;
-                    startTime = nextBeatNumber * beatDuration;
-
-                    // 安全检查：确保 startTime 至少在未来 50ms
                     const minLookahead = 0.05;
-                    if (startTime < now + minLookahead) {
-                        nextBeatNumber++;
-                        startTime = nextBeatNumber * beatDuration;
-                        console.log(`⚠️ 时间太近，跳到下一拍 (第${nextBeatNumber}拍)`);
-                    }
-
-                    console.log(`🎵 节拍器开启 - 同步到全局网格: BPM=${tempo}, 当前=${now.toFixed(3)}s, 播放=${startTime.toFixed(3)}s (第${nextBeatNumber}拍)`);
+                    const countInBeats = getCountInBeatsFromTimeSignature(melodyData);
+                    const firstBeatTime = Math.ceil((now + minLookahead) / beatDuration) * beatDuration;
+                    startTime = firstBeatTime + (countInBeats * beatDuration);
+                    console.log(`🎵 节拍器开启 - 先count-in ${countInBeats}拍，再开始旋律: BPM=${tempo}, 当前=${now.toFixed(3)}s, 开始=${startTime.toFixed(3)}s`);
                 } else {
                     // 🚀 节拍器关闭 - 立即播放，响应迅速
                     startTime = now + 0.1;
@@ -3619,7 +4021,9 @@
                 console.log(`✅ 钢琴测试音符开始播放 (${usedSample ? 'sample' : 'synth'})`);
 
                 // 1.5秒后停止状态
+                const currentRunId = window.melodyPlaybackRunId;
                 setTimeout(() => {
+                    if (currentRunId !== window.melodyPlaybackRunId) return;
                     window.isPlayingMelody = false;
                     updatePlayButton();
                     console.log('✅ 钢琴音色播放完成 - 音频系统工作正常');
@@ -3641,7 +4045,7 @@
             const playBtn = document.getElementById('playMelodyBtn');
             if (playBtn) {
                 if (window.isPlayingMelody) {
-                    playBtn.innerHTML = '停止';
+                    playBtn.innerHTML = '暂停';
                 } else {
                     playBtn.innerHTML = '播放';
                 }
@@ -4258,14 +4662,19 @@
                 currentTime += eventDuration;
             });
 
-            // 设置播放完成回调
-            setTimeout(() => {
-                if (window.isPlayingMelody) {
+            // 设置播放完成回调（带 runId 防止旧定时器误结束新播放）
+            if (window.melodyPlaybackFinishTimer) {
+                clearTimeout(window.melodyPlaybackFinishTimer);
+            }
+            const currentRunId = window.melodyPlaybackRunId;
+            window.melodyPlaybackFinishTimer = setTimeout(() => {
+                if (window.isPlayingMelody && currentRunId === window.melodyPlaybackRunId) {
                     window.isPlayingMelody = false;
                     updatePlayButton();
                     window.melodyScheduledSounds = [];
                     console.log('✅ 旋律播放完成');
                 }
+                window.melodyPlaybackFinishTimer = null;
             }, (totalDuration + 0.5) * 1000);
 
             console.log(`🎼 播放安排完成: ${totalDuration.toFixed(2)}秒`);
@@ -5970,13 +6379,13 @@
                 try{
                     const saved = JSON.parse(localStorage.getItem('ic_challenge_settings')||'{}');
                     if (typeof saved.prep === 'number') prep.value = saved.prep;
-                    if (typeof saved.bpm === 'number') bpm.value = saved.bpm;
                     if (cursorToggle && typeof saved.cursor === 'boolean') cursorToggle.checked = saved.cursor;
                     if (metronomeToggle && typeof saved.metronome === 'boolean') metronomeToggle.checked = saved.metronome;
                     if (hideToggle && typeof saved.hide === 'boolean') hideToggle.checked = saved.hide;
                     if (calibrationToggle && typeof saved.calibration === 'boolean') calibrationToggle.checked = saved.calibration;
                 }catch(e){}
                 if (!prep.value) prep.value = 10;
+                if (bpm) bpm.value = String(getUnifiedMetronomeTempo());
                 if (cursorToggle && typeof cursorToggle.checked !== 'boolean') cursorToggle.checked = true;
                 if (metronomeToggle && typeof metronomeToggle.checked !== 'boolean') metronomeToggle.checked = true;
                 if (hideToggle && typeof hideToggle.checked !== 'boolean') hideToggle.checked = false;
@@ -6019,12 +6428,15 @@
 
             window.confirmChallengeSetup = async function(){
                 const prep = Math.max(0, parseInt(($('challengePrepTime').value||'0'), 10));
-                const bpm = Math.max(40, Math.min(240, parseInt(($('challengeBPM').value||'80'), 10)));
+                const bpm = Math.max(1, Math.min(999, parseInt(($('challengeBPM').value||String(getUnifiedMetronomeTempo())), 10)));
                 const cursorEnabled = $('challengeCursorToggle') ? $('challengeCursorToggle').checked : true;
                 const metronomeEnabled = $('challengeMetronomeToggle') ? $('challengeMetronomeToggle').checked : true;
                 const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : false;
                 const calibrationRequested = $('challengeCalibrationToggle') ? $('challengeCalibrationToggle').checked : false;
                 const calibrationEnabled = calibrationRequested && hasAnyJudgeInputConfigured();
+                if (typeof setMetronomeTempo === 'function') {
+                    setMetronomeTempo(bpm);
+                }
                 // 保存设置
                 try{ localStorage.setItem('ic_challenge_settings', JSON.stringify({ prep, bpm, cursor: cursorEnabled, metronome: metronomeEnabled, hide: hideEnabled, calibration: calibrationEnabled })); }catch(e){}
                 state.calibrationEnabled = calibrationEnabled;
@@ -7472,7 +7884,7 @@ function parseMeasureDurationSec(bpm){
             function findBufferedMicMatchForEvent(ev, centsTol){
                 if (!ev || !Array.isArray(ev.expectedMidis) || !ev.expectedMidis.length) return null;
                 if (!state.judgeStartMs || !micEngine.history.length) return null;
-                const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
+                const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : getUnifiedMetronomeTempo();
                 const windowInfo = getJudgeEventWindow(ev, bpmVal, 'mic');
                 const fromSec = (isFinite(windowInfo.startSec) ? windowInfo.startSec : ev.timeSec) - 0.1;
                 const toSec = (isFinite(windowInfo.endSec) ? windowInfo.endSec : ev.timeSec) + 0.16;
@@ -7863,7 +8275,7 @@ function parseMeasureDurationSec(bpm){
                     if (!state.active) return;
                     const nowMs = performance.now();
                     const nowSec = (nowMs - state.judgeStartMs) / 1000;
-                    const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
+                    const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : getUnifiedMetronomeTempo();
                     while (state.judgeIndex < state.judgeEvents.length){
                         const ev = state.judgeEvents[state.judgeIndex];
                         if (ev.judged) { state.judgeIndex++; continue; }
@@ -7896,7 +8308,7 @@ function parseMeasureDurationSec(bpm){
                 const nowSec = (state.calibrationEnabled && state.calibrationOffsetSec)
                     ? (nowSecRaw - state.calibrationOffsetSec)
                     : nowSecRaw;
-                const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
+                const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : getUnifiedMetronomeTempo();
                 const judgeWindows = computeJudgeWindows(bpmVal);
                 if (state.judgeGateUntilSec && nowSec <= state.judgeGateUntilSec) return;
                 if (state.judgeGateUntilSec && nowSec > state.judgeGateUntilSec) {
@@ -8599,7 +9011,7 @@ function parseMeasureDurationSec(bpm){
                 }
                 if (toggleEl && toggleEl.checked && state.autoRestart){
                     const prep = Math.max(0, parseInt(($('challengePrepTime')?.value || '0'), 10));
-                    const bpm = Math.max(40, Math.min(240, parseInt(($('challengeBPM')?.value || '80'), 10)));
+                    const bpm = Math.max(1, Math.min(999, parseInt(($('challengeBPM')?.value || String(getUnifiedMetronomeTempo())), 10)));
                     if (prep === 0 && state.lastBeatTimeMs){
                         const tsInfo = getTimeSignatureInfo();
                         const beatMs = (60/Math.max(1,bpm)) * (4/tsInfo.den) * 1000;

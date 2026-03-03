@@ -1,10 +1,21 @@
 {
   "hero": {
-    "titleLine1": "提升你的",
-    "titleHighlight": "视奏能力",
-    "titleLine2": "从这里开始",
-    "subtitle": "专为音乐人打造的专业级视奏训练工具",
-    "featureHighlight": "真正读懂音乐",
+    "titleLine1": "真正掌握",
+    "titleLine2": "看到的每一个音",
+    "titleLine3": "",
+    "titleHighlight": "真正同步",
+    "subtitle": "专业级视奏训练系统",
+    "featureHighlight": "为认真练习的音乐人打造",
+    "toolPanelTitle": "五大核心工具",
+    "toolBadge": "核心工具",
+    "toolBadges": {
+      "melody": "旋律工具",
+      "interval": "音程工具",
+      "chord": "和弦工具",
+      "jianpu": "简谱工具",
+      "rhythm": "节奏工具"
+    },
+    "openTool": "打开工具 →",
     "btnPurchase": "立即购买",
     "btnTry": "立即试用",
     "pill": "Cognote"
@@ -40,6 +51,34 @@
     }
   },
 
+  "feedback": {
+    "title": "用户反馈",
+    "subtitle": "真实练习体验，来自正在使用 Cognote 的音乐学习者",
+    "note": "以上反馈均来自真实用户练习后的体验分享。",
+    "items": {
+      "yuxian": {
+        "author": "雨の弦",
+        "quote": "每天练半小时，把位音的印象明显加深。随机节奏有点挑战性，但练下来很有帮助。"
+      },
+      "imagonx": {
+        "author": "iMaGonX",
+        "quote": "五线谱阅读速度明显提高，现在基本可以快速说出某个音在指板上的位置。我会用琶音配合口述音名来强化记忆，固定把位练视奏也很有效。"
+      },
+      "niukuier": {
+        "author": "牛奎尔",
+        "quote": "我就用那个旋律视奏，感觉识谱比以前快了，然后指板上的音程记得也比以前好了。"
+      },
+      "daniel": {
+        "author": "Daniel",
+        "quote": "很棒的音乐练习软件，像是一本圣典一般，而我才缓缓地打开它的序章，相信坚持下去，一定能靠它走进音乐的圣堂，非常推荐给喜欢音乐的朋友！"
+      },
+      "xiaobo": {
+        "author": "骁博Hpa",
+        "quote": "练了一段时间之后，五线谱阅读速度明显变快。工具打开就能用，很方便。生成内容有一定挑战性，如果以后能加入级数相关训练会更完善。"
+      }
+    }
+  },
+
   "features": {
     "title": "强大的",
     "titleHighlight": "功能特性",
@@ -49,6 +88,12 @@
       "icon": "⚙️",
       "title": "完全自定义生成",
       "description": "自由选择调号、拍号、音符时值、自定义频率，打造完全符合你需求的练习内容。"
+    },
+
+    "guitarVoicing": {
+      "icon": "🎸",
+      "title": "吉他友好",
+      "description": "提供吉他专属和声配置与 articulations 控制。"
     },
 
     "articulations": {

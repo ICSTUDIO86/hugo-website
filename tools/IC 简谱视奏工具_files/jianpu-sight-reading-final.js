@@ -17252,7 +17252,12 @@ async function generateMelody() {
     
     try {
         // 🔥 新逻辑：从多选设置中获取参数
-        const measures = parseInt(document.querySelector('input[name="measures"]:checked').value);
+        const measureConfig = typeof window.getSelectedMeasureConfig === 'function'
+            ? window.getSelectedMeasureConfig()
+            : null;
+        const measures = measureConfig
+            ? measureConfig.actual
+            : parseInt(document.querySelector('input[name="measures"]:checked').value);
         sanitizeAllowedTimeSignatures();
         
         // 从用户设置的多选列表中随机选择
