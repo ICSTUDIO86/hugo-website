@@ -316,6 +316,15 @@ body {
     rotate(var(--bounce-rotate, 0deg));
   animation: hero-bounce-card var(--bounce-duration, 3.8s) ease-in-out infinite;
   animation-delay: var(--bounce-delay, 0s);
+  animation-play-state: paused;
+}
+
+.hero-card-swap[data-layout="bounce"]:not(.is-ready) .hero-tool-card {
+  opacity: 0;
+}
+
+.hero-card-swap[data-layout="bounce"].is-ready .hero-tool-card {
+  animation-play-state: running;
 }
 
 .hero-card-swap[data-layout="bounce"] .hero-tool-card:hover {

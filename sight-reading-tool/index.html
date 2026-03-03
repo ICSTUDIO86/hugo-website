@@ -1208,7 +1208,7 @@
   <section class="hero-cards-section" aria-label="Tools Showcase">
     <div class="hero-cards-content">
       <div class="hero-tools">
-        <div class="hero-card-swap" data-card-swap>
+        <div class="hero-card-swap" data-card-swap data-layout="bounce">
           <article class="hero-tool-card" data-stack="0" data-product-url="/tools/melody-generator.html">
             <figure class="hero-tool-media">
               <img
@@ -1778,8 +1778,6 @@
   <script defer src="/js/single-product-config.js?v=1.0.0"></script>
   <script defer src="/js/single-product-access.js?v=1.0.0"></script>
   <script defer src="/js/single-product-payment.js?v=1.0.0"></script>
-  <script defer src="//unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
-  <script defer src="//unpkg.com/@react-grab/codex/dist/client.global.js" crossorigin="anonymous"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <!-- 内联 JavaScript 函数 -->
@@ -2095,6 +2093,8 @@
       const cards = Array.from(swapRoot.querySelectorAll('.hero-tool-card'));
       if (!cards.length) return;
       const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+      let introPlayed = false;
+      let introObserver = null;
 
       cards.forEach((card) => {
         if (card.dataset.heroClickBound === '1') return;
@@ -2106,12 +2106,19 @@
       });
 
       const clearCardInlineStyles = () => {
+        swapRoot.classList.remove('is-ready');
+        if (introObserver) {
+          introObserver.disconnect();
+          introObserver = null;
+        }
         cards.forEach((card) => {
           if (window.gsap) window.gsap.killTweensOf(card);
           card.style.removeProperty('transform');
           card.style.removeProperty('z-index');
           card.style.removeProperty('animation');
           card.style.removeProperty('animation-delay');
+          card.style.removeProperty('opacity');
+          card.style.removeProperty('scale');
           card.style.removeProperty('--bounce-x');
           card.style.removeProperty('--bounce-y');
           card.style.removeProperty('--bounce-rotate');
@@ -2153,10 +2160,62 @@
           card.style.zIndex = String(preset.zIndex);
         });
 
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduceMotion) {
           cards.forEach((card) => {
             card.style.animation = 'none';
+            card.style.opacity = '1';
           });
+          swapRoot.classList.add('is-ready');
+          introPlayed = true;
+          return () => {
+            clearCardInlineStyles();
+          };
+        }
+
+        const playIntro = () => {
+          if (introPlayed) return;
+          window.gsap.set(cards, {
+            autoAlpha: 0,
+            y: 18,
+            transformOrigin: 'center center'
+          });
+          window.gsap.to(cards, {
+            autoAlpha: 1,
+            y: 0,
+            duration: 0.72,
+            stagger: 0.06,
+            ease: 'power3.out',
+            overwrite: 'auto',
+            onComplete: () => {
+              swapRoot.classList.add('is-ready');
+              introPlayed = true;
+              window.requestAnimationFrame(() => {
+                if (!window.gsap) return;
+                window.gsap.set(cards, { clearProps: 'opacity,transform' });
+              });
+            }
+          });
+        };
+
+        if (!introPlayed && window.gsap) {
+          if ('IntersectionObserver' in window) {
+            introObserver = new IntersectionObserver((entries) => {
+              if (!entries.some((entry) => entry.isIntersecting)) return;
+              introObserver.disconnect();
+              introObserver = null;
+              playIntro();
+            }, {
+              threshold: 0.24,
+              rootMargin: '0px 0px -8% 0px'
+            });
+            introObserver.observe(swapRoot);
+          } else {
+            playIntro();
+          }
+        } else {
+          swapRoot.classList.add('is-ready');
+          introPlayed = true;
         }
 
         return () => {
