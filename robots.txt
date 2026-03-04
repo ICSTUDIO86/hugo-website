@@ -3,6 +3,7 @@ Allow: /
 
 # Sitemap
 Sitemap: https://icstudio.club/sitemap.xml
+Sitemap: https://icstudio.club/sitemap-tools.xml
 
 # 优先爬取重要页面
 Crawl-delay: 1

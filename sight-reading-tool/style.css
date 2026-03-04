@@ -299,9 +299,68 @@ body {
   left: auto;
   right: auto;
   bottom: auto;
+  --bounce-near: clamp(52px, 16vw, 220px);
+  --bounce-far: clamp(84px, 31vw, 440px);
+  --bounce-near-y: clamp(4px, 1.1vw, 10px);
+  --bounce-far-y: clamp(8px, 2vw, 18px);
   perspective: none;
   transform: none;
   transform-origin: center center;
+}
+
+.hero-card-swap[data-layout="bounce"] .hero-tool-card:nth-child(1) {
+  --bounce-x: 0px;
+  --bounce-y: 0px;
+  --bounce-rotate: -1deg;
+  --bounce-duration: 4.1s;
+  --bounce-delay: -0.5s;
+  --bounce-lift: -16px;
+  --hero-fade-delay: 0ms;
+  z-index: 10;
+}
+
+.hero-card-swap[data-layout="bounce"] .hero-tool-card:nth-child(2) {
+  --bounce-x: calc(var(--bounce-near) * -1);
+  --bounce-y: var(--bounce-near-y);
+  --bounce-rotate: -5deg;
+  --bounce-duration: 3.9s;
+  --bounce-delay: -0.9s;
+  --bounce-lift: -12px;
+  --hero-fade-delay: 60ms;
+  z-index: 8;
+}
+
+.hero-card-swap[data-layout="bounce"] .hero-tool-card:nth-child(3) {
+  --bounce-x: var(--bounce-near);
+  --bounce-y: var(--bounce-near-y);
+  --bounce-rotate: 5deg;
+  --bounce-duration: 3.8s;
+  --bounce-delay: -0.3s;
+  --bounce-lift: -13px;
+  --hero-fade-delay: 120ms;
+  z-index: 7;
+}
+
+.hero-card-swap[data-layout="bounce"] .hero-tool-card:nth-child(4) {
+  --bounce-x: calc(var(--bounce-far) * -1);
+  --bounce-y: var(--bounce-far-y);
+  --bounce-rotate: -8deg;
+  --bounce-duration: 4.2s;
+  --bounce-delay: -1.1s;
+  --bounce-lift: -11px;
+  --hero-fade-delay: 180ms;
+  z-index: 6;
+}
+
+.hero-card-swap[data-layout="bounce"] .hero-tool-card:nth-child(5) {
+  --bounce-x: var(--bounce-far);
+  --bounce-y: var(--bounce-far-y);
+  --bounce-rotate: 8deg;
+  --bounce-duration: 3.7s;
+  --bounce-delay: -0.7s;
+  --bounce-lift: -10px;
+  --hero-fade-delay: 240ms;
+  z-index: 5;
 }
 
 .hero-card-swap[data-layout="bounce"] .hero-tool-card {
@@ -317,10 +376,17 @@ body {
   animation: hero-bounce-card var(--bounce-duration, 3.8s) ease-in-out infinite;
   animation-delay: var(--bounce-delay, 0s);
   animation-play-state: paused;
+  opacity: 0;
+  filter: blur(10px);
+  transition:
+    opacity 0.72s cubic-bezier(0.16, 1, 0.3, 1) var(--hero-fade-delay, 0ms),
+    filter 0.72s cubic-bezier(0.16, 1, 0.3, 1) var(--hero-fade-delay, 0ms);
 }
 
 .hero-card-swap[data-layout="bounce"].is-ready .hero-tool-card {
   animation-play-state: running;
+  opacity: 1;
+  filter: blur(0);
 }
 
 .hero-card-swap[data-layout="bounce"] .hero-tool-card:hover {

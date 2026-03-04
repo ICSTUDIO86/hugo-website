@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Cognote - Professional customizable music practice generator. Create unlimited sight reading exercises with melody, interval, chord, rhythm & jianpu generators for guitar, piano & more. Control key signatures, time signatures & articulations. Only ¥128, unlimited practice content! 7-day refund, free trial available! | Cognote- 专业级视奏训练软件，完全自定义练习内容！支持旋律/音程/和弦/节奏/简谱生成器，适用吉他、钢琴等多种乐器。精确控制调号、拍号、Articulations。仅需 ¥128，无限生成练习，比任何视奏书都实惠！7天无理由退款，立即免费试用！">
-  <meta name="keywords" content="cognote,sight reading generator,sight reading tool,music sight reading,sheet music generator,sight reading practice,melody generator,interval generator,chord generator,rhythm generator,guitar sight reading,piano sight reading,music education tool,staff notation practice,sight reading app,customizable music exercises,articulation control,music practice software,sight reading training,视奏练习,五线谱学习,音乐教育工具,乐谱生成器,读谱训练,视奏软件,吉他视奏,钢琴视奏,旋律生成器,音程练习,和弦识别,节奏训练,吉他和声配置,Drop2和弦,Shell Voicing,Articulations控制,调号练习,拍号训练,自定义乐谱,专业视奏训练,在线视奏工具,视奏练习软件,音乐视奏app,五线谱视奏,即兴练习工具, IC 视奏工具, Cognote">
+  <meta name="description" content="Cognote is a professional sight-reading practice system for guitar, piano and more. Generate melody, interval, chord, rhythm and jianpu exercises with full control of key, meter and articulation. Cognote 是专业级视奏训练系统，支持旋律、音程、和弦、节奏、简谱生成，可自定义调号、拍号与演奏法。">
+  <meta name="keywords" content="Cognote,sight reading practice,sight reading generator,music notation practice,melody sight reading,interval training,chord sight reading,rhythm training,jianpu generator,guitar sight reading,piano sight reading,视奏训练,视奏生成器,旋律视奏,音程视奏,和弦视奏,节奏视奏,简谱视奏,五线谱训练,乐谱生成">
   <meta name="author" content="Cognote - Igor Chen">
+  <meta name="application-name" content="Cognote">
   <meta name="publish_date" property="og:publish_date" content="2024-08-01T00:00:00+08:00">
   <meta name="copyright" content="Cognote © 2024-2026">
   <meta name="rating" content="general">
@@ -20,7 +21,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/ICLOGO.png">
   <link rel="icon" type="image/png" sizes="64x64" href="/ICLOGO.png">
   <meta name="msapplication-TileImage" content="/ICLOGO.png">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
 
   <!-- Umami Analytics -->
   <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script> 
@@ -31,6 +32,7 @@
   <meta property="og:title" content="Cognote - 专业级视奏训练">
   <meta property="og:description" content="专业级视奏旋律生成器，完全自定义练习内容，支持吉他、钢琴等多种乐器。提供旋律、音程、和弦、节奏、简谱五大生成器，精确控制音符时值、调号、拍号和 Articulations。一次购买，无限生成练习，比任何视奏书都实惠！">
   <meta property="og:image" content="https://icstudio.club/images/sight-reading-tool.png">
+  <meta property="og:image:alt" content="Cognote Sight-Reading Landing Page">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:site_name" content="Cognote">
@@ -39,6 +41,7 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@ICStudio86">
   <meta name="twitter:url" content="https://icstudio.club/sight-reading-tool/">
   <meta name="twitter:title" content="Cognote - 专业级视奏训练">
   <meta name="twitter:description" content="专业级视奏旋律生成器，完全自定义练习内容，支持多种乐器。一次购买，无限生成练习内容！">
@@ -2108,13 +2111,15 @@
       const clearCardInlineStyles = () => {
         swapRoot.classList.remove('is-ready');
         cards.forEach((card) => {
-          if (window.gsap) window.gsap.killTweensOf(card);
           card.style.removeProperty('transform');
           card.style.removeProperty('z-index');
           card.style.removeProperty('animation');
           card.style.removeProperty('animation-delay');
           card.style.removeProperty('opacity');
           card.style.removeProperty('scale');
+          card.style.removeProperty('filter');
+          card.style.removeProperty('transition');
+          card.style.removeProperty('transition-delay');
           card.style.removeProperty('--bounce-x');
           card.style.removeProperty('--bounce-y');
           card.style.removeProperty('--bounce-rotate');
@@ -2161,6 +2166,7 @@
           cards.forEach((card) => {
             card.style.animation = 'none';
             card.style.opacity = '1';
+            card.style.filter = 'none';
           });
           swapRoot.classList.add('is-ready');
           introPlayed = true;
@@ -2169,39 +2175,36 @@
           };
         }
 
-        const playIntro = () => {
+        let introObserver = null;
+        const playIntroWhenVisible = () => {
           if (introPlayed) return;
-          window.gsap.set(cards, {
-            autoAlpha: 0,
-            y: 18,
-            transformOrigin: 'center center'
-          });
-          window.gsap.to(cards, {
-            autoAlpha: 1,
-            y: 0,
-            duration: 0.72,
-            stagger: 0.06,
-            ease: 'power3.out',
-            overwrite: 'auto',
-            onComplete: () => {
-              swapRoot.classList.add('is-ready');
-              introPlayed = true;
-              window.requestAnimationFrame(() => {
-                if (!window.gsap) return;
-                window.gsap.set(cards, { clearProps: 'opacity,transform' });
-              });
-            }
-          });
-        };
-
-        if (!introPlayed && window.gsap) {
-          playIntro();
-        } else {
           swapRoot.classList.add('is-ready');
           introPlayed = true;
+        };
+
+        if (introPlayed) {
+          playIntroWhenVisible();
+        } else {
+          const watchTarget = swapRoot.closest('.hero-cards-section') || swapRoot;
+          if ('IntersectionObserver' in window) {
+            introObserver = new IntersectionObserver((entries, obs) => {
+              const hasVisibleEntry = entries.some((entry) => entry.isIntersecting);
+              if (!hasVisibleEntry) return;
+              playIntroWhenVisible();
+              obs.disconnect();
+              introObserver = null;
+            }, {
+              threshold: 0.22,
+              rootMargin: '0px 0px -8% 0px'
+            });
+            introObserver.observe(watchTarget);
+          } else {
+            playIntroWhenVisible();
+          }
         }
 
         return () => {
+          if (introObserver) introObserver.disconnect();
           clearCardInlineStyles();
         };
       };
