@@ -177,5 +177,5 @@ export function isFretlabLicenseStorageKey(key) {
   );
 }
 
-// Run guard at module load so a single import is enough to enforce local blocking.
+// Run guard at module load so one import is enough for runtime blocking.
 enforceFretlabRuntimeGuard();

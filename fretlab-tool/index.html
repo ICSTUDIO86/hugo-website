@@ -3,49 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FretLab Tool | Guitar Fretboard Workspace 吉他指板工作台</title>
-    <meta name="description" content="FretLab Tool is a guitar fretboard workspace for mapping notes, intervals, scales and chord shapes. Supports Chinese and English UI for structured practice. FretLab 工具页支持吉他指板标记、音程与和弦形态练习。">
-    <meta name="keywords" content="fretlab tool,guitar fretboard workspace,fretboard notes,interval map,chord shapes,guitar practice,吉他指板工具,音名标记,音程地图,和弦形态练习">
-    <meta name="author" content="IC Studio">
-    <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="theme-color" content="#0f172a">
-    <link rel="canonical" href="https://icstudio.club/fretlab-tool/">
-    <link rel="alternate" hreflang="zh-CN" href="https://icstudio.club/fretlab-tool/">
-    <link rel="alternate" hreflang="en" href="https://icstudio.club/fretlab-tool/">
-    <link rel="alternate" hreflang="x-default" href="https://icstudio.club/fretlab-tool/">
+    <title>IC Fretboard Lab</title>
     <link rel="icon" type="image/png" href="assets/fl-favicon.png" />
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://icstudio.club/fretlab-tool/">
-    <meta property="og:title" content="FretLab Tool | Guitar Fretboard Workspace">
-    <meta property="og:description" content="Interactive fretboard workspace for note, interval and chord-shape practice.">
-    <meta property="og:image" content="https://icstudio.club/fretlab-tool/assets/fretlab-logo.png">
-    <meta property="og:image:alt" content="FretLab Tool interface">
-    <meta property="og:site_name" content="FretLab">
-    <meta property="og:locale" content="zh_CN">
-    <meta property="og:locale:alternate" content="en_US">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@ICStudio86">
-    <meta name="twitter:title" content="FretLab Tool | Guitar Fretboard Workspace">
-    <meta name="twitter:description" content="Map notes, intervals and shapes on a flexible guitar fretboard workspace.">
-    <meta name="twitter:image" content="https://icstudio.club/fretlab-tool/assets/fretlab-logo.png">
-
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "FretLab Tool",
-      "url": "https://icstudio.club/fretlab-tool/",
-      "applicationCategory": "MusicApplication",
-      "operatingSystem": "Web Browser",
-      "inLanguage": ["zh-CN", "en-US"],
-      "description": "Bilingual guitar fretboard workspace for notes, intervals, scales and chord-shape mapping."
-    }
-    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
+    <script
+      src="//unpkg.com/react-grab/dist/index.global.js"
+      crossorigin="anonymous"
+      defer
+    ></script>
   </head>
   <body>
     <div class="app">
@@ -104,6 +72,21 @@
                 <button type="button" data-export-format="pdf" data-i18n="export.option.pdf">PDF</button>
               </div>
             </div>
+            <button
+              id="videoRenderBtn"
+              type="button"
+              class="header-tool-btn video-launch-btn"
+              data-i18n-aria-label="video.button"
+              aria-controls="videoRenderModal"
+              aria-expanded="false"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3.8 7.3h11.2c1 0 1.8.8 1.8 1.8v5.8c0 1-.8 1.8-1.8 1.8H3.8c-1 0-1.8-.8-1.8-1.8V9.1c0-1 .8-1.8 1.8-1.8Z" />
+                <path d="M16.8 10.2 22 7.8v8.4l-5.2-2.5" />
+                <path d="m9.2 10.2 3.6 1.8-3.6 1.8v-3.6Z" />
+              </svg>
+              <span class="sr-only" data-i18n="video.button">视频</span>
+            </button>
           </div>
           <img
             class="app__logo"
@@ -113,8 +96,6 @@
         </div>
       </header>
 
-      <div id="licenseStatusBanner" class="license-status-banner" role="status" aria-live="polite"></div>
-
       <main class="app__body">
         <section class="board-panel">
           <div class="board-panel__fretboard">
@@ -123,20 +104,21 @@
             </div>
             <div class="board-inline-controls">
               <label>
-                <span data-i18n="controls.fretCount">品格数量</span>
+                <span data-i18n="controls.boardCount">指板数量</span>
                 <input
-                  id="fretsInput"
+                  id="boardCountInput"
                   type="number"
                   min="1"
-                  max="72"
+                  max="12"
                   step="1"
-                  list="fretsList"
-                  value="12"
+                  list="boardCountList"
+                  value="1"
                 />
-                <datalist id="fretsList">
-                  <option value="12"></option>
-                  <option value="24"></option>
-                  <option value="36"></option>
+                <datalist id="boardCountList">
+                  <option value="1"></option>
+                  <option value="2"></option>
+                  <option value="3"></option>
+                  <option value="4"></option>
                 </datalist>
               </label>
               <label>
@@ -152,11 +134,23 @@
               <button id="flipBoardBtn" type="button" class="ghost-btn block-btn" data-i18n="controls.flipBoard">
                 翻转指板
               </button>
-              <div class="board-count-controls" aria-label="Fretboard Count">
-                <button id="removeBoardBtn" type="button" class="ghost-btn board-count-btn" aria-label="减少指板图">
+              <div class="board-count-controls" data-i18n-aria-label="controls.fretAdjust.aria" aria-label="品格增减">
+                <button
+                  id="removeBoardBtn"
+                  type="button"
+                  class="ghost-btn board-count-btn"
+                  data-i18n-aria-label="controls.fretAdjust.decrease"
+                  aria-label="减少品格"
+                >
                   −
                 </button>
-                <button id="addBoardBtn" type="button" class="ghost-btn board-count-btn" aria-label="增加指板图">
+                <button
+                  id="addBoardBtn"
+                  type="button"
+                  class="ghost-btn board-count-btn"
+                  data-i18n-aria-label="controls.fretAdjust.increase"
+                  aria-label="增加品格"
+                >
                   +
                 </button>
               </div>
@@ -252,6 +246,81 @@
         </div>
       </aside>
 
+      <div id="videoModalBackdrop" class="video-modal-backdrop" aria-hidden="true"></div>
+      <section
+        id="videoRenderModal"
+        class="video-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-hidden="true"
+        aria-labelledby="videoModalTitle"
+      >
+        <div class="video-modal__panel">
+          <div class="video-modal__header">
+            <h2 id="videoModalTitle" data-i18n="video.modal.title">生成 MP4 视频</h2>
+            <button
+              id="videoModalCloseBtn"
+              type="button"
+              class="video-modal__close-btn"
+              data-i18n-aria-label="video.modal.close"
+              aria-label="关闭"
+            >
+              ×
+            </button>
+          </div>
+
+          <div id="videoDropZone" class="video-modal__dropzone" role="button" tabindex="0" aria-describedby="videoDropHint">
+            <div class="video-modal__drop-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M7 4.5h7l3.5 3.5V19a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1Z" />
+                <path d="M14 4.5V8h3.5" />
+                <path d="M12 16v-4.6" />
+                <path d="m10.2 13.1 1.8-1.9 1.8 1.9" />
+              </svg>
+            </div>
+            <p id="videoDropHint" class="video-modal__drop-hint">
+              <span data-i18n="video.modal.drop.hint">Drag and drop file here or</span>
+              <button id="videoUploadBtn" type="button" class="video-modal__choose-link" data-i18n="video.modal.upload">
+                Choose File
+              </button>
+            </p>
+            <input id="videoUploadInput" type="file" accept=".mscz,.mscx,.gp5" hidden />
+          </div>
+
+          <div class="video-modal__meta">
+            <span data-i18n="video.modal.support">支持格式：MuseScore（.mscz / .mscx）与 Guitar Pro 5（.gp5）</span>
+            <span data-i18n="video.modal.maxSize">最大文件：25MB</span>
+          </div>
+
+          <div id="videoUploadFileName" class="video-modal__file-name" data-i18n="video.file.none">尚未选择文件</div>
+
+          <p class="video-modal__tip" data-i18n="video.modal.tip">
+            最佳效果建议：MuseScore 文件里请包含吉他 Tab。若仅有五线谱，指板位置可能出现偏差。
+          </p>
+
+          <div id="videoProgressWrap" class="video-modal__progress" aria-hidden="true">
+            <div class="video-modal__progress-track">
+              <div id="videoProgressBar" class="video-modal__progress-bar"></div>
+            </div>
+            <div id="videoProgressText" class="video-modal__progress-text">0%</div>
+          </div>
+
+          <div class="video-modal__actions">
+            <button id="videoCancelBtn" type="button" class="video-modal__btn video-modal__btn--secondary" data-i18n="video.modal.cancel">
+              Cancel
+            </button>
+            <button
+              id="videoGenerateBtn"
+              type="button"
+              class="video-modal__btn video-modal__btn--primary"
+              data-i18n="video.modal.generate"
+            >
+              生成 MP4
+            </button>
+          </div>
+        </div>
+      </section>
+
       <footer class="app__footer">
         <p class="app__footer-line app__footer-line--brand">
           <strong>IC Fretboard Lab</strong>
@@ -264,5 +333,10 @@
       </footer>
     </div>
     <script type="module" src="app.js"></script>
+    <script defer>
+      if (window.ReactGrab?.init) {
+        window.ReactGrab.init();
+      }
+    </script>
   </body>
 </html>

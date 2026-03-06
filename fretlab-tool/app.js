@@ -5,6 +5,7 @@ import {
   spellNoteFromRootAndDegree,
 } from "./theory.js";
 import { SCALE_SHAPES } from "./shapes.js";
+import { getTabPositionsFromMidi, pickBestTabPosition } from "./plugins/shared/realtime-mapping.js";
 import {
   hasFretlabFullAccess,
   isFretlabLicenseStorageKey,
@@ -14,6 +15,7 @@ const state = {
   language: "zh",
   paletteOpen: false,
   exportMenuOpen: false,
+  videoModalOpen: false,
   boardCount: 1,
   activeBoardIndex: 0,
   fretCount: 12,
@@ -27,10 +29,11 @@ const dom = {
   svg: document.getElementById("fretboardSvg"),
   fretboardStack: document.getElementById("fretboardStack"),
   markerHint: document.getElementById("markerCountHint"),
-  fretsInput: document.getElementById("fretsInput"),
+  boardCountInput: document.getElementById("boardCountInput"),
   notePreferenceSelect: document.getElementById("notePreferenceSelect"),
   exportToggleBtn: document.getElementById("exportToggleBtn"),
   exportMenu: document.getElementById("exportMenu"),
+  videoRenderBtn: document.getElementById("videoRenderBtn"),
   clearBtn: document.getElementById("clearMarkersBtn"),
   flipBoardBtn: document.getElementById("flipBoardBtn"),
   addBoardBtn: document.getElementById("addBoardBtn"),
@@ -56,6 +59,19 @@ const dom = {
   paletteDrawer: document.getElementById("shapePaletteDrawer"),
   paletteBackdrop: document.getElementById("paletteBackdrop"),
   licenseStatusBanner: document.getElementById("licenseStatusBanner"),
+  videoModal: document.getElementById("videoRenderModal"),
+  videoModalBackdrop: document.getElementById("videoModalBackdrop"),
+  videoModalCloseBtn: document.getElementById("videoModalCloseBtn"),
+  videoDropZone: document.getElementById("videoDropZone"),
+  videoUploadBtn: document.getElementById("videoUploadBtn"),
+  videoUploadInput: document.getElementById("videoUploadInput"),
+  videoUploadFileName: document.getElementById("videoUploadFileName"),
+  videoProgressWrap: document.getElementById("videoProgressWrap"),
+  videoProgressBar: document.getElementById("videoProgressBar"),
+  videoProgressText: document.getElementById("videoProgressText"),
+  videoCancelBtn: document.getElementById("videoCancelBtn"),
+  videoGenerateBtn: document.getElementById("videoGenerateBtn"),
+  videoRenderStatus: document.getElementById("videoRenderStatus"),
 };
 
 const UI_LANGUAGE_STORAGE_KEY = "ic_fretlab_ui_language";
@@ -68,8 +84,12 @@ const UI_TEXT = {
     "app.title": "吉他指板白板",
     "board.dropHint": "拖拽指形到指板任意位置",
     "controls.title": "指板控制",
-    "controls.subhead": "设置品格数与音名偏好",
+    "controls.subhead": "设置指板数量与音名偏好（± 调整品格）",
+    "controls.boardCount": "指板数量",
     "controls.fretCount": "品格数量",
+    "controls.fretAdjust.aria": "品格增减",
+    "controls.fretAdjust.decrease": "减少品格",
+    "controls.fretAdjust.increase": "增加品格",
     "controls.notePreference": "音名偏好",
     "controls.notePreference.sharps": "升号优先",
     "controls.notePreference.flats": "降号优先",
@@ -83,6 +103,26 @@ const UI_TEXT = {
     "export.error.unavailable": "导出失败：当前指板尚未准备好。",
     "export.error.popup": "导出 PDF 失败：浏览器拦截了弹出窗口，请允许弹窗后重试。",
     "export.error.render": "导出失败：无法渲染当前指板。",
+    "video.button": "视频",
+    "video.modal.title": "生成 MP4 视频",
+    "video.modal.close": "关闭视频弹窗",
+    "video.modal.support": "支持格式：MuseScore（.mscz / .mscx）与 Guitar Pro 5（.gp5）",
+    "video.modal.maxSize": "最大文件：25MB",
+    "video.modal.tip": "最佳效果建议：MuseScore 文件里请包含吉他 Tab。若仅有五线谱，指板位置可能出现偏差。",
+    "video.modal.drop.hint": "拖拽文件到这里，或",
+    "video.modal.upload": "选择文件",
+    "video.modal.cancel": "取消",
+    "video.modal.generate": "生成 MP4",
+    "video.file.none": "尚未选择文件",
+    "video.status.idle": "请选择 MuseScore 文件后开始生成动画。",
+    "video.status.invalidType": "文件格式不支持。当前仅支持 .mscz、.mscx 或 .gp5。",
+    "video.status.invalidSize": "文件过大。请上传 25MB 以内的文件。",
+    "video.status.reading": "正在读取文件，请稍候…",
+    "video.status.startingBridge": "正在启动本地渲染服务…",
+    "video.status.rendering": "正在根据谱面生成动画与音频，请稍候…",
+    "video.status.success": "MP4 已生成，正在下载。",
+    "video.status.failed": "生成失败：{reason}",
+    "video.status.busy": "正在生成中，请稍候完成当前任务。",
     "recorder.title": "录制指型（MVP）",
     "recorder.subhead": "在指板上点出形状，设根音锚点后导出模板",
     "recorder.start": "开始录制",
@@ -126,10 +166,11 @@ const UI_TEXT = {
     "overlay.action.show": "显示",
     "overlay.action.delete": "删除",
     "marker.hint": "标记数 <strong>{count}</strong> · 点击任意位置添加标记",
-    "license.status.trial": "当前为试用版：可点击指板标记；导出与预设指型库仅限完整版。前往 /fretlab/ 完成支付并验证访问码。",
-    "license.status.full": "完整版已解锁：预设指型库与 PNG / SVG / PDF 导出功能可用。",
+    "license.status.trial": "当前为试用版：可点击指板标记；导出、预设指型库与视频生成功能仅限完整版。前往 /fretlab/ 完成支付并验证访问码。",
+    "license.status.full": "完整版已解锁：预设指型库、PNG / SVG / PDF 导出与视频生成功能可用。",
     "license.locked.export": "导出功能仅限完整版。请先在 Landing Page 完成支付并验证访问码。",
     "license.locked.library": "预设指型库仅限完整版。请先在 Landing Page 完成支付并验证访问码。",
+    "license.locked.video": "视频生成功能仅限完整版。请先在 Landing Page 完成支付并验证访问码。",
     "footer.tagline": "认知吉他指板训练工具",
     "footer.copyrightPrefix": "版权所有 © 2026 · Igor Chen ·",
     "meta.title": "IC Fretboard Lab",
@@ -141,8 +182,12 @@ const UI_TEXT = {
     "app.title": "Guitar Fretboard Whiteboard",
     "board.dropHint": "Drag a shape anywhere onto the fretboard",
     "controls.title": "Fretboard Controls",
-    "controls.subhead": "Set fret count and note label preference",
+    "controls.subhead": "Set board count and note labels (use +/- to adjust frets)",
+    "controls.boardCount": "Boards",
     "controls.fretCount": "Frets",
+    "controls.fretAdjust.aria": "Fret adjustment",
+    "controls.fretAdjust.decrease": "Decrease frets",
+    "controls.fretAdjust.increase": "Increase frets",
     "controls.notePreference": "Note labels",
     "controls.notePreference.sharps": "Prefer sharps",
     "controls.notePreference.flats": "Prefer flats",
@@ -156,6 +201,26 @@ const UI_TEXT = {
     "export.error.unavailable": "Export failed: fretboard is not ready yet.",
     "export.error.popup": "PDF export failed: popup was blocked by the browser.",
     "export.error.render": "Export failed: unable to render the current fretboard.",
+    "video.button": "Video",
+    "video.modal.title": "Generate MP4 Video",
+    "video.modal.close": "Close video modal",
+    "video.modal.support": "Supported formats: MuseScore (.mscz / .mscx) and Guitar Pro 5 (.gp5)",
+    "video.modal.maxSize": "Maximum file size: 25MB",
+    "video.modal.tip": "Best results: include Guitar Tab in the MuseScore file. If it is staff-only notation, fret positions may be inaccurate.",
+    "video.modal.drop.hint": "Drag and drop file here, or",
+    "video.modal.upload": "Choose File",
+    "video.modal.cancel": "Cancel",
+    "video.modal.generate": "Generate MP4",
+    "video.file.none": "No file selected yet.",
+    "video.status.idle": "Select a MuseScore file, then start rendering.",
+    "video.status.invalidType": "Unsupported file type. Only .mscz, .mscx, or .gp5 is supported.",
+    "video.status.invalidSize": "File is too large. Please upload a file up to 25MB.",
+    "video.status.reading": "Reading file. Please wait...",
+    "video.status.startingBridge": "Starting local render bridge...",
+    "video.status.rendering": "Rendering animation and audio from score. Please wait...",
+    "video.status.success": "MP4 generated. Download starting.",
+    "video.status.failed": "Render failed: {reason}",
+    "video.status.busy": "A render is already running. Please wait.",
     "recorder.title": "Shape Recorder (MVP)",
     "recorder.subhead": "Plot notes on the board, set a root anchor, then export a template",
     "recorder.start": "Start",
@@ -199,10 +264,11 @@ const UI_TEXT = {
     "overlay.action.show": "Show",
     "overlay.action.delete": "Delete",
     "marker.hint": "Markers <strong>{count}</strong> · Click anywhere to add",
-    "license.status.trial": "Trial mode: basic board interactions only. Export and preset library are full-version features. Unlock via /fretlab/.",
-    "license.status.full": "Full version unlocked: preset library and PNG / SVG / PDF export are available.",
+    "license.status.trial": "Trial mode: basic board interactions only. Export, preset library, and video rendering are full-version features. Unlock via /fretlab/.",
+    "license.status.full": "Full version unlocked: preset library, PNG / SVG / PDF export, and video rendering are available.",
     "license.locked.export": "Export is a full-version feature. Please unlock first on /fretlab/.",
     "license.locked.library": "Preset shape library is a full-version feature. Please unlock first on /fretlab/.",
+    "license.locked.video": "Video rendering is a full-version feature. Please unlock first on /fretlab/.",
     "footer.tagline": "Cognitive guitar fretboard training tool",
     "footer.copyrightPrefix": "Copyright © 2026. All rights reserved. Igor Chen ·",
     "meta.title": "IC Fretboard Lab",
@@ -212,6 +278,7 @@ const UI_TEXT = {
 const LIBRARY_CATEGORY_LABELS = {
   zh: {
     caged: "CAGED系统",
+    "major-scale": "大调音阶",
     "major-scale-5": "五个大调音阶",
     drop2: "Drop 2 和弦",
     drop3: "Drop 3 和弦",
@@ -220,11 +287,16 @@ const LIBRARY_CATEGORY_LABELS = {
     "dim7-chords": "减七和弦",
     arpeggio: "琶音",
     pentatonic: "五声音阶",
+    "blues-scale": "蓝调音阶",
     "diminished-scale": "减音阶",
+    "whole-tone-scale": "全音阶",
+    "melodic-minor-scale": "旋律小调",
+    "harmonic-minor-scale": "和声小调",
     "three-nps": "三音固定指式（3NPS）",
   },
   en: {
     caged: "CAGED System",
+    "major-scale": "Major Scale",
     "major-scale-5": "Five Major Scale Shapes",
     drop2: "Drop 2 Chords",
     drop3: "Drop 3 Chords",
@@ -233,7 +305,11 @@ const LIBRARY_CATEGORY_LABELS = {
     "dim7-chords": "Diminished 7 Chords",
     arpeggio: "Arpeggio",
     pentatonic: "Pentatonic",
+    "blues-scale": "Blues Scale",
     "diminished-scale": "Diminished Scale",
+    "whole-tone-scale": "Whole Tone Scale",
+    "melodic-minor-scale": "Melodic Minor",
+    "harmonic-minor-scale": "Harmonic Minor",
     "three-nps": "3NPS Scales",
   },
 };
@@ -242,6 +318,10 @@ const LIBRARY_SECTION_LABELS = {
   zh: {
     "caged-major-chords": "五个大三和弦指型（C / A / G / E / D）",
     "major-scale-5-caged-recorded": "五个大调音阶",
+    "major-scale-5": "五个大调音阶",
+    "major-scale-3nps": "3 Notes per String",
+    "melodic-minor-5": "五个旋律小调",
+    "harmonic-minor-5": "五个和声小调",
     "drop2-major7": "大七和弦 · 4个转位",
     "drop2-minor7": "小七和弦 · 4个转位",
     "drop2-dominant7": "属七和弦 · 4个转位",
@@ -262,6 +342,12 @@ const LIBRARY_SECTION_LABELS = {
     "triads-sus4": "Sus4 · 3个转位",
     "sus-chords-sus2": "Sus2",
     "sus-chords-sus4": "Sus4",
+    "sus2-drop2": "Sus2 · Drop 2",
+    "sus2-drop3": "Sus2 · Drop 3",
+    "sus2-triads": "Sus2 · Triads",
+    "sus4-drop2": "Sus4 · Drop 2",
+    "sus4-drop3": "Sus4 · Drop 3",
+    "sus4-triads": "Sus4 · Triads",
     "dim7-chord-movable": "可移动指型 · 根音在 6 / 5 / 4 弦",
     "arpeggio-dominant7": "属七和弦琶音 · 5个指型",
     "arpeggio-major7": "大七和弦琶音 · 5个指型",
@@ -269,14 +355,29 @@ const LIBRARY_SECTION_LABELS = {
     "arpeggio-half-diminished7": "半减七和弦琶音 · 5个指型",
     "pent-minor": "纵向",
     "pent-grouping-32-23": "斜向",
+    "blues-scale-boxes": "五个蓝调音阶把位",
+    "blues-grouping-32-23": "斜向",
+    "blues-scale-horizontal": "横向",
+    "blues-scale-diagonal": "斜向",
     "diminished-scale-vertical": "纵向",
     "diminished-scale-diagonal": "斜向",
+    "whole-tone-scale": "全音阶",
+    "whole-tone-scale-horizontal": "横向",
+    "whole-tone-scale-diagonal": "斜向",
+    "melodic-minor-3nps": "3 Notes per String",
+    "harmonic-minor-3nps": "3 Notes per String",
     "3nps-major": "大调音阶 · 7个指型",
     "3nps-natural-minor": "自然小调音阶 · 7个指型",
+    "3nps-melodic-minor": "旋律小调音阶 · 7个指型",
+    "3nps-harmonic-minor": "和声小调音阶 · 7个指型",
   },
   en: {
     "caged-major-chords": "Five Major Chord Forms (C / A / G / E / D)",
     "major-scale-5-caged-recorded": "Five Major Scale Shapes",
+    "major-scale-5": "Five Major Scale Shapes",
+    "major-scale-3nps": "3 Notes per String",
+    "melodic-minor-5": "Five Melodic Minor Shapes",
+    "harmonic-minor-5": "Five Harmonic Minor Shapes",
     "drop2-major7": "Major 7 · 4 Inversions",
     "drop2-minor7": "Minor 7 · 4 Inversions",
     "drop2-dominant7": "Dominant 7 · 4 Inversions",
@@ -297,6 +398,12 @@ const LIBRARY_SECTION_LABELS = {
     "triads-sus4": "Sus4 Triads · 3 Inversions",
     "sus-chords-sus2": "Sus2",
     "sus-chords-sus4": "Sus4",
+    "sus2-drop2": "Sus2 · Drop 2",
+    "sus2-drop3": "Sus2 · Drop 3",
+    "sus2-triads": "Sus2 · Triads",
+    "sus4-drop2": "Sus4 · Drop 2",
+    "sus4-drop3": "Sus4 · Drop 3",
+    "sus4-triads": "Sus4 · Triads",
     "dim7-chord-movable": "Movable Shape · Root on 6th / 5th / 4th",
     "arpeggio-dominant7": "Dominant 7th Arpeggios · 5 Shapes",
     "arpeggio-major7": "Major 7th Arpeggios · 5 Shapes",
@@ -304,10 +411,21 @@ const LIBRARY_SECTION_LABELS = {
     "arpeggio-half-diminished7": "Half-Diminished 7th Arpeggios · 5 Shapes",
     "pent-minor": "Vertical",
     "pent-grouping-32-23": "Diagonal",
+    "blues-scale-boxes": "Five Blues Scale Boxes",
+    "blues-grouping-32-23": "Diagonal",
+    "blues-scale-horizontal": "Horizontal",
+    "blues-scale-diagonal": "Diagonal",
     "diminished-scale-vertical": "Vertical",
     "diminished-scale-diagonal": "Diagonal",
+    "whole-tone-scale": "Whole Tone Scale",
+    "whole-tone-scale-horizontal": "Horizontal",
+    "whole-tone-scale-diagonal": "Diagonal",
+    "melodic-minor-3nps": "3 Notes per String",
+    "harmonic-minor-3nps": "3 Notes per String",
     "3nps-major": "Major Scale · 7 Shapes",
     "3nps-natural-minor": "Natural Minor · 7 Shapes",
+    "3nps-melodic-minor": "Melodic Minor · 7 Shapes",
+    "3nps-harmonic-minor": "Harmonic Minor · 7 Shapes",
   },
 };
 
@@ -326,7 +444,23 @@ const INVERSION_NAME_LABELS = {
   },
 };
 
+function resolveBridgeHttpBase() {
+  const override = typeof window !== "undefined" ? window.__FRETLAB_BRIDGE_HTTP_BASE__ : "";
+  const base =
+    typeof override === "string" && override.trim() ? override.trim() : "http://127.0.0.1:3210";
+  return base.replace(/\/+$/, "");
+}
+
 const MAX_FRET_COUNT = 72;
+const BRIDGE_HTTP_BASE = resolveBridgeHttpBase();
+const BRIDGE_EVENT_STREAM_URL = `${BRIDGE_HTTP_BASE}/events`;
+const BRIDGE_BOOTSTRAP_ENDPOINT = "/api/bridge/ensure";
+const BRIDGE_HEALTHCHECK_TIMEOUT_MS = 1500;
+const BRIDGE_AUTOSTART_TIMEOUT_MS = 15000;
+const VIDEO_MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024;
+const REALTIME_ONSET_FLASH_MS = 220;
+const REALTIME_FX_FLASH_MS = 520;
+const REALTIME_SLIDE_TRAIL_MS = 420;
 const DIMENSIONS = {
   stringSpacing: 48,
   fretSpacing: 90,
@@ -353,6 +487,24 @@ const NATURAL_MINOR_DEGREE_MAP = {
   7: "5",
   8: "b6",
   10: "b7",
+};
+const MELODIC_MINOR_DEGREE_MAP = {
+  0: "1",
+  2: "2",
+  3: "b3",
+  5: "4",
+  7: "5",
+  9: "6",
+  11: "7",
+};
+const HARMONIC_MINOR_DEGREE_MAP = {
+  0: "1",
+  2: "2",
+  3: "b3",
+  5: "4",
+  7: "5",
+  8: "b6",
+  11: "7",
 };
 const DORIAN_DEGREE_MAP = {
   0: "1",
@@ -413,6 +565,40 @@ const MAJOR_PENTATONIC_DEGREE_MAP = {
   7: "5",
   9: "6",
 };
+const BLUES_SCALE_DEGREE_MAP = {
+  0: "1",
+  3: "b3",
+  5: "4",
+  6: "b5",
+  7: "5",
+  10: "b7",
+};
+const WHOLE_TONE_DEGREE_MAP = {
+  0: "1",
+  2: "2",
+  4: "3",
+  6: "#4",
+  8: "#5",
+  10: "b7",
+};
+const MELODIC_MINOR_MODE_DEGREE_MAPS = [
+  { 0: "1", 2: "2", 3: "b3", 5: "4", 7: "5", 9: "6", 11: "7" }, // Melodic Minor
+  { 0: "1", 1: "b2", 3: "b3", 5: "4", 7: "5", 9: "6", 10: "b7" }, // Dorian b2
+  { 0: "1", 2: "2", 4: "3", 6: "#4", 8: "#5", 9: "6", 11: "7" }, // Phrygian #5
+  { 0: "1", 2: "2", 4: "3", 6: "#4", 7: "5", 9: "6", 10: "b7" }, // Lydian Dominant
+  { 0: "1", 2: "2", 4: "3", 5: "4", 7: "5", 8: "b6", 10: "b7" }, // Mixolydian b6
+  { 0: "1", 2: "2", 3: "b3", 5: "4", 6: "b5", 8: "b6", 10: "b7" }, // Aeolian b5
+  { 0: "1", 1: "b2", 3: "b3", 4: "3", 6: "b5", 8: "b6", 10: "b7" }, // Super Locrian
+];
+const HARMONIC_MINOR_MODE_DEGREE_MAPS = [
+  { 0: "1", 2: "2", 3: "b3", 5: "4", 7: "5", 8: "b6", 11: "7" }, // Harmonic Minor
+  { 0: "1", 1: "b2", 3: "b3", 5: "4", 6: "b5", 9: "6", 10: "b7" }, // Locrian #6
+  { 0: "1", 2: "2", 4: "3", 5: "4", 8: "#5", 9: "6", 11: "7" }, // Ionian #5
+  { 0: "1", 2: "2", 3: "b3", 6: "#4", 7: "5", 9: "6", 10: "b7" }, // Dorian #4
+  { 0: "1", 1: "b2", 4: "3", 5: "4", 7: "5", 8: "b6", 10: "b7" }, // Phrygian Dominant
+  { 0: "1", 3: "#2", 4: "3", 6: "#4", 7: "5", 9: "6", 11: "7" }, // Lydian #2
+  { 0: "1", 1: "b2", 3: "b3", 4: "3", 6: "b5", 8: "b6", 9: "bb7" }, // Super Locrian bb7
+];
 const DIMINISHED_ST_DEGREE_MAP = {
   0: "1",
   1: "b2",
@@ -593,22 +779,33 @@ function formatCount(count) {
   return t("count.items", { count });
 }
 
-function showAccessToast(message) {
+function showUiToast(message, tone = "default") {
+  if (!message) {
+    return;
+  }
+  const existing = document.getElementById("icFretlabToast");
+  if (existing) {
+    existing.remove();
+  }
   const toast = document.createElement("div");
-  toast.style.cssText = `
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    z-index: 12000;
-    max-width: 320px;
-    background: #1f2937;
-    color: #fff;
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 13px;
-    line-height: 1.45;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
-  `;
+  toast.id = "icFretlabToast";
+  const isError = tone === "error";
+  const isSuccess = tone === "success";
+  const background = isError ? "#7f1d1d" : isSuccess ? "#14532d" : "#1f2937";
+  toast.style.cssText = [
+    "position:fixed",
+    "right:20px",
+    "bottom:20px",
+    "z-index:12000",
+    "max-width:360px",
+    `background:${background}`,
+    "color:#fff",
+    "border-radius:10px",
+    "padding:10px 12px",
+    "font-size:13px",
+    "line-height:1.45",
+    "box-shadow:0 12px 28px rgba(0,0,0,.28)",
+  ].join(";");
   toast.textContent = message;
   document.body.appendChild(toast);
   setTimeout(() => {
@@ -626,17 +823,22 @@ function refreshAccessUi() {
       dom.licenseStatusBanner.style.display = "";
     }
   }
-
   dom.paletteToggleBtn?.classList.toggle("is-locked", !state.isFullAccess);
   dom.exportToggleBtn?.classList.toggle("is-locked", !state.isFullAccess);
+  dom.videoRenderBtn?.classList.toggle("is-locked", !state.isFullAccess);
 }
 
 function ensureFullAccess(featureKey) {
   if (state.isFullAccess) {
     return true;
   }
-  const messageKey = featureKey === "library" ? "license.locked.library" : "license.locked.export";
-  showAccessToast(t(messageKey));
+  let messageKey = "license.locked.export";
+  if (featureKey === "library") {
+    messageKey = "license.locked.library";
+  } else if (featureKey === "video") {
+    messageKey = "license.locked.video";
+  }
+  showUiToast(t(messageKey), "error");
   return false;
 }
 
@@ -679,6 +881,7 @@ function applyTranslations() {
     dom.paletteCloseBtn.setAttribute("aria-label", t("palette.close.aria"));
   }
 
+  syncVideoRendererUi();
   refreshAccessUi();
 }
 
@@ -687,6 +890,9 @@ function setPaletteOpen(nextOpen) {
   state.paletteOpen = isOpen;
   dom.paletteDrawer?.classList.toggle("is-open", isOpen);
   dom.paletteBackdrop?.classList.toggle("is-open", isOpen);
+  if (!isOpen) {
+    dom.paletteBackdrop?.classList.remove("is-drag-pass-through");
+  }
   dom.paletteDrawer?.setAttribute("aria-hidden", isOpen ? "false" : "true");
   dom.paletteBackdrop?.setAttribute("aria-hidden", isOpen ? "false" : "true");
   if (dom.paletteToggleBtn) {
@@ -720,6 +926,452 @@ function toggleExportMenu() {
   setExportMenuOpen(!state.exportMenuOpen);
 }
 
+function setVideoStatus(statusKey, vars = {}, tone = "default") {
+  videoRenderer.statusKey = statusKey;
+  videoRenderer.statusVars = vars;
+  const message = t(statusKey, vars);
+  if (!dom.videoRenderStatus) {
+    if (tone === "error" || tone === "success" || statusKey === "video.status.busy") {
+      showUiToast(message, tone);
+    }
+    return;
+  }
+  dom.videoRenderStatus.textContent = message;
+  dom.videoRenderStatus.classList.toggle("is-error", tone === "error");
+  dom.videoRenderStatus.classList.toggle("is-success", tone === "success");
+}
+
+function clearVideoProgressTimer() {
+  if (videoRenderer.progressTimer) {
+    clearInterval(videoRenderer.progressTimer);
+    videoRenderer.progressTimer = null;
+  }
+}
+
+function clearVideoProgressResetTimer() {
+  if (videoRenderer.progressResetTimer) {
+    clearTimeout(videoRenderer.progressResetTimer);
+    videoRenderer.progressResetTimer = null;
+  }
+}
+
+function setVideoProgress(value, { active = videoRenderer.progressActive, sync = true } = {}) {
+  videoRenderer.progressValue = Math.max(0, Math.min(100, Number(value || 0)));
+  videoRenderer.progressActive = Boolean(active);
+  if (sync) {
+    syncVideoRendererUi();
+  }
+}
+
+function setVideoProgressPhase(phase) {
+  videoRenderer.progressPhase = `${phase || "idle"}`;
+}
+
+function startVideoProgressTimer() {
+  if (videoRenderer.progressTimer) {
+    return;
+  }
+  videoRenderer.progressTimer = setInterval(() => {
+    if (!videoRenderer.busy) {
+      return;
+    }
+    const phase = videoRenderer.progressPhase;
+    let cap = 95;
+    let minStep = 0.2;
+    let maxStep = 0.8;
+    if (phase === "bridge") {
+      cap = 18;
+      minStep = 1.0;
+      maxStep = 2.4;
+    } else if (phase === "reading") {
+      cap = 34;
+      minStep = 0.6;
+      maxStep = 1.8;
+    } else if (phase === "rendering") {
+      cap = 96;
+      minStep = 0.18;
+      maxStep = 0.72;
+    }
+    if (videoRenderer.progressValue >= cap) {
+      return;
+    }
+    const next = videoRenderer.progressValue + minStep + Math.random() * (maxStep - minStep);
+    setVideoProgress(Math.min(cap, next), { active: true });
+  }, 220);
+}
+
+function finishVideoProgress(success) {
+  clearVideoProgressTimer();
+  clearVideoProgressResetTimer();
+  setVideoProgressPhase("idle");
+
+  if (!success) {
+    setVideoProgress(0, { active: false });
+    return;
+  }
+
+  setVideoProgress(100, { active: true });
+  videoRenderer.progressResetTimer = setTimeout(() => {
+    if (videoRenderer.busy) {
+      return;
+    }
+    setVideoProgress(0, { active: false });
+    videoRenderer.progressResetTimer = null;
+  }, 900);
+}
+
+function syncVideoRendererUi() {
+  if (dom.videoUploadFileName) {
+    dom.videoUploadFileName.textContent = videoRenderer.file?.name || t("video.file.none");
+  }
+  if (dom.videoGenerateBtn) {
+    dom.videoGenerateBtn.disabled = !videoRenderer.file || Boolean(videoRenderer.fileValidationErrorKey) || videoRenderer.busy;
+  }
+  if (dom.videoUploadBtn) {
+    dom.videoUploadBtn.disabled = videoRenderer.busy;
+  }
+  if (dom.videoModalCloseBtn) {
+    dom.videoModalCloseBtn.disabled = videoRenderer.busy;
+  }
+  if (dom.videoCancelBtn) {
+    dom.videoCancelBtn.disabled = videoRenderer.busy;
+  }
+  if (dom.videoDropZone) {
+    dom.videoDropZone.setAttribute("aria-disabled", videoRenderer.busy ? "true" : "false");
+  }
+  if (dom.videoRenderBtn) {
+    dom.videoRenderBtn.classList.toggle("is-active", state.videoModalOpen);
+    dom.videoRenderBtn.setAttribute("aria-expanded", state.videoModalOpen ? "true" : "false");
+  }
+  if (dom.videoRenderStatus) {
+    dom.videoRenderStatus.textContent = t(videoRenderer.statusKey, videoRenderer.statusVars);
+  }
+  if (dom.videoProgressWrap) {
+    const shouldShow = videoRenderer.progressActive && (videoRenderer.busy || videoRenderer.progressValue > 0);
+    dom.videoProgressWrap.classList.toggle("is-active", shouldShow);
+    dom.videoProgressWrap.setAttribute("aria-hidden", shouldShow ? "false" : "true");
+  }
+  if (dom.videoProgressBar) {
+    dom.videoProgressBar.style.width = `${Math.round(videoRenderer.progressValue)}%`;
+  }
+  if (dom.videoProgressText) {
+    dom.videoProgressText.textContent = `${Math.round(videoRenderer.progressValue)}%`;
+  }
+}
+
+function setVideoModalOpen(nextOpen) {
+  const isOpen = Boolean(nextOpen);
+  if (isOpen && state.exportMenuOpen) {
+    setExportMenuOpen(false);
+  }
+  state.videoModalOpen = isOpen;
+  if (!isOpen && !videoRenderer.busy) {
+    clearVideoProgressTimer();
+    clearVideoProgressResetTimer();
+    setVideoProgressPhase("idle");
+    setVideoProgress(0, { active: false, sync: false });
+  }
+  dom.videoModal?.classList.toggle("is-open", isOpen);
+  dom.videoModalBackdrop?.classList.toggle("is-open", isOpen);
+  dom.videoModal?.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  dom.videoModalBackdrop?.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  syncVideoRendererUi();
+}
+
+function toggleVideoModal() {
+  if (!ensureFullAccess("video")) {
+    return;
+  }
+  setVideoModalOpen(!state.videoModalOpen);
+}
+
+function getFileExtension(name = "") {
+  const parts = `${name}`.toLowerCase().split(".");
+  if (parts.length < 2) {
+    return "";
+  }
+  return parts.pop() || "";
+}
+
+function isSupportedUploadFile(file) {
+  if (!file || !file.name) {
+    return false;
+  }
+  return VIDEO_ALLOWED_EXTENSIONS.has(getFileExtension(file.name));
+}
+
+function validateUploadFile(file) {
+  if (!file) {
+    return null;
+  }
+  if (!isSupportedUploadFile(file)) {
+    return "video.status.invalidType";
+  }
+  if (Number(file.size || 0) > VIDEO_MAX_FILE_SIZE_BYTES) {
+    return "video.status.invalidSize";
+  }
+  return null;
+}
+
+function setVideoSelectedFile(file) {
+  videoRenderer.file = file || null;
+  videoRenderer.fileValidationErrorKey = validateUploadFile(videoRenderer.file);
+  if (!videoRenderer.busy) {
+    clearVideoProgressTimer();
+    clearVideoProgressResetTimer();
+    setVideoProgressPhase("idle");
+    setVideoProgress(0, { active: false, sync: false });
+  }
+  if (!videoRenderer.file) {
+    setVideoStatus("video.status.idle");
+  } else if (videoRenderer.fileValidationErrorKey) {
+    setVideoStatus(videoRenderer.fileValidationErrorKey, {}, "error");
+  } else {
+    setVideoStatus("video.status.idle");
+  }
+  syncVideoRendererUi();
+}
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = `${reader.result || ""}`;
+      const delimiterIdx = result.indexOf(",");
+      resolve(delimiterIdx >= 0 ? result.slice(delimiterIdx + 1) : result);
+    };
+    reader.onerror = () => reject(new Error("read_file_failed"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function delayMs(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, Math.max(0, Number(ms || 0)));
+  });
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 5000) {
+  if (typeof AbortController !== "function") {
+    return fetch(url, options);
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, Math.max(250, Number(timeoutMs || 0)));
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function isBridgeReachable() {
+  try {
+    const response = await fetchWithTimeout(
+      `${BRIDGE_HTTP_BASE}/health`,
+      { method: "GET", cache: "no-store" },
+      BRIDGE_HEALTHCHECK_TIMEOUT_MS
+    );
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+function canBootstrapBridgeFromCurrentHost() {
+  const origin = typeof window !== "undefined" ? window.location?.origin || "" : "";
+  return /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(origin);
+}
+
+async function requestBridgeBootstrapFromHost() {
+  if (!canBootstrapBridgeFromCurrentHost()) {
+    return false;
+  }
+
+  const endpointUrl = `${window.location.origin}${BRIDGE_BOOTSTRAP_ENDPOINT}`;
+  const response = await fetchWithTimeout(
+    endpointUrl,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
+    BRIDGE_AUTOSTART_TIMEOUT_MS
+  );
+
+  if (!response.ok) {
+    let reason = `${response.status} ${response.statusText}`.trim();
+    try {
+      const payload = await response.json();
+      if (payload?.error) {
+        reason = `${payload.error}`;
+      }
+    } catch {
+      // ignore parse failure
+    }
+    throw new Error(reason || "failed_to_bootstrap_bridge");
+  }
+
+  try {
+    const payload = await response.json();
+    if (payload && payload.ok === false) {
+      throw new Error(payload.error || "failed_to_bootstrap_bridge");
+    }
+  } catch (error) {
+    if (!(error instanceof SyntaxError)) {
+      throw error;
+    }
+  }
+
+  return true;
+}
+
+async function ensureBridgeReadyForRender() {
+  if (await isBridgeReachable()) {
+    return;
+  }
+
+  try {
+    const bootstrapTriggered = await requestBridgeBootstrapFromHost();
+    if (bootstrapTriggered) {
+      const deadline = Date.now() + BRIDGE_AUTOSTART_TIMEOUT_MS;
+      while (Date.now() < deadline) {
+        if (await isBridgeReachable()) {
+          return;
+        }
+        await delayMs(300);
+      }
+    }
+  } catch {
+    // fallback to unified error below
+  }
+
+  throw new Error("bridge_unreachable");
+}
+
+function getFilenameFromDisposition(disposition, fallback = "fretlab-animation.mp4") {
+  if (!disposition) {
+    return fallback;
+  }
+  const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match?.[1]) {
+    try {
+      return decodeURIComponent(utf8Match[1]);
+    } catch {
+      return utf8Match[1];
+    }
+  }
+  const simpleMatch = disposition.match(/filename=\"?([^\";]+)\"?/i);
+  if (simpleMatch?.[1]) {
+    return simpleMatch[1];
+  }
+  return fallback;
+}
+
+function normalizeRenderErrorReason(reason = "") {
+  const text = `${reason || ""}`.trim();
+  if (!text) {
+    return "Unknown error";
+  }
+  if (/bridge_unreachable|failed to fetch|networkerror|fetch failed/i.test(text)) {
+    return state.language === "zh"
+      ? "无法连接本地渲染服务（127.0.0.1:3210）。请使用 `npm run localhost` 启动工具，或先手动启动 Bridge 服务。"
+      : "Cannot reach local render bridge (127.0.0.1:3210). Start FretLab with `npm run localhost`, or start the bridge service first.";
+  }
+  if (/read_file_failed/i.test(text)) {
+    return state.language === "zh" ? "文件读取失败，请重新选择文件。" : "Failed to read file. Please re-select the file.";
+  }
+  if (text.length <= 180) {
+    return text;
+  }
+  return `${text.slice(0, 177)}...`;
+}
+
+async function handleVideoGenerate() {
+  if (videoRenderer.busy) {
+    setVideoStatus("video.status.busy");
+    syncVideoRendererUi();
+    return;
+  }
+  const file = videoRenderer.file;
+  const validationError = validateUploadFile(file);
+  if (validationError) {
+    videoRenderer.fileValidationErrorKey = validationError;
+    setVideoStatus(validationError, {}, "error");
+    syncVideoRendererUi();
+    return;
+  }
+
+  let renderSucceeded = false;
+  try {
+    videoRenderer.busy = true;
+    clearVideoProgressResetTimer();
+    setVideoProgress(4, { active: true, sync: false });
+    setVideoProgressPhase("bridge");
+    startVideoProgressTimer();
+    setVideoStatus("video.status.startingBridge");
+    syncVideoRendererUi();
+    await ensureBridgeReadyForRender();
+
+    setVideoProgress(Math.max(videoRenderer.progressValue, 22), { active: true, sync: false });
+    setVideoProgressPhase("reading");
+    setVideoStatus("video.status.reading");
+    syncVideoRendererUi();
+    const fileBase64 = await readFileAsBase64(file);
+
+    setVideoProgress(Math.max(videoRenderer.progressValue, 40), { active: true, sync: false });
+    setVideoProgressPhase("rendering");
+    setVideoStatus("video.status.rendering");
+    syncVideoRendererUi();
+    const response = await fetch(`${BRIDGE_HTTP_BASE}/api/render-mscore`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fileName: file.name,
+        fileBase64,
+      }),
+    });
+
+    if (!response.ok) {
+      let reason = `${response.status} ${response.statusText}`;
+      try {
+        const errorPayload = await response.json();
+        if (errorPayload?.error) {
+          reason = errorPayload.error;
+        }
+      } catch {
+        const raw = await response.text();
+        if (raw) {
+          reason = raw;
+        }
+      }
+      throw new Error(normalizeRenderErrorReason(reason));
+    }
+
+    setVideoProgress(Math.max(videoRenderer.progressValue, 96), { active: true, sync: false });
+    const blob = await response.blob();
+    setVideoProgress(Math.max(videoRenderer.progressValue, 98), { active: true, sync: false });
+    const fileName = getFilenameFromDisposition(response.headers.get("content-disposition"), "fretlab-animation.mp4");
+    downloadBlob(blob, fileName);
+    setVideoStatus("video.status.success", {}, "success");
+    renderSucceeded = true;
+  } catch (error) {
+    setVideoStatus(
+      "video.status.failed",
+      { reason: normalizeRenderErrorReason(error?.message || "") },
+      "error"
+    );
+  } finally {
+    videoRenderer.busy = false;
+    finishVideoProgress(renderSucceeded);
+    syncVideoRendererUi();
+  }
+}
+
 function setUiLanguage(language, { persist = true } = {}) {
   const next = normalizeUiLanguage(language) ?? "zh";
   if (state.language === next) {
@@ -751,12 +1403,34 @@ let enharmonicMenuState = null;
 const overlays = [];
 let dragShapeId = null;
 let dragOverlayPreview = null;
+const realtime = {
+  markers: new Map(),
+  lastMidiPositions: new Map(),
+  lastVoicePositions: new Map(),
+  fxTrails: [],
+  eventSource: null,
+  midiAccess: null,
+  midiInputs: new Map(),
+};
 const recorder = {
   active: false,
   rootMarkerId: null,
   output: "",
   copyFeedbackUntil: 0,
 };
+const videoRenderer = {
+  file: null,
+  fileValidationErrorKey: null,
+  busy: false,
+  statusKey: "video.status.idle",
+  statusVars: {},
+  progressValue: 0,
+  progressActive: false,
+  progressPhase: "idle",
+  progressTimer: null,
+  progressResetTimer: null,
+};
+const VIDEO_ALLOWED_EXTENSIONS = new Set(["mscz", "mscx", "gp5"]);
 
 const ENHARMONIC_OPTIONS = [
   ["C", "B#", "Dbb"],
@@ -876,6 +1550,9 @@ function syncFretboardCount() {
   }
   const nextCount = Math.max(1, Math.floor(state.boardCount || 1));
   state.boardCount = nextCount;
+  if (dom.boardCountInput) {
+    dom.boardCountInput.value = `${nextCount}`;
+  }
   ensureBoardStates();
   const current = getFretboardSvgs();
   if (!current.length && dom.svg) {
@@ -905,6 +1582,9 @@ function syncFretboardCount() {
 
 function setBoardCount(nextCount) {
   const sanitized = Math.max(1, Math.floor(Number(nextCount) || 1));
+  if (dom.boardCountInput) {
+    dom.boardCountInput.value = `${sanitized}`;
+  }
   if (state.boardCount === sanitized) {
     return;
   }
@@ -914,6 +1594,23 @@ function setBoardCount(nextCount) {
   renderMarkers();
   updateMarkerHint();
   renderRecorderPanel();
+}
+
+function sanitizeFretCount(nextCount) {
+  return Math.min(MAX_FRET_COUNT, Math.max(1, Math.round(Number(nextCount) || 1)));
+}
+
+function setFretCount(nextCount) {
+  const sanitized = sanitizeFretCount(nextCount);
+  if (state.fretCount === sanitized) {
+    return false;
+  }
+  state.fretCount = sanitized;
+  renderGrid();
+  renderMarkers();
+  renderOverlays();
+  renderRealtimeMarkers();
+  return true;
 }
 
 function getEnharmonicOptions(noteIndex) {
@@ -1252,7 +1949,9 @@ function getLocalizedShapeName(shape) {
 
   const majorScaleFiveMatch = id.match(/^major_scale_5_([a-z])_form$/i);
   if (majorScaleFiveMatch) {
-    const letter = majorScaleFiveMatch[1].toUpperCase();
+    const rawLetter = majorScaleFiveMatch[1].toLowerCase();
+    const letterMap = { e: "C", g: "A", a: "G", b: "E", d: "D" };
+    const letter = letterMap[rawLetter] ?? rawLetter.toUpperCase();
     return isZh ? `${letter}指型` : `${letter} Form`;
   }
 
@@ -1262,10 +1961,22 @@ function getLocalizedShapeName(shape) {
     return isZh ? `第${n}把位` : `Box ${n}`;
   }
 
+  const bluesBoxMatch = id.match(/^blues_scale_box_(\d+)$/);
+  if (bluesBoxMatch) {
+    const n = bluesBoxMatch[1];
+    return isZh ? `第${n}把位` : `Box ${n}`;
+  }
+
   const arpeggioOrShapeNumberMatch = rawName.match(/^Shape\s+(\d+)$/i);
   if (arpeggioOrShapeNumberMatch) {
     const n = arpeggioOrShapeNumberMatch[1];
     return isZh ? `形状 ${n}` : `Shape ${n}`;
+  }
+
+  const rootOnStringMatch = rawName.match(/^Root on (\d)(?:st|nd|rd|th)$/i);
+  if (rootOnStringMatch) {
+    const stringNo = rootOnStringMatch[1];
+    return isZh ? `根音在${stringNo}弦` : rawName;
   }
 
   const dimScaleNameMatch = id.match(/^diminished_scale_(st|ts)_/i);
@@ -1377,6 +2088,83 @@ function renderShapeThumbnail(shape) {
 }
 
 function renderLibraryCategory(category) {
+  const sections = category.sections ?? [];
+  const flattenSingleSection = sections.length === 1;
+
+  const renderShapeCards = (shapes) =>
+    (shapes ?? [])
+      .map(
+        (shape) => `
+                <div class="shape-card" draggable="true" data-shape="${escapeHtml(shape.id)}">
+                  <h3>${escapeHtml(getLocalizedShapeName(shape))}</h3>
+                  ${renderShapeThumbnail(shape)}
+                </div>
+              `
+      )
+      .join("");
+
+  const renderSection = (section, options = {}) => {
+    const label = `${options.label ?? getLocalizedLibrarySectionLabel(section)}`.trim();
+    if (flattenSingleSection) {
+      return `
+          <div class="shape-section shape-section--flat">
+            <div class="shape-grid">
+              ${renderShapeCards(section.shapes)}
+            </div>
+          </div>
+        `;
+    }
+
+    return `
+          <div class="shape-section shape-section--expanded">
+            <div class="shape-section__label">
+              ${escapeHtml(label)}
+            </div>
+            <div class="shape-grid">
+              ${renderShapeCards(section.shapes)}
+            </div>
+          </div>
+        `;
+  };
+
+  const stripSusSectionPrefix = (label = "") => `${label}`.replace(/^Sus[24]\s*[·•-]\s*/i, "").trim();
+
+  const renderSusSectionGroup = (groupLabel, groupSections) => {
+    if (!groupSections.length) {
+      return "";
+    }
+    return `
+      <div class="shape-subsection">
+        <div class="shape-subsection__title">${escapeHtml(groupLabel)}</div>
+        ${groupSections
+          .map((section) =>
+            renderSection(section, {
+              label: stripSusSectionPrefix(getLocalizedLibrarySectionLabel(section)),
+            })
+          )
+          .join("")}
+      </div>
+    `;
+  };
+
+  const renderCategoryBody = () => {
+    if (`${category.id}` !== "sus-chords") {
+      return sections.map((section) => renderSection(section)).join("");
+    }
+
+    const sus2Sections = sections.filter((section) => `${section.id}`.startsWith("sus2-"));
+    const sus4Sections = sections.filter((section) => `${section.id}`.startsWith("sus4-"));
+    const otherSections = sections.filter(
+      (section) => !`${section.id}`.startsWith("sus2-") && !`${section.id}`.startsWith("sus4-")
+    );
+
+    return `
+      ${renderSusSectionGroup("Sus2", sus2Sections)}
+      ${renderSusSectionGroup("Sus4", sus4Sections)}
+      ${otherSections.map((section) => renderSection(section)).join("")}
+    `;
+  };
+
   return `
     <details class="shape-group">
       <summary class="shape-group__summary">
@@ -1384,30 +2172,7 @@ function renderLibraryCategory(category) {
         <span class="shape-group__count">${escapeHtml(formatCount(category.count))}</span>
       </summary>
       <div class="shape-group__body">
-        ${category.sections
-          .map(
-            (section) => `
-          <details class="shape-section">
-            <summary class="shape-section__summary">
-              <span>${escapeHtml(getLocalizedLibrarySectionLabel(section))}</span>
-              <span>${escapeHtml(formatCount(section.shapes.length))}</span>
-            </summary>
-            <div class="shape-grid">
-              ${section.shapes
-                .map(
-                  (shape) => `
-                <div class="shape-card" draggable="true" data-shape="${escapeHtml(shape.id)}">
-                  <h3>${escapeHtml(getLocalizedShapeName(shape))}</h3>
-                  ${renderShapeThumbnail(shape)}
-                </div>
-              `
-                )
-                .join("")}
-            </div>
-          </details>
-        `
-          )
-          .join("")}
+        ${renderCategoryBody()}
       </div>
     </details>
   `;
@@ -1476,6 +2241,9 @@ function handleShapeDragStart(event) {
   dragOverlayPreview = null;
   event.dataTransfer.setData("text/plain", card.dataset.shape);
   event.dataTransfer.effectAllowed = "copy";
+  if (state.paletteOpen) {
+    dom.paletteBackdrop?.classList.add("is-drag-pass-through");
+  }
   if (event.dataTransfer?.setDragImage) {
     event.dataTransfer.setDragImage(getTransparentDragImage(), 0, 0);
   }
@@ -1805,6 +2573,7 @@ function handleBoardDragOver(event) {
 function handleBoardDrop(event) {
   event.preventDefault();
   setActiveBoard(getBoardIndexFromEvent(event), { resetRecorder: false });
+  dom.paletteBackdrop?.classList.remove("is-drag-pass-through");
   const shapeId = event.dataTransfer.getData("text/plain");
   if (!shapeId) {
     return;
@@ -1920,6 +2689,7 @@ function renderMarkers() {
     });
   });
   renderOverlays();
+  renderRealtimeMarkers();
 }
 
 function calculateOverlayPositions(shape, anchorString, anchorFret) {
@@ -1943,9 +2713,22 @@ function getScaleDegreeMapForShape(shape) {
   if (!shape) {
     return null;
   }
+  const id = `${shape.id ?? ""}`.toLowerCase();
   const name = `${shape.name ?? ""}`.toLowerCase();
   const mode = `${shape.mode ?? ""}`.toLowerCase();
   const system = `${shape.system ?? ""}`.toLowerCase();
+
+  const melodicMatch = id.match(/^melodic_minor_3nps_shape_(\d+)$/);
+  if (melodicMatch) {
+    const index = Number(melodicMatch[1]) - 1;
+    return MELODIC_MINOR_MODE_DEGREE_MAPS[index] ?? null;
+  }
+
+  const harmonicMatch = id.match(/^harmonic_minor_3nps_shape_(\d+)$/);
+  if (harmonicMatch) {
+    const index = Number(harmonicMatch[1]) - 1;
+    return HARMONIC_MINOR_MODE_DEGREE_MAPS[index] ?? null;
+  }
 
   if (system.includes("diminished scale")) {
     if (name.includes("s-t")) {
@@ -1954,6 +2737,14 @@ function getScaleDegreeMapForShape(shape) {
     if (name.includes("t-s")) {
       return DIMINISHED_TS_DEGREE_MAP;
     }
+  }
+
+  if (system.includes("whole tone")) {
+    return WHOLE_TONE_DEGREE_MAP;
+  }
+
+  if (system.includes("blues scale")) {
+    return BLUES_SCALE_DEGREE_MAP;
   }
 
   if (system.includes("pentatonic")) {
@@ -1970,6 +2761,8 @@ function getScaleDegreeMapForShape(shape) {
   if (mode.includes("phrygian")) return PHRYGIAN_DEGREE_MAP;
   if (mode.includes("dorian")) return DORIAN_DEGREE_MAP;
   if (mode.includes("locrian")) return LOCRIAN_DEGREE_MAP;
+  if (mode.includes("melodic minor")) return MELODIC_MINOR_DEGREE_MAP;
+  if (mode.includes("harmonic minor")) return HARMONIC_MINOR_DEGREE_MAP;
   if (mode.includes("aeolian") || mode.includes("natural minor")) return NATURAL_MINOR_DEGREE_MAP;
   if (
     mode.includes("ionian") ||
@@ -2134,6 +2927,419 @@ function renderOverlays() {
     });
     svg.appendChild(previewGroup);
   });
+}
+
+function isValidRealtimePosition(stringIndex, fret) {
+  return (
+    Number.isInteger(stringIndex) &&
+    Number.isInteger(fret) &&
+    stringIndex >= 0 &&
+    stringIndex < STRING_COUNT &&
+    fret >= 0 &&
+    fret <= state.fretCount
+  );
+}
+
+function isValidRealtimeStringIndex(stringIndex) {
+  return Number.isInteger(stringIndex) && stringIndex >= 0 && stringIndex < STRING_COUNT;
+}
+
+function getRealtimeEventKey(payload = {}, source = "live") {
+  const eventId = payload.eventId ?? payload.id ?? null;
+  if (eventId) {
+    return `${source}:${eventId}`;
+  }
+  const midiNote = Number(payload.midiNote);
+  const channel = Number(payload.channel || 0);
+  return `${source}:midi:${Number.isFinite(midiNote) ? midiNote : "na"}:ch:${channel}`;
+}
+
+function getPreferredPositionFromChannel(channel) {
+  const normalizedChannel = Number(channel);
+  if (!Number.isFinite(normalizedChannel)) {
+    return null;
+  }
+  const stringIndex = normalizedChannel - 1;
+  if (stringIndex < 0 || stringIndex >= STRING_COUNT) {
+    return null;
+  }
+  return { stringIndex };
+}
+
+function resolveRealtimePosition(payload = {}) {
+  const rawStringIndex = Number(payload.stringIndex);
+  const rawFret = Number(payload.fret);
+  const midiNote = Number(payload.midiNote);
+
+  const hasExplicitString = Number.isFinite(rawStringIndex);
+  const hasExplicitFret = Number.isFinite(rawFret);
+  if (hasExplicitString || hasExplicitFret) {
+    const explicitString = Math.round(rawStringIndex);
+    const explicitFret = Math.round(rawFret);
+    if (
+      hasExplicitString &&
+      hasExplicitFret &&
+      isValidRealtimeStringIndex(explicitString) &&
+      explicitFret >= 0
+    ) {
+      return {
+        stringIndex: explicitString,
+        fret: explicitFret,
+        midiNote: Number.isFinite(midiNote) ? midiNote : null,
+      };
+    }
+    return null;
+  }
+
+  if (!Number.isFinite(midiNote)) {
+    return null;
+  }
+
+  const midiHistoryKey = `${midiNote}:ch:${Number(payload.channel || 0)}`;
+  const previousPosition = realtime.lastMidiPositions.get(midiHistoryKey) ?? null;
+  const preferredPosition = getPreferredPositionFromChannel(payload.channel) ?? previousPosition;
+  const positions = getTabPositionsFromMidi(midiNote, state.fretCount);
+  const best = pickBestTabPosition(positions, {
+    preferredPosition,
+    previousFret: previousPosition?.fret,
+  });
+
+  if (!best || !isValidRealtimePosition(best.stringIndex, best.fret)) {
+    return null;
+  }
+
+  realtime.lastMidiPositions.set(midiHistoryKey, best);
+  return {
+    stringIndex: best.stringIndex,
+    fret: best.fret,
+    midiNote,
+  };
+}
+
+function normalizeRealtimeFx(payload = {}) {
+  const candidates = [];
+  if (Array.isArray(payload.fx)) {
+    candidates.push(...payload.fx);
+  }
+  if (typeof payload.fx === "string") {
+    candidates.push(...payload.fx.split(/[,\s|/]+/g));
+  }
+  if (typeof payload.technique === "string") {
+    candidates.push(...payload.technique.split(/[,\s|/]+/g));
+  }
+  const normalized = new Set();
+  candidates.forEach((entry) => {
+    const token = `${entry}`.trim().toLowerCase();
+    if (!token) {
+      return;
+    }
+    if (token.includes("bend")) {
+      normalized.add("bend");
+      return;
+    }
+    if (token.includes("gliss") || token.includes("slide")) {
+      normalized.add("gliss");
+    }
+  });
+  return Array.from(normalized);
+}
+
+function getVoiceKey(source, payload = {}) {
+  return `${source}:ch:${Number(payload.channel || 0)}`;
+}
+
+function cleanupRealtimeFxTrails(now = Date.now()) {
+  realtime.fxTrails = realtime.fxTrails.filter((trail) => Number.isFinite(trail.until) && trail.until > now);
+}
+
+function renderRealtimeMarkers() {
+  const svgs = getFretboardSvgs();
+  if (!svgs.length) {
+    return;
+  }
+
+  svgs.forEach((svg) => {
+    svg.querySelectorAll(".realtime-marker-group, .realtime-fx-trail-group").forEach((node) => node.remove());
+  });
+
+  const now = Date.now();
+  cleanupRealtimeFxTrails(now);
+
+  if (!realtime.markers.size && !realtime.fxTrails.length) {
+    return;
+  }
+
+  svgs.forEach((svg) => {
+    if (!realtime.fxTrails.length) {
+      return;
+    }
+    const trailGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    trailGroup.classList.add("realtime-fx-trail-group");
+    realtime.fxTrails.forEach((trail) => {
+      if (
+        !isValidRealtimePosition(trail.fromStringIndex, trail.fromFret) ||
+        !isValidRealtimePosition(trail.toStringIndex, trail.toFret)
+      ) {
+        return;
+      }
+      const x1 = getMarkerCenterX(trail.fromFret);
+      const y1 = getStringY(trail.fromStringIndex);
+      const x2 = getMarkerCenterX(trail.toFret);
+      const y2 = getStringY(trail.toStringIndex);
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("class", "realtime-slide-trail");
+      path.setAttribute("d", `M ${x1} ${y1} Q ${(x1 + x2) / 2} ${(y1 + y2) / 2 - 10} ${x2} ${y2}`);
+      trailGroup.appendChild(path);
+    });
+    svg.appendChild(trailGroup);
+  });
+
+  if (!realtime.markers.size) {
+    return;
+  }
+
+  const markers = Array.from(realtime.markers.values());
+  svgs.forEach((svg) => {
+    markers.forEach((marker) => {
+      if (!isValidRealtimePosition(marker.stringIndex, marker.fret)) {
+        return;
+      }
+      const centerX = getMarkerCenterX(marker.fret);
+      const centerY = getStringY(marker.stringIndex);
+      const isOnsetFlash = Number.isFinite(marker.flashUntil) && marker.flashUntil > now;
+      const isFxFlash = Number.isFinite(marker.fxUntil) && marker.fxUntil > now;
+      const fxSet = new Set(Array.isArray(marker.fx) ? marker.fx : []);
+      const hasBendFx = fxSet.has("bend");
+      const hasGlissFx = fxSet.has("gliss");
+      const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      group.classList.add("realtime-marker-group");
+      group.innerHTML = `
+        ${isOnsetFlash ? `<circle class="realtime-onset-ring" cx="${centerX}" cy="${centerY}" r="21"></circle>` : ""}
+        ${isFxFlash && hasBendFx ? `<path class="realtime-bend-arc" d="M ${centerX + 14} ${centerY + 10} Q ${centerX + 26} ${centerY - 20} ${centerX + 16} ${centerY - 32}"></path>` : ""}
+        ${isFxFlash && hasBendFx ? `<path class="realtime-bend-arrow" d="M ${centerX + 16} ${centerY - 32} L ${centerX + 22} ${centerY - 28} L ${centerX + 14} ${centerY - 24}"></path>` : ""}
+        ${isFxFlash && hasGlissFx ? `<path class="realtime-gliss-slash" d="M ${centerX - 15} ${centerY + 14} L ${centerX + 15} ${centerY - 14}"></path>` : ""}
+        <circle class="realtime-dot${isOnsetFlash ? " realtime-dot--flash" : ""}" cx="${centerX}" cy="${centerY}" r="19"></circle>
+        <circle class="realtime-dot-core${isOnsetFlash ? " realtime-dot-core--flash" : ""}" cx="${centerX}" cy="${centerY}" r="14"></circle>
+        <text class="realtime-note-text" x="${centerX}" y="${centerY + 6}">${getNoteName(
+          getPositionNoteIndex(marker.stringIndex, marker.fret),
+          state.notePreference
+        )}</text>
+      `;
+      svg.appendChild(group);
+    });
+  });
+}
+
+function clearRealtimeMarkers() {
+  realtime.markers.clear();
+  realtime.fxTrails.length = 0;
+  realtime.lastVoicePositions.clear();
+  renderRealtimeMarkers();
+}
+
+function applyRealtimeNoteOn(payload = {}, source = "live") {
+  const position = resolveRealtimePosition(payload);
+  if (!position) {
+    return;
+  }
+  if (position.fret > state.fretCount) {
+    setFretCount(position.fret);
+  }
+  if (!isValidRealtimePosition(position.stringIndex, position.fret)) {
+    return;
+  }
+  const now = Date.now();
+  const eventKey = getRealtimeEventKey(payload, source);
+  const fx = normalizeRealtimeFx(payload);
+  const durationMs = Math.max(0, Number(payload.durationMs || 0));
+  const hasBendFx = fx.includes("bend");
+  const fxFlashDurationMs = fx.length
+    ? hasBendFx && durationMs > 0
+      ? Math.max(REALTIME_FX_FLASH_MS, durationMs)
+      : REALTIME_FX_FLASH_MS
+    : REALTIME_ONSET_FLASH_MS;
+  const voiceKey = getVoiceKey(source, payload);
+  const previousVoicePosition = realtime.lastVoicePositions.get(voiceKey) ?? null;
+  const hasGlissFx = fx.includes("gliss");
+
+  if (
+    hasGlissFx &&
+    previousVoicePosition &&
+    isValidRealtimePosition(previousVoicePosition.stringIndex, previousVoicePosition.fret) &&
+    (previousVoicePosition.stringIndex !== position.stringIndex || previousVoicePosition.fret !== position.fret)
+  ) {
+    realtime.fxTrails.push({
+      type: "gliss",
+      fromStringIndex: previousVoicePosition.stringIndex,
+      fromFret: previousVoicePosition.fret,
+      toStringIndex: position.stringIndex,
+      toFret: position.fret,
+      until: now + REALTIME_SLIDE_TRAIL_MS,
+    });
+  }
+  realtime.lastVoicePositions.set(voiceKey, {
+    stringIndex: position.stringIndex,
+    fret: position.fret,
+    at: now,
+  });
+
+  realtime.markers.set(eventKey, {
+    ...position,
+    channel: Number(payload.channel || 0),
+    velocity: Number(payload.velocity || 0),
+    fx,
+    source,
+    flashUntil: now + REALTIME_ONSET_FLASH_MS,
+    fxUntil: now + fxFlashDurationMs,
+  });
+  renderRealtimeMarkers();
+  setTimeout(() => {
+    const marker = realtime.markers.get(eventKey);
+    const hasTrail = realtime.fxTrails.length > 0;
+    if (!marker && !hasTrail) {
+      return;
+    }
+    const ts = Date.now();
+    const markerFlashDone =
+      !marker ||
+      ((Number.isFinite(marker.flashUntil) && marker.flashUntil <= ts) &&
+        (Number.isFinite(marker.fxUntil) && marker.fxUntil <= ts));
+    if (markerFlashDone || hasTrail) {
+      renderRealtimeMarkers();
+    }
+  }, Math.max(REALTIME_ONSET_FLASH_MS, fxFlashDurationMs, REALTIME_SLIDE_TRAIL_MS) + 36);
+}
+
+function applyRealtimeNoteOff(payload = {}, source = "live") {
+  const eventKey = getRealtimeEventKey(payload, source);
+  if (!realtime.markers.has(eventKey)) {
+    return;
+  }
+  realtime.markers.delete(eventKey);
+  renderRealtimeMarkers();
+}
+
+function handleBridgeEventPayload(payload = {}) {
+  if (!payload || typeof payload !== "object") {
+    return;
+  }
+  if (payload.type === "timelineMeta") {
+    const incomingFretCount = Number(payload.fretCount);
+    if (Number.isFinite(incomingFretCount) && incomingFretCount > 0) {
+      setFretCount(incomingFretCount);
+    }
+    return;
+  }
+  if (payload.type === "clear") {
+    clearRealtimeMarkers();
+    return;
+  }
+  if (payload.type === "noteOn") {
+    applyRealtimeNoteOn(payload, payload.source || "bridge");
+    return;
+  }
+  if (payload.type === "noteOff") {
+    applyRealtimeNoteOff(payload, payload.source || "bridge");
+  }
+}
+
+function initBridgeEventStream() {
+  if (typeof window.EventSource !== "function") {
+    return;
+  }
+  try {
+    const source = new EventSource(BRIDGE_EVENT_STREAM_URL);
+    realtime.eventSource = source;
+    source.onmessage = (event) => {
+      if (!event?.data) {
+        return;
+      }
+      try {
+        const payload = JSON.parse(event.data);
+        handleBridgeEventPayload(payload);
+      } catch {
+        // Ignore invalid payloads from local bridge.
+      }
+    };
+    source.onerror = () => {
+      // Keep the EventSource open; browser/Electron will auto-retry.
+    };
+  } catch {
+    // Bridge is optional. The app still works without local stream.
+  }
+}
+
+function handleWebMidiMessage(event) {
+  const message = event?.data;
+  if (!message || message.length < 3) {
+    return;
+  }
+  const status = Number(message[0]);
+  const command = status & 0xf0;
+  const channel = (status & 0x0f) + 1;
+  const midiNote = Number(message[1]);
+  const velocity = Number(message[2]);
+  const payload = {
+    channel,
+    midiNote,
+    velocity,
+  };
+
+  if (command === 0x90 && velocity > 0) {
+    applyRealtimeNoteOn(payload, "daw-midi");
+    return;
+  }
+  if (command === 0x80 || (command === 0x90 && velocity === 0)) {
+    applyRealtimeNoteOff(payload, "daw-midi");
+  }
+}
+
+function syncMidiInputs() {
+  const access = realtime.midiAccess;
+  if (!access) {
+    return;
+  }
+  const nextIds = new Set();
+  for (const input of access.inputs.values()) {
+    if (!input?.id) {
+      continue;
+    }
+    nextIds.add(input.id);
+    if (!realtime.midiInputs.has(input.id)) {
+      input.onmidimessage = handleWebMidiMessage;
+      realtime.midiInputs.set(input.id, input);
+    }
+  }
+  for (const [id, input] of realtime.midiInputs.entries()) {
+    if (nextIds.has(id)) {
+      continue;
+    }
+    if (input) {
+      input.onmidimessage = null;
+    }
+    realtime.midiInputs.delete(id);
+  }
+}
+
+async function initWebMidiInput() {
+  if (typeof navigator.requestMIDIAccess !== "function") {
+    return;
+  }
+  try {
+    const access = await navigator.requestMIDIAccess({ sysex: false });
+    realtime.midiAccess = access;
+    syncMidiInputs();
+    access.onstatechange = () => {
+      syncMidiInputs();
+    };
+  } catch {
+    // Ignore denied or unavailable MIDI permissions.
+  }
+}
+
+function initRealtimeInputs() {
+  initBridgeEventStream();
+  void initWebMidiInput();
 }
 
 function addOverlay(shapeId, anchorString, anchorFret, options = {}) {
@@ -2560,16 +3766,11 @@ function clearMarkers(boardIndex = state.activeBoardIndex) {
 function bindControls() {
   syncFretboardCount();
 
-  dom.fretsInput?.addEventListener("input", (event) => {
-    const value = Number(event.target.value);
-    if (Number.isNaN(value)) {
+  dom.boardCountInput?.addEventListener("input", (event) => {
+    if (!event?.target) {
       return;
     }
-    const sanitized = Math.min(MAX_FRET_COUNT, Math.max(1, Math.round(value)));
-    state.fretCount = sanitized;
-    event.target.value = sanitized;
-    renderGrid();
-    renderMarkers();
+    setBoardCount(event.target.value);
   });
 
   dom.notePreferenceSelect?.addEventListener("change", (event) => {
@@ -2590,10 +3791,10 @@ function bindControls() {
   });
 
   dom.addBoardBtn?.addEventListener("click", () => {
-    setBoardCount(state.boardCount + 1);
+    setFretCount(state.fretCount + 1);
   });
   dom.removeBoardBtn?.addEventListener("click", () => {
-    setBoardCount(state.boardCount - 1);
+    setFretCount(state.fretCount - 1);
   });
 
   dom.languageSwitch?.addEventListener("click", (event) => {
@@ -2625,6 +3826,89 @@ function bindControls() {
     setExportMenuOpen(false);
     void handleBoardExport(button.dataset.exportFormat || "png");
   });
+  dom.videoRenderBtn?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleVideoModal();
+  });
+  dom.videoModalCloseBtn?.addEventListener("click", () => {
+    if (videoRenderer.busy) {
+      return;
+    }
+    setVideoModalOpen(false);
+  });
+  dom.videoCancelBtn?.addEventListener("click", () => {
+    if (videoRenderer.busy) {
+      return;
+    }
+    setVideoModalOpen(false);
+  });
+  dom.videoModalBackdrop?.addEventListener("click", () => {
+    if (videoRenderer.busy) {
+      return;
+    }
+    setVideoModalOpen(false);
+  });
+  dom.videoModal?.addEventListener("click", (event) => {
+    if (videoRenderer.busy) {
+      return;
+    }
+    if (event.target !== dom.videoModal) {
+      return;
+    }
+    setVideoModalOpen(false);
+  });
+  dom.videoDropZone?.addEventListener("click", () => {
+    if (videoRenderer.busy) {
+      return;
+    }
+    dom.videoUploadInput?.click();
+  });
+  dom.videoDropZone?.addEventListener("keydown", (event) => {
+    if (videoRenderer.busy) {
+      return;
+    }
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+    event.preventDefault();
+    dom.videoUploadInput?.click();
+  });
+  dom.videoUploadBtn?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (videoRenderer.busy) {
+      return;
+    }
+    dom.videoUploadInput?.click();
+  });
+  ["dragenter", "dragover"].forEach((eventName) => {
+    dom.videoDropZone?.addEventListener(eventName, (event) => {
+      event.preventDefault();
+      if (videoRenderer.busy) {
+        return;
+      }
+      dom.videoDropZone?.classList.add("is-dragging");
+    });
+  });
+  ["dragleave", "drop"].forEach((eventName) => {
+    dom.videoDropZone?.addEventListener(eventName, () => {
+      dom.videoDropZone?.classList.remove("is-dragging");
+    });
+  });
+  dom.videoDropZone?.addEventListener("drop", (event) => {
+    event.preventDefault();
+    if (videoRenderer.busy) {
+      return;
+    }
+    const file = event.dataTransfer?.files?.[0] || null;
+    setVideoSelectedFile(file);
+  });
+  dom.videoUploadInput?.addEventListener("change", () => {
+    const file = dom.videoUploadInput?.files?.[0] || null;
+    setVideoSelectedFile(file);
+  });
+  dom.videoGenerateBtn?.addEventListener("click", () => {
+    void handleVideoGenerate();
+  });
   document.addEventListener("click", (event) => {
     if (!state.exportMenuOpen) {
       return;
@@ -2643,11 +3927,15 @@ function bindControls() {
     if (state.paletteOpen) {
       setPaletteOpen(false);
     }
+    if (state.videoModalOpen && !videoRenderer.busy) {
+      setVideoModalOpen(false);
+    }
   });
 
   dom.shapeLibrary?.addEventListener("dragstart", handleShapeDragStart);
   dom.shapeLibrary?.addEventListener("dragend", () => {
     dragShapeId = null;
+    dom.paletteBackdrop?.classList.remove("is-drag-pass-through");
     clearDragOverlayPreview();
   });
   dom.overlayList?.addEventListener("click", handleOverlayListClick);
@@ -2680,6 +3968,7 @@ function bindControls() {
     }
     state.isFullAccess = hasFretlabFullAccess();
     refreshAccessUi();
+    syncVideoRendererUi();
   });
 }
 
@@ -2694,7 +3983,10 @@ function init() {
   buildShapeLibrary();
   renderOverlayList();
   renderRecorderPanel();
+  setVideoStatus("video.status.idle");
+  syncVideoRendererUi();
   bindControls();
+  initRealtimeInputs();
   refreshAccessUi();
 }
 

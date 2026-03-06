@@ -7,6 +7,10 @@ const INTERVALS = {
   naturalMinor: [0, 2, 3, 5, 7, 8, 10],
   minorPentatonic: [0, 3, 5, 7, 10],
   majorPentatonic: [0, 2, 4, 7, 9],
+  bluesMinor: [0, 3, 5, 6, 7, 10],
+  wholeTone: [0, 2, 4, 6, 8, 10],
+  melodicMinor: [0, 2, 3, 5, 7, 9, 11],
+  harmonicMinor: [0, 2, 3, 5, 7, 8, 11],
 };
 
 const THREE_NPS_MODE_ROWS = {
@@ -320,11 +324,29 @@ const CAGED_CHORD_META = makeLibraryMeta(
 );
 
 const FIVE_MAJOR_SCALE_META = makeLibraryMeta(
+  "major-scale",
+  "大调音阶（Major Scale）",
+  2,
   "major-scale-5",
   "五个大调音阶",
-  2,
-  "major-scale-5-caged-recorded",
-  "五个大调音阶",
+  1
+);
+
+const FIVE_MELODIC_MINOR_SCALE_META = makeLibraryMeta(
+  "melodic-minor-scale",
+  "旋律小调（Melodic Minor）",
+  2.25,
+  "melodic-minor-5",
+  "五个旋律小调",
+  1
+);
+
+const FIVE_HARMONIC_MINOR_SCALE_META = makeLibraryMeta(
+  "harmonic-minor-scale",
+  "和声小调（Harmonic Minor）",
+  2.5,
+  "harmonic-minor-5",
+  "五个和声小调",
   1
 );
 
@@ -472,22 +494,58 @@ const TRIADS_AUGMENTED_META = makeLibraryMeta(
   4
 );
 
-const TRIADS_SUS2_META = makeLibraryMeta(
+const SUS2_DROP2_META = makeLibraryMeta(
   "sus-chords",
   "Sus 和弦",
   5.1,
-  "sus-chords-sus2",
-  "Sus2",
+  "sus2-drop2",
+  "Sus2 · Drop 2",
   1
 );
 
-const TRIADS_SUS4_META = makeLibraryMeta(
+const SUS2_DROP3_META = makeLibraryMeta(
   "sus-chords",
   "Sus 和弦",
   5.1,
-  "sus-chords-sus4",
-  "Sus4",
+  "sus2-drop3",
+  "Sus2 · Drop 3",
   2
+);
+
+const SUS2_TRIADS_META = makeLibraryMeta(
+  "sus-chords",
+  "Sus 和弦",
+  5.1,
+  "sus2-triads",
+  "Sus2 · Triads",
+  3
+);
+
+const SUS4_DROP2_META = makeLibraryMeta(
+  "sus-chords",
+  "Sus 和弦",
+  5.1,
+  "sus4-drop2",
+  "Sus4 · Drop 2",
+  4
+);
+
+const SUS4_DROP3_META = makeLibraryMeta(
+  "sus-chords",
+  "Sus 和弦",
+  5.1,
+  "sus4-drop3",
+  "Sus4 · Drop 3",
+  5
+);
+
+const SUS4_TRIADS_META = makeLibraryMeta(
+  "sus-chords",
+  "Sus 和弦",
+  5.1,
+  "sus4-triads",
+  "Sus4 · Triads",
+  6
 );
 
 const DIM7_CHORD_MOVABLE_META = makeLibraryMeta(
@@ -553,6 +611,24 @@ const PENT_GROUPING_META = makeLibraryMeta(
   2
 );
 
+const BLUES_SCALE_BOX_META = makeLibraryMeta(
+  "blues-scale",
+  "蓝调音阶（Blues Scale）",
+  6.25,
+  "blues-scale-boxes",
+  "Five Blues Scale Boxes",
+  1
+);
+
+const BLUES_GROUPING_META = makeLibraryMeta(
+  "blues-scale",
+  "蓝调音阶（Blues Scale）",
+  6.25,
+  "blues-grouping-32-23",
+  "Diagonal",
+  2
+);
+
 const DIMINISHED_SCALE_VERTICAL_META = makeLibraryMeta(
   "diminished-scale",
   "减音阶（Diminished Scale）",
@@ -571,13 +647,31 @@ const DIMINISHED_SCALE_DIAGONAL_META = makeLibraryMeta(
   2
 );
 
-const THREE_NPS_MAJOR_META = makeLibraryMeta(
-  "three-nps",
-  "大小调音阶（三音固定指式 / 3NPS）",
-  7,
-  "3nps-major",
-  "Major Scale · 7 Shapes",
+const WHOLE_TONE_SCALE_HORIZONTAL_META = makeLibraryMeta(
+  "whole-tone-scale",
+  "全音阶（Whole Tone Scale）",
+  6.75,
+  "whole-tone-scale",
+  "Whole Tone Scale",
   1
+);
+
+const WHOLE_TONE_SCALE_DIAGONAL_META = makeLibraryMeta(
+  "whole-tone-scale",
+  "全音阶（Whole Tone Scale）",
+  6.75,
+  "whole-tone-scale",
+  "Whole Tone Scale",
+  1
+);
+
+const THREE_NPS_MAJOR_META = makeLibraryMeta(
+  "major-scale",
+  "大调音阶（Major Scale）",
+  2,
+  "major-scale-3nps",
+  "3 Notes per String",
+  2
 );
 
 const THREE_NPS_MINOR_META = makeLibraryMeta(
@@ -586,6 +680,24 @@ const THREE_NPS_MINOR_META = makeLibraryMeta(
   7,
   "3nps-natural-minor",
   "Natural Minor · 7 Shapes",
+  2
+);
+
+const THREE_NPS_MELODIC_MINOR_META = makeLibraryMeta(
+  "melodic-minor-scale",
+  "旋律小调（Melodic Minor）",
+  2.25,
+  "melodic-minor-3nps",
+  "3 Notes per String",
+  2
+);
+
+const THREE_NPS_HARMONIC_MINOR_META = makeLibraryMeta(
+  "harmonic-minor-scale",
+  "和声小调（Harmonic Minor）",
+  2.5,
+  "harmonic-minor-3nps",
+  "3 Notes per String",
   2
 );
 
@@ -605,7 +717,7 @@ const cagedChordShapes = [
       [-3],
     ],
     ...CAGED_CHORD_META,
-    sortOrder: 1,
+    sortOrder: 4,
   }),
   buildShape({
     id: "caged_chord_a_form",
@@ -622,7 +734,7 @@ const cagedChordShapes = [
       [0],
     ],
     ...CAGED_CHORD_META,
-    sortOrder: 2,
+    sortOrder: 5,
   }),
   buildShape({
     id: "caged_chord_g_form",
@@ -639,7 +751,7 @@ const cagedChordShapes = [
       [0],
     ],
     ...CAGED_CHORD_META,
-    sortOrder: 3,
+    sortOrder: 1,
   }),
   buildShape({
     id: "caged_chord_e_form",
@@ -656,7 +768,7 @@ const cagedChordShapes = [
       [0],
     ],
     ...CAGED_CHORD_META,
-    sortOrder: 4,
+    sortOrder: 2,
   }),
   buildShape({
     id: "caged_chord_d_form",
@@ -673,7 +785,7 @@ const cagedChordShapes = [
       [2],
     ],
     ...CAGED_CHORD_META,
-    sortOrder: 5,
+    sortOrder: 3,
   }),
 ];
 
@@ -693,7 +805,7 @@ const fiveMajorScaleShapes = [
       [-3, -2, 0],
     ],
     ...FIVE_MAJOR_SCALE_META,
-    sortOrder: 1,
+    sortOrder: 4,
   }),
   buildShape({
     id: "major_scale_5_g_form",
@@ -710,7 +822,7 @@ const fiveMajorScaleShapes = [
       [0, 2],
     ],
     ...FIVE_MAJOR_SCALE_META,
-    sortOrder: 2,
+    sortOrder: 5,
   }),
   buildShape({
     id: "major_scale_5_a_form",
@@ -727,7 +839,7 @@ const fiveMajorScaleShapes = [
       [-3, -1, 0],
     ],
     ...FIVE_MAJOR_SCALE_META,
-    sortOrder: 3,
+    sortOrder: 1,
   }),
   buildShape({
     id: "major_scale_5_b_form",
@@ -744,7 +856,7 @@ const fiveMajorScaleShapes = [
       [-1, 0, 2],
     ],
     ...FIVE_MAJOR_SCALE_META,
-    sortOrder: 4,
+    sortOrder: 2,
   }),
   buildShape({
     id: "major_scale_5_d_form",
@@ -761,7 +873,183 @@ const fiveMajorScaleShapes = [
       [0, 2, 3],
     ],
     ...FIVE_MAJOR_SCALE_META,
+    sortOrder: 3,
+  }),
+];
+
+const fiveMelodicMinorScaleShapes = [
+  buildShape({
+    id: "melodic_minor_scale_5_e_form",
+    name: "E Shape",
+    mode: "Melodic Minor Scale Position",
+    system: "CAGED-Melodic Minor Scales",
+    anchorString: 0,
+    rows: [
+      [-1, 0, 2, 3],
+      [0, 2],
+      [-1, 1, 2],
+      [-1, 0, 2],
+      [0, 2],
+      [-1, 0, 2, 3],
+    ],
+    ...FIVE_MELODIC_MINOR_SCALE_META,
+    sortOrder: 4,
+  }),
+  buildShape({
+    id: "melodic_minor_scale_5_d_form",
+    name: "D Shape",
+    mode: "Melodic Minor Scale Position",
+    system: "CAGED-Melodic Minor Scales",
+    anchorString: 2,
+    rows: [
+      [0, 1, 3],
+      [0, 2],
+      [-1, 0, 2, 3],
+      [0, 2],
+      [0, 2, 3],
+      [0, 1, 3],
+    ],
+    ...FIVE_MELODIC_MINOR_SCALE_META,
     sortOrder: 5,
+  }),
+  buildShape({
+    id: "melodic_minor_scale_5_c_form",
+    name: "C Shape",
+    mode: "Melodic Minor Scale Position",
+    system: "CAGED-Melodic Minor Scales",
+    anchorString: 1,
+    rows: [
+      [-2, 0],
+      [-3, -1, 0],
+      [-3, -2, 0],
+      [-3, -1],
+      [-3, -2, 0, 1],
+      [-2, 0],
+    ],
+    ...FIVE_MELODIC_MINOR_SCALE_META,
+    sortOrder: 1,
+  }),
+  buildShape({
+    id: "melodic_minor_scale_5_a_form",
+    name: "A Shape",
+    mode: "Melodic Minor Scale Position",
+    system: "CAGED-Melodic Minor Scales",
+    anchorString: 1,
+    rows: [
+      [0, 2],
+      [-1, 0, 2, 3],
+      [0, 2],
+      [-1, 1, 2],
+      [0, 1, 3],
+      [0, 2],
+    ],
+    ...FIVE_MELODIC_MINOR_SCALE_META,
+    sortOrder: 2,
+  }),
+  buildShape({
+    id: "melodic_minor_scale_5_g_form",
+    name: "G Shape",
+    mode: "Melodic Minor Scale Position",
+    system: "CAGED-Melodic Minor Scales",
+    anchorString: 0,
+    rows: [
+      [-3, -1, 0],
+      [-3, -2, 0],
+      [-3, -1],
+      [-4, -3, -1, 0],
+      [-2, 0],
+      [-3, -1, 0],
+    ],
+    ...FIVE_MELODIC_MINOR_SCALE_META,
+    sortOrder: 3,
+  }),
+];
+
+const fiveHarmonicMinorScaleShapes = [
+  buildShape({
+    id: "harmonic_minor_scale_5_e_form",
+    name: "E Shape",
+    mode: "Harmonic Minor Scale Position",
+    system: "CAGED-Harmonic Minor Scales",
+    anchorString: 0,
+    rows: [
+      [-1, 0, 2, 3],
+      [0, 2, 3],
+      [1, 2],
+      [-1, 0, 2],
+      [0, 1],
+      [-1, 0, 2, 3],
+    ],
+    ...FIVE_HARMONIC_MINOR_SCALE_META,
+    sortOrder: 4,
+  }),
+  buildShape({
+    id: "harmonic_minor_scale_5_d_form",
+    name: "D Shape",
+    mode: "Harmonic Minor Scale Position",
+    system: "CAGED-Harmonic Minor Scales",
+    anchorString: 4,
+    rows: [
+      [-3, -2, 0],
+      [-3, -2],
+      [-4, -3, -1, 0],
+      [-3, -1, 0],
+      [-1, 0],
+      [-3, -2, 0],
+    ],
+    ...FIVE_HARMONIC_MINOR_SCALE_META,
+    sortOrder: 5,
+  }),
+  buildShape({
+    id: "harmonic_minor_scale_5_c_form",
+    name: "C Shape",
+    mode: "Harmonic Minor Scale Position",
+    system: "CAGED-Harmonic Minor Scales",
+    anchorString: 4,
+    rows: [
+      [0, 2, 3],
+      [1, 2],
+      [-1, 0, 2],
+      [-1, 0],
+      [-1, 0, 2, 3],
+      [0, 2, 3],
+    ],
+    ...FIVE_HARMONIC_MINOR_SCALE_META,
+    sortOrder: 1,
+  }),
+  buildShape({
+    id: "harmonic_minor_scale_5_a_form",
+    name: "A Shape",
+    mode: "Harmonic Minor Scale Position",
+    system: "CAGED-Harmonic Minor Scales",
+    anchorString: 1,
+    rows: [
+      [0, 1],
+      [-1, 0, 2, 3],
+      [0, 2, 3],
+      [1, 2],
+      [0, 1, 3],
+      [0, 1],
+    ],
+    ...FIVE_HARMONIC_MINOR_SCALE_META,
+    sortOrder: 2,
+  }),
+  buildShape({
+    id: "harmonic_minor_scale_5_g_form",
+    name: "G Shape",
+    mode: "Harmonic Minor Scale Position",
+    system: "CAGED-Harmonic Minor Scales",
+    anchorString: 0,
+    rows: [
+      [-1, 0],
+      [-3, -2, 0],
+      [-3, -2],
+      [-4, -3, -1, 0],
+      [-2, 0, 1],
+      [-1, 0],
+    ],
+    ...FIVE_HARMONIC_MINOR_SCALE_META,
+    sortOrder: 3,
   }),
 ];
 
@@ -967,29 +1255,37 @@ const triadShapes = TRIAD_QUALITIES.flatMap((quality) =>
 );
 
 const susChordShapes = [
-  buildDrop2Shape({
-    id: "sus_chords_sus2_drop2",
-    name: "Drop 2",
-    mode: "7sus2",
-    system: "Drop 2",
-    toneOrder: DROP2_INVERSIONS[0].toneOrder,
-    toneIntervals: { R: 0, "3": 2, "5": 7, "7": 10 },
-    ...TRIADS_SUS2_META,
-    sortOrder: 1,
-  }),
-  buildVoicingShapeWithVariants({
-    id: "sus_chords_sus2_drop3",
-    name: "Drop 3",
-    mode: "7sus2",
-    system: "Drop 3",
-    toneOrder: DROP3_INVERSIONS[0].toneOrder,
-    toneIntervals: { R: 0, "3": 2, "5": 7, "7": 10 },
-    stringOffsets: [0, 2, 3, 4],
-    dragPlacementStarts: [0, 1],
-    anchorHintLabel: "拖拽时可选弦组：6弦组 / 5弦组",
-    ...TRIADS_SUS2_META,
-    sortOrder: 2,
-  }),
+  ...[0, 1, 2].map((stringSetStart, index) =>
+    buildDrop2VariantShape(
+      {
+        id: `sus_chords_sus2_drop2_root_${6 - stringSetStart}`,
+        name: `Root on ${ROOT_STRING_LABELS[stringSetStart]}`,
+        mode: "7sus2",
+        system: "Drop 2",
+        toneOrder: DROP2_INVERSIONS[0].toneOrder,
+        toneIntervals: { R: 0, "3": 2, "5": 7, "7": 10 },
+        ...SUS2_DROP2_META,
+        sortOrder: index + 1,
+      },
+      stringSetStart
+    )
+  ),
+  ...[0, 1].map((stringSetStart, index) =>
+    buildVoicingVariantShape(
+      {
+        id: `sus_chords_sus2_drop3_root_${6 - stringSetStart}`,
+        name: `Root on ${ROOT_STRING_LABELS[stringSetStart]}`,
+        mode: "7sus2",
+        system: "Drop 3",
+        toneOrder: DROP3_INVERSIONS[0].toneOrder,
+        toneIntervals: { R: 0, "3": 2, "5": 7, "7": 10 },
+        stringOffsets: [0, 2, 3, 4],
+        ...SUS2_DROP3_META,
+        sortOrder: index + 1,
+      },
+      stringSetStart
+    )
+  ),
   buildVoicingShapeWithVariants({
     id: "sus_chords_sus2_triads",
     name: "Triads",
@@ -1000,32 +1296,40 @@ const susChordShapes = [
     stringOffsets: [0, 1, 2],
     dragPlacementStarts: [0, 1, 2, 3],
     anchorHintLabel: "拖拽时可选弦组：6-5-4 / 5-4-3 / 4-3-2 / 3-2-1",
-    ...TRIADS_SUS2_META,
-    sortOrder: 3,
-  }),
-  buildDrop2Shape({
-    id: "sus_chords_sus4_drop2",
-    name: "Drop 2",
-    mode: "7sus4",
-    system: "Drop 2",
-    toneOrder: DROP2_INVERSIONS[0].toneOrder,
-    toneIntervals: { R: 0, "3": 5, "5": 7, "7": 10 },
-    ...TRIADS_SUS4_META,
+    ...SUS2_TRIADS_META,
     sortOrder: 1,
   }),
-  buildVoicingShapeWithVariants({
-    id: "sus_chords_sus4_drop3",
-    name: "Drop 3",
-    mode: "7sus4",
-    system: "Drop 3",
-    toneOrder: DROP3_INVERSIONS[0].toneOrder,
-    toneIntervals: { R: 0, "3": 5, "5": 7, "7": 10 },
-    stringOffsets: [0, 2, 3, 4],
-    dragPlacementStarts: [0, 1],
-    anchorHintLabel: "拖拽时可选弦组：6弦组 / 5弦组",
-    ...TRIADS_SUS4_META,
-    sortOrder: 2,
-  }),
+  ...[0, 1, 2].map((stringSetStart, index) =>
+    buildDrop2VariantShape(
+      {
+        id: `sus_chords_sus4_drop2_root_${6 - stringSetStart}`,
+        name: `Root on ${ROOT_STRING_LABELS[stringSetStart]}`,
+        mode: "7sus4",
+        system: "Drop 2",
+        toneOrder: DROP2_INVERSIONS[0].toneOrder,
+        toneIntervals: { R: 0, "3": 5, "5": 7, "7": 10 },
+        ...SUS4_DROP2_META,
+        sortOrder: index + 1,
+      },
+      stringSetStart
+    )
+  ),
+  ...[0, 1].map((stringSetStart, index) =>
+    buildVoicingVariantShape(
+      {
+        id: `sus_chords_sus4_drop3_root_${6 - stringSetStart}`,
+        name: `Root on ${ROOT_STRING_LABELS[stringSetStart]}`,
+        mode: "7sus4",
+        system: "Drop 3",
+        toneOrder: DROP3_INVERSIONS[0].toneOrder,
+        toneIntervals: { R: 0, "3": 5, "5": 7, "7": 10 },
+        stringOffsets: [0, 2, 3, 4],
+        ...SUS4_DROP3_META,
+        sortOrder: index + 1,
+      },
+      stringSetStart
+    )
+  ),
   buildVoicingShapeWithVariants({
     id: "sus_chords_sus4_triads",
     name: "Triads",
@@ -1036,25 +1340,28 @@ const susChordShapes = [
     stringOffsets: [0, 1, 2],
     dragPlacementStarts: [0, 1, 2, 3],
     anchorHintLabel: "拖拽时可选弦组：6-5-4 / 5-4-3 / 4-3-2 / 3-2-1",
-    ...TRIADS_SUS4_META,
-    sortOrder: 3,
+    ...SUS4_TRIADS_META,
+    sortOrder: 1,
   }),
 ];
 
 const diminished7ChordShapes = [
-  buildVoicingShapeWithVariants({
-    id: "dim7_chord_shape_1",
-    name: "Shape 1",
-    mode: "Diminished 7",
-    system: "Diminished 7 Chord",
-    toneOrder: ["R", "5", "7", "3"],
-    toneIntervals: { R: 0, "3": 3, "5": 6, "7": 9 },
-    stringOffsets: [0, 1, 2, 3],
-    dragPlacementStarts: [1, 0, 2], // base = root on 5th string (matches recorded shape)
-    anchorHintLabel: "拖拽时可选根音弦：6弦 / 5弦 / 4弦",
-    ...DIM7_CHORD_MOVABLE_META,
-    sortOrder: 1,
-  }),
+  ...[0, 1, 2].map((stringSetStart, index) =>
+    buildVoicingVariantShape(
+      {
+        id: `dim7_chord_root_${6 - stringSetStart}`,
+        name: `Root on ${ROOT_STRING_LABELS[stringSetStart]}`,
+        mode: "Diminished 7",
+        system: "Diminished 7 Chord",
+        toneOrder: ["R", "5", "7", "3"],
+        toneIntervals: { R: 0, "3": 3, "5": 6, "7": 9 },
+        stringOffsets: [0, 1, 2, 3],
+        ...DIM7_CHORD_MOVABLE_META,
+        sortOrder: index + 1,
+      },
+      stringSetStart
+    )
+  ),
 ];
 
 const dominant7ArpeggioRecordedShapes = [
@@ -1360,6 +1667,111 @@ const groupedPentatonicShapes = [
   }),
 ];
 
+const bluesScaleShapes = [
+  buildReferenceWindowShape({
+    id: "blues_scale_box_1",
+    name: "Box 1 (Blues Scale)",
+    mode: "Minor Blues Scale",
+    system: "Blues Scale",
+    anchorString: 0,
+    anchorFret: 0,
+    intervals: INTERVALS.bluesMinor,
+    minFret: 0,
+    maxFret: 3,
+    ...BLUES_SCALE_BOX_META,
+    sortOrder: 1,
+  }),
+  buildReferenceWindowShape({
+    id: "blues_scale_box_2",
+    name: "Box 2 (Blues Scale)",
+    mode: "Minor Blues Scale",
+    system: "Blues Scale",
+    anchorString: 2,
+    anchorFret: 2,
+    intervals: INTERVALS.bluesMinor,
+    minFret: 2,
+    maxFret: 5,
+    ...BLUES_SCALE_BOX_META,
+    sortOrder: 2,
+  }),
+  buildReferenceWindowShape({
+    id: "blues_scale_box_3",
+    name: "Box 3 (Blues Scale)",
+    mode: "Minor Blues Scale",
+    system: "Blues Scale",
+    anchorString: 1,
+    anchorFret: 7,
+    intervals: INTERVALS.bluesMinor,
+    minFret: 4,
+    maxFret: 8,
+    ...BLUES_SCALE_BOX_META,
+    sortOrder: 3,
+  }),
+  buildReferenceWindowShape({
+    id: "blues_scale_box_4",
+    name: "Box 4 (Blues Scale)",
+    mode: "Minor Blues Scale",
+    system: "Blues Scale",
+    anchorString: 3,
+    anchorFret: 9,
+    intervals: INTERVALS.bluesMinor,
+    minFret: 7,
+    maxFret: 10,
+    ...BLUES_SCALE_BOX_META,
+    sortOrder: 4,
+  }),
+  buildReferenceWindowShape({
+    id: "blues_scale_box_5",
+    name: "Box 5 (Blues Scale)",
+    mode: "Minor Blues Scale",
+    system: "Blues Scale",
+    anchorString: 0,
+    anchorFret: 12,
+    intervals: INTERVALS.bluesMinor,
+    minFret: 9,
+    maxFret: 12,
+    ...BLUES_SCALE_BOX_META,
+    sortOrder: 5,
+  }),
+];
+
+const groupedBluesScaleShapes = [
+  buildShape({
+    id: "blues_grouping_3_plus_2",
+    name: "3 + 2",
+    mode: "Major Blues Scale",
+    system: "Blues Scale",
+    anchorString: 1,
+    rows: [
+      [0, 2],
+      [0, 2, 3, 4],
+      [2, 4],
+      [2, 4, 5, 6],
+      [5, 7],
+      [5, 7, 8, 9],
+    ],
+    ...BLUES_GROUPING_META,
+    sortOrder: 1,
+  }),
+  buildShape({
+    id: "blues_grouping_2_plus_3",
+    name: "2 + 3",
+    mode: "Minor Blues Scale",
+    system: "Blues Scale",
+    anchorString: 0,
+    rows: [
+      [-2, 0],
+      [-2, 0, 1, 2],
+      [0, 2],
+      [0, 2, 3, 4],
+      [3, 5],
+      [3, 5, 6, 7],
+    ],
+    ...BLUES_GROUPING_META,
+    sortOrder: 2,
+  }),
+];
+
 const diminishedScaleShapes = [
   buildShape({
     id: "diminished_scale_st_vertical",
@@ -1431,18 +1843,51 @@ const diminishedScaleShapes = [
   }),
 ];
 
+const wholeToneScaleShapes = [
+  buildReferenceWindowShape({
+    id: "whole_tone_scale_horizontal",
+    name: "Whole Tone Scale (Vertical)",
+    mode: "Vertical",
+    system: "Whole Tone Scale",
+    anchorString: 0,
+    anchorFret: 0,
+    intervals: INTERVALS.wholeTone,
+    minFret: 0,
+    maxFret: 5,
+    ...WHOLE_TONE_SCALE_HORIZONTAL_META,
+    sortOrder: 1,
+  }),
+  buildShape({
+    id: "whole_tone_scale_diagonal",
+    name: "Whole Tone Scale (Diagonal)",
+    mode: "Diagonal",
+    system: "Whole Tone Scale",
+    anchorString: 0,
+    rows: [
+      [0, 2, 4],
+      [1, 3, 5],
+      [2, 4, 6],
+      [3, 5, 7],
+      [4, 6, 8],
+      [5, 7, 9],
+    ],
+    ...WHOLE_TONE_SCALE_DIAGONAL_META,
+    sortOrder: 2,
+  }),
+];
+
 const majorModeOrder = [
-  ["ionian", "Ionian (Mode I)"],
-  ["dorian", "Dorian (Mode II)"],
-  ["phrygian", "Phrygian (Mode III)"],
-  ["lydian", "Lydian (Mode IV)"],
-  ["mixolydian", "Mixolydian (Mode V)"],
-  ["aeolian", "Aeolian (Mode VI)"],
-  ["locrian", "Locrian (Mode VII)"],
+  ["ionian", "Ionian", [0, 2, 4, 5, 7, 9, 11]],
+  ["dorian", "Dorian", [0, 2, 3, 5, 7, 9, 10]],
+  ["phrygian", "Phrygian", [0, 1, 3, 5, 7, 8, 10]],
+  ["lydian", "Lydian", [0, 2, 4, 6, 7, 9, 11]],
+  ["mixolydian", "Mixolydian", [0, 2, 4, 5, 7, 9, 10]],
+  ["aeolian", "Aeolian", [0, 2, 3, 5, 7, 8, 10]],
+  ["locrian", "Locrian", [0, 1, 3, 5, 6, 8, 10]],
 ];
 
 const naturalMinorModeOrder = [
-  ["aeolian", "Aeolian (Natural Minor)"],
+  ["aeolian", "Aeolian"],
   ["locrian", "Locrian"],
   ["ionian", "Ionian"],
   ["dorian", "Dorian"],
@@ -1451,10 +1896,38 @@ const naturalMinorModeOrder = [
   ["mixolydian", "Mixolydian"],
 ];
 
+const melodicMinorModeOrder = [
+  ["Melodic Minor", [0, 2, 3, 5, 7, 9, 11]],
+  ["Dorian b2", [0, 1, 3, 5, 7, 9, 10]],
+  ["Phrygian #5", [0, 2, 4, 6, 8, 9, 11]],
+  ["Lydian Dominant", [0, 2, 4, 6, 7, 9, 10]],
+  ["Mixolydian b6", [0, 2, 4, 5, 7, 8, 10]],
+  ["Aeolian b5", [0, 2, 3, 5, 6, 8, 10]],
+  ["Super Locrian", [0, 1, 3, 4, 6, 8, 10]],
+];
+
+const harmonicMinorModeOrder = [
+  ["Harmonic Minor", [0, 2, 3, 5, 7, 8, 11]],
+  ["Locrian #6", [0, 1, 3, 5, 6, 9, 10]],
+  ["Ionian #5", [0, 2, 4, 5, 8, 9, 11]],
+  ["Dorian #4", [0, 2, 3, 6, 7, 9, 10]],
+  ["Phrygian Dominant", [0, 1, 4, 5, 7, 8, 10]],
+  ["Lydian #2", [0, 3, 4, 6, 7, 9, 11]],
+  ["Super Locrian bb7", [0, 1, 3, 4, 6, 8, 9]],
+];
+
+function buildModeIntervalMap(sourceIntervals, targetIntervals) {
+  const map = {};
+  sourceIntervals.forEach((sourceInterval, degreeIndex) => {
+    map[sourceInterval] = targetIntervals[degreeIndex];
+  });
+  return map;
+}
+
 const major3NpsShapes = majorModeOrder.map(([modeKey, modeLabel], index) =>
   buildShape({
     id: `major_3nps_shape_${index + 1}`,
-    name: `Shape ${index + 1}`,
+    name: modeLabel,
     mode: `${modeLabel} · 3NPS`,
     system: "3NPS",
     anchorString: 0,
@@ -1467,7 +1940,7 @@ const major3NpsShapes = majorModeOrder.map(([modeKey, modeLabel], index) =>
 const naturalMinor3NpsShapes = naturalMinorModeOrder.map(([modeKey, modeLabel], index) =>
   buildShape({
     id: `natural_minor_3nps_shape_${index + 1}`,
-    name: `Shape ${index + 1}`,
+    name: modeLabel,
     mode: `${modeLabel} · 3NPS`,
     system: "3NPS",
     anchorString: 0,
@@ -1477,9 +1950,35 @@ const naturalMinor3NpsShapes = naturalMinorModeOrder.map(([modeKey, modeLabel], 
   })
 );
 
+const melodicMinor3NpsShapes = major3NpsShapes.map((shape, index) =>
+  deriveShapeByIntervalSubstitution(shape, {
+    id: `melodic_minor_3nps_shape_${index + 1}`,
+    name: melodicMinorModeOrder[index][0],
+    mode: `${melodicMinorModeOrder[index][0]} · 3NPS`,
+    system: "3NPS",
+    intervalMap: buildModeIntervalMap(majorModeOrder[index][2], melodicMinorModeOrder[index][1]),
+    ...THREE_NPS_MELODIC_MINOR_META,
+    sortOrder: index + 1,
+  })
+);
+
+const harmonicMinor3NpsShapes = major3NpsShapes.map((shape, index) =>
+  deriveShapeByIntervalSubstitution(shape, {
+    id: `harmonic_minor_3nps_shape_${index + 1}`,
+    name: harmonicMinorModeOrder[index][0],
+    mode: `${harmonicMinorModeOrder[index][0]} · 3NPS`,
+    system: "3NPS",
+    intervalMap: buildModeIntervalMap(majorModeOrder[index][2], harmonicMinorModeOrder[index][1]),
+    ...THREE_NPS_HARMONIC_MINOR_META,
+    sortOrder: index + 1,
+  })
+);
+
 export const SCALE_SHAPES = [
   ...cagedChordShapes,
   ...fiveMajorScaleShapes,
+  ...fiveMelodicMinorScaleShapes,
+  ...fiveHarmonicMinorScaleShapes,
   ...drop2ChordShapes,
   ...drop3ChordShapes,
   ...triadShapes,
@@ -1491,6 +1990,11 @@ export const SCALE_SHAPES = [
   ...halfDiminished7ArpeggioDerivedShapes,
   ...minorPentatonicBoxes,
   ...groupedPentatonicShapes,
+  ...bluesScaleShapes,
+  ...groupedBluesScaleShapes,
   ...diminishedScaleShapes,
+  ...wholeToneScaleShapes,
   ...major3NpsShapes,
+  ...melodicMinor3NpsShapes,
+  ...harmonicMinor3NpsShapes,
 ];
