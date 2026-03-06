@@ -254,18 +254,33 @@
           var buySection = document.getElementById('buy');
           if (!buySection) return;
 
-          var anchor = buySection.querySelector('div.relative.w-full[style*="padding: 1.3rem"]')
-            || buySection.querySelector('div.relative.w-full');
+          var accessInput = buySection.querySelector('#access-code-input');
+          var payButton = buySection.querySelector('#fretlab-buy-alipay') || buySection.querySelector('#fretlab-buy-wechat');
+          var anchor = null;
+          if (accessInput && accessInput.closest) {
+            anchor = accessInput.closest('div.relative.w-full');
+          }
+          if (!anchor && payButton && payButton.closest) {
+            anchor = payButton.closest('div.relative.w-full');
+          }
+          if (!anchor) {
+            anchor = buySection.querySelector('div.relative.w-full[style*="padding: 1.3rem"]')
+              || buySection.querySelector('div.relative.w-full');
+          }
           if (!anchor || !anchor.parentNode) return;
+
+          var contentRoot = anchor.querySelector(':scope > div.relative.z-10')
+            || anchor.querySelector('div.relative.z-10')
+            || anchor;
 
           function findTrialFullBlock(scope) {
             if (!scope) return null;
-            var nodes = scope.querySelectorAll('div');
-            for (var i = 0; i < nodes.length; i++) {
-              var text = (nodes[i].textContent || '').replace(/\s+/g, ' ');
-              var hasTrial = text.indexOf('试用版') !== -1 || text.indexOf('Trial') !== -1;
+            var grids = scope.querySelectorAll('div.grid.grid-cols-1.md\\:grid-cols-2.gap-3');
+            for (var i = 0; i < grids.length; i++) {
+              var text = (grids[i].textContent || '').replace(/\s+/g, ' ');
+              var hasTrial = text.indexOf('试用版') !== -1 || text.indexOf('免费版') !== -1 || text.indexOf('Trial') !== -1 || text.indexOf('Free Version') !== -1;
               var hasFull = text.indexOf('完整版') !== -1 || text.indexOf('Full Version') !== -1;
-              if (hasTrial && hasFull) return nodes[i];
+              if (hasTrial && hasFull) return grids[i];
             }
             return null;
           }
@@ -273,7 +288,19 @@
           function findPreviewContainer(scope) {
             if (!scope) return null;
             var previewLink = scope.querySelector('a[href="/fretlab-tool/"],a[href="/fretlab-tool"]');
+            if (!previewLink) {
+              var allLinks = scope.querySelectorAll('a[href]');
+              for (var j = 0; j < allLinks.length; j++) {
+                var linkText = (allLinks[j].textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+                if (linkText.indexOf('start now') !== -1 || linkText.indexOf('立即试用') !== -1) {
+                  previewLink = allLinks[j];
+                  break;
+                }
+              }
+            }
             if (!previewLink) return null;
+            var previewRow = previewLink.closest('div.flex.gap-3.flex-wrap.justify-center.mt-1');
+            if (previewRow && scope.contains(previewRow)) return previewRow;
             var node = previewLink;
             while (node && node.parentNode && node.parentNode !== scope) {
               node = node.parentNode;
@@ -301,22 +328,25 @@
 
           }
 
-          var previewContainer = findPreviewContainer(anchor);
-          if (previewContainer && previewContainer.parentNode === anchor) {
-            if (block.parentNode !== anchor || block.nextSibling !== previewContainer) {
-              anchor.insertBefore(block, previewContainer);
+          var trialFullBlock = findTrialFullBlock(contentRoot);
+          var previewContainer = findPreviewContainer(contentRoot);
+
+          // Preferred position:
+          // directly above Start now.
+          if (previewContainer && previewContainer.parentNode) {
+            var parentNode = previewContainer.parentNode;
+            if (block.parentNode !== parentNode || block.nextElementSibling !== previewContainer) {
+              parentNode.insertBefore(block, previewContainer);
             }
-          } else {
-            var trialFullBlock = findTrialFullBlock(anchor);
-            if (trialFullBlock && trialFullBlock.parentNode) {
-            if (block.parentNode !== trialFullBlock.parentNode || block.previousSibling !== trialFullBlock) {
+            if (trialFullBlock && trialFullBlock.parentNode === parentNode && trialFullBlock.nextElementSibling !== block) {
               trialFullBlock.insertAdjacentElement('afterend', block);
             }
-            } else if (anchor.parentNode) {
-              if (block.parentNode !== anchor.parentNode || block.previousSibling !== anchor) {
-                anchor.insertAdjacentElement('afterend', block);
-              }
+          } else if (trialFullBlock && trialFullBlock.parentNode) {
+            if (block.parentNode !== trialFullBlock.parentNode || block.previousElementSibling !== trialFullBlock) {
+              trialFullBlock.insertAdjacentElement('afterend', block);
             }
+          } else {
+            return;
           }
 
           var bannerNode = document.getElementById('fretlab-update-log-banner');
