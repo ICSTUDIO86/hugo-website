@@ -101,6 +101,9 @@
         position: relative;
         isolation: isolate;
         z-index: 1;
+        min-height: 44px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
       }
 
       .fretlab-update-log-open-btn::before,
@@ -479,17 +482,27 @@
             var api = window.__REACT_GRAB__;
             var state = api && typeof api.getState === 'function' ? api.getState() : null;
             var wasActive = !!(state && state.isActive);
+            var wasEnabled = !!(api && typeof api.isEnabled === 'function' && api.isEnabled());
             modal.dataset.reactGrabWasActive = wasActive ? '1' : '';
-            if (wasActive && typeof api.deactivate === 'function') {
+            modal.dataset.reactGrabWasEnabled = wasEnabled ? '1' : '';
+            if (wasEnabled && typeof api.setEnabled === 'function') {
+              api.setEnabled(false);
+            } else if (wasActive && typeof api.deactivate === 'function') {
               api.deactivate();
             }
           }
 
           function resumeReactGrabAfterModal() {
             var api = window.__REACT_GRAB__;
+            var shouldReenable = modal.dataset.reactGrabWasEnabled === '1';
             var shouldReactivate = modal.dataset.reactGrabWasActive === '1';
+            modal.dataset.reactGrabWasEnabled = '';
             modal.dataset.reactGrabWasActive = '';
-            if (shouldReactivate && api && typeof api.activate === 'function') {
+            if (shouldReenable && api && typeof api.setEnabled === 'function') {
+              setTimeout(function () {
+                api.setEnabled(true);
+              }, 0);
+            } else if (shouldReactivate && api && typeof api.activate === 'function') {
               setTimeout(function () {
                 api.activate();
               }, 0);
@@ -564,6 +577,44 @@
               });
             })(historyToggles[k]);
           }
+
+          function handleModalAction(target, event) {
+            var actionTarget = target && target.closest ? target.closest('#fretlab-update-log-close, .fretlab-history-toggle') : null;
+            if (!actionTarget) return false;
+
+            if (actionTarget.id === 'fretlab-update-log-close') {
+              isolateClickEvent(event);
+              closeModal();
+              return true;
+            }
+
+            if (actionTarget.classList.contains('fretlab-history-toggle')) {
+              isolateClickEvent(event);
+              var historyIndex = actionTarget.getAttribute('data-history-index');
+              var detailPanel = modal.querySelector('[data-history-panel="' + historyIndex + '"]');
+              if (!detailPanel) return true;
+              var shouldOpen = detailPanel.hasAttribute('hidden');
+              if (shouldOpen) {
+                detailPanel.removeAttribute('hidden');
+                actionTarget.setAttribute('aria-expanded', 'true');
+              } else {
+                detailPanel.setAttribute('hidden', '');
+                actionTarget.setAttribute('aria-expanded', 'false');
+              }
+              return true;
+            }
+
+            return false;
+          }
+
+          modal.addEventListener('pointerup', function (event) {
+            if (event.pointerType !== 'touch') return;
+            handleModalAction(event.target, event);
+          });
+
+          modal.addEventListener('click', function (event) {
+            handleModalAction(event.target, event);
+          });
 
           modal.onclick = function (event) {
             if (event.target === modal) closeModal();
