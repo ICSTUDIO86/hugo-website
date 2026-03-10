@@ -40,8 +40,9 @@ export function getNoteName(noteIndex, preference = "sharps") {
   return NOTE_NAMES[preference][normalized];
 }
 
-export function getPositionNoteIndex(stringIndex, fret) {
-  const openIndex = getNoteIndex(STANDARD_TUNING[stringIndex]);
+export function getPositionNoteIndex(stringIndex, fret, tuning = STANDARD_TUNING) {
+  const normalizedTuning = Array.isArray(tuning) && tuning.length ? tuning : STANDARD_TUNING;
+  const openIndex = getNoteIndex(normalizedTuning[stringIndex]);
   return (openIndex + fret) % 12;
 }
 

@@ -409,7 +409,7 @@ const DROP3_MAJOR7_META = makeLibraryMeta(
   "Drop 3 和弦",
   4,
   "drop3-major7",
-  "Major 7 · 3 Inversions",
+  "Major 7 · 4 Inversions",
   1
 );
 
@@ -418,7 +418,7 @@ const DROP3_MINOR7_META = makeLibraryMeta(
   "Drop 3 和弦",
   4,
   "drop3-minor7",
-  "Minor 7 · 3 Inversions",
+  "Minor 7 · 4 Inversions",
   2
 );
 
@@ -427,7 +427,7 @@ const DROP3_DOM7_META = makeLibraryMeta(
   "Drop 3 和弦",
   4,
   "drop3-dominant7",
-  "Dominant 7 · 3 Inversions",
+  "Dominant 7 · 4 Inversions",
   3
 );
 
@@ -436,7 +436,7 @@ const DROP3_HALF_DIM7_META = makeLibraryMeta(
   "Drop 3 和弦",
   4,
   "drop3-half-diminished7",
-  "Half-Diminished 7 (m7b5) · 3 Inversions",
+  "Half-Diminished 7 (m7b5) · 4 Inversions",
   4
 );
 
@@ -445,7 +445,7 @@ const DROP3_SUS2_7_META = makeLibraryMeta(
   "Drop 3 和弦",
   4,
   "drop3-sus2-7",
-  "7sus2 · 3 Inversions",
+  "7sus2 · 4 Inversions",
   5
 );
 
@@ -454,9 +454,49 @@ const DROP3_SUS4_7_META = makeLibraryMeta(
   "Drop 3 和弦",
   4,
   "drop3-sus4-7",
-  "7sus4 · 3 Inversions",
+  "7sus4 · 4 Inversions",
   6
 );
+
+const SHELL_TRIADS_META = makeLibraryMeta(
+  "shell-voicing",
+  "Shell Voicing",
+  4.5,
+  "shell-voicing-triads",
+  "Triads",
+  1
+);
+
+const SHELL_SEVENTH_META = makeLibraryMeta(
+  "shell-voicing",
+  "Shell Voicing",
+  4.5,
+  "shell-voicing-seventh",
+  "Seventh Chords",
+  2
+);
+
+function createShellTriadMeta(sectionId, sectionLabel, sectionOrder) {
+  return makeLibraryMeta(
+    SHELL_TRIADS_META.categoryId,
+    SHELL_TRIADS_META.categoryLabel,
+    SHELL_TRIADS_META.categoryOrder,
+    sectionId,
+    sectionLabel,
+    sectionOrder
+  );
+}
+
+function createShellSeventhMeta(sectionId, sectionLabel, sectionOrder) {
+  return makeLibraryMeta(
+    SHELL_SEVENTH_META.categoryId,
+    SHELL_SEVENTH_META.categoryLabel,
+    SHELL_SEVENTH_META.categoryOrder,
+    sectionId,
+    sectionLabel,
+    sectionOrder
+  );
+}
 
 const TRIADS_MAJOR_META = makeLibraryMeta(
   "triads",
@@ -1130,16 +1170,22 @@ const DROP3_INVERSIONS = [
     sortOrder: 1,
   },
   {
-    id: "second_position",
-    name: "Second Position",
+    id: "first_position",
+    name: "First Position",
     toneOrder: ["3", "R", "5", "7"],
     sortOrder: 2,
+  },
+  {
+    id: "second_position",
+    name: "Second Position",
+    toneOrder: ["5", "3", "7", "R"],
+    sortOrder: 3,
   },
   {
     id: "third_position",
     name: "Third Position",
     toneOrder: ["7", "5", "R", "3"],
-    sortOrder: 3,
+    sortOrder: 4,
   },
 ];
 
@@ -1184,6 +1230,126 @@ const drop3ChordShapes = DROP3_QUALITIES.flatMap((quality) =>
       anchorHintLabel: "拖拽时可选弦组：6弦组 / 5弦组",
       ...quality.meta,
       sortOrder: inversion.sortOrder,
+    })
+  )
+);
+
+const SHELL_TRIAD_QUALITIES = [
+  {
+    key: "major",
+    mode: "Major Triad",
+    toneIntervals: { R: 0, "3": 4 },
+    meta: createShellTriadMeta("shell-triad-major", "Major Triad", 1),
+  },
+  {
+    key: "minor",
+    mode: "Minor Triad",
+    toneIntervals: { R: 0, "3": 3 },
+    meta: createShellTriadMeta("shell-triad-minor", "Minor Triad", 2),
+  },
+];
+
+const SHELL_TRIAD_PATTERNS = [
+  {
+    key: "r3r",
+    label: "R-3-R",
+    toneOrder: ["R", "3", "R"],
+    stringOffsets: [0, 1, 2],
+    sortBase: 0,
+  },
+  {
+    key: "rr3",
+    label: "R-R-3",
+    toneOrder: ["R", "R", "3"],
+    stringOffsets: [0, 2, 3],
+    sortBase: 100,
+  },
+];
+
+const shellTriadShapes = SHELL_TRIAD_PATTERNS.flatMap((pattern) =>
+  SHELL_TRIAD_QUALITIES.map((quality, index) =>
+    buildVoicingShapeWithVariants({
+      id: `shell_triad_${quality.key}_${pattern.key}`,
+      name: pattern.label,
+      mode: quality.mode,
+      system: "Shell Voicing",
+      toneOrder: pattern.toneOrder,
+      toneIntervals: quality.toneIntervals,
+      stringOffsets: pattern.stringOffsets,
+      dragPlacementStarts: [0, 1, 2],
+      anchorHintLabel: "拖拽时可选弦组：6弦组 / 5弦组 / 4弦组",
+      ...quality.meta,
+      sortOrder: pattern.sortBase + index + 1,
+    })
+  )
+);
+
+const SHELL_SEVENTH_QUALITIES = [
+  {
+    key: "maj7",
+    mode: "Major 7",
+    toneIntervals: { R: 0, "3": 4, "5": 7, "7": 11 },
+    meta: createShellSeventhMeta("shell-seventh-major7", "Major 7", 1),
+  },
+  {
+    key: "min7",
+    mode: "Minor 7",
+    toneIntervals: { R: 0, "3": 3, "5": 7, "7": 10 },
+    meta: createShellSeventhMeta("shell-seventh-minor7", "Minor 7", 2),
+  },
+  {
+    key: "dom7",
+    mode: "Dominant 7",
+    toneIntervals: { R: 0, "3": 4, "5": 7, "7": 10 },
+    meta: createShellSeventhMeta("shell-seventh-dominant7", "Dominant 7", 3),
+  },
+  {
+    key: "m7b5",
+    mode: "Half-Diminished 7",
+    toneIntervals: { R: 0, "3": 3, "5": 6, "7": 10 },
+    meta: createShellSeventhMeta("shell-seventh-half-diminished7", "Half-Diminished 7", 4),
+  },
+  {
+    key: "dim7",
+    mode: "Diminished 7",
+    toneIntervals: { R: 0, "3": 3, "5": 6, "7": 9 },
+    meta: createShellSeventhMeta("shell-seventh-diminished7", "Diminished 7", 5),
+  },
+];
+
+const SHELL_SEVENTH_PATTERNS = [
+  {
+    key: "r73",
+    label: "R-7-3",
+    // Derived from root-position Drop 2 (R-5-7-3) by removing the 2nd-lowest voice (5)
+    toneOrder: ["R", "7", "3"],
+    stringOffsets: [0, 2, 3],
+    sortOrder: 1,
+  },
+  {
+    key: "r37",
+    label: "R-3-7",
+    // Adjacent-string shell: root, third, seventh on neighboring strings
+    toneOrder: ["R", "3", "7"],
+    stringOffsets: [0, 1, 2],
+    sortOrder: 2,
+  },
+];
+
+const shellSeventhShapes = SHELL_SEVENTH_QUALITIES.flatMap((quality) =>
+  SHELL_SEVENTH_PATTERNS.map((pattern) =>
+    buildVoicingShapeWithVariants({
+      id: `shell_seventh_${quality.key}_${pattern.key}`,
+      name: pattern.label,
+      mode: quality.mode,
+      system: "Shell Voicing",
+      toneOrder: pattern.toneOrder,
+      toneIntervals: quality.toneIntervals,
+      stringOffsets: pattern.stringOffsets,
+      dragPlacementStarts: [0, 1, 2],
+      anchorHintLabel: "拖拽时可选弦组：6弦组 / 5弦组 / 4弦组",
+      ...quality.meta,
+      sortOrder: pattern.sortOrder,
     })
   )
 );
@@ -1375,7 +1541,7 @@ const dominant7ArpeggioRecordedShapes = [
       [-3, 0],
       [-2, 0],
       [-1],
-      [0],
+      [-3, 0],
       [-2],
       [-3, 0],
     ],
@@ -1981,6 +2147,8 @@ export const SCALE_SHAPES = [
   ...fiveHarmonicMinorScaleShapes,
   ...drop2ChordShapes,
   ...drop3ChordShapes,
+  ...shellTriadShapes,
+  ...shellSeventhShapes,
   ...triadShapes,
   ...susChordShapes,
   ...diminished7ChordShapes,

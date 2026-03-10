@@ -4,16 +4,19 @@ function isNumber(value) {
   return typeof value === "number" && Number.isFinite(value);
 }
 
-export function getTabPositionsFromMidi(midiNote, maxFret = 24) {
+export function getTabPositionsFromMidi(midiNote, maxFret = 24, openMidiByString = STANDARD_GUITAR_OPEN_MIDI) {
   if (!isNumber(midiNote)) {
     return [];
   }
   const fretLimit = Math.max(0, Math.floor(Number(maxFret) || 0));
   const normalizedMidi = Math.round(midiNote);
+  const normalizedOpenMidi = Array.isArray(openMidiByString) && openMidiByString.length
+    ? openMidiByString
+    : STANDARD_GUITAR_OPEN_MIDI;
   const positions = [];
 
-  for (let stringIndex = 0; stringIndex < STANDARD_GUITAR_OPEN_MIDI.length; stringIndex += 1) {
-    const openMidi = STANDARD_GUITAR_OPEN_MIDI[stringIndex];
+  for (let stringIndex = 0; stringIndex < normalizedOpenMidi.length; stringIndex += 1) {
+    const openMidi = normalizedOpenMidi[stringIndex];
     const fret = normalizedMidi - openMidi;
     if (fret >= 0 && fret <= fretLimit) {
       positions.push({ stringIndex, fret });

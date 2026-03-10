@@ -9,22 +9,45 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
+    <script
+      src="//unpkg.com/react-grab/dist/index.global.js"
+      crossorigin="anonymous"
+      defer
+    ></script>
   </head>
   <body>
     <div class="app">
       <header class="app__header">
         <div>
-          <div
-            id="languageSwitch"
-            class="lang-switch"
-            role="group"
-            aria-label="Language Switch"
-            data-i18n-aria-label="lang.switch.aria"
-          >
-            <button type="button" class="lang-switch__btn" data-ui-lang="zh">中文</button>
-            <button type="button" class="lang-switch__btn" data-ui-lang="en">EN</button>
-          </div>
-          <div class="header-tool-buttons">
+          <div class="header-left-stack">
+            <div
+              id="languageSwitch"
+              class="lang-switch"
+              role="group"
+              aria-label="Language Switch"
+              data-i18n-aria-label="lang.switch.aria"
+            >
+              <button type="button" class="lang-switch__btn" data-ui-lang="zh">中文</button>
+              <button type="button" class="lang-switch__btn" data-ui-lang="en">EN</button>
+            </div>
+            <div class="instrument-switch">
+              <div class="instrument-switch__row">
+                <label for="instrumentSelect" data-i18n="controls.instrument">乐器</label>
+                <select id="instrumentSelect" data-i18n-aria-label="controls.instrument">
+                  <option value="guitar" data-i18n="instrument.guitar">吉他</option>
+                  <option value="bass" data-i18n="instrument.bass">贝斯</option>
+                  <option value="ukulele" data-i18n="instrument.ukulele">尤克里里</option>
+                </select>
+              </div>
+              <div id="guitarToneWrap" class="instrument-switch__row instrument-switch__voice-row" hidden>
+                <label for="guitarToneSelect" data-i18n="controls.guitarTone">吉他音色</label>
+                <select id="guitarToneSelect" data-i18n-aria-label="controls.guitarTone">
+                  <option value="classical" data-i18n="guitarTone.classical">古典吉他</option>
+                  <option value="folk" data-i18n="guitarTone.folk">民谣吉他</option>
+                </select>
+              </div>
+            </div>
+            <div class="header-tool-buttons">
               <button
                 id="paletteToggleBtn"
                 type="button"
@@ -82,6 +105,7 @@
               </svg>
               <span class="sr-only" data-i18n="video.button">视频</span>
             </button>
+            </div>
           </div>
           <img
             class="app__logo"
@@ -328,5 +352,10 @@
       </footer>
     </div>
     <script type="module" src="app.js"></script>
+    <script defer>
+      if (window.ReactGrab?.init) {
+        window.ReactGrab.init();
+      }
+    </script>
   </body>
 </html>

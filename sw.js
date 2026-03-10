@@ -12,7 +12,11 @@ const NO_CACHE_PATH_PREFIXES = [
   '/fretlab',
   '/fretlab/',
   '/fretlab-tool',
-  '/fretlab-tool/'
+  '/fretlab-tool/',
+  '/en/fretlab',
+  '/en/fretlab/',
+  '/en/fretlab-tool',
+  '/en/fretlab-tool/'
 ];
 
 // 需要缓存的静态资源
@@ -27,6 +31,7 @@ const STATIC_ASSETS = [
   '/images/sight-reading-tool.png',
   '/images/five-limit-lattice.png',
   '/tools/melody-generator.html',
+  '/en/tools/melody-generator.html',
   '/just-intonation/harmonic_lattice_dualmode.html',
   '/just-intonation/harmonic_lattice.js',
   '/manifest.json'

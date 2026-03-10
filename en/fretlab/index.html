@@ -54,11 +54,6 @@
     }
     </script>
     <script type="module" crossorigin src="/fretlab/assets/index.js"></script>
-    <script
-      src="https://unpkg.com/react-grab/dist/index.global.js"
-      crossorigin="anonymous"
-      defer
-    ></script>
     <link rel="stylesheet" crossorigin href="/fretlab/assets/index.css">
     <style>
       .fretlab-update-log-block-wrap {
@@ -85,36 +80,30 @@
         min-height: 44px;
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
-        position: relative;
-        isolation: isolate;
-        z-index: 1;
       }
 
       #fretlab-update-log-close {
-        min-height: 44px;
-        min-width: 60px;
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        padding: 0;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        background: rgba(248, 250, 252, 0.92);
+        color: #334155;
+        font-size: 1.35rem;
+        line-height: 1;
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
-        position: relative;
-        isolation: isolate;
-        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .fretlab-history-toggle {
-        position: relative;
-        isolation: isolate;
-        z-index: 1;
         min-height: 44px;
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
-      }
-
-      .fretlab-update-log-open-btn::before,
-      #fretlab-update-log-close::before,
-      .fretlab-history-toggle::before {
-        content: '';
-        position: absolute;
-        inset: -8px;
       }
 
       @media (max-width: 640px) {
@@ -139,25 +128,24 @@
       }
 
       .fretlab-update-log-modal {
-        position: fixed;
-        inset: 0;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
+        width: min(760px, calc(100% - 24px));
+        max-width: 760px;
+        max-height: min(84vh, 780px);
+        padding: 0;
+        border: 0;
+        background: transparent;
         z-index: 10000;
-        background: rgba(15, 23, 42, 0.48);
-        backdrop-filter: blur(3px);
         overscroll-behavior: contain;
       }
 
-      .fretlab-update-log-modal.is-open {
-        display: flex;
+      .fretlab-update-log-modal::backdrop {
+        background: rgba(15, 23, 42, 0.48);
+        backdrop-filter: blur(3px);
       }
 
       .fretlab-update-log-panel {
         position: relative;
-        width: min(760px, 100%);
+        width: 100%;
         max-height: min(84vh, 780px);
         overflow: auto;
         border-radius: 16px;
@@ -170,6 +158,58 @@
       .fretlab-update-log-panel h3 {
         margin: 0;
       }
+
+      .fretlab-update-log-close-form {
+        margin: 0;
+      }
+
+      .fretlab-history-entry {
+        margin-top: 14px;
+      }
+
+      .fretlab-history-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        cursor: pointer;
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: rgba(255, 255, 255, 0.96);
+        padding: 12px 14px;
+        text-align: left;
+      }
+
+      .fretlab-history-summary-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 36px;
+        padding: 0 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        background: rgba(248, 250, 252, 0.92);
+        color: #0f172a;
+        font-size: 0.95rem;
+        line-height: 1;
+      }
+
+      .fretlab-history-entry.is-open .fretlab-history-toggle {
+        margin-bottom: 14px;
+      }
+
+      .fretlab-history-entry.is-open .fretlab-history-summary-badge {
+        background: #f1f5f9;
+      }
+
+      .fretlab-history-detail {
+        margin-top: 0;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        background: rgba(248, 250, 252, 0.78);
+        padding: 14px 16px 16px;
+      }
     </style>
   </head>
 
@@ -177,13 +217,6 @@
     <div id="root"></div>
     <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.0"></script>
     <script defer src="/fretlab/js/fretlab-payment.js?v=1.1.15"></script>
-    <script>
-      window.addEventListener('load', function () {
-        if (window.ReactGrab?.init) {
-          window.ReactGrab.init();
-        }
-      });
-    </script>
     <script>
       (function () {
         var TITLE_SCALE = 0.92;
@@ -318,19 +351,13 @@
               ? '<p class="font-hand text-base text-foreground" style="margin:10px 0 0;"><strong>' + item.detailTitle + '</strong></p>'
               : '';
 
-            return '<li style="margin-top:10px;">'
-              + '<div class="rounded-lg border border-border/70 bg-background/55 px-3 py-2">'
-              + '  <button'
-              + ' type="button"'
-              + ' class="fretlab-history-toggle font-hand text-base text-foreground"'
-              + ' data-history-index="' + index + '"'
-              + ' aria-expanded="false"'
-              + ' style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;background:none;border:0;padding:0;text-align:left;"'
-              + '>'
+            return '<li>'
+              + '<div class="fretlab-history-entry" data-history-index="' + index + '">'
+              + '  <button type="button" class="fretlab-history-toggle font-hand text-base text-foreground" data-history-index="' + index + '" aria-expanded="false">'
               + '    <strong>' + item.version + '</strong>'
-              + '    <span class="rounded-md border border-border bg-card px-2.5 py-1 text-sm">' + (text.historyButton || '') + '</span>'
+              + '    <span class="fretlab-history-summary-badge">' + (text.historyButton || '') + '</span>'
               + '  </button>'
-              + '  <div class="fretlab-history-detail" data-history-panel="' + index + '" hidden style="margin-top:8px;">'
+              + '  <div class="fretlab-history-detail" data-history-panel="' + index + '" hidden>'
               +        detailTitle
               + '    <ul style="margin:8px 0 0 1.1rem;padding:0;">' + detailItems + '</ul>'
               + '  </div>'
@@ -345,7 +372,9 @@
             + '<div class="fretlab-update-log-panel">'
             + '  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;">'
             + '    <h3 class="font-sketch text-3xl text-foreground">' + text.modalTitle + '</h3>'
-            + '    <button type="button" id="fretlab-update-log-close" class="font-hand rounded-lg border border-border bg-card px-3 py-1.5 text-sm hover:bg-zinc-100">' + text.close + '</button>'
+            + '    <form method="dialog" class="fretlab-update-log-close-form">'
+            + '      <button type="submit" id="fretlab-update-log-close" aria-label="' + text.close + '" class="font-hand rounded-lg border border-border bg-card px-3 py-1.5 text-sm hover:bg-zinc-100">&times;</button>'
+            + '    </form>'
             + '  </div>'
             + '  <div style="margin-top:12px;">'
             + '    <h4 class="font-sketch text-2xl text-foreground">' + text.sectionCurrent + '</h4>'
@@ -357,6 +386,13 @@
             +      historyContent
             + '  </div>'
             + '</div>';
+        }
+
+        function getModalRenderKey(lang, text) {
+          var historyVersions = (text.historyItems || []).map(function (item) {
+            return item.version || '';
+          }).join('|');
+          return [lang, text.currentVersion || '', historyVersions].join('::');
         }
 
         function ensureUpdateLogBlock() {
@@ -462,162 +498,152 @@
           if (bannerNode) bannerNode.textContent = text.banner;
           if (openNode) {
             openNode.textContent = text.button;
-            openNode.setAttribute('data-react-grab-ignore-events', '');
           }
 
           var modal = document.getElementById('fretlab-update-log-modal');
           if (!modal) {
-            modal = document.createElement('div');
+            modal = document.createElement('dialog');
             modal.id = 'fretlab-update-log-modal';
             modal.className = 'fretlab-update-log-modal';
             modal.setAttribute('aria-hidden', 'true');
             document.body.appendChild(modal);
           }
-          modal.setAttribute('data-react-grab-ignore-events', '');
 
-          modal.innerHTML = buildModalHtml(text);
-          var panel = modal.querySelector('.fretlab-update-log-panel');
-          if (panel) {
-            panel.setAttribute('data-react-grab-ignore-events', '');
+          var modalRenderKey = getModalRenderKey(lang, text);
+          if (modal.dataset.renderKey !== modalRenderKey) {
+            modal.innerHTML = buildModalHtml(text);
+            modal.dataset.renderKey = modalRenderKey;
           }
 
-          function suspendReactGrabForModal() {
-            var api = window.__REACT_GRAB__;
-            var state = api && typeof api.getState === 'function' ? api.getState() : null;
-            var wasActive = !!(state && state.isActive);
-            var wasEnabled = !!(api && typeof api.isEnabled === 'function' && api.isEnabled());
-            modal.dataset.reactGrabWasActive = wasActive ? '1' : '';
-            modal.dataset.reactGrabWasEnabled = wasEnabled ? '1' : '';
-            if (wasEnabled && typeof api.setEnabled === 'function') {
-              api.setEnabled(false);
-            } else if (wasActive && typeof api.deactivate === 'function') {
-              api.deactivate();
-            }
-          }
-
-          function resumeReactGrabAfterModal() {
-            var api = window.__REACT_GRAB__;
-            var shouldReenable = modal.dataset.reactGrabWasEnabled === '1';
-            var shouldReactivate = modal.dataset.reactGrabWasActive === '1';
-            modal.dataset.reactGrabWasEnabled = '';
-            modal.dataset.reactGrabWasActive = '';
-            if (shouldReenable && api && typeof api.setEnabled === 'function') {
-              setTimeout(function () {
-                api.setEnabled(true);
-              }, 0);
-            } else if (shouldReactivate && api && typeof api.activate === 'function') {
-              setTimeout(function () {
-                api.activate();
-              }, 0);
-            }
-          }
-
-          function closeModal() {
+          function finalizeModalClose() {
             modal.classList.remove('is-open');
             modal.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = modal.dataset.bodyOverflow || '';
             modal.dataset.bodyOverflow = '';
-            resumeReactGrabAfterModal();
+          }
+
+          function closeModal() {
+            if (typeof modal.close === 'function' && modal.open) {
+              modal.close();
+              return;
+            }
+            finalizeModalClose();
           }
 
           function openModal() {
-            suspendReactGrabForModal();
             modal.dataset.bodyOverflow = document.body.style.overflow || '';
             document.body.style.overflow = 'hidden';
-            modal.classList.add('is-open');
             modal.setAttribute('aria-hidden', 'false');
+            if (typeof modal.showModal === 'function' && !modal.open) {
+              modal.showModal();
+            } else {
+              modal.classList.add('is-open');
+            }
           }
 
           function isolateClickEvent(event) {
             event.preventDefault();
             event.stopPropagation();
+            if (typeof event.stopImmediatePropagation === 'function') {
+              event.stopImmediatePropagation();
+            }
           }
 
-          function bindBypassAction(node, handler) {
-            if (!node) return;
+          var modalActionBridge = window.__FRETLAB_UPDATE_LOG__ || {};
+          modalActionBridge.open = function (event) {
+            if (event) isolateClickEvent(event);
+            openModal();
+            return false;
+          };
+          modalActionBridge.close = function (event) {
+            if (event) isolateClickEvent(event);
+            closeModal();
+            return false;
+          };
+          modalActionBridge.toggleHistory = function (node, event) {
+            if (event) isolateClickEvent(event);
+            var toggleNode = node && node.closest ? node.closest('.fretlab-history-toggle') : null;
+            var entryNode = toggleNode && toggleNode.closest ? toggleNode.closest('.fretlab-history-entry') : null;
+            var panelNode = entryNode ? entryNode.querySelector('.fretlab-history-detail') : null;
+            var isOpen = !!(entryNode && entryNode.classList.contains('is-open'));
+            if (!entryNode || !panelNode || !toggleNode) return false;
+            entryNode.classList.toggle('is-open', !isOpen);
+            toggleNode.setAttribute('aria-expanded', (!isOpen).toString());
+            panelNode.hidden = isOpen;
+            return false;
+          };
+
+          window.__FRETLAB_UPDATE_LOG__ = modalActionBridge;
+
+          function bindPressAction(node, handler) {
+            if (!node || node.dataset.updateLogBound === '1') return;
             var touchHandled = false;
 
-            function runHandler(event) {
+            function run(event) {
               isolateClickEvent(event);
               handler(event);
             }
 
-            node.setAttribute('data-react-grab-ignore-events', '');
+            node.addEventListener('touchend', function (event) {
+              touchHandled = true;
+              run(event);
+            }, { passive: false });
+
             node.addEventListener('pointerup', function (event) {
               if (event.pointerType !== 'touch') return;
               touchHandled = true;
-              runHandler(event);
+              run(event);
             });
+
             node.addEventListener('click', function (event) {
               if (touchHandled) {
                 touchHandled = false;
                 isolateClickEvent(event);
                 return;
               }
-              runHandler(event);
+              run(event);
             });
+
+            node.dataset.updateLogBound = '1';
+          }
+
+          if (openNode) {
+            bindPressAction(openNode, openModal);
           }
 
           var closeButton = document.getElementById('fretlab-update-log-close');
-          bindBypassAction(openNode, openModal);
-          bindBypassAction(closeButton, closeModal);
+          if (closeButton) {
+            bindPressAction(closeButton, closeModal);
+          }
 
-          var historyToggles = modal.querySelectorAll('.fretlab-history-toggle');
-          for (var k = 0; k < historyToggles.length; k++) {
-            (function (toggleButton) {
-              bindBypassAction(toggleButton, function () {
-                var historyIndex = toggleButton.getAttribute('data-history-index');
-                var detailPanel = modal.querySelector('[data-history-panel="' + historyIndex + '"]');
-                if (!detailPanel) return;
-                var shouldOpen = detailPanel.hasAttribute('hidden');
-                if (shouldOpen) {
-                  detailPanel.removeAttribute('hidden');
-                  toggleButton.setAttribute('aria-expanded', 'true');
-                } else {
-                  detailPanel.setAttribute('hidden', '');
-                  toggleButton.setAttribute('aria-expanded', 'false');
-                }
+          var historyToggleNodes = modal.querySelectorAll('.fretlab-history-toggle');
+          historyToggleNodes.forEach(function (historyToggleNode) {
+            bindPressAction(historyToggleNode, function (event) {
+              modalActionBridge.toggleHistory(historyToggleNode, event);
+            });
+          });
+
+          if (modal.dataset.closeResetBound !== '1') {
+            modal.addEventListener('close', function () {
+              var activeEntries = modal.querySelectorAll('.fretlab-history-entry.is-open');
+              activeEntries.forEach(function (entryNode) {
+                entryNode.classList.remove('is-open');
               });
-            })(historyToggles[k]);
+              var activeToggles = modal.querySelectorAll('.fretlab-history-toggle[aria-expanded=\"true\"]');
+              activeToggles.forEach(function (toggleNode) {
+                toggleNode.setAttribute('aria-expanded', 'false');
+              });
+              var activePanels = modal.querySelectorAll('.fretlab-history-detail');
+              activePanels.forEach(function (panelNode) {
+                panelNode.hidden = true;
+              });
+            });
+            modal.dataset.closeResetBound = '1';
           }
 
-          function handleModalAction(target, event) {
-            var actionTarget = target && target.closest ? target.closest('#fretlab-update-log-close, .fretlab-history-toggle') : null;
-            if (!actionTarget) return false;
-
-            if (actionTarget.id === 'fretlab-update-log-close') {
-              isolateClickEvent(event);
-              closeModal();
-              return true;
-            }
-
-            if (actionTarget.classList.contains('fretlab-history-toggle')) {
-              isolateClickEvent(event);
-              var historyIndex = actionTarget.getAttribute('data-history-index');
-              var detailPanel = modal.querySelector('[data-history-panel="' + historyIndex + '"]');
-              if (!detailPanel) return true;
-              var shouldOpen = detailPanel.hasAttribute('hidden');
-              if (shouldOpen) {
-                detailPanel.removeAttribute('hidden');
-                actionTarget.setAttribute('aria-expanded', 'true');
-              } else {
-                detailPanel.setAttribute('hidden', '');
-                actionTarget.setAttribute('aria-expanded', 'false');
-              }
-              return true;
-            }
-
-            return false;
-          }
-
-          modal.addEventListener('pointerup', function (event) {
-            if (event.pointerType !== 'touch') return;
-            handleModalAction(event.target, event);
-          });
-
-          modal.addEventListener('click', function (event) {
-            handleModalAction(event.target, event);
-          });
+          modal.onclose = function () {
+            finalizeModalClose();
+          };
 
           modal.onclick = function (event) {
             if (event.target === modal) closeModal();

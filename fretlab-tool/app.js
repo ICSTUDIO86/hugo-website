@@ -1,10 +1,5 @@
-import {
-  STANDARD_TUNING,
-  getNoteName,
-  getPositionNoteIndex,
-  spellNoteFromRootAndDegree,
-} from "./theory.js";
-import { SCALE_SHAPES } from "./shapes.js";
+import { getNoteIndex, getNoteName, getPositionNoteIndex, spellNoteFromRootAndDegree } from "./theory.js";
+import { SCALE_SHAPES as GUITAR_SCALE_SHAPES } from "./shapes.js";
 import { getTabPositionsFromMidi, pickBestTabPosition } from "./plugins/shared/realtime-mapping.js";
 import {
   hasFretlabFullAccess,
@@ -13,6 +8,8 @@ import {
 
 const state = {
   language: "zh",
+  instrumentId: "guitar",
+  guitarTone: "classical",
   paletteOpen: false,
   exportMenuOpen: false,
   videoModalOpen: false,
@@ -26,6 +23,7 @@ const state = {
 };
 
 const dom = {
+  boardPanel: document.querySelector(".board-panel"),
   svg: document.getElementById("fretboardSvg"),
   fretboardStack: document.getElementById("fretboardStack"),
   markerHint: document.getElementById("markerCountHint"),
@@ -54,6 +52,9 @@ const dom = {
   recordShapeWarnings: document.getElementById("recordShapeWarnings"),
   recordShapeOutput: document.getElementById("recordShapeOutput"),
   languageSwitch: document.getElementById("languageSwitch"),
+  instrumentSelect: document.getElementById("instrumentSelect"),
+  guitarToneWrap: document.getElementById("guitarToneWrap"),
+  guitarToneSelect: document.getElementById("guitarToneSelect"),
   paletteToggleBtn: document.getElementById("paletteToggleBtn"),
   paletteCloseBtn: document.getElementById("paletteCloseBtn"),
   paletteDrawer: document.getElementById("shapePaletteDrawer"),
@@ -75,7 +76,36 @@ const dom = {
 };
 
 const UI_LANGUAGE_STORAGE_KEY = "ic_fretlab_ui_language";
+const INSTRUMENT_STORAGE_KEY = "ic_fretlab_instrument";
+const GUITAR_TONE_STORAGE_KEY = "ic_fretlab_guitar_tone";
 const UI_LANGUAGES = new Set(["zh", "en"]);
+const GUITAR_TONES = new Set(["classical", "folk"]);
+const INSTRUMENTS = {
+  guitar: {
+    id: "guitar",
+    tuning: ["E", "A", "D", "G", "B", "E"],
+    openMidi: [40, 45, 50, 55, 59, 64],
+    sourceStringStart: 0,
+    sourceStringCount: 6,
+    stringSpacing: 48,
+  },
+  bass: {
+    id: "bass",
+    tuning: ["E", "A", "D", "G"],
+    openMidi: [28, 33, 38, 43],
+    sourceStringStart: 0,
+    sourceStringCount: 4,
+    stringSpacing: 72,
+  },
+  ukulele: {
+    id: "ukulele",
+    tuning: ["G", "C", "E", "A"],
+    openMidi: [67, 60, 64, 69],
+    sourceStringStart: 2,
+    sourceStringCount: 4,
+    stringSpacing: 66,
+  },
+};
 const UI_TEXT = {
   zh: {
     "lang.switch.aria": "语言切换",
@@ -85,6 +115,8 @@ const UI_TEXT = {
     "board.dropHint": "拖拽指形到指板任意位置",
     "controls.title": "指板控制",
     "controls.subhead": "设置指板数量与音名偏好（± 调整品格）",
+    "controls.instrument": "乐器",
+    "controls.guitarTone": "吉他音色",
     "controls.boardCount": "指板数量",
     "controls.fretCount": "品格数量",
     "controls.fretAdjust.aria": "品格增减",
@@ -95,6 +127,11 @@ const UI_TEXT = {
     "controls.notePreference.flats": "降号优先",
     "controls.clearMarkers": "清空标记",
     "controls.flipBoard": "翻转指板",
+    "instrument.guitar": "吉他",
+    "instrument.bass": "贝斯",
+    "instrument.ukulele": "尤克里里",
+    "guitarTone.classical": "古典吉他",
+    "guitarTone.folk": "民谣吉他",
     "export.format": "导出格式",
     "export.option.png": "PNG",
     "export.option.svg": "SVG",
@@ -183,6 +220,8 @@ const UI_TEXT = {
     "board.dropHint": "Drag a shape anywhere onto the fretboard",
     "controls.title": "Fretboard Controls",
     "controls.subhead": "Set board count and note labels (use +/- to adjust frets)",
+    "controls.instrument": "Instrument",
+    "controls.guitarTone": "Guitar Tone",
     "controls.boardCount": "Boards",
     "controls.fretCount": "Frets",
     "controls.fretAdjust.aria": "Fret adjustment",
@@ -193,6 +232,11 @@ const UI_TEXT = {
     "controls.notePreference.flats": "Prefer flats",
     "controls.clearMarkers": "Clear markers",
     "controls.flipBoard": "Flip board",
+    "instrument.guitar": "Guitar",
+    "instrument.bass": "Bass",
+    "instrument.ukulele": "Ukulele",
+    "guitarTone.classical": "Classical Guitar",
+    "guitarTone.folk": "Folk Guitar",
     "export.format": "Export format",
     "export.option.png": "PNG",
     "export.option.svg": "SVG",
@@ -282,6 +326,7 @@ const LIBRARY_CATEGORY_LABELS = {
     "major-scale-5": "五个大调音阶",
     drop2: "Drop 2 和弦",
     drop3: "Drop 3 和弦",
+    "shell-voicing": "Shell Voicing",
     triads: "三和弦（三个音三和弦）",
     "sus-chords": "Sus 和弦",
     "dim7-chords": "减七和弦",
@@ -300,6 +345,7 @@ const LIBRARY_CATEGORY_LABELS = {
     "major-scale-5": "Five Major Scale Shapes",
     drop2: "Drop 2 Chords",
     drop3: "Drop 3 Chords",
+    "shell-voicing": "Shell Voicing",
     triads: "Triads",
     "sus-chords": "Sus Chords",
     "dim7-chords": "Diminished 7 Chords",
@@ -328,12 +374,21 @@ const LIBRARY_SECTION_LABELS = {
     "drop2-half-diminished7": "半减七和弦（m7b5）· 4个转位",
     "drop2-sus2-7": "7sus2 · 4个转位",
     "drop2-sus4-7": "7sus4 · 4个转位",
-    "drop3-major7": "大七和弦 · 3个转位",
-    "drop3-minor7": "小七和弦 · 3个转位",
-    "drop3-dominant7": "属七和弦 · 3个转位",
-    "drop3-half-diminished7": "半减七和弦（m7b5）· 3个转位",
-    "drop3-sus2-7": "7sus2 · 3个转位",
-    "drop3-sus4-7": "7sus4 · 3个转位",
+    "drop3-major7": "大七和弦 · 4个转位",
+    "drop3-minor7": "小七和弦 · 4个转位",
+    "drop3-dominant7": "属七和弦 · 4个转位",
+    "drop3-half-diminished7": "半减七和弦（m7b5）· 4个转位",
+    "drop3-sus2-7": "7sus2 · 4个转位",
+    "drop3-sus4-7": "7sus4 · 4个转位",
+    "shell-voicing-triads": "三和弦",
+    "shell-voicing-seventh": "七和弦",
+    "shell-triad-major": "大三和弦",
+    "shell-triad-minor": "小三和弦",
+    "shell-seventh-major7": "大七和弦",
+    "shell-seventh-minor7": "小七和弦",
+    "shell-seventh-dominant7": "属七和弦",
+    "shell-seventh-half-diminished7": "半减七和弦（m7b5）",
+    "shell-seventh-diminished7": "减七和弦",
     "triads-major": "大三和弦 · 3个转位",
     "triads-minor": "小三和弦 · 3个转位",
     "triads-diminished": "减三和弦 · 3个转位",
@@ -384,12 +439,21 @@ const LIBRARY_SECTION_LABELS = {
     "drop2-half-diminished7": "Half-Diminished 7 (m7b5) · 4 Inversions",
     "drop2-sus2-7": "7sus2 · 4 Inversions",
     "drop2-sus4-7": "7sus4 · 4 Inversions",
-    "drop3-major7": "Major 7 · 3 Inversions",
-    "drop3-minor7": "Minor 7 · 3 Inversions",
-    "drop3-dominant7": "Dominant 7 · 3 Inversions",
-    "drop3-half-diminished7": "Half-Diminished 7 (m7b5) · 3 Inversions",
-    "drop3-sus2-7": "7sus2 · 3 Inversions",
-    "drop3-sus4-7": "7sus4 · 3 Inversions",
+    "drop3-major7": "Major 7 · 4 Inversions",
+    "drop3-minor7": "Minor 7 · 4 Inversions",
+    "drop3-dominant7": "Dominant 7 · 4 Inversions",
+    "drop3-half-diminished7": "Half-Diminished 7 (m7b5) · 4 Inversions",
+    "drop3-sus2-7": "7sus2 · 4 Inversions",
+    "drop3-sus4-7": "7sus4 · 4 Inversions",
+    "shell-voicing-triads": "Triads",
+    "shell-voicing-seventh": "Seventh Chords",
+    "shell-triad-major": "Major Triad",
+    "shell-triad-minor": "Minor Triad",
+    "shell-seventh-major7": "Major 7",
+    "shell-seventh-minor7": "Minor 7",
+    "shell-seventh-dominant7": "Dominant 7",
+    "shell-seventh-half-diminished7": "Half-Diminished 7 (m7b5)",
+    "shell-seventh-diminished7": "Diminished 7",
     "triads-major": "Major Triads · 3 Inversions",
     "triads-minor": "Minor Triads · 3 Inversions",
     "triads-diminished": "Diminished Triads · 3 Inversions",
@@ -468,7 +532,6 @@ const DIMENSIONS = {
   openWidth: 80,
 };
 
-const STRING_COUNT = STANDARD_TUNING.length;
 const mod12 = (value) => ((value % 12) + 12) % 12;
 const MAJOR_SCALE_DEGREE_MAP = {
   0: "1",
@@ -649,10 +712,11 @@ const sketchJitter = (seed, magnitude) => (sketchNoise(seed) - 0.5) * 2 * magnit
 const OVERLAY_NOTE_NAME_PRIORITY = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
 const FRET_MARKER_SINGLE_FRETS = new Set([3, 5, 7, 9, 15, 17, 19, 21]);
 const FRET_MARKER_DOUBLE_FRETS = new Set([12]);
-const getVisualStringIndex = (stringIndex) => STRING_COUNT - 1 - stringIndex;
+const getVisualStringIndex = (stringIndex) => getStringCount() - 1 - stringIndex;
+const getStringSpacing = () => Number(getActiveInstrument()?.stringSpacing ?? DIMENSIONS.stringSpacing) || DIMENSIONS.stringSpacing;
 const getStringY = (stringIndex) =>
-  DIMENSIONS.boardPadding + getVisualStringIndex(stringIndex) * DIMENSIONS.stringSpacing;
-const getCellY = (stringIndex) => getStringY(stringIndex) - DIMENSIONS.stringSpacing / 2;
+  DIMENSIONS.boardPadding + getVisualStringIndex(stringIndex) * getStringSpacing();
+const getCellY = (stringIndex) => getStringY(stringIndex) - getStringSpacing() / 2;
 const getTotalBoardWidth = (fretCount = state.fretCount) =>
   DIMENSIONS.openWidth + DIMENSIONS.fretSpacing * Math.max(1, Number(fretCount) || 1);
 const getNutX = (fretCount = state.fretCount) =>
@@ -674,6 +738,243 @@ const getMarkerCenterX = (fret) =>
 const getMarkerDisplayLabel = (marker) =>
   marker.customLabel ?? getNoteName(marker.noteIndex, state.notePreference);
 const getOverlayPreferredNoteName = (noteIndex) => OVERLAY_NOTE_NAME_PRIORITY[mod12(noteIndex)] ?? "C";
+const instrumentShapeCache = new Map();
+
+function projectShapePositionsToInstrument(positions, anchorString, sourceStart, sourceEnd) {
+  const normalizedAnchor = Number(anchorString);
+  if (!Number.isFinite(normalizedAnchor)) {
+    return [];
+  }
+  const projected = [];
+  for (const pos of positions ?? []) {
+    const relativeString = Number(pos?.string);
+    const fret = Number(pos?.fret);
+    const interval = Number(pos?.interval);
+    if (!Number.isFinite(relativeString) || !Number.isFinite(fret)) {
+      continue;
+    }
+    const sourceString = normalizedAnchor + relativeString;
+    if (sourceString < sourceStart || sourceString > sourceEnd) {
+      continue;
+    }
+    projected.push({
+      mappedString: sourceString - sourceStart,
+      fret,
+      interval: Number.isFinite(interval) ? mod12(interval) : 0,
+    });
+  }
+  return projected;
+}
+
+function buildAdaptedShapePositions(positions, anchorString, sourceStart, sourceEnd) {
+  const projected = projectShapePositionsToInstrument(positions ?? [], anchorString, sourceStart, sourceEnd);
+  if (!projected.length) {
+    return null;
+  }
+
+  let mappedAnchor =
+    Number(anchorString) >= sourceStart && Number(anchorString) <= sourceEnd
+      ? Number(anchorString) - sourceStart
+      : null;
+
+  if (!Number.isInteger(mappedAnchor)) {
+    const rootCandidate = projected.find((pos) => pos.interval === 0);
+    mappedAnchor = rootCandidate ? rootCandidate.mappedString : projected[0].mappedString;
+  }
+
+  const deduped = new Map();
+  projected.forEach((pos) => {
+    const relativeString = pos.mappedString - mappedAnchor;
+    const key = `${relativeString}:${pos.fret}:${pos.interval}`;
+    if (!deduped.has(key)) {
+      deduped.set(key, {
+        string: relativeString,
+        fret: pos.fret,
+        interval: pos.interval,
+      });
+    }
+  });
+
+  const nextPositions = Array.from(deduped.values()).sort((a, b) => a.string - b.string || a.fret - b.fret);
+  if (!nextPositions.length) {
+    return null;
+  }
+
+  return {
+    anchorString: mappedAnchor,
+    positions: nextPositions,
+  };
+}
+
+function adaptVariantMapForInstrument(variantMap, sourceStart, sourceEnd, sourceCount) {
+  if (!variantMap || typeof variantMap !== "object") {
+    return null;
+  }
+
+  const adapted = {};
+  Object.entries(variantMap).forEach(([rawKey, variant]) => {
+    const adaptedVariant = buildAdaptedShapePositions(
+      variant?.positions ?? [],
+      variant?.anchorString,
+      sourceStart,
+      sourceEnd
+    );
+    if (!adaptedVariant) {
+      return;
+    }
+
+    const rawStart = Number(variant?.stringSetStart ?? rawKey);
+    const mappedStart = Number.isFinite(rawStart) ? rawStart - sourceStart : NaN;
+    const hasValidMappedStart = Number.isFinite(mappedStart) && mappedStart >= 0 && mappedStart <= sourceCount - 1;
+    const variantKey = hasValidMappedStart ? String(Math.round(mappedStart)) : rawKey;
+
+    adapted[variantKey] = {
+      ...(variant ?? {}),
+      stringSetStart: hasValidMappedStart ? Math.round(mappedStart) : variant?.stringSetStart,
+      anchorString: adaptedVariant.anchorString,
+      anchorLabel: getStringLabelByCount(adaptedVariant.anchorString, sourceCount),
+      positions: adaptedVariant.positions,
+    };
+  });
+
+  return Object.keys(adapted).length ? adapted : null;
+}
+
+function adaptShapeForInstrument(shape, instrument) {
+  const sourceStart = Number(instrument?.sourceStringStart ?? 0);
+  const sourceCount = Number(instrument?.sourceStringCount ?? 6);
+  const sourceEnd = sourceStart + sourceCount - 1;
+  const adaptedMain = buildAdaptedShapePositions(shape?.positions ?? [], shape?.anchorString, sourceStart, sourceEnd);
+  if (!adaptedMain) {
+    return null;
+  }
+
+  const dragPlacementVariants = adaptVariantMapForInstrument(
+    shape?.dragPlacementVariants,
+    sourceStart,
+    sourceEnd,
+    sourceCount
+  );
+  const drop2Variants = adaptVariantMapForInstrument(shape?.drop2Variants, sourceStart, sourceEnd, sourceCount);
+  const dragPlacementStarts = dragPlacementVariants
+    ? Object.values(dragPlacementVariants)
+        .map((variant) => Number(variant?.stringSetStart))
+        .filter((value) => Number.isFinite(value))
+        .sort((a, b) => a - b)
+    : undefined;
+  const drop2StringSetStarts = drop2Variants
+    ? Object.values(drop2Variants)
+        .map((variant) => Number(variant?.stringSetStart))
+        .filter((value) => Number.isFinite(value))
+        .sort((a, b) => a - b)
+    : undefined;
+
+  return {
+    ...shape,
+    anchorString: adaptedMain.anchorString,
+    anchorLabel: getStringLabelByCount(adaptedMain.anchorString, sourceCount),
+    positions: adaptedMain.positions,
+    dragPlacementStarts: dragPlacementStarts?.length ? Array.from(new Set(dragPlacementStarts)) : undefined,
+    dragPlacementVariants: dragPlacementVariants ?? undefined,
+    drop2StringSetStarts: drop2StringSetStarts?.length ? Array.from(new Set(drop2StringSetStarts)) : undefined,
+    drop2Variants: drop2Variants ?? undefined,
+    anchorHintLabel: undefined,
+  };
+}
+
+function isThreeNpsShape(shape) {
+  const id = `${shape?.id ?? ""}`.toLowerCase();
+  const mode = `${shape?.mode ?? ""}`.toLowerCase();
+  const system = `${shape?.system ?? ""}`.toLowerCase();
+  const sectionId = `${shape?.sectionId ?? ""}`.toLowerCase();
+  const categoryId = `${shape?.categoryId ?? ""}`.toLowerCase();
+
+  return (
+    system.includes("3nps") ||
+    mode.includes("3nps") ||
+    id.includes("3nps") ||
+    sectionId.includes("3nps") ||
+    sectionId.includes("major-scale-3nps") ||
+    sectionId.includes("melodic-minor-3nps") ||
+    sectionId.includes("harmonic-minor-3nps") ||
+    categoryId === "three-nps"
+  );
+}
+
+function isDrop3Shape(shape) {
+  const id = `${shape?.id ?? ""}`.toLowerCase();
+  const mode = `${shape?.mode ?? ""}`.toLowerCase();
+  const system = `${shape?.system ?? ""}`.toLowerCase();
+  const sectionId = `${shape?.sectionId ?? ""}`.toLowerCase();
+  const categoryId = `${shape?.categoryId ?? ""}`.toLowerCase();
+
+  return (
+    system.includes("drop 3") ||
+    mode.includes("drop 3") ||
+    id.startsWith("drop3_") ||
+    id.includes("_drop3_") ||
+    sectionId.startsWith("drop3-") ||
+    sectionId.includes("drop3") ||
+    categoryId === "drop3"
+  );
+}
+
+function isDrop2Shape(shape) {
+  const id = `${shape?.id ?? ""}`.toLowerCase();
+  const mode = `${shape?.mode ?? ""}`.toLowerCase();
+  const system = `${shape?.system ?? ""}`.toLowerCase();
+  const sectionId = `${shape?.sectionId ?? ""}`.toLowerCase();
+  const categoryId = `${shape?.categoryId ?? ""}`.toLowerCase();
+
+  return (
+    system.includes("drop 2") ||
+    mode.includes("drop 2") ||
+    id.startsWith("drop2_") ||
+    id.includes("_drop2_") ||
+    sectionId.startsWith("drop2-") ||
+    sectionId.includes("drop2") ||
+    categoryId === "drop2"
+  );
+}
+
+function isBassExcludedShape(shape) {
+  const id = `${shape?.id ?? ""}`.toLowerCase();
+  return id === "dim7_chord_root_5" || id === "dim7_chord_root_4";
+}
+
+function isUkuleleExcludedShape(shape) {
+  const id = `${shape?.id ?? ""}`.toLowerCase();
+  const categoryId = `${shape?.categoryId ?? ""}`.toLowerCase();
+  return (
+    categoryId === "triads" ||
+    categoryId === "sus-chords" ||
+    id === "dim7_chord_root_5" ||
+    id === "dim7_chord_root_6"
+  );
+}
+
+function getActiveShapes() {
+  const instrument = getActiveInstrument();
+  if (instrument.id === "guitar" && instrument.sourceStringStart === 0 && instrument.sourceStringCount === 6) {
+    return GUITAR_SCALE_SHAPES;
+  }
+
+  if (instrumentShapeCache.has(instrument.id)) {
+    return instrumentShapeCache.get(instrument.id);
+  }
+
+  const adapted = GUITAR_SCALE_SHAPES.map((shape) => adaptShapeForInstrument(shape, instrument)).filter(Boolean);
+  let filtered = adapted;
+  if (instrument.id === "bass") {
+    filtered = adapted.filter((shape) => !isThreeNpsShape(shape) && !isDrop3Shape(shape) && !isBassExcludedShape(shape));
+  } else if (instrument.id === "ukulele") {
+    filtered = adapted.filter(
+      (shape) => !isDrop2Shape(shape) && !isDrop3Shape(shape) && !isUkuleleExcludedShape(shape)
+    );
+  }
+  instrumentShapeCache.set(instrument.id, filtered);
+  return filtered;
+}
 
 function buildSketchInlayDot(cx, cy, r, seedBase) {
   const fillCx = cx + sketchJitter(seedBase + 1, 0.5);
@@ -708,11 +1009,13 @@ function buildSketchInlayDot(cx, cy, r, seedBase) {
 }
 
 function createFretboardInlays(fretCount, fretWidth) {
-  const centerY = (getStringY(2) + getStringY(3)) / 2;
-  const dotRadius = Math.min(9.5, DIMENSIONS.stringSpacing * 0.18);
+  const bottomString = 0;
+  const topString = getStringCount() - 1;
+  const centerY = (getStringY(bottomString) + getStringY(topString)) / 2;
+  const dotRadius = Math.min(9.5, getStringSpacing() * 0.18);
   const lerp = (a, b, t) => a + (b - a) * t;
-  const y54Toward5 = lerp(getStringY(2), getStringY(1), 0.62);
-  const y23Toward2 = lerp(getStringY(3), getStringY(4), 0.62);
+  const yUpper = lerp(getStringY(topString), getStringY(bottomString), 0.35);
+  const yLower = lerp(getStringY(topString), getStringY(bottomString), 0.65);
   const inlays = [];
 
   for (let fret = 1; fret <= fretCount; fret += 1) {
@@ -731,8 +1034,8 @@ function createFretboardInlays(fretCount, fretWidth) {
     if (FRET_MARKER_DOUBLE_FRETS.has(fret)) {
       inlays.push(
         `<g class="fret-inlay-group fret-inlay-group--double" data-fret="${fret}">
-          ${buildSketchInlayDot(centerX, y54Toward5, dotRadius * 0.95, 4000 + fret * 41)}
-          ${buildSketchInlayDot(centerX, y23Toward2, dotRadius * 0.95, 5000 + fret * 41)}
+          ${buildSketchInlayDot(centerX, yUpper, dotRadius * 0.95, 4000 + fret * 41)}
+          ${buildSketchInlayDot(centerX, yLower, dotRadius * 0.95, 5000 + fret * 41)}
         </g>`
       );
     }
@@ -757,6 +1060,47 @@ function detectBrowserUiLanguage() {
   return languages.some((value) => value.startsWith("zh")) ? "zh" : "en";
 }
 
+function normalizeInstrumentId(instrumentId) {
+  const normalized = `${instrumentId ?? ""}`.trim().toLowerCase();
+  return Object.prototype.hasOwnProperty.call(INSTRUMENTS, normalized) ? normalized : "guitar";
+}
+
+function normalizeGuitarTone(tone) {
+  const normalized = `${tone ?? ""}`.trim().toLowerCase();
+  return GUITAR_TONES.has(normalized) ? normalized : "classical";
+}
+
+function getActiveInstrument() {
+  return INSTRUMENTS[normalizeInstrumentId(state.instrumentId)] ?? INSTRUMENTS.guitar;
+}
+
+function getActiveTuning() {
+  return getActiveInstrument().tuning;
+}
+
+function getActiveOpenMidi() {
+  return getActiveInstrument().openMidi;
+}
+
+function getStringCount() {
+  return getActiveTuning().length;
+}
+
+function getStringLabelByCount(stringIndex, count) {
+  const stringNumber = count - Number(stringIndex);
+  if (!Number.isFinite(stringNumber) || stringNumber < 1) {
+    return "";
+  }
+  if (stringNumber === 1) return "1st";
+  if (stringNumber === 2) return "2nd";
+  if (stringNumber === 3) return "3rd";
+  return `${stringNumber}th`;
+}
+
+function getStringLabel(stringIndex) {
+  return getStringLabelByCount(stringIndex, getStringCount());
+}
+
 function getInitialUiLanguage() {
   try {
     const saved = normalizeUiLanguage(localStorage.getItem(UI_LANGUAGE_STORAGE_KEY));
@@ -767,6 +1111,23 @@ function getInitialUiLanguage() {
     // ignore storage errors
   }
   return detectBrowserUiLanguage() || "zh";
+}
+
+function getInitialInstrumentId() {
+  try {
+    const saved = normalizeInstrumentId(localStorage.getItem(INSTRUMENT_STORAGE_KEY));
+    return saved || "guitar";
+  } catch {
+    return "guitar";
+  }
+}
+
+function getInitialGuitarTone() {
+  try {
+    return normalizeGuitarTone(localStorage.getItem(GUITAR_TONE_STORAGE_KEY));
+  } catch {
+    return "classical";
+  }
 }
 
 function t(key, vars = {}) {
@@ -883,15 +1244,20 @@ function applyTranslations() {
 
   syncVideoRendererUi();
   refreshAccessUi();
+  syncGuitarToneControls();
 }
 
 function setPaletteOpen(nextOpen) {
   const isOpen = Boolean(nextOpen);
   state.paletteOpen = isOpen;
+  dom.boardPanel?.classList.toggle("is-shifted-by-palette", isOpen);
   dom.paletteDrawer?.classList.toggle("is-open", isOpen);
   dom.paletteBackdrop?.classList.toggle("is-open", isOpen);
   if (!isOpen) {
     dom.paletteBackdrop?.classList.remove("is-drag-pass-through");
+    if (touchShapeDrag.active) {
+      resetTouchShapeDrag({ clearPreview: true });
+    }
   }
   dom.paletteDrawer?.setAttribute("aria-hidden", isOpen ? "false" : "true");
   dom.paletteBackdrop?.setAttribute("aria-hidden", isOpen ? "false" : "true");
@@ -1393,6 +1759,114 @@ function setUiLanguage(language, { persist = true } = {}) {
   renderRecorderPanel();
 }
 
+function normalizeMarkersForInstrument() {
+  const tuning = getActiveTuning();
+  const stringCount = tuning.length;
+  state.boardStates.forEach((board) => {
+    const nextMarkers = {};
+    Object.values(board.markers ?? {}).forEach((marker) => {
+      const stringIndex = Number(marker?.stringIndex);
+      const fret = Number(marker?.fret);
+      if (!Number.isInteger(stringIndex) || !Number.isInteger(fret)) {
+        return;
+      }
+      if (stringIndex < 0 || stringIndex >= stringCount || fret < 0) {
+        return;
+      }
+      const id = `${stringIndex}-${fret}`;
+      nextMarkers[id] = {
+        ...marker,
+        id,
+        stringIndex,
+        fret,
+        noteIndex: getPositionNoteIndex(stringIndex, fret, tuning),
+        customLabel: null,
+      };
+    });
+    board.markers = nextMarkers;
+    if (!nextMarkers[board.selectedId]) {
+      board.selectedId = null;
+    }
+  });
+  if (recorder.rootMarkerId && !getBoardState().markers[recorder.rootMarkerId]) {
+    recorder.rootMarkerId = null;
+  }
+}
+
+function syncGuitarToneControls() {
+  const isGuitar = normalizeInstrumentId(state.instrumentId) === "guitar";
+  if (dom.guitarToneWrap) {
+    dom.guitarToneWrap.hidden = !isGuitar;
+  }
+  if (dom.guitarToneSelect) {
+    dom.guitarToneSelect.value = normalizeGuitarTone(state.guitarTone);
+    dom.guitarToneSelect.disabled = !isGuitar;
+  }
+}
+
+function setGuitarTone(tone, { persist = true } = {}) {
+  const next = normalizeGuitarTone(tone);
+  if (dom.guitarToneSelect) {
+    dom.guitarToneSelect.value = next;
+  }
+  if (state.guitarTone === next) {
+    syncGuitarToneControls();
+    if (normalizeInstrumentId(state.instrumentId) === "guitar") {
+      warmupRealtimeAudioForActiveVoice();
+    }
+    return;
+  }
+  state.guitarTone = next;
+  if (persist) {
+    try {
+      localStorage.setItem(GUITAR_TONE_STORAGE_KEY, next);
+    } catch {
+      // ignore storage errors
+    }
+  }
+  syncGuitarToneControls();
+  if (normalizeInstrumentId(state.instrumentId) === "guitar") {
+    warmupRealtimeAudioForActiveVoice();
+  }
+}
+
+function setInstrument(instrumentId, { persist = true } = {}) {
+  const next = normalizeInstrumentId(instrumentId);
+  if (dom.instrumentSelect) {
+    dom.instrumentSelect.value = next;
+  }
+  if (state.instrumentId === next) {
+    syncGuitarToneControls();
+    return;
+  }
+
+  state.instrumentId = next;
+  if (persist) {
+    try {
+      localStorage.setItem(INSTRUMENT_STORAGE_KEY, next);
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  normalizeMarkersForInstrument();
+  syncGuitarToneControls();
+  resetMarkerHistory();
+  clearOverlays();
+  dragShapeId = null;
+  dragOverlayPreview = null;
+  realtime.lastMidiPositions.clear();
+  realtime.lastVoicePositions.clear();
+  clearRealtimeMarkers();
+  warmupRealtimeAudioForActiveVoice();
+  recorder.output = "";
+  renderGrid();
+  renderMarkers();
+  updateMarkerHint();
+  buildShapeLibrary();
+  renderRecorderPanel();
+}
+
 const LONG_PRESS_MS = 600;
 let longPressTimer = null;
 let longPressTargetId = null;
@@ -1403,6 +1877,12 @@ let enharmonicMenuState = null;
 const overlays = [];
 let dragShapeId = null;
 let dragOverlayPreview = null;
+const touchShapeDrag = {
+  active: false,
+  pointerId: null,
+  shapeId: null,
+  sourceCard: null,
+};
 const realtime = {
   markers: new Map(),
   lastMidiPositions: new Map(),
@@ -1431,6 +1911,152 @@ const videoRenderer = {
   progressResetTimer: null,
 };
 const VIDEO_ALLOWED_EXTENSIONS = new Set(["mscz", "mscx", "gp5"]);
+const MARKER_CLIPBOARD_TYPE = "ic-fretlab-markers-v1";
+const markerClipboard = {
+  payload: null,
+};
+const markerHistory = {
+  undo: [],
+  redo: [],
+  maxEntries: 120,
+};
+const GUITAR_CLASSICAL_SAMPLE_FILES = [
+  "A2.mp3",
+  "A3.mp3",
+  "A4.mp3",
+  "A5.mp3",
+  "As5.mp3",
+  "B1.mp3",
+  "B2.mp3",
+  "B3.mp3",
+  "B4.mp3",
+  "Cs3.mp3",
+  "Cs4.mp3",
+  "Cs5.mp3",
+  "D2.mp3",
+  "D3.mp3",
+  "D5.mp3",
+  "Ds4.mp3",
+  "E2.mp3",
+  "E3.mp3",
+  "E4.mp3",
+  "E5.mp3",
+  "Fs2.mp3",
+  "Fs3.mp3",
+  "Fs4.mp3",
+  "Fs5.mp3",
+  "G3.mp3",
+  "G5.mp3",
+  "Gs2.mp3",
+  "Gs4.mp3",
+  "Gs5.mp3",
+];
+const GUITAR_FOLK_SAMPLE_FILES = [
+  "A2.mp3",
+  "A3.mp3",
+  "A4.mp3",
+  "As2.mp3",
+  "As3.mp3",
+  "As4.mp3",
+  "B2.mp3",
+  "B3.mp3",
+  "B4.mp3",
+  "C3.mp3",
+  "C4.mp3",
+  "C5.mp3",
+  "Cs3.mp3",
+  "Cs4.mp3",
+  "Cs5.mp3",
+  "D2.mp3",
+  "D3.mp3",
+  "D4.mp3",
+  "D5.mp3",
+  "Ds2.mp3",
+  "Ds3.mp3",
+  "Ds4.mp3",
+  "E2.mp3",
+  "E3.mp3",
+  "E4.mp3",
+  "F2.mp3",
+  "F3.mp3",
+  "F4.mp3",
+  "Fs2.mp3",
+  "Fs3.mp3",
+  "Fs4.mp3",
+  "G2.mp3",
+  "G3.mp3",
+  "G4.mp3",
+  "Gs2.mp3",
+  "Gs3.mp3",
+  "Gs4.mp3",
+];
+const BASS_ELECTRIC_SAMPLE_FILES = [
+  "As1.mp3",
+  "As2.mp3",
+  "As3.mp3",
+  "As4.mp3",
+  "Cs1.mp3",
+  "Cs2.mp3",
+  "Cs3.mp3",
+  "Cs4.mp3",
+  "Cs5.mp3",
+  "E1.mp3",
+  "E2.mp3",
+  "E3.mp3",
+  "E4.mp3",
+  "G1.mp3",
+  "G2.mp3",
+  "G3.mp3",
+  "G4.mp3",
+];
+const SAMPLE_LIBRARY = {
+  guitar_classical: {
+    gain: 0.82,
+    releaseMs: 260,
+    samples: GUITAR_CLASSICAL_SAMPLE_FILES.map((file) => ({
+      url: `assets/samples/guitar-classical/${file}`,
+      midi: 0,
+      weight: 1,
+    })),
+  },
+  guitar_folk: {
+    gain: 0.86,
+    releaseMs: 240,
+    samples: GUITAR_FOLK_SAMPLE_FILES.map((file) => ({
+      url: `assets/samples/guitar-folk/${file}`,
+      midi: 0,
+      weight: 1,
+    })),
+  },
+  bass_electric: {
+    gain: 0.95,
+    releaseMs: 220,
+    samples: BASS_ELECTRIC_SAMPLE_FILES.map((file) => ({
+      url: `assets/samples/bass-electric/${file}`,
+      midi: 0,
+      weight: 1,
+    })),
+  },
+  ukulele: {
+    gain: 0.84,
+    releaseMs: 200,
+    samples: [
+      { url: "assets/samples/ukulele/00_c3_long_soft.wav", midi: 48, weight: 0.8 },
+      { url: "assets/samples/ukulele/02_c3_long_hard.wav", midi: 48, weight: 1 },
+      { url: "assets/samples/ukulele/05_c4_soft.wav", midi: 60, weight: 0.82 },
+      { url: "assets/samples/ukulele/06_c4_hard.wav", midi: 60, weight: 1.02 },
+    ],
+  },
+};
+const AUDIO_UNLOCK_EVENTS = ["pointerdown", "keydown", "touchstart"];
+const realtimeAudio = {
+  context: null,
+  masterGain: null,
+  buffers: new Map(),
+  loadPromises: new Map(),
+  activeVoices: new Map(),
+  unlockBound: false,
+};
 
 const ENHARMONIC_OPTIONS = [
   ["C", "B#", "Dbb"],
@@ -1488,6 +2114,475 @@ function getBoardState(boardIndex = state.activeBoardIndex) {
     state.boardStates[normalized] = createEmptyBoardState();
   }
   return state.boardStates[normalized];
+}
+
+function cloneBoardMarkers(markers, { maxFret = Infinity } = {}) {
+  const tuning = getActiveTuning();
+  const stringCount = tuning.length;
+  const nextMarkers = {};
+  Object.values(markers ?? {}).forEach((marker) => {
+    const stringIndex = Number(marker?.stringIndex);
+    const fret = Number(marker?.fret);
+    if (!Number.isInteger(stringIndex) || !Number.isInteger(fret)) {
+      return;
+    }
+    if (stringIndex < 0 || stringIndex >= stringCount || fret < 0 || fret > maxFret) {
+      return;
+    }
+    const id = `${stringIndex}-${fret}`;
+    nextMarkers[id] = {
+      id,
+      stringIndex,
+      fret,
+      noteIndex: getPositionNoteIndex(stringIndex, fret, tuning),
+      interval: `${marker?.interval ?? ""}`,
+      customLabel: typeof marker?.customLabel === "string" ? marker.customLabel : null,
+    };
+  });
+  return nextMarkers;
+}
+
+function createBoardSnapshot(boardIndex = state.activeBoardIndex) {
+  const normalizedBoardIndex = normalizeBoardIndex(boardIndex);
+  const board = getBoardState(normalizedBoardIndex);
+  const markers = cloneBoardMarkers(board.markers);
+  return {
+    boardIndex: normalizedBoardIndex,
+    markers,
+    selectedId: markers[board.selectedId] ? board.selectedId : null,
+    rootMarkerId:
+      normalizedBoardIndex === state.activeBoardIndex && markers[recorder.rootMarkerId]
+        ? recorder.rootMarkerId
+        : null,
+  };
+}
+
+function resetMarkerHistory() {
+  markerHistory.undo.length = 0;
+  markerHistory.redo.length = 0;
+}
+
+function rememberBoardHistory(boardIndex = state.activeBoardIndex) {
+  markerHistory.undo.push(createBoardSnapshot(boardIndex));
+  if (markerHistory.undo.length > markerHistory.maxEntries) {
+    markerHistory.undo.shift();
+  }
+  markerHistory.redo.length = 0;
+}
+
+function restoreBoardSnapshot(snapshot) {
+  if (!snapshot) {
+    return false;
+  }
+  const boardIndex = normalizeBoardIndex(snapshot.boardIndex);
+  setActiveBoard(boardIndex, { resetRecorder: false });
+  const board = getBoardState(boardIndex);
+  const markers = cloneBoardMarkers(snapshot.markers, { maxFret: state.fretCount });
+  board.markers = markers;
+  board.selectedId = markers[snapshot.selectedId] ? snapshot.selectedId : null;
+  if (state.activeBoardIndex === boardIndex) {
+    recorder.rootMarkerId = markers[snapshot.rootMarkerId] ? snapshot.rootMarkerId : null;
+    recorder.output = "";
+  }
+  renderMarkers();
+  updateMarkerHint();
+  renderRecorderPanel();
+  return true;
+}
+
+function undoBoardMutation() {
+  if (!markerHistory.undo.length) {
+    return false;
+  }
+  const snapshot = markerHistory.undo.pop();
+  markerHistory.redo.push(createBoardSnapshot(snapshot.boardIndex));
+  if (markerHistory.redo.length > markerHistory.maxEntries) {
+    markerHistory.redo.shift();
+  }
+  return restoreBoardSnapshot(snapshot);
+}
+
+function redoBoardMutation() {
+  if (!markerHistory.redo.length) {
+    return false;
+  }
+  const snapshot = markerHistory.redo.pop();
+  markerHistory.undo.push(createBoardSnapshot(snapshot.boardIndex));
+  if (markerHistory.undo.length > markerHistory.maxEntries) {
+    markerHistory.undo.shift();
+  }
+  return restoreBoardSnapshot(snapshot);
+}
+
+function buildMarkerClipboardPayload(boardIndex = state.activeBoardIndex) {
+  const board = getBoardState(boardIndex);
+  const markers = Object.values(cloneBoardMarkers(board.markers));
+  return {
+    type: MARKER_CLIPBOARD_TYPE,
+    instrumentId: getActiveInstrument().id,
+    markers,
+    selectedId: board.selectedId,
+    rootMarkerId: boardIndex === state.activeBoardIndex ? recorder.rootMarkerId : null,
+  };
+}
+
+function parseMarkerClipboardPayload(rawText) {
+  if (!rawText || typeof rawText !== "string") {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(rawText);
+    if (parsed?.type !== MARKER_CLIPBOARD_TYPE || !Array.isArray(parsed?.markers)) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function copyMarkersToLocalClipboard(boardIndex = state.activeBoardIndex) {
+  const payload = buildMarkerClipboardPayload(boardIndex);
+  markerClipboard.payload = payload;
+  if (!payload.markers.length) {
+    return false;
+  }
+  const text = JSON.stringify(payload);
+  if (navigator.clipboard?.writeText) {
+    void navigator.clipboard.writeText(text).catch(() => {});
+  }
+  return true;
+}
+
+function applyMarkerClipboardPayload(payload, boardIndex = state.activeBoardIndex) {
+  if (!payload || !Array.isArray(payload.markers)) {
+    return false;
+  }
+  const normalizedBoardIndex = normalizeBoardIndex(boardIndex);
+  const nextMarkers = cloneBoardMarkers(payload.markers, { maxFret: state.fretCount });
+  if (!Object.keys(nextMarkers).length) {
+    return false;
+  }
+  rememberBoardHistory(normalizedBoardIndex);
+  const board = getBoardState(normalizedBoardIndex);
+  board.markers = nextMarkers;
+  board.selectedId = nextMarkers[payload.selectedId] ? payload.selectedId : Object.keys(nextMarkers)[0] ?? null;
+  if (state.activeBoardIndex === normalizedBoardIndex) {
+    recorder.rootMarkerId = nextMarkers[payload.rootMarkerId] ? payload.rootMarkerId : null;
+    recorder.output = "";
+  }
+  renderMarkers();
+  updateMarkerHint();
+  renderRecorderPanel();
+  return true;
+}
+
+async function pasteMarkersFromClipboard(boardIndex = state.activeBoardIndex) {
+  let payload = markerClipboard.payload;
+  if (!payload && navigator.clipboard?.readText) {
+    try {
+      payload = parseMarkerClipboardPayload(await navigator.clipboard.readText());
+    } catch {
+      payload = null;
+    }
+  }
+  if (!payload) {
+    return false;
+  }
+  return applyMarkerClipboardPayload(payload, boardIndex);
+}
+
+function isEditableShortcutTarget(target) {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+  if (target instanceof HTMLElement && target.isContentEditable) {
+    return true;
+  }
+  return Boolean(target.closest("input, textarea, select, [contenteditable=''], [contenteditable='true']"));
+}
+
+function parseSampleNoteTokenToMidi(token) {
+  const match = `${token ?? ""}`.trim().match(/^([A-G])(s|#|b)?(-?\d+)$/i);
+  if (!match) {
+    return null;
+  }
+  const [, letterRaw, accidentalRaw = "", octaveRaw] = match;
+  const letter = letterRaw.toUpperCase();
+  const accidental = accidentalRaw.toLowerCase() === "s" ? "#" : accidentalRaw;
+  const noteName = `${letter}${accidental}`;
+  const noteIndex = getNoteIndex(noteName);
+  const octave = Number(octaveRaw);
+  if (!Number.isFinite(noteIndex) || !Number.isFinite(octave)) {
+    return null;
+  }
+  return (octave + 1) * 12 + noteIndex;
+}
+
+function inferSampleMidiFromUrl(url) {
+  const fileName = `${url ?? ""}`.split("/").pop() ?? "";
+  const stem = fileName.replace(/\.[^.]+$/, "");
+  const direct = parseSampleNoteTokenToMidi(stem);
+  if (Number.isFinite(direct)) {
+    return direct;
+  }
+  const embedded = stem.match(/([A-G](?:s|#|b)?-?\d+)/i)?.[1] ?? null;
+  if (!embedded) {
+    return null;
+  }
+  return parseSampleNoteTokenToMidi(embedded);
+}
+
+function ensureSampleLibraryMidiMap() {
+  Object.values(SAMPLE_LIBRARY).forEach((voiceConfig) => {
+    voiceConfig.samples = (voiceConfig.samples ?? [])
+      .map((sample) => {
+        const inferredMidi = Number.isFinite(sample?.midi) && sample.midi > 0 ? sample.midi : inferSampleMidiFromUrl(sample?.url);
+        if (!Number.isFinite(inferredMidi)) {
+          return null;
+        }
+        return {
+          url: `${sample.url}`,
+          midi: inferredMidi,
+          weight: Number.isFinite(sample.weight) ? sample.weight : 1,
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.midi - b.midi || `${a.url}`.localeCompare(`${b.url}`));
+  });
+}
+
+function getRealtimeAudioVoiceId() {
+  const instrumentId = normalizeInstrumentId(state.instrumentId);
+  if (instrumentId === "guitar") {
+    return normalizeGuitarTone(state.guitarTone) === "folk" ? "guitar_folk" : "guitar_classical";
+  }
+  if (instrumentId === "bass") {
+    return "bass_electric";
+  }
+  if (instrumentId === "ukulele") {
+    return "ukulele";
+  }
+  return "guitar_classical";
+}
+
+function ensureRealtimeAudioContext() {
+  const AudioContextCtor = window.AudioContext ?? window.webkitAudioContext;
+  if (!AudioContextCtor) {
+    return null;
+  }
+  if (!realtimeAudio.context) {
+    const context = new AudioContextCtor();
+    const masterGain = context.createGain();
+    masterGain.gain.value = 0.9;
+    masterGain.connect(context.destination);
+    realtimeAudio.context = context;
+    realtimeAudio.masterGain = masterGain;
+  }
+  return realtimeAudio.context;
+}
+
+async function unlockRealtimeAudio() {
+  const context = ensureRealtimeAudioContext();
+  if (!context) {
+    return false;
+  }
+  if (context.state === "suspended") {
+    try {
+      await context.resume();
+    } catch {
+      return false;
+    }
+  }
+  return context.state === "running";
+}
+
+function bindRealtimeAudioUnlockGestures() {
+  if (realtimeAudio.unlockBound) {
+    return;
+  }
+  realtimeAudio.unlockBound = true;
+  const unlock = () => {
+    void unlockRealtimeAudio();
+  };
+  AUDIO_UNLOCK_EVENTS.forEach((eventName) => {
+    window.addEventListener(eventName, unlock, { passive: true });
+  });
+}
+
+function getSampleCacheKey(voiceId, sampleUrl) {
+  return `${voiceId}::${sampleUrl}`;
+}
+
+async function loadSampleBuffer(voiceId, sampleUrl) {
+  const cacheKey = getSampleCacheKey(voiceId, sampleUrl);
+  if (realtimeAudio.buffers.has(cacheKey)) {
+    return realtimeAudio.buffers.get(cacheKey);
+  }
+  if (realtimeAudio.loadPromises.has(cacheKey)) {
+    return realtimeAudio.loadPromises.get(cacheKey);
+  }
+  const context = ensureRealtimeAudioContext();
+  if (!context) {
+    return null;
+  }
+  const promise = (async () => {
+    const response = await fetch(sampleUrl, { cache: "force-cache" });
+    if (!response.ok) {
+      throw new Error(`failed_to_load_sample:${sampleUrl}`);
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    const audioBuffer = await context.decodeAudioData(arrayBuffer.slice(0));
+    realtimeAudio.buffers.set(cacheKey, audioBuffer);
+    return audioBuffer;
+  })()
+    .catch(() => null)
+    .finally(() => {
+      realtimeAudio.loadPromises.delete(cacheKey);
+    });
+  realtimeAudio.loadPromises.set(cacheKey, promise);
+  return promise;
+}
+
+function pickBestSampleForMidi(voiceId, midiNote, velocity = 100) {
+  const voice = SAMPLE_LIBRARY[voiceId];
+  if (!voice || !Array.isArray(voice.samples) || !voice.samples.length) {
+    return null;
+  }
+  const targetMidi = Number(midiNote);
+  if (!Number.isFinite(targetMidi)) {
+    return voice.samples[0];
+  }
+  const velocityScalar = Math.max(0, Math.min(127, Number(velocity || 0))) / 127;
+  return voice.samples.reduce((best, sample) => {
+    if (!best) {
+      return sample;
+    }
+    const bestDistance = Math.abs(targetMidi - best.midi) / Math.max(0.0001, best.weight || 1);
+    const nextDistance = Math.abs(targetMidi - sample.midi) / Math.max(0.0001, sample.weight || 1);
+    if (Math.abs(nextDistance - bestDistance) < 0.0001) {
+      const bestHardness = best.weight ?? 1;
+      const nextHardness = sample.weight ?? 1;
+      const targetHardness = 0.75 + velocityScalar * 0.45;
+      return Math.abs(nextHardness - targetHardness) < Math.abs(bestHardness - targetHardness) ? sample : best;
+    }
+    return nextDistance < bestDistance ? sample : best;
+  }, null);
+}
+
+function stopRealtimeAudioVoice(eventKey, { immediate = false } = {}) {
+  const activeVoice = realtimeAudio.activeVoices.get(eventKey);
+  if (!activeVoice) {
+    return;
+  }
+  realtimeAudio.activeVoices.delete(eventKey);
+  const context = realtimeAudio.context;
+  if (!context) {
+    return;
+  }
+  const now = context.currentTime;
+  const releaseSeconds = immediate ? 0.01 : Math.max(0.02, (activeVoice.releaseMs ?? 180) / 1000);
+  try {
+    activeVoice.gainNode.gain.cancelScheduledValues(now);
+    activeVoice.gainNode.gain.setValueAtTime(Math.max(0.0001, activeVoice.gainNode.gain.value), now);
+    activeVoice.gainNode.gain.linearRampToValueAtTime(0.0001, now + releaseSeconds);
+  } catch {
+    // ignore automation issues
+  }
+  try {
+    activeVoice.source.stop(now + releaseSeconds + 0.03);
+  } catch {
+    // source may already be stopped
+  }
+}
+
+function stopAllRealtimeAudioVoices() {
+  Array.from(realtimeAudio.activeVoices.keys()).forEach((eventKey) => {
+    stopRealtimeAudioVoice(eventKey, { immediate: true });
+  });
+}
+
+function getMidiNoteFromRealtimePosition(position) {
+  const rawMidiNote = Number(position?.midiNote);
+  if (Number.isFinite(rawMidiNote)) {
+    return Math.round(rawMidiNote);
+  }
+  const stringIndex = Number(position?.stringIndex);
+  const fret = Number(position?.fret);
+  if (!Number.isInteger(stringIndex) || !Number.isFinite(fret)) {
+    return null;
+  }
+  const openMidi = getActiveOpenMidi()[stringIndex];
+  if (!Number.isFinite(openMidi)) {
+    return null;
+  }
+  return Math.round(openMidi + fret);
+}
+
+async function playRealtimeAudioNote(eventKey, position, velocity = 100) {
+  const midiNote = getMidiNoteFromRealtimePosition(position);
+  if (!Number.isFinite(midiNote)) {
+    return;
+  }
+  const context = ensureRealtimeAudioContext();
+  if (!context) {
+    return;
+  }
+  if (!(await unlockRealtimeAudio())) {
+    return;
+  }
+  const voiceId = getRealtimeAudioVoiceId();
+  const voiceConfig = SAMPLE_LIBRARY[voiceId];
+  if (!voiceConfig) {
+    return;
+  }
+  const sample = pickBestSampleForMidi(voiceId, midiNote, velocity);
+  if (!sample) {
+    return;
+  }
+  const buffer = await loadSampleBuffer(voiceId, sample.url);
+  if (!buffer) {
+    return;
+  }
+  stopRealtimeAudioVoice(eventKey, { immediate: true });
+
+  const source = context.createBufferSource();
+  source.buffer = buffer;
+  source.playbackRate.value = Math.pow(2, (midiNote - sample.midi) / 12);
+
+  const velocityGain = Math.max(0.08, Math.min(1, Number(velocity || 0) / 127));
+  const gainNode = context.createGain();
+  const now = context.currentTime;
+  const peakGain = Math.min(1.15, velocityGain * (voiceConfig.gain ?? 0.85));
+  gainNode.gain.setValueAtTime(0.0001, now);
+  gainNode.gain.linearRampToValueAtTime(peakGain, now + 0.008);
+  source.connect(gainNode);
+  gainNode.connect(realtimeAudio.masterGain);
+  source.start(now);
+  source.onended = () => {
+    const active = realtimeAudio.activeVoices.get(eventKey);
+    if (active?.source === source) {
+      realtimeAudio.activeVoices.delete(eventKey);
+    }
+  };
+
+  realtimeAudio.activeVoices.set(eventKey, {
+    source,
+    gainNode,
+    releaseMs: Number(voiceConfig.releaseMs || 180),
+  });
+}
+
+function warmupRealtimeAudioForActiveVoice() {
+  const voiceId = getRealtimeAudioVoiceId();
+  const voice = SAMPLE_LIBRARY[voiceId];
+  if (!voice?.samples?.length) {
+    return;
+  }
+  const sortedByWeight = [...voice.samples].sort((a, b) => (b.weight ?? 1) - (a.weight ?? 1));
+  sortedByWeight.slice(0, 2).forEach((sample) => {
+    void loadSampleBuffer(voiceId, sample.url);
+  });
 }
 
 function getBoardIndexFromSvg(svg) {
@@ -1589,6 +2684,7 @@ function setBoardCount(nextCount) {
     return;
   }
   state.boardCount = sanitized;
+  resetMarkerHistory();
   syncFretboardCount();
   renderGrid();
   renderMarkers();
@@ -1630,6 +2726,7 @@ function getTransparentDragImage() {
 
 function toggleMarker(boardIndex, stringIndex, fret) {
   const board = getBoardState(boardIndex);
+  rememberBoardHistory(boardIndex);
   const id = `${stringIndex}-${fret}`;
   const existing = board.markers[id];
   if (existing) {
@@ -1646,7 +2743,7 @@ function toggleMarker(boardIndex, stringIndex, fret) {
       id,
       stringIndex,
       fret,
-      noteIndex: getPositionNoteIndex(stringIndex, fret),
+      noteIndex: getPositionNoteIndex(stringIndex, fret, getActiveTuning()),
       interval: "",
       customLabel: null,
     };
@@ -1698,8 +2795,13 @@ function handleMenuPointerUp(event) {
     const board = getBoardState(enharmonicMenuState.boardIndex);
     const marker = board.markers[enharmonicMenuState.markerId];
     if (marker) {
-      marker.customLabel = active.dataset.label;
-      renderMarkers();
+      const nextLabel = `${active.dataset.label ?? ""}`;
+      if (marker.customLabel !== nextLabel) {
+        rememberBoardHistory(enharmonicMenuState.boardIndex);
+        marker.customLabel = nextLabel;
+        renderMarkers();
+        renderRecorderPanel();
+      }
     }
     longPressSuppressedId = {
       boardIndex: enharmonicMenuState.boardIndex,
@@ -1765,13 +2867,13 @@ function cancelLongPress() {
 function createOpenCell(stringIndex) {
   const x = getOpenAreaX();
   const y = getCellY(stringIndex);
-  return `<rect class="cell open-cell" data-string="${stringIndex}" data-fret="0" x="${x}" y="${y}" width="${DIMENSIONS.openWidth}" height="${DIMENSIONS.stringSpacing}"></rect>`;
+  return `<rect class="cell open-cell" data-string="${stringIndex}" data-fret="0" x="${x}" y="${y}" width="${DIMENSIONS.openWidth}" height="${getStringSpacing()}"></rect>`;
 }
 
 function createFretCell(stringIndex, fret) {
   const x = getFretX(fret);
   const y = getCellY(stringIndex);
-  return `<rect class="cell fret-cell" data-string="${stringIndex}" data-fret="${fret}" x="${x}" y="${y}" width="${DIMENSIONS.fretSpacing}" height="${DIMENSIONS.stringSpacing}"></rect>`;
+  return `<rect class="cell fret-cell" data-string="${stringIndex}" data-fret="${fret}" x="${x}" y="${y}" width="${DIMENSIONS.fretSpacing}" height="${getStringSpacing()}"></rect>`;
 }
 
 function renderGrid() {
@@ -1780,9 +2882,11 @@ function renderGrid() {
     return;
   }
   const { fretCount } = state;
+  const tuning = getActiveTuning();
+  const stringCount = getStringCount();
   const width = DIMENSIONS.fretSpacing;
   const labelOffset = 26;
-  const topY = getStringY(STRING_COUNT - 1);
+  const topY = getStringY(stringCount - 1);
   const bottomY = getStringY(0);
   const boardHeight = Math.max(bottomY - topY, 0);
   const totalWidth = getTotalBoardWidth(fretCount);
@@ -1792,7 +2896,7 @@ function renderGrid() {
   const openAreaX = getOpenAreaX(fretCount);
   const fretboardAreaX = getFretboardAreaX(fretCount);
 
-  const stringLines = STANDARD_TUNING.map((_, index) => {
+  const stringLines = tuning.map((_, index) => {
     const y = getStringY(index);
     const x1 = fretboardAreaX;
     const x2 = fretboardAreaX + width * fretCount;
@@ -1821,14 +2925,14 @@ function renderGrid() {
     }">${fretNumber}</text>`;
   });
 
-  const openCells = STANDARD_TUNING.map((_, stringIndex) => createOpenCell(stringIndex));
-  const fretCells = STANDARD_TUNING.flatMap((_, stringIndex) =>
+  const openCells = tuning.map((_, stringIndex) => createOpenCell(stringIndex));
+  const fretCells = tuning.flatMap((_, stringIndex) =>
     Array.from({ length: fretCount }).map((_, index) => createFretCell(stringIndex, index + 1))
   );
   const fretboardInlays = createFretboardInlays(fretCount, width);
 
-  const openNoteLabels = STANDARD_TUNING.map((_, stringIndex) => {
-    const note = getNoteName(getPositionNoteIndex(stringIndex, 0), state.notePreference);
+  const openNoteLabels = tuning.map((_, stringIndex) => {
+    const note = getNoteName(getPositionNoteIndex(stringIndex, 0, tuning), state.notePreference);
     return `<text class="open-note" x="${getOpenAreaX(fretCount) + DIMENSIONS.openWidth / 2}" y="${
       getStringY(stringIndex) + 5
     }">${note}</text>`;
@@ -1919,7 +3023,8 @@ function isChordLikeShape(shape) {
     system.includes("chord") ||
     system.includes("drop ") ||
     system.includes("triad") ||
-    system.includes("arpeggio")
+    system.includes("arpeggio") ||
+    system.includes("shell voicing")
   );
 }
 
@@ -1940,6 +3045,9 @@ function getLocalizedShapeName(shape) {
   const id = `${shape.id ?? ""}`;
   const rawName = `${shape.name ?? ""}`;
   const isZh = state.language === "zh";
+  if (getActiveInstrument().id === "bass" && id === "dim7_chord_root_6") {
+    return "";
+  }
 
   const cagedMatch = id.match(/^caged_chord_([a-g])_form$/i);
   if (cagedMatch) {
@@ -2042,7 +3150,7 @@ function renderShapeThumbnail(shape) {
   const height = 72;
   const padX = 12;
   const padY = 10;
-  const strings = STRING_COUNT;
+  const strings = getStringCount();
   const rowGap = (height - padY * 2) / (strings - 1);
   const frets = positions.map((pos) => pos.fret);
   let minFret = Math.min(...frets);
@@ -2089,23 +3197,35 @@ function renderShapeThumbnail(shape) {
 
 function renderLibraryCategory(category) {
   const sections = category.sections ?? [];
-  const flattenSingleSection = sections.length === 1;
+  const categoryId = `${category?.id ?? ""}`;
+  const isBassInstrument = getActiveInstrument().id === "bass";
+  const bassStaticCategoryIds = new Set(["major-scale", "melodic-minor-scale", "harmonic-minor-scale"]);
+  const shouldUseBassStaticMode = isBassInstrument && bassStaticCategoryIds.has(categoryId);
 
   const renderShapeCards = (shapes) =>
     (shapes ?? [])
-      .map(
-        (shape) => `
+      .map((shape) => {
+        const shapeTitle = `${getLocalizedShapeName(shape)}`.trim();
+        return `
                 <div class="shape-card" draggable="true" data-shape="${escapeHtml(shape.id)}">
-                  <h3>${escapeHtml(getLocalizedShapeName(shape))}</h3>
+                  ${shapeTitle ? `<h3>${escapeHtml(shapeTitle)}</h3>` : ""}
                   ${renderShapeThumbnail(shape)}
                 </div>
               `
-      )
+      })
       .join("");
 
   const renderSection = (section, options = {}) => {
     const label = `${options.label ?? getLocalizedLibrarySectionLabel(section)}`.trim();
-    if (flattenSingleSection) {
+    const shapeCount = section?.shapes?.length ?? 0;
+    const staticSectionCategoryIds = new Set(["whole-tone-scale", "caged", "dim7-chords"]);
+    if (shouldUseBassStaticMode) {
+      staticSectionCategoryIds.add("major-scale");
+      staticSectionCategoryIds.add("melodic-minor-scale");
+      staticSectionCategoryIds.add("harmonic-minor-scale");
+    }
+    const isStaticSectionCategory = staticSectionCategoryIds.has(`${category?.id ?? ""}`);
+    if (isStaticSectionCategory) {
       return `
           <div class="shape-section shape-section--flat">
             <div class="shape-grid">
@@ -2114,55 +3234,88 @@ function renderLibraryCategory(category) {
           </div>
         `;
     }
-
     return `
-          <div class="shape-section shape-section--expanded">
-            <div class="shape-section__label">
-              ${escapeHtml(label)}
-            </div>
+          <details class="shape-section">
+            <summary class="shape-section__summary">
+              <span>${escapeHtml(label)}</span>
+              <span>${escapeHtml(formatCount(shapeCount))}</span>
+            </summary>
             <div class="shape-grid">
               ${renderShapeCards(section.shapes)}
             </div>
-          </div>
+          </details>
         `;
   };
 
   const stripSusSectionPrefix = (label = "") => `${label}`.replace(/^Sus[24]\s*[·•-]\s*/i, "").trim();
 
-  const renderSusSectionGroup = (groupLabel, groupSections) => {
-    if (!groupSections.length) {
+  const renderSectionGroup = (groupLabel, groupSections, labelResolver = null) => {
+    const normalizedSections = groupSections ?? [];
+    if (!normalizedSections.length) {
       return "";
     }
+    const groupCount = normalizedSections.reduce((sum, section) => sum + (section?.shapes?.length ?? 0), 0);
     return `
-      <div class="shape-subsection">
-        <div class="shape-subsection__title">${escapeHtml(groupLabel)}</div>
-        ${groupSections
+      <details class="shape-subsection">
+        <summary class="shape-subsection__summary">
+          <span class="shape-subsection__title">${escapeHtml(groupLabel)}</span>
+          <span class="shape-subsection__count">${escapeHtml(formatCount(groupCount))}</span>
+        </summary>
+        ${normalizedSections
           .map((section) =>
             renderSection(section, {
-              label: stripSusSectionPrefix(getLocalizedLibrarySectionLabel(section)),
+              label: labelResolver ? labelResolver(section) : getLocalizedLibrarySectionLabel(section),
             })
           )
           .join("")}
-      </div>
+      </details>
     `;
   };
 
   const renderCategoryBody = () => {
-    if (`${category.id}` !== "sus-chords") {
-      return sections.map((section) => renderSection(section)).join("");
+    const categoryId = `${category.id}`;
+    if (categoryId === "sus-chords") {
+      const sus2Sections = sections.filter((section) => `${section.id}`.startsWith("sus2-"));
+      const sus4Sections = sections.filter((section) => `${section.id}`.startsWith("sus4-"));
+      const otherSections = sections.filter(
+        (section) => !`${section.id}`.startsWith("sus2-") && !`${section.id}`.startsWith("sus4-")
+      );
+
+      return `
+        ${renderSectionGroup("Sus2", sus2Sections, (section) =>
+          stripSusSectionPrefix(getLocalizedLibrarySectionLabel(section))
+        )}
+        ${renderSectionGroup("Sus4", sus4Sections, (section) =>
+          stripSusSectionPrefix(getLocalizedLibrarySectionLabel(section))
+        )}
+        ${otherSections.map((section) => renderSection(section)).join("")}
+      `;
     }
 
-    const sus2Sections = sections.filter((section) => `${section.id}`.startsWith("sus2-"));
-    const sus4Sections = sections.filter((section) => `${section.id}`.startsWith("sus4-"));
-    const otherSections = sections.filter(
-      (section) => !`${section.id}`.startsWith("sus2-") && !`${section.id}`.startsWith("sus4-")
-    );
+    if (categoryId === "shell-voicing") {
+      const seventhSections = sections.filter((section) => `${section.id}`.startsWith("shell-seventh-"));
+      const triadSections = sections.filter((section) => `${section.id}`.startsWith("shell-triad-"));
+      const otherSections = sections.filter(
+        (section) =>
+          !`${section.id}`.startsWith("shell-seventh-") && !`${section.id}`.startsWith("shell-triad-")
+      );
+      const fallbackSeventhLabel = state.language === "zh" ? "七和弦" : "Seventh Chords";
+      const fallbackTriadLabel = state.language === "zh" ? "三和弦" : "Triads";
+      const seventhLabel =
+        (LIBRARY_SECTION_LABELS[state.language] ?? LIBRARY_SECTION_LABELS.zh)?.["shell-voicing-seventh"] ??
+        fallbackSeventhLabel;
+      const triadLabel =
+        (LIBRARY_SECTION_LABELS[state.language] ?? LIBRARY_SECTION_LABELS.zh)?.["shell-voicing-triads"] ??
+        fallbackTriadLabel;
 
-    return `
-      ${renderSusSectionGroup("Sus2", sus2Sections)}
-      ${renderSusSectionGroup("Sus4", sus4Sections)}
-      ${otherSections.map((section) => renderSection(section)).join("")}
-    `;
+      return `
+        ${renderSectionGroup(seventhLabel, seventhSections)}
+        ${renderSectionGroup(triadLabel, triadSections)}
+        ${otherSections.map((section) => renderSection(section)).join("")}
+      `;
+    }
+
+    return sections.map((section) => renderSection(section)).join("");
   };
 
   return `
@@ -2209,7 +3362,7 @@ function buildShapeLibrary() {
   if (!dom.shapeLibrary) {
     return;
   }
-  const categories = groupShapesForLibrary(SCALE_SHAPES);
+  const categories = groupShapesForLibrary(getActiveShapes());
   const families = groupCategoriesByLibraryFamily(categories);
   dom.shapeLibrary.innerHTML = families
     .map(
@@ -2252,6 +3405,176 @@ function handleShapeDragStart(event) {
 function clearDragOverlayPreview() {
   dragOverlayPreview = null;
   renderOverlays();
+}
+
+function resetTouchShapeDrag({ clearPreview = true } = {}) {
+  if (touchShapeDrag.sourceCard && touchShapeDrag.pointerId !== null) {
+    try {
+      if (touchShapeDrag.sourceCard.hasPointerCapture?.(touchShapeDrag.pointerId)) {
+        touchShapeDrag.sourceCard.releasePointerCapture(touchShapeDrag.pointerId);
+      }
+    } catch {
+      // ignore pointer capture release failures
+    }
+  }
+  touchShapeDrag.active = false;
+  touchShapeDrag.pointerId = null;
+  touchShapeDrag.shapeId = null;
+  touchShapeDrag.sourceCard = null;
+  dragShapeId = null;
+  dom.paletteBackdrop?.classList.remove("is-drag-pass-through");
+  if (clearPreview) {
+    clearDragOverlayPreview();
+  }
+}
+
+function getBoardSvgFromClientPoint(clientX, clientY) {
+  const target = document.elementFromPoint(clientX, clientY);
+  if (!(target instanceof Element)) {
+    return null;
+  }
+  const svg = target.closest(".fretboard-svg");
+  return svg instanceof SVGSVGElement ? svg : null;
+}
+
+function getCellFromClientPoint(clientX, clientY, svg) {
+  if (!(svg instanceof SVGSVGElement)) {
+    return null;
+  }
+  const matrix = svg.getScreenCTM();
+  if (!matrix) {
+    return null;
+  }
+  const point = svg.createSVGPoint();
+  point.x = clientX;
+  point.y = clientY;
+  const svgPoint = point.matrixTransform(matrix.inverse());
+
+  const stringSpacing = getStringSpacing();
+  const topY = getStringY(getStringCount() - 1) - stringSpacing / 2;
+  const bottomY = getStringY(0) + stringSpacing / 2;
+  if (svgPoint.y < topY || svgPoint.y > bottomY) {
+    return null;
+  }
+
+  const totalWidth = getTotalBoardWidth(state.fretCount);
+  const normalizedX = state.fretboardFlipped ? totalWidth - svgPoint.x : svgPoint.x;
+  let fret = 0;
+  if (normalizedX > DIMENSIONS.openWidth) {
+    const fretIndex = Math.floor((normalizedX - DIMENSIONS.openWidth) / DIMENSIONS.fretSpacing);
+    fret = Math.min(state.fretCount, Math.max(1, fretIndex + 1));
+  }
+
+  const visualIndex = Math.min(
+    getStringCount() - 1,
+    Math.max(0, Math.floor((svgPoint.y - topY) / stringSpacing))
+  );
+  const stringIndex = getStringCount() - 1 - visualIndex;
+  return { stringIndex, fret };
+}
+
+function updateTouchShapeDragPreview(clientX, clientY) {
+  if (!touchShapeDrag.active || !touchShapeDrag.shapeId) {
+    return;
+  }
+  const shape = getShapeById(touchShapeDrag.shapeId);
+  if (!shape) {
+    return;
+  }
+  const svg = getBoardSvgFromClientPoint(clientX, clientY);
+  if (!svg) {
+    clearDragOverlayPreview();
+    return;
+  }
+  const cell = getCellFromClientPoint(clientX, clientY, svg);
+  if (!cell) {
+    clearDragOverlayPreview();
+    return;
+  }
+  setActiveBoard(getBoardIndexFromSvg(svg), { resetRecorder: false });
+  const placement = resolveShapePlacement(shape, cell);
+  if (!placement) {
+    clearDragOverlayPreview();
+    return;
+  }
+  dragOverlayPreview = {
+    shapeId: touchShapeDrag.shapeId,
+    ...placement,
+  };
+  renderOverlays();
+}
+
+function commitTouchShapeDrop() {
+  if (!touchShapeDrag.active || !touchShapeDrag.shapeId) {
+    return;
+  }
+  const preview =
+    dragOverlayPreview && dragOverlayPreview.shapeId === touchShapeDrag.shapeId ? dragOverlayPreview : null;
+  if (preview) {
+    addOverlay(touchShapeDrag.shapeId, preview.anchorString, preview.anchorFret, {
+      positionsOverride: preview.positions,
+      dragStringSetStart: preview.dragStringSetStart,
+    });
+  }
+  resetTouchShapeDrag({ clearPreview: true });
+}
+
+function handleShapePointerDown(event) {
+  if (event.pointerType === "mouse") {
+    return;
+  }
+  const card = event.target.closest(".shape-card");
+  if (!card) {
+    return;
+  }
+  if (!ensureFullAccess("library")) {
+    event.preventDefault();
+    return;
+  }
+  const shapeId = `${card.dataset.shape ?? ""}`.trim();
+  if (!shapeId) {
+    return;
+  }
+  event.preventDefault();
+  resetTouchShapeDrag({ clearPreview: true });
+  touchShapeDrag.active = true;
+  touchShapeDrag.pointerId = event.pointerId;
+  touchShapeDrag.shapeId = shapeId;
+  touchShapeDrag.sourceCard = card;
+  dragShapeId = shapeId;
+  if (state.paletteOpen) {
+    dom.paletteBackdrop?.classList.add("is-drag-pass-through");
+  }
+  try {
+    card.setPointerCapture?.(event.pointerId);
+  } catch {
+    // ignore capture failures
+  }
+  updateTouchShapeDragPreview(event.clientX, event.clientY);
+}
+
+function handleShapePointerMove(event) {
+  if (!touchShapeDrag.active || touchShapeDrag.pointerId !== event.pointerId) {
+    return;
+  }
+  event.preventDefault();
+  updateTouchShapeDragPreview(event.clientX, event.clientY);
+}
+
+function handleShapePointerUp(event) {
+  if (!touchShapeDrag.active || touchShapeDrag.pointerId !== event.pointerId) {
+    return;
+  }
+  event.preventDefault();
+  commitTouchShapeDrop();
+}
+
+function handleShapePointerCancel(event) {
+  if (!touchShapeDrag.active || touchShapeDrag.pointerId !== event.pointerId) {
+    return;
+  }
+  event.preventDefault();
+  resetTouchShapeDrag({ clearPreview: true });
 }
 
 const EXPORT_SVG_INLINE_STYLE = `
@@ -2456,43 +3779,12 @@ function getCellFromPointerEvent(event) {
   const targetSvg =
     event.target instanceof Element ? event.target.closest("svg") : null;
   const svg = event.currentTarget instanceof SVGSVGElement ? event.currentTarget : targetSvg ?? dom.svg;
-  if (!svg) {
-    return null;
-  }
-  const matrix = svg.getScreenCTM();
-  if (!matrix) {
-    return null;
-  }
-  const point = svg.createSVGPoint();
-  point.x = event.clientX;
-  point.y = event.clientY;
-  const svgPoint = point.matrixTransform(matrix.inverse());
-
-  const topY = getStringY(STRING_COUNT - 1) - DIMENSIONS.stringSpacing / 2;
-  const bottomY = getStringY(0) + DIMENSIONS.stringSpacing / 2;
-  if (svgPoint.y < topY || svgPoint.y > bottomY) {
-    return null;
-  }
-
-  const totalWidth = getTotalBoardWidth(state.fretCount);
-  const normalizedX = state.fretboardFlipped ? totalWidth - svgPoint.x : svgPoint.x;
-  let fret = 0;
-  if (normalizedX > DIMENSIONS.openWidth) {
-    const fretIndex = Math.floor((normalizedX - DIMENSIONS.openWidth) / DIMENSIONS.fretSpacing);
-    fret = Math.min(state.fretCount, Math.max(1, fretIndex + 1));
-  }
-
-  const visualIndex = Math.min(
-    STRING_COUNT - 1,
-    Math.max(0, Math.floor((svgPoint.y - topY) / DIMENSIONS.stringSpacing))
-  );
-  const stringIndex = STRING_COUNT - 1 - visualIndex;
-  return { stringIndex, fret };
+  return getCellFromClientPoint(event.clientX, event.clientY, svg);
 }
 
 function getLockedAnchorString(shape, fallbackStringIndex) {
   if (Number.isInteger(shape?.anchorString)) {
-    return Math.max(0, Math.min(STRING_COUNT - 1, shape.anchorString));
+    return Math.max(0, Math.min(getStringCount() - 1, shape.anchorString));
   }
   return fallbackStringIndex;
 }
@@ -2511,6 +3803,24 @@ function getVariantStringSetStartForPointer(shape, stringIndex) {
   return Math.max(minStart, Math.min(maxStart, Number(stringIndex)));
 }
 
+function normalizePlacementAnchorFret(anchorFret, positions) {
+  const baseFret = Math.round(Number(anchorFret) || 0);
+  const offsets = (positions ?? [])
+    .map((entry) => Number(entry?.fret))
+    .filter((value) => Number.isFinite(value));
+  if (!offsets.length) {
+    return Math.max(0, baseFret);
+  }
+  const minOffset = Math.min(...offsets);
+  const maxOffset = Math.max(...offsets);
+  const minAnchor = Math.max(0, -minOffset);
+  const maxAnchor = Math.max(0, state.fretCount - maxOffset);
+  if (maxAnchor < minAnchor) {
+    return minAnchor;
+  }
+  return Math.min(maxAnchor, Math.max(minAnchor, baseFret));
+}
+
 function resolveShapePlacement(shape, cell) {
   if (!shape || !cell) {
     return null;
@@ -2524,8 +3834,11 @@ function resolveShapePlacement(shape, cell) {
       return null;
     }
     const anchorString = variant.anchorString;
-    const anchorFret = cell.fret;
+    const anchorFret = normalizePlacementAnchorFret(cell.fret, variant.positions);
     const positions = calculateOverlayPositions({ positions: variant.positions }, anchorString, anchorFret);
+    if (!positions.length) {
+      return null;
+    }
     return {
       anchorString,
       anchorFret,
@@ -2535,8 +3848,11 @@ function resolveShapePlacement(shape, cell) {
   }
 
   const anchorString = getLockedAnchorString(shape, cell.stringIndex);
-  const anchorFret = cell.fret;
+  const anchorFret = normalizePlacementAnchorFret(cell.fret, shape.positions);
   const positions = calculateOverlayPositions(shape, anchorString, anchorFret);
+  if (!positions.length) {
+    return null;
+  }
   return { anchorString, anchorFret, positions };
 }
 
@@ -2555,7 +3871,7 @@ function handleBoardDragOver(event) {
   if (Number.isNaN(cell.stringIndex) || Number.isNaN(cell.fret)) {
     return;
   }
-  const shape = SCALE_SHAPES.find((entry) => entry.id === shapeId);
+  const shape = getShapeById(shapeId);
   if (!shape) {
     return;
   }
@@ -2586,7 +3902,7 @@ function handleBoardDrop(event) {
       dragStringSetStart: preview.dragStringSetStart,
     });
   } else {
-    const shape = SCALE_SHAPES.find((entry) => entry.id === shapeId);
+    const shape = getShapeById(shapeId);
     const cell = getCellFromPointerEvent(event) ?? event.target.closest(".cell");
     if (!cell) {
       clearDragOverlayPreview();
@@ -2697,7 +4013,7 @@ function calculateOverlayPositions(shape, anchorString, anchorFret) {
     .map((offset) => {
       const stringIndex = anchorString + offset.string;
       const fret = anchorFret + offset.fret;
-      if (stringIndex < 0 || stringIndex >= STRING_COUNT || fret < 0) {
+      if (stringIndex < 0 || stringIndex >= getStringCount() || fret < 0 || fret > state.fretCount) {
         return null;
       }
       return { stringIndex, fret, interval: offset.interval };
@@ -2705,8 +4021,15 @@ function calculateOverlayPositions(shape, anchorString, anchorFret) {
     .filter(Boolean);
 }
 
+function getShapeById(shapeId) {
+  if (!shapeId) {
+    return null;
+  }
+  return getActiveShapes().find((entry) => entry.id === shapeId) ?? null;
+}
+
 function getOverlayShape(shapeId) {
-  return SCALE_SHAPES.find((entry) => entry.id === shapeId) ?? null;
+  return getShapeById(shapeId);
 }
 
 function getScaleDegreeMapForShape(shape) {
@@ -2805,6 +4128,17 @@ function getChordDegreeMapForShape(shape) {
     if (mode.includes("major 7")) return { 0: "R", 4: "3", 7: "5", 11: "7" };
     return { 0: "R", 4: "3", 7: "5" };
   }
+  if (system.includes("shell voicing")) {
+    if (mode.includes("half-diminished")) return { 0: "R", 3: "b3", 6: "b5", 10: "b7" };
+    if (mode.includes("diminished 7")) return { 0: "R", 3: "b3", 6: "b5", 9: "bb7" };
+    if (mode.includes("dominant 7")) return { 0: "R", 4: "3", 10: "b7" };
+    if (mode.includes("minor 7")) return { 0: "R", 3: "b3", 10: "b7" };
+    if (mode.includes("major 7")) return { 0: "R", 4: "3", 11: "7" };
+    if (mode.includes("diminished")) return { 0: "R", 3: "b3", 6: "b5" };
+    if (mode.includes("augmented")) return { 0: "R", 4: "3", 8: "#5" };
+    if (mode.includes("minor")) return { 0: "R", 3: "b3", 7: "5" };
+    return { 0: "R", 4: "3", 7: "5" };
+  }
   if (system.includes("arpeggio")) {
     if (mode.includes("half-diminished")) return { 0: "R", 3: "b3", 6: "b5", 10: "b7" };
     if (mode.includes("dominant 7")) return { 0: "R", 4: "3", 7: "5", 10: "b7" };
@@ -2827,21 +4161,63 @@ function getDegreeCaption(degreeToken, shape) {
   const isChord =
     `${shape?.system ?? ""}`.toLowerCase().includes("chord") ||
     `${shape?.system ?? ""}`.toLowerCase().includes("drop ") ||
-    `${shape?.system ?? ""}`.toLowerCase().includes("triad");
+    `${shape?.system ?? ""}`.toLowerCase().includes("triad") ||
+    `${shape?.system ?? ""}`.toLowerCase().includes("shell voicing");
   if (isChord) {
     return degreeToken;
   }
   return DEGREE_LABEL_ALIAS[degreeToken] ?? degreeToken;
 }
 
-function getOverlayToneLabel(shape, anchorString, anchorFret, pos) {
+function getOverlayPositionNoteName(stringIndex, fret) {
+  return getOverlayPreferredNoteName(getPositionNoteIndex(stringIndex, fret, getActiveTuning()));
+}
+
+function resolveOverlayRootNoteName(shape, anchorString, anchorFret, positions = []) {
+  const rootCandidates = (positions ?? [])
+    .filter(
+      (entry) =>
+        entry &&
+        Number.isInteger(entry.stringIndex) &&
+        Number.isFinite(entry.fret) &&
+        entry.fret >= 0 &&
+        mod12(entry.interval ?? -1) === 0
+    )
+    .sort((a, b) => {
+      const aDistance = Math.abs(a.stringIndex - anchorString) + Math.abs(a.fret - anchorFret);
+      const bDistance = Math.abs(b.stringIndex - anchorString) + Math.abs(b.fret - anchorFret);
+      return aDistance - bDistance || a.stringIndex - b.stringIndex || a.fret - b.fret;
+    });
+
+  if (rootCandidates.length) {
+    const root = rootCandidates[0];
+    return getOverlayPositionNoteName(root.stringIndex, root.fret);
+  }
+
+  const absoluteRootString = Number(anchorString);
+  const absoluteRootFret = Number(anchorFret);
+  if (
+    Number.isInteger(absoluteRootString) &&
+    absoluteRootString >= 0 &&
+    absoluteRootString < getStringCount() &&
+    Number.isFinite(absoluteRootFret) &&
+    absoluteRootFret >= 0
+  ) {
+    return getOverlayPositionNoteName(absoluteRootString, absoluteRootFret);
+  }
+
+  return null;
+}
+
+function getOverlayToneLabel(shape, anchorString, anchorFret, pos, rootNoteName = null) {
   const degreeMap = getOverlayDegreeMap(shape);
   const degreeToken = degreeMap?.[mod12(pos.interval)] ?? `${mod12(pos.interval)}`;
-  const rootNoteIndex = getPositionNoteIndex(anchorString, anchorFret);
-  const rootNoteName = getOverlayPreferredNoteName(rootNoteIndex);
-  const noteName =
-    spellNoteFromRootAndDegree(rootNoteName, degreeToken === "R" ? "1" : degreeToken) ??
-    getOverlayPreferredNoteName(getPositionNoteIndex(pos.stringIndex, pos.fret));
+  const fallbackNoteName = getOverlayPositionNoteName(pos.stringIndex, pos.fret);
+  const spelledByDegree =
+    rootNoteName && degreeMap
+      ? spellNoteFromRootAndDegree(rootNoteName, degreeToken === "R" ? "1" : degreeToken)
+      : null;
+  const noteName = spelledByDegree ?? fallbackNoteName;
   return {
     noteName,
     degreeLabel: getDegreeCaption(degreeToken, shape),
@@ -2849,7 +4225,10 @@ function getOverlayToneLabel(shape, anchorString, anchorFret, pos) {
   };
 }
 
-function appendOverlayDot(group, { pos, shape, anchorString, anchorFret, preview = false, overlayId = null }) {
+function appendOverlayDot(
+  group,
+  { pos, shape, anchorString, anchorFret, rootNoteName = null, preview = false, overlayId = null }
+) {
   const centerX = getMarkerCenterX(pos.fret);
   const centerY = getStringY(pos.stringIndex);
   const isRoot = pos.interval === 0;
@@ -2868,7 +4247,7 @@ function appendOverlayDot(group, { pos, shape, anchorString, anchorFret, preview
   }
   group.appendChild(dot);
 
-  const labels = getOverlayToneLabel(shape, anchorString, anchorFret, pos);
+  const labels = getOverlayToneLabel(shape, anchorString, anchorFret, pos, rootNoteName);
   const noteText = document.createElementNS("http://www.w3.org/2000/svg", "text");
   noteText.setAttribute(
     "class",
@@ -2893,6 +4272,7 @@ function renderOverlays() {
       return;
     }
     const shape = getOverlayShape(overlay.shapeId);
+    const rootNoteName = resolveOverlayRootNoteName(shape, overlay.anchorString, overlay.anchorFret, overlay.positions);
     svgs.forEach((svg) => {
       const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
       group.classList.add("overlay-group");
@@ -2902,6 +4282,7 @@ function renderOverlays() {
           shape,
           anchorString: overlay.anchorString,
           anchorFret: overlay.anchorFret,
+          rootNoteName,
           overlayId: overlay.id,
         });
       });
@@ -2913,6 +4294,12 @@ function renderOverlays() {
     return;
   }
   const previewShape = getOverlayShape(dragOverlayPreview.shapeId);
+  const previewRootNoteName = resolveOverlayRootNoteName(
+    previewShape,
+    dragOverlayPreview.anchorString,
+    dragOverlayPreview.anchorFret,
+    dragOverlayPreview.positions
+  );
   svgs.forEach((svg) => {
     const previewGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
     previewGroup.classList.add("overlay-preview-group");
@@ -2922,6 +4309,7 @@ function renderOverlays() {
         shape: previewShape,
         anchorString: dragOverlayPreview.anchorString,
         anchorFret: dragOverlayPreview.anchorFret,
+        rootNoteName: previewRootNoteName,
         preview: true,
       });
     });
@@ -2934,14 +4322,14 @@ function isValidRealtimePosition(stringIndex, fret) {
     Number.isInteger(stringIndex) &&
     Number.isInteger(fret) &&
     stringIndex >= 0 &&
-    stringIndex < STRING_COUNT &&
+    stringIndex < getStringCount() &&
     fret >= 0 &&
     fret <= state.fretCount
   );
 }
 
 function isValidRealtimeStringIndex(stringIndex) {
-  return Number.isInteger(stringIndex) && stringIndex >= 0 && stringIndex < STRING_COUNT;
+  return Number.isInteger(stringIndex) && stringIndex >= 0 && stringIndex < getStringCount();
 }
 
 function getRealtimeEventKey(payload = {}, source = "live") {
@@ -2960,7 +4348,7 @@ function getPreferredPositionFromChannel(channel) {
     return null;
   }
   const stringIndex = normalizedChannel - 1;
-  if (stringIndex < 0 || stringIndex >= STRING_COUNT) {
+  if (stringIndex < 0 || stringIndex >= getStringCount()) {
     return null;
   }
   return { stringIndex };
@@ -2998,7 +4386,7 @@ function resolveRealtimePosition(payload = {}) {
   const midiHistoryKey = `${midiNote}:ch:${Number(payload.channel || 0)}`;
   const previousPosition = realtime.lastMidiPositions.get(midiHistoryKey) ?? null;
   const preferredPosition = getPreferredPositionFromChannel(payload.channel) ?? previousPosition;
-  const positions = getTabPositionsFromMidi(midiNote, state.fretCount);
+  const positions = getTabPositionsFromMidi(midiNote, state.fretCount, getActiveOpenMidi());
   const best = pickBestTabPosition(positions, {
     preferredPosition,
     previousFret: previousPosition?.fret,
@@ -3014,6 +4402,350 @@ function resolveRealtimePosition(payload = {}) {
     fret: best.fret,
     midiNote,
   };
+}
+
+function shouldUseRealtimeChordMapper(source) {
+  const normalized = `${source ?? ""}`.trim().toLowerCase();
+  return normalized === "daw-midi" || normalized === "live";
+}
+
+function getRealtimeVoiceChordEntries(source, channel) {
+  const targetChannel = Number(channel || 0);
+  return Array.from(realtime.markers.entries())
+    .filter(([, marker]) => marker?.source === source && Number(marker?.channel || 0) === targetChannel)
+    .map(([eventKey, marker]) => ({
+      eventKey,
+      midiNote: Number(marker?.midiNote),
+      stringIndex: Number(marker?.stringIndex),
+      fret: Number(marker?.fret),
+    }))
+    .filter(
+      (entry) =>
+        Number.isFinite(entry.midiNote) &&
+        Number.isInteger(entry.stringIndex) &&
+        Number.isInteger(entry.fret) &&
+        entry.fret >= 0
+    );
+}
+
+function buildMidiMultisetKey(values = []) {
+  return [...values]
+    .map((value) => Math.round(Number(value)))
+    .filter((value) => Number.isFinite(value))
+    .sort((a, b) => a - b)
+    .join("|");
+}
+
+function getShapePlacementVariants(shape) {
+  if (shape?.dragPlacementVariants && typeof shape.dragPlacementVariants === "object") {
+    return Object.entries(shape.dragPlacementVariants)
+      .map(([variantId, variant]) => ({
+        variantId,
+        positions: Array.isArray(variant?.positions) ? variant.positions : [],
+      }))
+      .filter((entry) => entry.positions.length);
+  }
+  if (Array.isArray(shape?.positions) && shape.positions.length) {
+    return [
+      {
+        variantId: "base",
+        positions: shape.positions,
+      },
+    ];
+  }
+  return [];
+}
+
+function calculateAbsolutePositionsForVariant(variantPositions, anchorString, anchorFret) {
+  const absolute = [];
+  for (const pos of variantPositions ?? []) {
+    const relativeString = Number(pos?.string);
+    const relativeFret = Number(pos?.fret);
+    if (!Number.isInteger(relativeString) || !Number.isFinite(relativeFret)) {
+      return [];
+    }
+    const stringIndex = anchorString + relativeString;
+    const fret = Math.round(anchorFret + relativeFret);
+    if (!isValidRealtimePosition(stringIndex, fret)) {
+      return [];
+    }
+    absolute.push({
+      stringIndex,
+      fret,
+      interval: mod12(pos?.interval ?? 0),
+    });
+  }
+  return absolute;
+}
+
+function scoreChordLayout(noteEntries, assignments) {
+  const assigned = noteEntries
+    .map((entry) => ({
+      entry,
+      position: assignments.get(entry.eventKey) ?? null,
+    }))
+    .filter((entry) => entry.position);
+  if (!assigned.length) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const frets = assigned.map(({ position }) => position.fret);
+  const minFret = Math.min(...frets);
+  const maxFret = Math.max(...frets);
+  const avgFret = frets.reduce((sum, value) => sum + value, 0) / frets.length;
+  let score = (maxFret - minFret) * 2.1 + avgFret * 0.32;
+
+  assigned.forEach(({ entry, position }) => {
+    score += Math.abs(position.fret - entry.fret) * 0.35;
+    score += Math.abs(position.stringIndex - entry.stringIndex) * 0.95;
+  });
+
+  const byPitch = [...assigned].sort((a, b) => a.entry.midiNote - b.entry.midiNote || a.position.fret - b.position.fret);
+  for (let index = 1; index < byPitch.length; index += 1) {
+    const previous = byPitch[index - 1].position.stringIndex;
+    const current = byPitch[index].position.stringIndex;
+    if (current < previous) {
+      score += 3.2;
+    }
+  }
+
+  return score;
+}
+
+function buildExactMidiAssignments(noteEntries, absolutePositions) {
+  const openMidi = getActiveOpenMidi();
+  const positionsByMidi = new Map();
+
+  absolutePositions.forEach((position) => {
+    const open = openMidi[position.stringIndex];
+    if (!Number.isFinite(open)) {
+      return;
+    }
+    const midi = Math.round(open + position.fret);
+    if (!positionsByMidi.has(midi)) {
+      positionsByMidi.set(midi, []);
+    }
+    positionsByMidi.get(midi).push(position);
+  });
+
+  const orderedEntries = [...noteEntries]
+    .map((entry) => ({
+      ...entry,
+      candidates: positionsByMidi.get(Math.round(entry.midiNote)) ?? [],
+    }))
+    .sort(
+      (a, b) =>
+        a.candidates.length - b.candidates.length ||
+        Math.abs(a.fret) - Math.abs(b.fret) ||
+        a.midiNote - b.midiNote
+    );
+
+  if (orderedEntries.some((entry) => !entry.candidates.length)) {
+    return null;
+  }
+
+  const usedByString = new Set();
+  const current = new Map();
+  let best = null;
+  let bestScore = Number.POSITIVE_INFINITY;
+
+  function dfs(depth) {
+    if (depth >= orderedEntries.length) {
+      const score = scoreChordLayout(noteEntries, current);
+      if (score < bestScore) {
+        bestScore = score;
+        best = new Map(current);
+      }
+      return;
+    }
+
+    const entry = orderedEntries[depth];
+    const ranked = [...entry.candidates].sort((a, b) => {
+      const aMove = Math.abs(a.fret - entry.fret) + Math.abs(a.stringIndex - entry.stringIndex) * 1.2;
+      const bMove = Math.abs(b.fret - entry.fret) + Math.abs(b.stringIndex - entry.stringIndex) * 1.2;
+      return aMove - bMove || a.fret - b.fret || a.stringIndex - b.stringIndex;
+    });
+
+    for (const candidate of ranked) {
+      if (usedByString.has(candidate.stringIndex)) {
+        continue;
+      }
+      usedByString.add(candidate.stringIndex);
+      current.set(entry.eventKey, candidate);
+      dfs(depth + 1);
+      current.delete(entry.eventKey);
+      usedByString.delete(candidate.stringIndex);
+    }
+  }
+
+  dfs(0);
+  return best;
+}
+
+function findDropVoicingPresetAssignments(noteEntries) {
+  if (!Array.isArray(noteEntries) || noteEntries.length !== 4) {
+    return null;
+  }
+
+  const dropShapes = getActiveShapes().filter((shape) => isDrop2Shape(shape) || isDrop3Shape(shape));
+  if (!dropShapes.length) {
+    return null;
+  }
+
+  const targetKey = buildMidiMultisetKey(noteEntries.map((entry) => entry.midiNote));
+  const testedAnchors = new Set();
+  let bestAssignments = null;
+  let bestScore = Number.POSITIVE_INFINITY;
+
+  dropShapes.forEach((shape) => {
+    const variants = getShapePlacementVariants(shape);
+    variants.forEach((variant) => {
+      const rootPositions = (variant.positions ?? []).filter((position) => mod12(position?.interval ?? -1) === 0);
+      if (!rootPositions.length) {
+        return;
+      }
+      noteEntries.forEach((noteEntry) => {
+        const rootTabs = getTabPositionsFromMidi(noteEntry.midiNote, state.fretCount, getActiveOpenMidi());
+        rootTabs.forEach((rootTab) => {
+          rootPositions.forEach((rootPos) => {
+            const anchorString = rootTab.stringIndex - Number(rootPos.string);
+            const anchorFret = rootTab.fret - Number(rootPos.fret);
+            if (!Number.isInteger(anchorString) || !Number.isFinite(anchorFret)) {
+              return;
+            }
+            const anchorKey = `${shape.id}:${variant.variantId}:${anchorString}:${anchorFret}`;
+            if (testedAnchors.has(anchorKey)) {
+              return;
+            }
+            testedAnchors.add(anchorKey);
+
+            const absolute = calculateAbsolutePositionsForVariant(variant.positions, anchorString, anchorFret);
+            if (absolute.length !== noteEntries.length) {
+              return;
+            }
+            const midiKey = buildMidiMultisetKey(
+              absolute.map((position) => getActiveOpenMidi()[position.stringIndex] + position.fret)
+            );
+            if (midiKey !== targetKey) {
+              return;
+            }
+            const assignments = buildExactMidiAssignments(noteEntries, absolute);
+            if (!assignments) {
+              return;
+            }
+            const score = scoreChordLayout(noteEntries, assignments);
+            if (score < bestScore) {
+              bestScore = score;
+              bestAssignments = assignments;
+            }
+          });
+        });
+      });
+    });
+  });
+
+  return bestAssignments;
+}
+
+function solveUniqueStringAssignments(noteEntries) {
+  const openMidi = getActiveOpenMidi();
+  const entries = noteEntries
+    .map((entry) => ({
+      ...entry,
+      candidates: getTabPositionsFromMidi(entry.midiNote, state.fretCount, openMidi),
+    }))
+    .filter((entry) => entry.candidates.length);
+
+  if (entries.length !== noteEntries.length) {
+    return null;
+  }
+
+  const ordered = [...entries].sort(
+    (a, b) => a.candidates.length - b.candidates.length || a.midiNote - b.midiNote || a.fret - b.fret
+  );
+  const usedStrings = new Set();
+  const current = new Map();
+  let best = null;
+  let bestScore = Number.POSITIVE_INFINITY;
+
+  function dfs(depth) {
+    if (depth >= ordered.length) {
+      const score = scoreChordLayout(noteEntries, current);
+      if (score < bestScore) {
+        bestScore = score;
+        best = new Map(current);
+      }
+      return;
+    }
+
+    const entry = ordered[depth];
+    const rankedCandidates = [...entry.candidates].sort((a, b) => {
+      const aMove = Math.abs(a.fret - entry.fret) + Math.abs(a.stringIndex - entry.stringIndex) * 1.2;
+      const bMove = Math.abs(b.fret - entry.fret) + Math.abs(b.stringIndex - entry.stringIndex) * 1.2;
+      return aMove - bMove || a.fret - b.fret || a.stringIndex - b.stringIndex;
+    });
+
+    for (const candidate of rankedCandidates) {
+      if (usedStrings.has(candidate.stringIndex)) {
+        continue;
+      }
+      usedStrings.add(candidate.stringIndex);
+      current.set(entry.eventKey, candidate);
+      dfs(depth + 1);
+      current.delete(entry.eventKey);
+      usedStrings.delete(candidate.stringIndex);
+    }
+  }
+
+  dfs(0);
+  return best;
+}
+
+function updateRealtimeMidiHistoryFromAssignments(noteEntries, assignments, channel) {
+  const normalizedChannel = Number(channel || 0);
+  noteEntries.forEach((entry) => {
+    const assigned = assignments.get(entry.eventKey);
+    if (!assigned) {
+      return;
+    }
+    const midiHistoryKey = `${Math.round(entry.midiNote)}:ch:${normalizedChannel}`;
+    realtime.lastMidiPositions.set(midiHistoryKey, {
+      stringIndex: assigned.stringIndex,
+      fret: assigned.fret,
+    });
+  });
+}
+
+function remapRealtimeVoiceChord(source, channel) {
+  if (!shouldUseRealtimeChordMapper(source)) {
+    return false;
+  }
+
+  const noteEntries = getRealtimeVoiceChordEntries(source, channel);
+  if (noteEntries.length <= 1) {
+    return false;
+  }
+
+  const presetAssignments = findDropVoicingPresetAssignments(noteEntries);
+  const assignments = presetAssignments ?? solveUniqueStringAssignments(noteEntries);
+  if (!assignments) {
+    return false;
+  }
+
+  let changed = false;
+  assignments.forEach((position, eventKey) => {
+    const marker = realtime.markers.get(eventKey);
+    if (!marker || !isValidRealtimePosition(position.stringIndex, position.fret)) {
+      return;
+    }
+    if (marker.stringIndex !== position.stringIndex || marker.fret !== position.fret) {
+      marker.stringIndex = position.stringIndex;
+      marker.fret = position.fret;
+      changed = true;
+    }
+  });
+  updateRealtimeMidiHistoryFromAssignments(noteEntries, assignments, channel);
+  return changed;
 }
 
 function normalizeRealtimeFx(payload = {}) {
@@ -3121,7 +4853,7 @@ function renderRealtimeMarkers() {
         <circle class="realtime-dot${isOnsetFlash ? " realtime-dot--flash" : ""}" cx="${centerX}" cy="${centerY}" r="19"></circle>
         <circle class="realtime-dot-core${isOnsetFlash ? " realtime-dot-core--flash" : ""}" cx="${centerX}" cy="${centerY}" r="14"></circle>
         <text class="realtime-note-text" x="${centerX}" y="${centerY + 6}">${getNoteName(
-          getPositionNoteIndex(marker.stringIndex, marker.fret),
+          getPositionNoteIndex(marker.stringIndex, marker.fret, getActiveTuning()),
           state.notePreference
         )}</text>
       `;
@@ -3131,6 +4863,7 @@ function renderRealtimeMarkers() {
 }
 
 function clearRealtimeMarkers() {
+  stopAllRealtimeAudioVoices();
   realtime.markers.clear();
   realtime.fxTrails.length = 0;
   realtime.lastVoicePositions.clear();
@@ -3192,6 +4925,8 @@ function applyRealtimeNoteOn(payload = {}, source = "live") {
     flashUntil: now + REALTIME_ONSET_FLASH_MS,
     fxUntil: now + fxFlashDurationMs,
   });
+  remapRealtimeVoiceChord(source, payload.channel);
+  void playRealtimeAudioNote(eventKey, position, payload.velocity);
   renderRealtimeMarkers();
   setTimeout(() => {
     const marker = realtime.markers.get(eventKey);
@@ -3212,10 +4947,13 @@ function applyRealtimeNoteOn(payload = {}, source = "live") {
 
 function applyRealtimeNoteOff(payload = {}, source = "live") {
   const eventKey = getRealtimeEventKey(payload, source);
+  stopRealtimeAudioVoice(eventKey);
   if (!realtime.markers.has(eventKey)) {
     return;
   }
+  const channel = Number(realtime.markers.get(eventKey)?.channel ?? payload.channel ?? 0);
   realtime.markers.delete(eventKey);
+  remapRealtimeVoiceChord(source, channel);
   renderRealtimeMarkers();
 }
 
@@ -3343,7 +5081,7 @@ function initRealtimeInputs() {
 }
 
 function addOverlay(shapeId, anchorString, anchorFret, options = {}) {
-  const shape = SCALE_SHAPES.find((entry) => entry.id === shapeId);
+  const shape = getShapeById(shapeId);
   if (!shape) {
     return;
   }
@@ -3377,7 +5115,7 @@ function renderOverlayList() {
   }
   dom.overlayList.innerHTML = overlays
     .map((overlay) => {
-      const displayString = STRING_COUNT - overlay.anchorString;
+      const displayString = getStringCount() - overlay.anchorString;
       const metaLine = t("overlay.meta", {
         mode: overlay.mode,
         system: overlay.system,
@@ -3428,7 +5166,7 @@ function getRecorderRootMarker() {
 }
 
 function buildRecorderRows(rootMarker) {
-  return Array.from({ length: STRING_COUNT }, (_, stringIndex) =>
+  return Array.from({ length: getStringCount() }, (_, stringIndex) =>
     getSortedMarkers()
       .filter((marker) => marker.stringIndex === stringIndex)
       .map((marker) => marker.fret - rootMarker.fret)
@@ -3462,7 +5200,7 @@ function analyzeRecorderShape(rows, positions) {
   rows.forEach((row, rowIndex) => {
     for (let i = 0; i + 2 < row.length; i += 1) {
       if (row[i + 1] - row[i] === 2 && row[i + 2] - row[i + 1] === 2) {
-        warnings.push(`第 ${STRING_COUNT - rowIndex} 弦存在连续两个大二度（${row[i]}, ${row[i + 1]}, ${row[i + 2]}）`);
+        warnings.push(`第 ${getStringCount() - rowIndex} 弦存在连续两个大二度（${row[i]}, ${row[i + 1]}, ${row[i + 2]}）`);
       }
     }
   });
@@ -3488,7 +5226,7 @@ function buildRecorderExportText() {
   const rows = buildRecorderRows(rootMarker);
   const positions = buildRecorderPositions(rootMarker);
   const warnings = analyzeRecorderShape(rows, positions);
-  const rootStringNumber = STRING_COUNT - rootMarker.stringIndex;
+  const rootStringNumber = getStringCount() - rootMarker.stringIndex;
 
   const payload = {
     captureNote: {
@@ -3541,7 +5279,7 @@ function renderRecorderPanel() {
   if (selectedMarker) {
     statusBits.push(
       t("recorder.status.recent", {
-        string: STRING_COUNT - selectedMarker.stringIndex,
+        string: getStringCount() - selectedMarker.stringIndex,
         fret: selectedMarker.fret,
       })
     );
@@ -3549,7 +5287,7 @@ function renderRecorderPanel() {
   if (rootMarker) {
     statusBits.push(
       t("recorder.status.root", {
-        string: STRING_COUNT - rootMarker.stringIndex,
+        string: getStringCount() - rootMarker.stringIndex,
         fret: rootMarker.fret,
         note: getMarkerDisplayLabel(rootMarker),
       })
@@ -3576,7 +5314,7 @@ function renderRecorderPanel() {
             >
               ${escapeHtml(
                 t("recorder.markerPill", {
-                  string: STRING_COUNT - marker.stringIndex,
+                  string: getStringCount() - marker.stringIndex,
                   fret: marker.fret,
                   note: getMarkerDisplayLabel(marker),
                   rootTag,
@@ -3752,12 +5490,18 @@ function handleSvgClick(event) {
   toggleMarker(boardIndex, stringIndex, fret);
 }
 
-function clearMarkers(boardIndex = state.activeBoardIndex) {
-  const board = getBoardState(boardIndex);
+function clearMarkers(boardIndex = state.activeBoardIndex, { recordHistory = true } = {}) {
+  const normalizedBoardIndex = normalizeBoardIndex(boardIndex);
+  const board = getBoardState(normalizedBoardIndex);
+  if (recordHistory && Object.keys(board.markers).length) {
+    rememberBoardHistory(normalizedBoardIndex);
+  }
   board.markers = {};
   board.selectedId = null;
-  recorder.rootMarkerId = null;
-  recorder.output = "";
+  if (state.activeBoardIndex === normalizedBoardIndex) {
+    recorder.rootMarkerId = null;
+    recorder.output = "";
+  }
   updateMarkerHint();
   renderMarkers();
   renderRecorderPanel();
@@ -3777,6 +5521,19 @@ function bindControls() {
     state.notePreference = event.target.value;
     renderGrid();
     renderMarkers();
+  });
+
+  dom.instrumentSelect?.addEventListener("change", (event) => {
+    if (!event?.target) {
+      return;
+    }
+    setInstrument(event.target.value);
+  });
+  dom.guitarToneSelect?.addEventListener("change", (event) => {
+    if (!event?.target) {
+      return;
+    }
+    setGuitarTone(event.target.value);
   });
 
   dom.clearBtn?.addEventListener("click", () => {
@@ -3918,6 +5675,43 @@ function bindControls() {
     }
   });
   document.addEventListener("keydown", (event) => {
+    if (!event.defaultPrevented && !isEditableShortcutTarget(event.target)) {
+      const hasShortcutModifier = event.metaKey || event.ctrlKey;
+      const key = `${event.key ?? ""}`.toLowerCase();
+      if (hasShortcutModifier && !event.altKey) {
+        if (key === "z") {
+          event.preventDefault();
+          if (event.shiftKey) {
+            redoBoardMutation();
+          } else {
+            undoBoardMutation();
+          }
+          return;
+        }
+        if (key === "y" && event.ctrlKey && !event.metaKey) {
+          event.preventDefault();
+          redoBoardMutation();
+          return;
+        }
+        if (key === "c") {
+          event.preventDefault();
+          copyMarkersToLocalClipboard();
+          return;
+        }
+        if (key === "x") {
+          event.preventDefault();
+          if (copyMarkersToLocalClipboard()) {
+            clearMarkers(state.activeBoardIndex, { recordHistory: true });
+          }
+          return;
+        }
+        if (key === "v") {
+          event.preventDefault();
+          void pasteMarkersFromClipboard();
+          return;
+        }
+      }
+    }
     if (event.key !== "Escape") {
       return;
     }
@@ -3934,10 +5728,12 @@ function bindControls() {
 
   dom.shapeLibrary?.addEventListener("dragstart", handleShapeDragStart);
   dom.shapeLibrary?.addEventListener("dragend", () => {
-    dragShapeId = null;
-    dom.paletteBackdrop?.classList.remove("is-drag-pass-through");
-    clearDragOverlayPreview();
+    resetTouchShapeDrag({ clearPreview: true });
   });
+  dom.shapeLibrary?.addEventListener("pointerdown", handleShapePointerDown);
+  window.addEventListener("pointermove", handleShapePointerMove, { passive: false });
+  window.addEventListener("pointerup", handleShapePointerUp, { passive: false });
+  window.addEventListener("pointercancel", handleShapePointerCancel, { passive: false });
   dom.overlayList?.addEventListener("click", handleOverlayListClick);
   dom.clearOverlaysBtn?.addEventListener("click", clearOverlays);
 
@@ -3973,7 +5769,17 @@ function bindControls() {
 }
 
 function init() {
+  ensureSampleLibraryMidiMap();
+  bindRealtimeAudioUnlockGestures();
   state.language = getInitialUiLanguage();
+  state.instrumentId = getInitialInstrumentId();
+  state.guitarTone = getInitialGuitarTone();
+  if (dom.instrumentSelect) {
+    dom.instrumentSelect.value = normalizeInstrumentId(state.instrumentId);
+  }
+  if (dom.guitarToneSelect) {
+    dom.guitarToneSelect.value = normalizeGuitarTone(state.guitarTone);
+  }
   state.isFullAccess = hasFretlabFullAccess();
   syncFretboardCount();
   applyTranslations();
@@ -3987,6 +5793,8 @@ function init() {
   syncVideoRendererUi();
   bindControls();
   initRealtimeInputs();
+  syncGuitarToneControls();
+  warmupRealtimeAudioForActiveVoice();
   refreshAccessUi();
 }
 
