@@ -824,7 +824,7 @@
     if (!input || !button) return;
 
     const code = String(input.value || '').trim().toUpperCase();
-    const valid = code.length >= 11 && code.length <= 20 && /^[A-Z0-9]+$/.test(code);
+    const valid = code.length >= 10 && code.length <= 20 && /^[A-Z0-9]+$/.test(code);
     button.dataset.valid = valid ? 'true' : 'false';
     button.style.cursor = valid ? 'pointer' : 'not-allowed';
     button.style.opacity = valid ? '1' : '0.6';
