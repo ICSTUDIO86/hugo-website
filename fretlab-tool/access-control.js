@@ -3,9 +3,11 @@ export const LEGACY_SINGLE_ACCESS_STORAGE_KEY = "ic-single-product-access";
 export const LEGACY_ACCESS_KEY = "ic-fretlab-access";
 
 const FRETLAB_TOOL_IDS = new Set(["fretlab", "freaklab"]);
+const FRETLAB_MIDI_SOURCES = new Set(["live", "daw-midi"]);
 const LOCAL_BLOCK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
 const ONLINE_ENTRY_URL = "https://icstudio.club/fretlab-tool/";
 const ENABLE_LOCALHOST_BLOCK = false;
+const MIDI_LOCK_TOAST_MS = 2600;
 
 function shouldBlockLocalRuntime() {
   if (typeof window === "undefined" || !window.location) {
@@ -177,5 +179,154 @@ export function isFretlabLicenseStorageKey(key) {
   );
 }
 
+function getMidiLockedMessage() {
+  const docLang = typeof document !== "undefined" ? document.documentElement?.lang || "" : "";
+  const navLang = typeof navigator !== "undefined" ? navigator.language || "" : "";
+  const lang = (docLang || navLang || "zh").toLowerCase();
+  if (lang.startsWith("en")) {
+    return "MIDI is a full-version feature. Please unlock first on /fretlab/.";
+  }
+  return "MIDI 功能仅限完整版。请先在 Landing Page 完成支付并验证访问码。";
+}
+
+function showMidiLockedToast() {
+  if (typeof document === "undefined" || !document.body) {
+    return;
+  }
+  const activeToast = document.getElementById("fretlab-midi-lock-toast");
+  if (activeToast) {
+    activeToast.remove();
+  }
+
+  const toast = document.createElement("div");
+  toast.id = "fretlab-midi-lock-toast";
+  toast.textContent = getMidiLockedMessage();
+  toast.setAttribute(
+    "style",
+    [
+      "position:fixed",
+      "right:16px",
+      "bottom:16px",
+      "z-index:12000",
+      "max-width:360px",
+      "background:#c0392b",
+      "color:#fff",
+      "border-radius:10px",
+      "padding:10px 12px",
+      "font-size:13px",
+      "line-height:1.45",
+      "box-shadow:0 12px 28px rgba(0,0,0,.28)",
+    ].join(";")
+  );
+  document.body.appendChild(toast);
+  window.setTimeout(() => {
+    toast.remove();
+  }, MIDI_LOCK_TOAST_MS);
+}
+
+function shouldBlockMidiForTrial() {
+  return !hasFretlabFullAccess();
+}
+
+function shouldSuppressRealtimeMidiEvent(rawData) {
+  if (!shouldBlockMidiForTrial()) {
+    return false;
+  }
+  if (!rawData) {
+    return false;
+  }
+  try {
+    const payload = typeof rawData === "string" ? JSON.parse(rawData) : rawData;
+    if (!payload || typeof payload !== "object") {
+      return false;
+    }
+    const source = `${payload.source || ""}`.trim().toLowerCase();
+    return (
+      (payload.type === "noteOn" || payload.type === "noteOff") &&
+      FRETLAB_MIDI_SOURCES.has(source)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function installWebMidiGuard() {
+  if (
+    typeof window === "undefined" ||
+    typeof navigator === "undefined" ||
+    typeof navigator.requestMIDIAccess !== "function"
+  ) {
+    return;
+  }
+  if (window.__FRETLAB_WEB_MIDI_GUARD_INSTALLED__) {
+    return;
+  }
+  window.__FRETLAB_WEB_MIDI_GUARD_INSTALLED__ = true;
+
+  const originalRequestMIDIAccess = navigator.requestMIDIAccess.bind(navigator);
+  navigator.requestMIDIAccess = async (...args) => {
+    if (shouldBlockMidiForTrial()) {
+      showMidiLockedToast();
+      throw new Error("fretlab-midi-full-access-required");
+    }
+    return originalRequestMIDIAccess(...args);
+  };
+}
+
+function installRealtimeMidiEventGuard() {
+  if (typeof window === "undefined" || typeof window.EventSource !== "function") {
+    return;
+  }
+  if (window.__FRETLAB_EVENTSOURCE_MIDI_GUARD_INSTALLED__) {
+    return;
+  }
+  window.__FRETLAB_EVENTSOURCE_MIDI_GUARD_INSTALLED__ = true;
+
+  const OriginalEventSource = window.EventSource;
+  window.EventSource = function FretlabGuardedEventSource(...args) {
+    const target = new OriginalEventSource(...args);
+    return new Proxy(target, {
+      get(source, prop, receiver) {
+        if (prop === "addEventListener") {
+          return (type, listener, options) => {
+            if (type === "message" && typeof listener === "function") {
+              return source.addEventListener(
+                type,
+                (event) => {
+                  if (shouldSuppressRealtimeMidiEvent(event?.data)) {
+                    showMidiLockedToast();
+                    return;
+                  }
+                  listener.call(source, event);
+                },
+                options
+              );
+            }
+            return source.addEventListener(type, listener, options);
+          };
+        }
+        return Reflect.get(source, prop, receiver);
+      },
+      set(source, prop, value, receiver) {
+        if (prop === "onmessage" && typeof value === "function") {
+          source.onmessage = function (event) {
+            if (shouldSuppressRealtimeMidiEvent(event?.data)) {
+              showMidiLockedToast();
+              return;
+            }
+            return value.call(source, event);
+          };
+          return true;
+        }
+        source[prop] = value;
+        return true;
+      },
+    });
+  };
+  window.EventSource.prototype = OriginalEventSource.prototype;
+}
+
 // Run guard at module load so one import is enough for runtime blocking.
 enforceFretlabRuntimeGuard();
+installWebMidiGuard();
+installRealtimeMidiEventGuard();

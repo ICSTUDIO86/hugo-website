@@ -9,6 +9,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
+    <script
+      src="//unpkg.com/react-grab/dist/index.global.js"
+      crossorigin="anonymous"
+      defer
+    ></script>
   </head>
   <body>
     <div class="app">
@@ -347,5 +352,10 @@
       </footer>
     </div>
     <script type="module" src="app.js"></script>
+    <script defer>
+      if (window.ReactGrab?.init) {
+        window.ReactGrab.init();
+      }
+    </script>
   </body>
 </html>
