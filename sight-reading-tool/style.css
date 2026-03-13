@@ -941,6 +941,28 @@ body {
   border-color: hsl(var(--primary) / 0.3);
 }
 
+.product-box-card {
+  background: rgb(252, 252, 252);
+  padding: 0;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  border: 2px solid hsl(var(--primary) / 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+.product-box-image {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 20px rgba(15, 23, 42, 0.08));
+}
+
 .payment-card h3 {
   color: hsl(260 40% 30%);
   font-size: 1.25rem;
@@ -991,6 +1013,52 @@ body {
 .payment-button-wechat:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(9, 187, 7, 0.4);
+}
+
+.payment-button-coming-soon {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 1rem 1.125rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0)),
+    linear-gradient(135deg, #635bff 0%, #4f46e5 100%);
+  color: #fff;
+  border: 1px solid rgba(99, 91, 255, 0.48);
+  box-shadow:
+    0 16px 30px rgba(79, 70, 229, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  cursor: not-allowed;
+  opacity: 1;
+  text-align: center;
+}
+
+.payment-button-coming-soon:hover {
+  transform: none;
+  box-shadow:
+    0 16px 30px rgba(79, 70, 229, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.payment-button-coming-soon:disabled {
+  filter: saturate(0.98);
+}
+
+.payment-button-coming-soon-main {
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.payment-button-coming-soon-sub {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.2;
 }
 
 .access-code-section {
@@ -1052,15 +1120,6 @@ body {
   margin-top: 1rem;
   font-size: 0.9375rem;
   text-align: center;
-}
-
-.gumroad-wrapper {
-  min-height: 500px;
-  background: white;
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-  border: 2px solid hsl(var(--primary) / 0.1);
 }
 
 /* ==================== FAQ 区域 ==================== */

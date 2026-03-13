@@ -65,7 +65,6 @@
 
   <!-- Performance Optimization -->
   <link rel="preconnect" href="https://imgcache.qq.com">
-  <link rel="preconnect" href="https://icstudio3.gumroad.com">
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
   <!-- Critical CSS Preload -->
@@ -1493,6 +1492,17 @@
                   微信支付
                 </button>
               </div>
+              <button
+                type="button"
+                class="payment-button payment-button-coming-soon"
+                disabled
+                aria-disabled="true"
+                aria-label="Other payment methods, coming soon"
+                title="Other payment methods"
+              >
+                <span class="payment-button-coming-soon-main">Card Payment</span>
+                <span class="payment-button-coming-soon-sub">Not available yet</span>
+              </button>
 
               <div class="access-code-section">
                 <h4 data-i18n="payment.accessCodeTitle">🔑 已有访问码？立即使用</h4>
@@ -1519,16 +1529,14 @@
               </div>
             </div>
 
-            <!-- 右侧：Gumroad -->
-            <div class="gumroad-wrapper">
-              <iframe
-                src="https://icstudio3.gumroad.com/l/sight-reading-tools"
-                frameborder="0"
-                width="100%"
-                height="100%"
-                style="border: 0; min-height: 500px;">
-              </iframe>
+            <div class="product-box-card" aria-hidden="true">
+              <img
+                src="/sight-reading-tool/images/product-box.jpg"
+                alt="Cognote product box"
+                class="product-box-image"
+              >
             </div>
+
           </div>
         </div>
 
@@ -2483,7 +2491,7 @@
         { selector: '.feedback-section .feedback-loop-group:first-child .feedback-loop-card', step: 80, distance: 24 },
         { selector: '#features .feature-card', step: 90, distance: 26 },
         { selector: '#payment-section .payment-update-meta', step: 0, distance: 18 },
-        { selector: '#payment-section .payment-card, #payment-section .gumroad-wrapper, #payment-section .single-product-card', step: 90, distance: 24 },
+        { selector: '#payment-section .payment-card, #payment-section .product-box-card, #payment-section .single-product-card', step: 90, distance: 24 },
         { selector: '.faq-section .faq-item', step: 80, distance: 20 }
       ];
 
