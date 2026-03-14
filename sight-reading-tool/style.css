@@ -941,26 +941,13 @@ body {
   border-color: hsl(var(--primary) / 0.3);
 }
 
-.product-box-card {
-  background: rgb(252, 252, 252);
-  padding: 0;
+.gumroad-wrapper {
+  min-height: 500px;
+  background: white;
   border-radius: var(--radius);
-  box-shadow: var(--shadow-card);
-  border: 2px solid hsl(var(--primary) / 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100%;
   overflow: hidden;
-}
-
-.product-box-image {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 14px 20px rgba(15, 23, 42, 0.08));
+  box-shadow: var(--shadow-card);
+  border: 2px solid hsl(var(--primary) / 0.1);
 }
 
 .payment-card h3 {

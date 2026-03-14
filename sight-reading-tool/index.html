@@ -62,6 +62,7 @@
 
   <!-- Performance Optimization -->
   <link rel="preconnect" href="https://imgcache.qq.com">
+  <link rel="preconnect" href="https://icstudio3.gumroad.com">
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
   <!-- Critical CSS Preload -->
@@ -1526,12 +1527,14 @@
               </div>
             </div>
 
-            <div class="product-box-card" aria-hidden="true">
-              <img
-                src="/sight-reading-tool/images/product-box.jpg"
-                alt="Cognote 产品盒子"
-                class="product-box-image"
-              >
+            <div class="gumroad-wrapper">
+              <iframe
+                src="https://icstudio3.gumroad.com/l/sight-reading-tools"
+                frameborder="0"
+                width="100%"
+                height="100%"
+                style="border: 0; min-height: 500px;">
+              </iframe>
             </div>
 
           </div>
@@ -2488,7 +2491,7 @@
         { selector: '.feedback-section .feedback-loop-group:first-child .feedback-loop-card', step: 80, distance: 24 },
         { selector: '#features .feature-card', step: 90, distance: 26 },
         { selector: '#payment-section .payment-update-meta', step: 0, distance: 18 },
-        { selector: '#payment-section .payment-card, #payment-section .product-box-card, #payment-section .single-product-card', step: 90, distance: 24 },
+        { selector: '#payment-section .payment-card, #payment-section .gumroad-wrapper, #payment-section .single-product-card', step: 90, distance: 24 },
         { selector: '.faq-section .faq-item', step: 80, distance: 20 }
       ];
 

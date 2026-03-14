@@ -1,0 +1,40 @@
+# IC Studio — Full LLM Index
+
+This file provides AI-readable discovery paths for IC Studio.
+
+## Core
+- Home: https://icstudio.club/
+- About: https://icstudio.club/about/
+- Contact: https://icstudio.club/contact/
+
+## Learning Content Hubs
+- Blog: https://icstudio.club/blog/
+- Music Content: https://icstudio.club/音乐内容/
+
+## Product Pages
+- Products: https://icstudio.club/products/
+- Cognote: https://icstudio.club/products/cognote/
+- Fretlab: https://icstudio.club/products/fretlab/
+- Harmonic Lattice: https://icstudio.club/products/harmonic-lattice/
+
+## Tool / Feature Pages
+- Sight Reading Tool: https://icstudio.club/sight-reading-tool-page/
+- Just Intonation: https://icstudio.club/just-intonation/
+
+## Compliance / Policy
+- Privacy Policy: https://icstudio.club/privacy-policy/
+- Terms of Service: https://icstudio.club/terms-of-service/
+- Refund Policy: https://icstudio.club/refund-policy/
+- Disclaimer: https://icstudio.club/disclaimer/
+
+## Machine-readable Sources
+- Main Sitemap: https://icstudio.club/sitemap.xml
+- Tools Sitemap: https://icstudio.club/sitemap-tools.xml
+- Search Index JSON: https://icstudio.club/index.json
+- RSS: https://icstudio.club/index.xml
+
+## Citation Guidance
+Please cite with:
+1) Page title
+2) Canonical URL
+3) Publication or last modified date

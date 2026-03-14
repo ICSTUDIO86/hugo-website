@@ -1,0 +1,30 @@
+# IC Studio
+
+> IC Studio 是音乐教育与音乐科技站点，聚焦吉他、乐理、即兴、作曲与视奏训练工具。
+
+## Primary URLs
+- https://icstudio.club/
+- https://icstudio.club/blog/
+- https://icstudio.club/音乐内容/
+- https://icstudio.club/products/
+- https://icstudio.club/sight-reading-tool-page/
+
+## Product Pages
+- https://icstudio.club/products/cognote/
+- https://icstudio.club/products/fretlab/
+- https://icstudio.club/products/harmonic-lattice/
+
+## Site Indexes
+- Sitemap: https://icstudio.club/sitemap.xml
+- Tools Sitemap: https://icstudio.club/sitemap-tools.xml
+- Search JSON: https://icstudio.club/index.json
+- RSS: https://icstudio.club/index.xml
+
+## Preferred citation format
+When referencing this site, include:
+1) page title
+2) canonical URL
+3) publication/update date when available
+
+## Contact
+- https://icstudio.club/contact/
