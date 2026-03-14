@@ -56,6 +56,10 @@
     <script type="module" crossorigin src="/fretlab/assets/index.js"></script>
     <link rel="stylesheet" crossorigin href="/fretlab/assets/index.css">
     <style>
+      html {
+        scroll-behavior: smooth;
+      }
+
       .fretlab-update-log-block-wrap {
         padding: 0;
         transform: none;
@@ -209,6 +213,20 @@
         border: 1px solid rgba(148, 163, 184, 0.28);
         background: rgba(248, 250, 252, 0.78);
         padding: 14px 16px 16px;
+      }
+
+      .fretlab-gumroad-pay-btn {
+        display: inline-flex;
+        width: 100%;
+        align-items: center;
+        justify-content: center;
+        min-height: 52px;
+        padding: 0 16px;
+        border-radius: 12px;
+        text-decoration: none;
+      }
+
+      @media (max-width: 640px) {
       }
     </style>
   </head>
@@ -393,6 +411,61 @@
             return item.version || '';
           }).join('|');
           return [lang, text.currentVersion || '', historyVersions].join('::');
+        }
+
+        function getGumroadButtonText(lang) {
+          return lang === 'en' ? 'Pay with Gumroad' : 'Gumroad 支付';
+        }
+
+        function ensureGumroadPayButton() {
+          var buySection = document.getElementById('buy');
+          if (!buySection) return;
+
+          var alipayButton = buySection.querySelector('#fretlab-buy-alipay');
+          var wechatButton = buySection.querySelector('#fretlab-buy-wechat');
+          if (!alipayButton || !wechatButton) return;
+
+          var buttonGrid = alipayButton.parentNode;
+          if (!buttonGrid || buttonGrid !== wechatButton.parentNode) return;
+
+          var lang = getLang();
+          var button = document.getElementById('fretlab-buy-gumroad');
+          if (!button) {
+            button = document.createElement('a');
+            button.id = 'fretlab-buy-gumroad';
+            button.className = 'fretlab-gumroad-pay-btn font-hand rounded-xl border border-border bg-card px-4 py-3 text-lg hover:bg-zinc-100';
+            button.href = 'https://icstudio3.gumroad.com/l/fretlab';
+            button.target = '_blank';
+            button.rel = 'noreferrer';
+          }
+
+          button.textContent = getGumroadButtonText(lang);
+
+          if (button.parentNode !== buttonGrid.parentNode || button.previousElementSibling !== buttonGrid) {
+            buttonGrid.insertAdjacentElement('afterend', button);
+          }
+        }
+
+        function ensureSmoothBuyScroll() {
+          if (document.documentElement.dataset.fretlabSmoothBuyBound === '1') return;
+
+          document.addEventListener('click', function (event) {
+            var link = event.target && event.target.closest
+              ? event.target.closest('a[href="#buy"], a[href="/fretlab/#buy"], a[href="/en/fretlab/#buy"], a[href$="#buy"]')
+              : null;
+            if (!link) return;
+
+            var buySection = document.getElementById('buy');
+            if (!buySection) return;
+
+            var href = link.getAttribute('href') || '';
+            if (href.indexOf('#buy') === -1) return;
+
+            event.preventDefault();
+            buySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, true);
+
+          document.documentElement.dataset.fretlabSmoothBuyBound = '1';
         }
 
         function ensureUpdateLogBlock() {
@@ -665,7 +738,11 @@
           var tick = null;
           function scheduleEnsure() {
             if (tick) cancelAnimationFrame(tick);
-            tick = requestAnimationFrame(ensureUpdateLogBlock);
+            tick = requestAnimationFrame(function () {
+              ensureSmoothBuyScroll();
+              ensureGumroadPayButton();
+              ensureUpdateLogBlock();
+            });
           }
 
           scheduleEnsure();
