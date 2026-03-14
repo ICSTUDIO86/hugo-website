@@ -144,8 +144,50 @@
       opacity: 1;
     }
 
+    .landing-header-bar {
+      display: grid;
+      grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
+      align-items: center;
+      gap: 16px;
+    }
+
+    .landing-header-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 56px;
+      justify-self: center;
+    }
+
+    .landing-header-nav a {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #52525b;
+      text-decoration: none;
+    }
+
+    .landing-header-nav a:hover {
+      color: #18181b;
+    }
+
+    .landing-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-self: end;
+    }
+
     /* 移动端优化 */
     @media (max-width: 768px) {
+      .landing-header-bar {
+        display: flex;
+        align-items: center;
+      }
+
+      .landing-header-nav {
+        display: none;
+      }
+
       .lang-switcher {
         padding: 3px;
         border-radius: 10px;
@@ -1110,7 +1152,7 @@
   <!-- ==================== Header ==================== -->
   <header class="py-6 border-b">
     <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col">
-      <div class="flex items-center">
+      <div class="landing-header-bar">
         <div class="flex items-center">
           <button class="flex items-center space-x-2 rounded-full border py-1 pr-[5px] pl-3 group bg-zinc-100 hover:bg-zinc-200 toggle-button" onclick="toggleMenu()">
             <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
@@ -1129,7 +1171,13 @@
             <h2><a class="before:content-[''] before:z-10 before:top-0 before:right-0 before:left-0 before:bottom-0 before:absolute before:pointer-events-auto" href="/">Cognote</a></h2>
           </div>
         </div>
-        <div class="flex items-center ml-auto space-x-2">
+        <nav class="landing-header-nav">
+          <a href="#main-content">Features</a>
+          <a href="#feedback-section">Reviews</a>
+          <a href="#payment-section">Buy</a>
+          <a href="#faq-section">FAQ</a>
+        </nav>
+        <div class="landing-header-actions">
           <!-- 语言切换器 -->
           <div class="lang-switcher" role="navigation" aria-label="语言切换">
             <button class="lang-option active" data-lang="zh-CN" onclick="window.i18n && window.i18n.switchLanguage('zh-CN')" aria-label="切换到中文">
@@ -1152,13 +1200,16 @@
       </div>
 
       <!-- Navigation Menu -->
-      <nav id="menu-bar" class="mt-3 hidden">
-        <ul class="flex items-center flex-nowrap whitespace-nowrap overflow-x-auto space-x-4">
+      <nav id="menu-bar" class="mt-3 menu-collapse menu-collapse-closed hidden" aria-hidden="true">
+        <ul class="flex items-center justify-center flex-nowrap whitespace-nowrap overflow-x-auto space-x-4">
           <li class="my-2">
             <a href="/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">主页</a>
           </li>
           <li class="my-2">
             <a href="/blog/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">Blog</a>
+          </li>
+          <li class="my-2">
+            <a href="/products/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">产品内容</a>
           </li>
           <li class="my-2">
             <a href="/en/tools/melody-generator.html" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200 border-zinc-400">视奏工具</a>
@@ -1303,7 +1354,7 @@
   </section>
 
   <!-- ==================== User Feedback 区域 ==================== -->
-  <section class="feedback-section">
+  <section id="feedback-section" class="feedback-section">
     <div class="container">
       <div class="section-header">
         <h2 class="section-title" data-i18n="feedback.title">用户反馈</h2>
@@ -1642,7 +1693,7 @@
   </section>
 
   <!-- ==================== FAQ 区域 ==================== -->
-  <section class="faq-section">
+  <section id="faq-section" class="faq-section">
     <!-- 几何装饰元素 -->
     <div class="geo-shape geo-faq-1"></div>
     <div class="geo-shape geo-faq-2"></div>
@@ -2568,13 +2619,23 @@
 
       if (menuBar.classList.contains('hidden')) {
         menuBar.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          menuBar.classList.remove('menu-collapse-closed');
+          menuBar.setAttribute('aria-hidden', 'false');
+        });
         // 如果搜索栏打开，关闭它
         if (!searchBar.classList.contains('hidden')) {
           searchBar.classList.add('hidden');
           toggleSearchIcon(false);
         }
       } else {
-        menuBar.classList.add('hidden');
+        menuBar.classList.add('menu-collapse-closed');
+        menuBar.setAttribute('aria-hidden', 'true');
+        window.setTimeout(() => {
+          if (menuBar.classList.contains('menu-collapse-closed')) {
+            menuBar.classList.add('hidden');
+          }
+        }, 300);
       }
     }
 
@@ -2590,7 +2651,13 @@
         closeIcon.classList.remove('hidden');
         // 如果菜单打开，关闭它
         if (!menuBar.classList.contains('hidden')) {
-          menuBar.classList.add('hidden');
+          menuBar.classList.add('menu-collapse-closed');
+          menuBar.setAttribute('aria-hidden', 'true');
+          window.setTimeout(() => {
+            if (menuBar.classList.contains('menu-collapse-closed')) {
+              menuBar.classList.add('hidden');
+            }
+          }, 300);
         }
         // 聚焦到搜索输入框
         setTimeout(() => {

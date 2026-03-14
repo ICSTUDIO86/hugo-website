@@ -226,6 +226,40 @@
         text-decoration: none;
       }
 
+      .fretlab-header-shell {
+        display: grid !important;
+        grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
+        align-items: center;
+        gap: 16px;
+      }
+
+      .fretlab-header-brand {
+        min-width: 0;
+      }
+
+      .fretlab-header-nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 56px;
+        justify-self: center;
+      }
+
+      .fretlab-header-nav a {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #52525b;
+        text-decoration: none;
+      }
+
+      .fretlab-header-nav a:hover {
+        color: #18181b;
+      }
+
+      .fretlab-header-actions {
+        justify-self: end;
+      }
+
       .fretlab-site-footer-shell {
         background: #f4f4f5;
         padding: 40px 0 56px;
@@ -378,6 +412,17 @@
 
         .fretlab-site-footer-social-list {
           justify-content: flex-start;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .fretlab-header-shell {
+          display: flex !important;
+          justify-content: space-between;
+        }
+
+        .fretlab-header-nav {
+          display: none;
         }
       }
     </style>
@@ -565,6 +610,63 @@
             return item.version || '';
           }).join('|');
           return [lang, text.currentVersion || '', historyVersions].join('::');
+        }
+
+        function ensureHeaderNav() {
+          var root = document.getElementById('root');
+          if (!root) return;
+
+          var headerInner = root.querySelector('header > div');
+          if (!headerInner) return;
+
+          var brandGroup = headerInner.firstElementChild;
+          var actionsGroup = headerInner.lastElementChild;
+          if (!brandGroup || !actionsGroup || brandGroup === actionsGroup) return;
+
+          headerInner.classList.add('fretlab-header-shell');
+          brandGroup.classList.add('fretlab-header-brand');
+          actionsGroup.classList.add('fretlab-header-actions');
+
+          var nav = document.getElementById('fretlab-header-nav');
+          if (!nav) {
+            nav = document.createElement('nav');
+            nav.id = 'fretlab-header-nav';
+            nav.className = 'fretlab-header-nav';
+          }
+
+          nav.innerHTML = ''
+            + '<a href="#features">Features</a>'
+            + '<a href="#buy">Buy</a>'
+            + '<a href="#faq">FAQ</a>';
+
+          if (nav.parentNode !== headerInner || nav.nextElementSibling !== actionsGroup) {
+            headerInner.insertBefore(nav, actionsGroup);
+          }
+        }
+
+        function ensureMenuBarContent() {
+          var menuBar = document.getElementById('menu-bar');
+          if (!menuBar) return;
+
+          var menuList = menuBar.querySelector('ul');
+          if (!menuList) return;
+
+          var expectedKey = 'home|blog|products|music';
+          menuBar.style.width = '100%';
+          menuList.className = 'flex w-full items-center justify-center flex-nowrap whitespace-nowrap overflow-x-auto space-x-4';
+          menuList.style.display = 'flex';
+          menuList.style.width = '100%';
+          menuList.style.justifyContent = 'center';
+          menuList.style.margin = '0 auto';
+
+          if (menuList.dataset.menuRenderKey === expectedKey) return;
+
+          menuList.innerHTML = ''
+            + '<li class="my-2"><a href="/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">主页</a></li>'
+            + '<li class="my-2"><a href="/blog/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">Blog</a></li>'
+            + '<li class="my-2"><a href="/products/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">产品内容</a></li>'
+            + '<li class="my-2"><a href="/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">音乐内容</a></li>';
+          menuList.dataset.menuRenderKey = expectedKey;
         }
 
         function ensureStandardFooter() {
@@ -983,6 +1085,8 @@
           function scheduleEnsure() {
             if (tick) cancelAnimationFrame(tick);
             tick = requestAnimationFrame(function () {
+              ensureHeaderNav();
+              ensureMenuBarContent();
               ensureSmoothBuyScroll();
               ensureGumroadPayButton();
               ensureStandardFooter();
