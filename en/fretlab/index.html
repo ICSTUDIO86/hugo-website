@@ -226,7 +226,159 @@
         text-decoration: none;
       }
 
+      .fretlab-site-footer-shell {
+        background: #f4f4f5;
+        padding: 40px 0 56px;
+      }
+
+      .fretlab-site-footer-inner {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 16px;
+      }
+
+      .fretlab-site-footer-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.35fr) minmax(220px, 0.8fr);
+        gap: 32px;
+        align-items: start;
+      }
+
+      .fretlab-site-footer-brand {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .fretlab-site-footer-logo {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .fretlab-site-footer-logo-text {
+        font-size: 1.5rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .fretlab-site-footer-kicker {
+        margin: 0;
+        font-weight: 600;
+        color: #3f3f46;
+      }
+
+      .fretlab-site-footer-copy {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.7;
+        color: #71717a;
+      }
+
+      .fretlab-site-footer-nav h3,
+      .fretlab-site-footer-social h3 {
+        margin: 0 0 12px;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #18181b;
+      }
+
+      .fretlab-site-footer-nav-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+      }
+
+      .fretlab-site-footer-nav-label {
+        margin: 0 0 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #3f3f46;
+      }
+
+      .fretlab-site-footer-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .fretlab-site-footer-link {
+        color: #52525b;
+        text-decoration: none;
+        font-size: 0.95rem;
+      }
+
+      .fretlab-site-footer-link:hover {
+        color: #18181b;
+      }
+
+      .fretlab-site-footer-social-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .fretlab-site-footer-social-link {
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        background: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #18181b;
+        text-decoration: none;
+      }
+
+      .fretlab-site-footer-social-link:hover {
+        background: #e4e4e7;
+      }
+
+      .fretlab-site-footer-bottom {
+        border-top: 1px solid #d4d4d8;
+        margin-top: 32px;
+        padding-top: 16px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .fretlab-site-footer-bottom p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #52525b;
+      }
+
+      .fretlab-site-footer-bottom a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .fretlab-site-footer-bottom a:hover {
+        color: #18181b;
+      }
+
       @media (max-width: 640px) {
+        .fretlab-site-footer-shell {
+          padding: 32px 0 40px;
+        }
+
+        .fretlab-site-footer-grid,
+        .fretlab-site-footer-nav-grid {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+
+        .fretlab-site-footer-social-list {
+          justify-content: flex-start;
+        }
       }
     </style>
   </head>
@@ -285,6 +437,8 @@
     </script>
     <script>
       (function () {
+        var currentYear = new Date().getFullYear();
+        var SITE_FOOTER_RENDER_KEY = 'site-footer-v3';
         var UPDATE_LOG_CONTENT = {
           zh: {
             banner: '最后一次版本更新时间：2026年03月08日',
@@ -411,6 +565,96 @@
             return item.version || '';
           }).join('|');
           return [lang, text.currentVersion || '', historyVersions].join('::');
+        }
+
+        function ensureStandardFooter() {
+          var root = document.getElementById('root');
+          if (!root) return;
+          var appFooter = root.querySelector('footer');
+          if (!appFooter) return;
+
+          if (appFooter.style.display !== 'none') {
+            appFooter.style.display = 'none';
+            appFooter.setAttribute('aria-hidden', 'true');
+          }
+
+          var footer = document.getElementById('fretlab-site-footer-host');
+          if (!footer) {
+            footer = document.createElement('footer');
+            footer.id = 'fretlab-site-footer-host';
+          }
+
+          if (footer.parentNode !== root.parentNode) {
+            root.insertAdjacentElement('afterend', footer);
+          }
+
+          if (footer.dataset.footerRenderKey === SITE_FOOTER_RENDER_KEY) return;
+
+          footer.className = 'fretlab-site-footer-shell';
+          footer.innerHTML = ''
+            + '<div class="fretlab-site-footer-inner">'
+            + '  <div class="fretlab-site-footer-grid">'
+            + '    <div class="fretlab-site-footer-brand">'
+            + '      <a class="fretlab-site-footer-logo" href="https://icstudio.club/">'
+            + '        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" style="margin-right:8px;" viewBox="0 0 24 24" aria-hidden="true">'
+            + '          <path d="M13.75 2C13.75 1.58579 13.4142 1.25 13 1.25C12.5858 1.25 12.25 1.58579 12.25 2V14.5359C11.4003 13.7384 10.2572 13.25 9 13.25C6.37665 13.25 4.25 15.3766 4.25 18C4.25 20.6234 6.37665 22.75 9 22.75C11.6234 22.75 13.75 20.6234 13.75 18V6.243C14.9875 7.77225 16.8795 8.75 19 8.75C19.4142 8.75 19.75 8.41421 19.75 8C19.75 7.58579 19.4142 7.25 19 7.25C16.1005 7.25 13.75 4.8995 13.75 2Z"/>'
+            + '        </svg>'
+            + '        <span class="fretlab-site-footer-logo-text">IC STUDIO</span>'
+            + '      </a>'
+            + '      <p class="fretlab-site-footer-kicker">一起在音乐的道路上前进吧！</p>'
+            + '      <p class="fretlab-site-footer-copy">音乐学习、工具研发、创作思考都在这里持续更新。</p>'
+            + '    </div>'
+            + '    <div class="fretlab-site-footer-nav">'
+            + '      <h3>Site Map</h3>'
+            + '      <div class="fretlab-site-footer-nav-grid">'
+            + '        <div>'
+            + '          <p class="fretlab-site-footer-nav-label">网站导航</p>'
+            + '          <ul class="fretlab-site-footer-list">'
+            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/">主页</a></li>'
+            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/blog/">Blog</a></li>'
+            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/">音乐内容</a></li>'
+            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/contact/">联系我</a></li>'
+            + '          </ul>'
+            + '        </div>'
+            + '        <div>'
+            + '          <p class="fretlab-site-footer-nav-label">产品链接</p>'
+            + '          <ul class="fretlab-site-footer-list">'
+            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/sight-reading-tool/">Cognote</a></li>'
+            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/fretlab/">FretLab</a></li>'
+            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/just-intonation/harmonic_lattice_dualmode.html">Harmonic Lattice</a></li>'
+            + '          </ul>'
+            + '        </div>'
+            + '      </div>'
+            + '    </div>'
+            + '    <div class="fretlab-site-footer-social">'
+            + '      <h3>Follow</h3>'
+            + '      <ul id="social-media" class="fretlab-site-footer-social-list">'
+            + '        <li>'
+            + '          <a class="fretlab-site-footer-social-link" href="https://www.youtube.com/@ICStudio86#" target="_blank" rel="noopener noreferrer" aria-label="YouTube">'
+            + '            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">'
+            + '              <path d="M23.498 6.186a2.91 2.91 0 0 0-2.049-2.048C19.653 3.5 12 3.5 12 3.5s-7.653 0-9.449.638A2.91 2.91 0 0 0 .502 6.186C0 8.01 0 12 0 12s0 3.99.502 5.814a2.91 2.91 0 0 0 2.049 2.048C4.347 20.5 12 20.5 12 20.5s7.653 0 9.449-.638a2.91 2.91 0 0 0 2.049-2.048C24 15.99 24 12 24 12s0-3.99-.502-5.814ZM9.75 15.568V8.432L15.568 12Z"/>'
+            + '            </svg>'
+            + '          </a>'
+            + '        </li>'
+            + '        <li>'
+            + '          <a class="fretlab-site-footer-social-link" href="https://space.bilibili.com/376362605" target="_blank" rel="noopener noreferrer" aria-label="Bilibili">'
+            + '            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 1024 1024" aria-hidden="true">'
+            + '              <path d="M800 192h-72.3l59.9-128.7c4.6-10-0.2-21.7-10.2-26.3-10-4.6-21.7 0.2-26.3 10.2L683.8 192H340.2L272.9 47.2c-4.6-10-16.3-14.8-26.3-10.2s-14.8 16.3-10.2 26.3L296.3 192H224c-70.7 0-128 57.3-128 128v448c0 70.7 57.3 128 128 128h576c70.7 0 128-57.3 128-128V320c0-70.7-57.3-128-128-128zM896 768c0 53-43 96-96 96H224c-53 0-96-43-96-96V320c0-53 43-96 96-96h576c53 0 96 43 96 96v448zM384 640c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32zm256 0c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32z"/>'
+            + '            </svg>'
+            + '          </a>'
+            + '        </li>'
+            + '      </ul>'
+            + '    </div>'
+            + '  </div>'
+            + '  <div class="fretlab-site-footer-bottom">'
+            + '    <p>'
+            + '      Copyright © ' + currentYear + '. All rights reserved. '
+            + '      <a href="https://icstudio.club" target="_blank" rel="noopener">Igor Chen - icstudio.club</a>'
+            + '    </p>'
+            + '  </div>'
+            + '</div>';
+
+          footer.dataset.footerRenderKey = SITE_FOOTER_RENDER_KEY;
         }
 
         function getGumroadButtonText(lang) {
@@ -741,6 +985,7 @@
             tick = requestAnimationFrame(function () {
               ensureSmoothBuyScroll();
               ensureGumroadPayButton();
+              ensureStandardFooter();
               ensureUpdateLogBlock();
             });
           }

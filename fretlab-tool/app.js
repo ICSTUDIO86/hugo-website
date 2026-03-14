@@ -209,7 +209,8 @@ const UI_TEXT = {
     "license.locked.library": "预设指型库仅限完整版。请先在 Landing Page 完成支付并验证访问码。",
     "license.locked.video": "视频生成功能仅限完整版。请先在 Landing Page 完成支付并验证访问码。",
     "footer.tagline": "认知吉他指板训练工具",
-    "footer.copyrightPrefix": "版权所有 © 2026 · Igor Chen ·",
+    "footer.copyrightPrefix": "版权所有 ©",
+    "footer.copyrightSuffix": " · Igor Chen ·",
     "meta.title": "IC Fretboard Lab",
   },
   en: {
@@ -314,7 +315,8 @@ const UI_TEXT = {
     "license.locked.library": "Preset shape library is a full-version feature. Please unlock first on /fretlab/.",
     "license.locked.video": "Video rendering is a full-version feature. Please unlock first on /fretlab/.",
     "footer.tagline": "Cognitive guitar fretboard training tool",
-    "footer.copyrightPrefix": "Copyright © 2026. All rights reserved. Igor Chen ·",
+    "footer.copyrightPrefix": "Copyright ©",
+    "footer.copyrightSuffix": ". All rights reserved. Igor Chen ·",
     "meta.title": "IC Fretboard Lab",
   },
 };
