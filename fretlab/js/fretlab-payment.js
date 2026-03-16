@@ -110,6 +110,14 @@
       paymentOrderTip: '• 支付订单号：支付宝/微信账单中的 20-32 位数字订单号',
       cancel: '取消',
       featurePay: '支付',
+      paymentConsentText: '我已阅读并同意',
+      paymentTermsLink: '《用户协议》',
+      paymentPrivacyLink: '《隐私政策》',
+      paymentConsentRequired: '请先勾选并同意用户协议与隐私政策，再继续支付。',
+      paymentConsentReady: '已同意条款，现在可以扫码或打开支付页面完成支付。',
+      termsDialogTitle: '用户协议',
+      privacyDialogTitle: '隐私政策',
+      dialogClose: '关闭',
       lookupAction: '🔎 查找访问码',
       successTitle: '支付成功',
       successDesc: '访问码已生成，输入或复制后即可解锁完整版。',
@@ -179,6 +187,14 @@
       paymentOrderTip: '• Payment order number: 20-32 digits in Alipay/WeChat bill',
       cancel: 'Cancel',
       featurePay: 'payment',
+      paymentConsentText: 'I have read and agree to the',
+      paymentTermsLink: 'User Agreement',
+      paymentPrivacyLink: 'Privacy Policy',
+      paymentConsentRequired: 'Please agree to the User Agreement and Privacy Policy before continuing to payment.',
+      paymentConsentReady: 'Agreement confirmed. You can now scan the code or open the payment page.',
+      termsDialogTitle: 'User Agreement',
+      privacyDialogTitle: 'Privacy Policy',
+      dialogClose: 'Close',
       lookupAction: '🔎 Find access code',
       successTitle: 'Payment Successful',
       successDesc: 'Access code is ready. Enter or copy it to unlock full version.',
@@ -537,10 +553,120 @@
     if (modal) modal.remove();
   }
 
+  function closePolicyModal() {
+    const modal = byId('fretlab-policy-modal');
+    if (modal) modal.remove();
+  }
+
+  function renderPolicyBody(kind) {
+    const zh = isZhLang();
+    if (kind === 'terms') {
+      return zh
+        ? ''
+          + '<p style="margin:0 0 14px;">欢迎使用 <strong>IC Fretboard Lab</strong>（以下简称“FretLab”或“本产品”）。本协议是您与本产品开发者之间具有约束力的协议。请您在购买、验证访问码或使用本产品前仔细阅读并确认同意以下内容。</p>'
+          + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">1. 服务说明</h4>'
+          + '<p style="margin:0 0 12px;">FretLab 是面向音乐学习者的指板训练与音乐理解工具，提供在线页面、桌面安装包及相关付费功能。产品会持续更新，功能和内容可能根据开发进度调整。</p>'
+          + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">2. 使用规范</h4>'
+          + '<p style="margin:0 0 12px;">您不得以违法、侵权、破解、反向工程、批量分发、公开传播或其他不当方式使用本产品，也不得将其用于未经授权的商业用途。</p>'
+          + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">3. 访问码与付费功能</h4>'
+          + '<p style="margin:0 0 12px;">支付成功后，您将获得对应访问码或解锁资格，具体以页面说明和订单信息为准。访问码仅限正常授权范围内使用。</p>'
+          + '<p style="margin:0 0 12px;">若开发者发现访问码存在滥用、公开发布、私自售卖、倒卖、异常传播或其他违反本协议的情形，开发者有权暂停、禁用或撤销对应访问码及相关服务，不另行赔偿。</p>'
+          + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">4. 退款与服务调整</h4>'
+          + '<p style="margin:0 0 12px;">退款规则以支付页面和退款页面说明为准。退款成功后，对应访问码会失效，开发者有权同步撤销相关解锁权限。</p>'
+          + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">5. 免责声明</h4>'
+          + '<p style="margin:0 0 12px;">本产品按“现状”提供，开发者不对特定学习结果、训练效果、兼容性或持续无故障运行作出保证。</p>'
+          + '<p style="margin:18px 0 0;text-align:center;font-size:14px;color:#6b7280;">最后更新日期：2026 年 3 月 16 日</p>'
+        : ''
+          + '<p style="margin:0 0 14px;">Welcome to <strong>IC Fretboard Lab</strong> (“FretLab”). This agreement governs your purchase, access-code verification, and use of the product.</p>'
+          + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">1. Service</h4>'
+          + '<p style="margin:0 0 12px;">FretLab is a fretboard-training and music-learning tool that may include web pages, desktop installers, and paid features. Features may change as the product evolves.</p>'
+          + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">2. Acceptable Use</h4>'
+          + '<p style="margin:0 0 12px;">You may not use the product for illegal, abusive, infringing, reverse-engineering, redistribution, or otherwise unauthorized purposes.</p>'
+          + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">3. Access Codes</h4>'
+          + '<p style="margin:0 0 12px;">After payment, you receive the corresponding access code or unlock entitlement. Access codes are limited to normal authorized use.</p>'
+          + '<p style="margin:0 0 12px;">If an access code is abused, publicly posted, privately resold, redistributed, or otherwise misused, the developer reserves the right to disable that code and related service access without compensation.</p>'
+          + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">4. Refunds</h4>'
+          + '<p style="margin:0 0 12px;">Refund policy follows the payment and refund pages. Once refunded, the corresponding access code becomes invalid.</p>'
+          + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">5. Disclaimer</h4>'
+          + '<p style="margin:0 0 12px;">The product is provided “as is” without guarantees of specific learning outcomes or uninterrupted service.</p>'
+          + '<p style="margin:18px 0 0;text-align:center;font-size:14px;color:#6b7280;">Last updated: March 16, 2026</p>';
+    }
+
+    return zh
+      ? ''
+        + '<p style="margin:0 0 14px;"><strong>IC Fretboard Lab</strong>（以下简称“FretLab”或“本产品”）重视您的隐私。本政策说明我们如何收集、使用和保护与订单、访问码及服务运行相关的信息。</p>'
+        + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">1. 收集的信息</h4>'
+        + '<p style="margin:0 0 12px;">为完成支付、生成访问码、处理退款和订单找回，我们可能收集订单号、支付流水号、支付方式及必要的交易信息。</p>'
+        + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">2. 信息用途</h4>'
+        + '<p style="margin:0 0 12px;">这些信息将用于完成支付、验证授权、处理售后支持、退款、风控判断与产品改进。</p>'
+        + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">3. 信息存储与共享</h4>'
+        + '<p style="margin:0 0 12px;">订单、访问码及相关服务数据主要存储在腾讯云 CloudBase 环境中。仅在支付和服务必要范围内与相关支付服务提供方共享必要信息。</p>'
+        + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">4. 风控与滥用处理</h4>'
+        + '<p style="margin:0 0 12px;">为防止访问码被公开发布、私自售卖、倒卖、批量传播或其他滥用行为，我们可能基于订单信息、验证记录和退款记录进行风险判断。确认违规后，开发者有权禁用相关访问码。</p>'
+        + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">5. 用户权利</h4>'
+        + '<p style="margin:0 0 12px;">如需咨询订单、访问码或数据处理问题，可联系：<code>service@icstudio.club</code>。</p>'
+        + '<p style="margin:18px 0 0;text-align:center;font-size:14px;color:#6b7280;">最后更新日期：2026 年 3 月 16 日</p>'
+      : ''
+        + '<p style="margin:0 0 14px;"><strong>IC Fretboard Lab</strong> respects your privacy. This policy explains how order, payment, access-code, and service data may be collected and used.</p>'
+        + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">1. Information Collected</h4>'
+        + '<p style="margin:0 0 12px;">We may collect order numbers, payment transaction numbers, payment method, and other necessary transaction data to complete payment, refunds, and access-code delivery.</p>'
+        + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">2. Use of Information</h4>'
+        + '<p style="margin:0 0 12px;">Data is used for payment completion, license verification, support, refund handling, risk control, and product improvement.</p>'
+        + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">3. Storage and Sharing</h4>'
+        + '<p style="margin:0 0 12px;">Service data is primarily stored in Tencent Cloud CloudBase. Necessary payment information may be shared with payment providers only as required to deliver the service.</p>'
+        + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">4. Abuse Prevention</h4>'
+        + '<p style="margin:0 0 12px;">To prevent access codes from being publicly posted, privately resold, redistributed, or otherwise abused, the developer may review order, verification, and refund records. Confirmed abuse may result in code deactivation.</p>'
+        + '<h4 style="margin:18px 0 8px;font-size:22px;color:#111827;">5. Contact</h4>'
+        + '<p style="margin:0 0 12px;">For questions about orders, access codes, or data handling, contact <code>service@icstudio.club</code>.</p>'
+        + '<p style="margin:18px 0 0;text-align:center;font-size:14px;color:#6b7280;">Last updated: March 16, 2026</p>';
+  }
+
+  function showPolicyDialog(kind) {
+    closePolicyModal();
+    const title = kind === 'terms' ? i18n('termsDialogTitle') : i18n('privacyDialogTitle');
+    const accent = kind === 'terms' ? '#2563eb' : '#16a34a';
+    const modal = document.createElement('div');
+    modal.id = 'fretlab-policy-modal';
+    modal.innerHTML = ''
+      + '<div style="position:fixed;inset:0;background:rgba(17,24,39,.72);z-index:10090;display:flex;align-items:center;justify-content:center;padding:24px;padding-bottom:max(24px,env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;">'
+      + '  <div style="position:relative;display:flex;flex-direction:column;width:min(720px,100%);max-height:min(84vh,900px);background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.28);overflow:hidden;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;">'
+      + '    <div style="padding:18px 20px;background:' + accent + ';color:#fff;flex:0 0 auto;">'
+      + '      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">'
+      + '        <div style="font-size:18px;line-height:1.35;color:#fff;font-weight:700;letter-spacing:.01em;">' + escapeHtml(title) + '</div>'
+      + '        <button type="button" id="fretlab-policy-close" style="border:none;background:rgba(255,255,255,.16);color:#fff;border-radius:999px;width:36px;height:36px;cursor:pointer;font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;">×</button>'
+      + '      </div>'
+      + '    </div>'
+      + '    <div style="flex:1 1 auto;min-height:0;overflow-y:auto;padding:22px 24px 18px;font-size:16px;line-height:1.75;color:#374151;background:#fff;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;">'
+      +        renderPolicyBody(kind)
+      + '    </div>'
+      + '    <div style="display:flex;justify-content:flex-end;padding:16px 24px calc(20px + env(safe-area-inset-bottom));border-top:1px solid #e5e7eb;background:#fff;flex:0 0 auto;">'
+      + '      <button type="button" id="fretlab-policy-confirm" style="border:none;background:#f3f4f6;color:#111827;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:14px;font-weight:600;">' + i18n('dialogClose') + '</button>'
+      + '    </div>'
+      + '  </div>'
+      + '</div>';
+    document.body.appendChild(modal);
+
+    ['fretlab-policy-close', 'fretlab-policy-confirm'].forEach(function(id) {
+      const element = byId(id);
+      if (element) {
+        element.addEventListener('click', closePolicyModal);
+      }
+    });
+
+    modal.firstElementChild.addEventListener('click', function(event) {
+      if (event.target === modal.firstElementChild) closePolicyModal();
+    });
+  }
+
   function renderPaymentModal(paymentData, method) {
     closePaymentModal();
     const methodLabel = method === 'wxpay' ? '微信支付' : '支付宝支付';
     const accent = method === 'wxpay' ? '#16a34a' : '#2563eb';
+    const paymentBodyHtml = paymentData.img
+      ? '<img src="' + paymentData.img + '" alt="支付二维码" style="width:180px;height:180px;border-radius:10px;border:1px solid #e5e7eb;" />'
+      : paymentData.payurl
+        ? '<a href="' + paymentData.payurl + '" target="_blank" rel="noopener" style="display:inline-block;background:' + accent + ';color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:600;">打开支付页面</a>'
+        : '<div style="font-size:13px;color:#6b7280;">未获取到支付二维码，请稍后重试</div>';
 
     const modal = document.createElement('div');
     modal.id = 'fretlab-payment-modal';
@@ -553,16 +679,29 @@
       + '      <div style="margin-top:4px;font-size:13px;opacity:.95;">金额：¥' + (paymentData.order_info && paymentData.order_info.money ? paymentData.order_info.money : CONFIG.amount) + '</div>'
       + '    </div>'
       + '    <div style="padding:18px 20px;">'
-      + '      <div id="fretlab-pay-qr" style="display:flex;justify-content:center;min-height:190px;align-items:center;">'
-      + (paymentData.img
-          ? '<img src="' + paymentData.img + '" alt="支付二维码" style="width:180px;height:180px;border-radius:10px;border:1px solid #e5e7eb;" />'
-          : paymentData.payurl
-            ? '<a href="' + paymentData.payurl + '" target="_blank" rel="noopener" style="display:inline-block;background:' + accent + ';color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:600;">打开支付页面</a>'
-            : '<div style="font-size:13px;color:#6b7280;">未获取到支付二维码，请稍后重试</div>')
+      + '      <div style="margin-bottom:14px;padding:14px 16px;background:#f8fafc;border:1px solid #dbeafe;border-radius:12px;color:#334155;font-size:14px;line-height:1.7;">'
+      + '        <label for="fretlab-payment-terms-checkbox" style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">'
+      + '          <input type="checkbox" id="fretlab-payment-terms-checkbox" style="margin-top:2px;transform:scale(1.15);accent-color:' + accent + ';" />'
+      + '          <span>'
+      + i18n('paymentConsentText')
+      + ' <a href="#" id="fretlab-open-terms" style="color:' + accent + ';text-decoration:none;font-weight:600;">'
+      + i18n('paymentTermsLink')
+      + '</a> '
+      + (isZhLang() ? '和' : 'and the')
+      + ' <a href="#" id="fretlab-open-privacy" style="color:' + accent + ';text-decoration:none;font-weight:600;">'
+      + i18n('paymentPrivacyLink')
+      + '</a>'
+      + '          </span>'
+      + '        </label>'
       + '      </div>'
-      + '      <div id="fretlab-payment-status" style="margin-top:14px;padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;color:#334155;">🔍 正在检测支付状态...</div>'
+      + '      <div id="fretlab-pay-qr" style="display:none;justify-content:center;min-height:190px;align-items:center;">'
+      + paymentBodyHtml
+      + '      </div>'
+      + '      <div id="fretlab-payment-status" style="margin-top:14px;padding:10px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;color:#334155;">'
+      + i18n('paymentConsentRequired')
+      + '</div>'
       + '      <div style="margin-top:14px;display:flex;justify-content:flex-end;">'
-      + '        <button type="button" id="fretlab-close-pay-modal" style="border:none;background:#f3f4f6;color:#111827;border-radius:8px;padding:8px 12px;cursor:pointer;">关闭</button>'
+      + '        <button type="button" id="fretlab-close-pay-modal" style="border:none;background:#f3f4f6;color:#111827;border-radius:8px;padding:8px 12px;cursor:pointer;">' + i18n('dialogClose') + '</button>'
       + '      </div>'
       + '    </div>'
       + '  </div>'
@@ -572,6 +711,37 @@
     const closeBtn = byId('fretlab-close-pay-modal');
     if (closeBtn) {
       closeBtn.addEventListener('click', closePaymentModal);
+    }
+    const termsLink = byId('fretlab-open-terms');
+    if (termsLink) {
+      termsLink.addEventListener('click', function(event) {
+        event.preventDefault();
+        showPolicyDialog('terms');
+      });
+    }
+    const privacyLink = byId('fretlab-open-privacy');
+    if (privacyLink) {
+      privacyLink.addEventListener('click', function(event) {
+        event.preventDefault();
+        showPolicyDialog('privacy');
+      });
+    }
+    const consentCheckbox = byId('fretlab-payment-terms-checkbox');
+    const qrSection = byId('fretlab-pay-qr');
+    if (consentCheckbox && qrSection) {
+      consentCheckbox.addEventListener('change', function() {
+        const agreed = !!consentCheckbox.checked;
+        qrSection.style.display = agreed ? 'flex' : 'none';
+        if (agreed) {
+          updatePaymentStatus('✅ ' + i18n('paymentConsentReady'));
+          if (paymentData && paymentData.out_trade_no) {
+            startPolling(paymentData.out_trade_no);
+          }
+        } else {
+          stopPolling();
+          updatePaymentStatus(i18n('paymentConsentRequired'), true);
+        }
+      });
     }
     modal.firstElementChild.addEventListener('click', function(event) {
       if (event.target === modal.firstElementChild) closePaymentModal();
@@ -752,7 +922,6 @@
       }
 
       renderPaymentModal(result, payType);
-      startPolling(result.out_trade_no);
     } catch (error) {
       showPaymentUnavailable(error.message || '创建支付失败，请稍后重试');
     } finally {

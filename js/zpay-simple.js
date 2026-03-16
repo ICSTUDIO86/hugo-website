@@ -1529,9 +1529,9 @@
 
   function showTempTermsDialog() {
     const dialog = document.createElement('div');
-    dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100000; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: auto; padding: 20px;';
+    dialog.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100000; display: flex; align-items: center; justify-content: center; padding: 24px; overflow: auto; -webkit-overflow-scrolling: touch; touch-action: auto;';
     dialog.innerHTML = `
-      <div style="background: white; padding: 30px; border-radius: 16px; max-width: 700px; max-height: 80vh; overflow-y: auto; margin: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+      <div style="background: white; padding: 30px; border-radius: 16px; width: min(700px, 100%); max-height: min(80vh, 900px); overflow-y: auto; margin: 0; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
         <h3 style="color: #2d3748; margin-bottom: 20px; text-align: center;">📜 用户协议</h3>
         <div style="line-height: 1.6; color: #4a5568; font-size: 14px;">
           <p style="margin-bottom: 20px;">欢迎使用 <strong>IC Studio 视奏工具</strong>（以下简称"本产品"）。本协议是用户（以下简称"您"）与本产品开发者之间具有约束力的协议。请您在使用前仔细阅读并同意以下条款。</p>
@@ -1547,6 +1547,7 @@
           <h4>3. 付费功能</h4>
           <p>3.1 您在支付成功后即可获得对应的付费功能使用权。</p>
           <p>3.2 具体收费标准和服务期限以页面展示为准。</p>
+          <p>3.3 若开发者发现访问码存在滥用、公开发布、私自售卖、倒卖、异常传播或其他违反本协议的情形，开发者有权暂停、禁用或撤销对应访问码及相关服务，不另行赔偿。</p>
           
           <h4>4. 知识产权</h4>
           <p>4.1 本产品及相关代码、界面设计、名称、标识均归开发者所有。</p>
@@ -1575,9 +1576,9 @@
 
   function showTempPrivacyDialog() {
     const dialog = document.createElement('div');
-    dialog.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100000; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: auto; padding: 20px;';
+    dialog.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100000; display: flex; align-items: center; justify-content: center; padding: 24px; overflow: auto; -webkit-overflow-scrolling: touch; touch-action: auto;';
     dialog.innerHTML = `
-      <div style="background: white; padding: 30px; border-radius: 16px; max-width: 700px; max-height: 80vh; overflow-y: auto; margin: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+      <div style="background: white; padding: 30px; border-radius: 16px; width: min(700px, 100%); max-height: min(80vh, 900px); overflow-y: auto; margin: 0; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
         <h3 style="color: #2d3748; margin-bottom: 20px; text-align: center;">🔒 隐私政策</h3>
         <div style="line-height: 1.6; color: #4a5568; font-size: 14px;">
           <p style="margin-bottom: 20px;"><strong>IC Studio 视奏工具</strong>（以下简称"本产品"）高度重视用户隐私。本政策说明我们如何收集、使用和保护您的信息。</p>
@@ -1598,11 +1599,15 @@
           <p>- 仅在必要时与支付服务商（Z-Pay）共享支付相关信息。</p>
           <p>- 除非法律要求，不会向其他第三方出售或提供您的信息。</p>
           
-          <h4>5. 用户权利</h4>
+          <h4>5. 访问码风控</h4>
+          <p>- 为防止访问码被公开发布、私自售卖、倒卖、批量传播或其他滥用行为，我们可能基于订单、访问码验证和退款记录进行风险判断。</p>
+          <p>- 若确认存在违规情形，开发者有权禁用相关访问码并限制继续使用本产品。</p>
+          
+          <h4>6. 用户权利</h4>
           <p>- 您有权随时要求删除您的个人数据。</p>
           <p>- 联系邮箱：<code>service@icstudio.club</code>。</p>
           
-          <h4>6. 政策更新</h4>
+          <h4>7. 政策更新</h4>
           <p>- 我们可能会不时更新本隐私政策，更新后将在页面公布。</p>
           
           <p style="margin-top: 20px; text-align: center; color: #666; font-size: 12px;">最后更新日期：2025 年 9 月 9 日</p>

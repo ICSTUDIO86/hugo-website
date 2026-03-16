@@ -632,9 +632,20 @@
           }
 
           nav.innerHTML = ''
-            + '<a href="#features">功能</a>'
-            + '<a href="#buy">购买</a>'
-            + '<a href="#faq">FAQ</a>';
+            + '<a href="#features" data-scroll-target="features">功能</a>'
+            + '<a href="#buy" data-scroll-target="buy">购买</a>'
+            + '<a href="#faq" data-scroll-target="faq">FAQ</a>';
+
+          Array.prototype.forEach.call(nav.querySelectorAll('a[data-scroll-target]'), function (link) {
+            if (link.dataset.scrollBound === '1') return;
+            link.addEventListener('click', function (event) {
+              var targetId = link.getAttribute('data-scroll-target');
+              if (!targetId) return;
+              event.preventDefault();
+              scrollToFretlabSection(targetId);
+            });
+            link.dataset.scrollBound = '1';
+          });
 
           if (nav.parentNode !== headerInner || nav.nextElementSibling !== actionsGroup) {
             headerInner.insertBefore(nav, actionsGroup);
@@ -664,6 +675,28 @@
             + '<li class="my-2"><a href="/products/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">产品内容</a></li>'
             + '<li class="my-2"><a href="/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">音乐内容</a></li>';
           menuList.dataset.menuRenderKey = expectedKey;
+        }
+
+        function scrollToFretlabSection(sectionId) {
+          var section = document.getElementById(sectionId);
+          if (!section) return;
+
+          var header = document.querySelector('#root header');
+          var headerOffset = header ? header.offsetHeight + 12 : 12;
+          section.style.scrollMarginTop = headerOffset + 'px';
+
+          var targetTop = Math.max(section.getBoundingClientRect().top + window.scrollY - headerOffset, 0);
+          window.scrollTo({ top: targetTop, behavior: 'smooth' });
+        }
+
+        function ensureSectionOffsets() {
+          ['features', 'buy', 'faq'].forEach(function (sectionId) {
+            var section = document.getElementById(sectionId);
+            if (!section) return;
+            var header = document.querySelector('#root header');
+            var headerOffset = header ? header.offsetHeight + 12 : 12;
+            section.style.scrollMarginTop = headerOffset + 'px';
+          });
         }
 
         function ensureStandardFooter() {
@@ -794,18 +827,22 @@
 
           document.addEventListener('click', function (event) {
             var link = event.target && event.target.closest
-              ? event.target.closest('a[href="#buy"], a[href="/fretlab/#buy"], a[href="/en/fretlab/#buy"], a[href$="#buy"]')
+              ? event.target.closest('a[href="#features"], a[href="#buy"], a[href="#faq"], a[href="/fretlab/#features"], a[href="/fretlab/#buy"], a[href="/fretlab/#faq"], a[href="/en/fretlab/#features"], a[href="/en/fretlab/#buy"], a[href="/en/fretlab/#faq"], a[href$="#features"], a[href$="#buy"], a[href$="#faq"]')
               : null;
             if (!link) return;
 
-            var buySection = document.getElementById('buy');
-            if (!buySection) return;
-
             var href = link.getAttribute('href') || '';
-            if (href.indexOf('#buy') === -1) return;
+            var sectionId = href.indexOf('#features') !== -1
+              ? 'features'
+              : href.indexOf('#buy') !== -1
+                ? 'buy'
+                : href.indexOf('#faq') !== -1
+                  ? 'faq'
+                  : '';
+            if (!sectionId) return;
 
             event.preventDefault();
-            buySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            scrollToFretlabSection(sectionId);
           }, true);
 
           document.documentElement.dataset.fretlabSmoothBuyBound = '1';
@@ -1083,6 +1120,7 @@
             if (tick) cancelAnimationFrame(tick);
             tick = requestAnimationFrame(function () {
               ensureHeaderNav();
+              ensureSectionOffsets();
               ensureMenuBarContent();
               ensureSmoothBuyScroll();
               ensureGumroadPayButton();

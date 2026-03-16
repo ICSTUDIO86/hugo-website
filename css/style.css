@@ -1116,7 +1116,9 @@ video {
   overflow: hidden;
   opacity: 1;
   max-height: 16rem;
-  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+      max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .menu-collapse-closed {
