@@ -111,18 +111,35 @@ textarea {
 .app__header > div {
   position: relative;
   width: 100%;
-  text-align: center;
-  padding-top: 4.05rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "left right"
+    "logo logo";
+  align-items: start;
+  column-gap: 0.9rem;
+  row-gap: 0.72rem;
 }
 
 .header-left-stack {
-  position: absolute;
-  left: 0;
-  top: 0;
+  grid-area: left;
+  position: relative;
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.42rem;
+  justify-self: start;
+  min-width: 0;
+  max-width: 100%;
+  z-index: 2;
+}
+
+.header-right-stack {
+  grid-area: right;
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+  justify-self: end;
   z-index: 2;
 }
 
@@ -208,6 +225,11 @@ textarea {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.app__logo {
+  grid-area: logo;
+  justify-self: center;
 }
 
 .export-menu-wrap {
@@ -800,8 +822,13 @@ textarea {
 }
 
 .board-inline-controls > label input[type="number"] {
-  width: 86px;
-  min-width: 86px;
+  width: 64px;
+  min-width: 64px;
+}
+
+#notePreferenceSelect {
+  width: 78px;
+  min-width: 78px;
 }
 
 .board-inline-controls .ghost-btn {
@@ -833,6 +860,10 @@ textarea {
   justify-content: center;
   font-size: 1.14rem;
   line-height: 1;
+}
+
+.board-inline-controls-mobile-slot {
+  display: none;
 }
 
 .board-panel__status {
@@ -882,6 +913,17 @@ textarea {
   height: auto;
   flex: 0 0 auto;
   display: block;
+}
+
+.board-panel__fretboard svg[data-board-orientation="top"] {
+  width: auto;
+  height: clamp(480px, 78vh, 940px);
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.board-panel__fretboard.is-single-board svg[data-board-orientation="top"] {
+  height: clamp(540px, 84vh, 1020px);
 }
 
 .board-drop-hint {
@@ -1683,6 +1725,7 @@ svg {
   font-size: 0.82rem;
   font-weight: 600;
   text-anchor: middle;
+  dominant-baseline: middle;
   pointer-events: none;
 }
 
@@ -1722,7 +1765,7 @@ svg {
   animation: realtime-slide-trail-fade 0.42s ease-out 1;
 }
 
-.marker-recorder-root {
+.marker-dot.marker-recorder-root {
   fill: #ede3a3;
   stroke-width: 2.6;
 }
@@ -1871,6 +1914,7 @@ svg {
   font-weight: 600;
   fill: #111;
   text-anchor: middle;
+  dominant-baseline: middle;
 }
 
 .marker-interval {
@@ -1928,28 +1972,27 @@ svg {
   }
 
   .app__header > div {
-    padding-top: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "left right"
+      "logo logo";
     gap: 0.62rem;
   }
 
   .header-left-stack {
     position: relative;
-    left: auto;
-    top: auto;
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
+    width: auto;
+    max-width: min(100%, calc(100vw - 6.4rem));
+    flex-direction: column;
+    flex-wrap: nowrap;
     align-items: flex-start;
     gap: 0.5rem 0.62rem;
   }
 
   .lang-switch,
   .instrument-switch,
-  .header-tool-buttons {
+  .header-tool-buttons,
+  .header-right-stack {
     position: relative;
     transform: none;
   }
@@ -1998,6 +2041,12 @@ svg {
     max-width: 100%;
     margin-top: 0.1rem;
     padding: 0.58rem 0.7rem;
+  }
+
+  .board-inline-controls-mobile-slot {
+    display: block;
+    width: 100%;
+    margin-top: 0.58rem;
   }
 
   .board-drop-hint {
@@ -2054,27 +2103,40 @@ svg {
     padding-bottom: 0.38rem;
   }
 
+  .app__header > div {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "left right"
+      "logo logo";
+    align-items: start;
+  }
+
   .header-left-stack {
+    display: inline-flex;
+    width: auto;
+    max-width: min(100%, calc(100vw - 5.9rem));
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
     gap: 0.44rem;
   }
 
-  .lang-switch {
-    align-self: flex-start;
+  .header-right-stack {
+    justify-self: end;
+    align-self: start;
   }
 
   .instrument-switch {
-    width: 100%;
-    align-self: stretch;
+    width: auto;
+    max-width: min(300px, calc(100vw - 6.2rem));
+    align-self: flex-start;
   }
 
   .instrument-switch__row {
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 
   .instrument-switch select {
-    flex: 1;
+    flex: 0 1 auto;
     min-width: 0;
   }
 
@@ -2107,6 +2169,19 @@ svg {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 0.5rem 0.55rem;
     padding: 0.56rem 0.58rem;
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    margin-top: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .board-inline-controls-mobile-slot {
+    display: block;
+    width: 100%;
+    margin-top: 0.56rem;
   }
 
   .board-inline-controls > label {
@@ -2197,4 +2272,59 @@ svg {
   .video-modal__btn {
     flex: 1;
   }
+}
+
+@media (max-width: 960px) and (orientation: landscape) and (max-height: 560px) {
+  .app__header > div {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "left right"
+      "logo logo";
+    gap: 0.42rem;
+  }
+
+  .header-left-stack {
+    width: auto;
+    max-width: min(100%, calc(100vw - 6.4rem));
+    align-self: start;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.32rem;
+  }
+
+  .header-right-stack {
+    justify-self: end;
+    align-self: start;
+  }
+
+  .header-tool-buttons {
+    align-self: flex-start;
+  }
+
+  .instrument-switch {
+    width: auto;
+    max-width: min(340px, calc(100vw - 6.2rem));
+  }
+
+  .instrument-switch__row {
+    justify-content: flex-start;
+  }
+
+  .board-inline-controls {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 0;
+  }
+
+  .board-inline-controls-mobile-slot {
+    display: block;
+    width: 100%;
+    margin-top: 0.48rem;
+  }
+
 }

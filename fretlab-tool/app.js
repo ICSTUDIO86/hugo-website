@@ -16,7 +16,9 @@ const state = {
   boardCount: 1,
   activeBoardIndex: 0,
   fretCount: 12,
-  fretboardFlipped: false,
+  fretStart: 1,
+  hasCustomFretRange: false,
+  fretboardOrientation: 0,
   notePreference: "sharps",
   boardStates: [{ markers: {}, selectedId: null }],
   isFullAccess: false,
@@ -24,10 +26,14 @@ const state = {
 
 const dom = {
   boardPanel: document.querySelector(".board-panel"),
+  boardInlineControls: document.querySelector(".board-inline-controls"),
+  mobileBoardInlineControlsSlot: document.getElementById("mobileBoardInlineControlsSlot"),
   svg: document.getElementById("fretboardSvg"),
   fretboardStack: document.getElementById("fretboardStack"),
   markerHint: document.getElementById("markerCountHint"),
   boardCountInput: document.getElementById("boardCountInput"),
+  fretStartInput: document.getElementById("fretStartInput"),
+  fretEndInput: document.getElementById("fretEndInput"),
   notePreferenceSelect: document.getElementById("notePreferenceSelect"),
   exportToggleBtn: document.getElementById("exportToggleBtn"),
   exportMenu: document.getElementById("exportMenu"),
@@ -78,7 +84,8 @@ const dom = {
 const UI_LANGUAGE_STORAGE_KEY = "ic_fretlab_ui_language";
 const INSTRUMENT_STORAGE_KEY = "ic_fretlab_instrument";
 const GUITAR_TONE_STORAGE_KEY = "ic_fretlab_guitar_tone";
-const UI_LANGUAGES = new Set(["zh", "en"]);
+const MOBILE_LAYOUT_MEDIA_QUERY = "(max-width: 1024px)";
+const UI_LANGUAGES = new Set(["zh", "zh-hant", "en"]);
 const GUITAR_TONES = new Set(["classical", "folk"]);
 const INSTRUMENTS = {
   guitar: {
@@ -118,15 +125,17 @@ const UI_TEXT = {
     "controls.instrument": "乐器",
     "controls.guitarTone": "吉他音色",
     "controls.boardCount": "指板数量",
+    "controls.fretStart": "起始品位",
+    "controls.fretEnd": "结束品位",
     "controls.fretCount": "品格数量",
     "controls.fretAdjust.aria": "品格增减",
     "controls.fretAdjust.decrease": "减少品格",
     "controls.fretAdjust.increase": "增加品格",
     "controls.notePreference": "音名偏好",
-    "controls.notePreference.sharps": "升号优先",
-    "controls.notePreference.flats": "降号优先",
-    "controls.clearMarkers": "清空标记",
-    "controls.flipBoard": "翻转指板",
+    "controls.notePreference.sharps": "升号",
+    "controls.notePreference.flats": "降号",
+    "controls.clearMarkers": "清除",
+    "controls.flipBoard": "旋转",
     "instrument.guitar": "吉他",
     "instrument.bass": "贝斯",
     "instrument.ukulele": "尤克里里",
@@ -209,8 +218,7 @@ const UI_TEXT = {
     "license.locked.library": "预设指型库仅限完整版。请先在 Landing Page 完成支付并验证访问码。",
     "license.locked.video": "视频生成功能仅限完整版。请先在 Landing Page 完成支付并验证访问码。",
     "footer.tagline": "认知吉他指板训练工具",
-    "footer.copyrightPrefix": "版权所有 ©",
-    "footer.copyrightSuffix": " · Igor Chen ·",
+    "footer.copyrightPrefix": "版权所有 © 2026 · Igor Chen ·",
     "meta.title": "IC Fretboard Lab",
   },
   en: {
@@ -224,15 +232,17 @@ const UI_TEXT = {
     "controls.instrument": "Instrument",
     "controls.guitarTone": "Guitar Tone",
     "controls.boardCount": "Boards",
+    "controls.fretStart": "Start fret",
+    "controls.fretEnd": "End fret",
     "controls.fretCount": "Frets",
     "controls.fretAdjust.aria": "Fret adjustment",
     "controls.fretAdjust.decrease": "Decrease frets",
     "controls.fretAdjust.increase": "Increase frets",
     "controls.notePreference": "Note labels",
-    "controls.notePreference.sharps": "Prefer sharps",
-    "controls.notePreference.flats": "Prefer flats",
-    "controls.clearMarkers": "Clear markers",
-    "controls.flipBoard": "Flip board",
+    "controls.notePreference.sharps": "Sharps",
+    "controls.notePreference.flats": "Flats",
+    "controls.clearMarkers": "Clear",
+    "controls.flipBoard": "Rotate",
     "instrument.guitar": "Guitar",
     "instrument.bass": "Bass",
     "instrument.ukulele": "Ukulele",
@@ -315,10 +325,100 @@ const UI_TEXT = {
     "license.locked.library": "Preset shape library is a full-version feature. Please unlock first on /fretlab/.",
     "license.locked.video": "Video rendering is a full-version feature. Please unlock first on /fretlab/.",
     "footer.tagline": "Cognitive guitar fretboard training tool",
-    "footer.copyrightPrefix": "Copyright ©",
-    "footer.copyrightSuffix": ". All rights reserved. Igor Chen ·",
+    "footer.copyrightPrefix": "Copyright © 2026. All rights reserved. Igor Chen ·",
     "meta.title": "IC Fretboard Lab",
   },
+};
+
+UI_TEXT["zh-hant"] = {
+  ...UI_TEXT.zh,
+  "lang.switch.aria": "語言切換",
+  "palette.close.aria": "關閉指型庫面板",
+  "app.title": "吉他指板白板",
+  "board.dropHint": "拖拽指形到指板任意位置",
+  "controls.title": "指板控制",
+  "controls.subhead": "設定指板數量與音名偏好",
+  "controls.instrument": "樂器",
+  "controls.guitarTone": "吉他音色",
+  "controls.boardCount": "指板數量",
+  "controls.fretStart": "起始品位",
+  "controls.fretEnd": "結束品位",
+  "controls.fretCount": "品格數量",
+  "controls.fretAdjust.aria": "品格增減",
+  "controls.fretAdjust.decrease": "減少品格",
+  "controls.fretAdjust.increase": "增加品格",
+  "controls.notePreference": "音名偏好",
+  "controls.notePreference.sharps": "升號",
+  "controls.notePreference.flats": "降號",
+  "controls.clearMarkers": "清除",
+  "controls.flipBoard": "旋轉",
+  "instrument.guitar": "吉他",
+  "instrument.bass": "貝斯",
+  "instrument.ukulele": "烏克麗麗",
+  "guitarTone.classical": "古典吉他",
+  "guitarTone.folk": "民謠吉他",
+  "export.format": "匯出格式",
+  "export.button": "匯出",
+  "video.modal.title": "生成 MP4 視頻",
+  "video.modal.close": "關閉視頻彈窗",
+  "video.modal.support": "支援格式：MuseScore（.mscz / .mscx）與 Guitar Pro 5（.gp5）",
+  "video.modal.maxSize": "最大文件：25MB",
+  "video.modal.tip": "最佳效果建議：MuseScore 文件請包含吉他 Tab。若僅有五線譜，指板位置可能出現偏差。",
+  "video.modal.drop.hint": "拖拽文件到這裡，或",
+  "video.modal.upload": "選擇文件",
+  "video.modal.cancel": "取消",
+  "video.file.none": "尚未選擇文件",
+  "video.status.idle": "請選擇 MuseScore 文件後開始生成動畫。",
+  "video.status.invalidType": "文件格式不支援。當前僅支援 .mscz、.mscx 或 .gp5。",
+  "video.status.invalidSize": "文件過大。請上傳 25MB 以內的文件。",
+  "video.status.reading": "正在讀取文件，請稍候…",
+  "video.status.startingBridge": "正在啟動本地渲染服務…",
+  "video.status.rendering": "正在根據譜面生成動畫與音頻，請稍候…",
+  "video.status.success": "MP4 已生成，正在下載。",
+  "video.status.busy": "正在生成中，請稍候完成當前任務。",
+  "recorder.title": "錄製指型（MVP）",
+  "recorder.subhead": "在指板上點出形狀，設根音錨點後匯出模板",
+  "recorder.start": "開始錄製",
+  "recorder.cancel": "取消錄製",
+  "recorder.export": "生成模板",
+  "recorder.copy": "複製結果",
+  "recorder.copyDone": "已複製",
+  "recorder.status.idle": "未開始錄製",
+  "recorder.field.name": "名稱",
+  "recorder.field.mode": "模式",
+  "recorder.field.system": "系統",
+  "recorder.field.collection": "收編備註",
+  "recorder.placeholder.collection": "例如：五個大調音階",
+  "recorder.markerList.title": "已標記點（點按按鈕設為根音錨點）",
+  "recorder.output.label": "匯出結果（可直接發給我收編）",
+  "recorder.output.placeholder": "生成後會出現 JS 模板",
+  "recorder.status.active": "錄製中",
+  "recorder.status.marked": "已標記 {count} 個",
+  "recorder.status.recent": "最近點選：弦 {string} / 品 {fret}",
+  "recorder.status.root": "根音錨點：弦 {string} / 品 {fret} ({note})",
+  "recorder.emptyMarkers": "暫無標記點。先在指板上點擊畫出指型。",
+  "recorder.rootAnchor.title": "設為根音錨點",
+  "recorder.warningOk": "暫無明顯結構警告。",
+  "recorder.exportFailHeader": "匯出失敗",
+  "recorder.copyFailAppend": "複製失敗：當前瀏覽器環境不允許 clipboard API，請手動複製。",
+  "recorder.error.needRoot": "請先在「已標記點」裡選擇一個根音錨點。",
+  "library.title": "指型庫",
+  "library.subhead": "CAGED / Pentatonic / 3NPS 完整集合",
+  "library.family.scales": "音階",
+  "library.family.chords": "和弦",
+  "library.ungrouped": "未分組",
+  "overlay.empty": "暫無指形疊加，請拖拽指形到指板。",
+  "overlay.action.hide": "隱藏",
+  "overlay.action.show": "顯示",
+  "overlay.action.delete": "刪除",
+  "marker.hint": "標記數 <strong>{count}</strong> · 點擊任意位置添加標記",
+  "license.status.trial": "當前為試用版：可點擊指板標記；匯出、預設指型庫與視頻生成功能僅限完整版。前往 /fretlab/ 完成支付並驗證訪問碼。",
+  "license.status.full": "完整版已解鎖：預設指型庫、PNG / SVG / PDF 匯出與視頻生成功能可用。",
+  "license.locked.export": "匯出功能僅限完整版。請先在 Landing Page 完成支付並驗證訪問碼。",
+  "license.locked.library": "預設指型庫僅限完整版。請先在 Landing Page 完成支付並驗證訪問碼。",
+  "license.locked.video": "視頻生成功能僅限完整版。請先在 Landing Page 完成支付並驗證訪問碼。",
+  "footer.tagline": "認知吉他指板訓練工具",
+  "footer.copyrightPrefix": "版權所有 © 2026 · Igor Chen ·",
 };
 
 const LIBRARY_CATEGORY_LABELS = {
@@ -361,6 +461,7 @@ const LIBRARY_CATEGORY_LABELS = {
     "three-nps": "3NPS Scales",
   },
 };
+LIBRARY_CATEGORY_LABELS["zh-hant"] = { ...LIBRARY_CATEGORY_LABELS.zh };
 
 const LIBRARY_SECTION_LABELS = {
   zh: {
@@ -494,6 +595,7 @@ const LIBRARY_SECTION_LABELS = {
     "3nps-harmonic-minor": "Harmonic Minor · 7 Shapes",
   },
 };
+LIBRARY_SECTION_LABELS["zh-hant"] = { ...LIBRARY_SECTION_LABELS.zh };
 
 const INVERSION_NAME_LABELS = {
   zh: {
@@ -508,6 +610,12 @@ const INVERSION_NAME_LABELS = {
     "Second Position": "Second Position",
     "Third Position": "Third Position",
   },
+};
+INVERSION_NAME_LABELS["zh-hant"] = {
+  "Root Position": "原位",
+  "First Position": "第一轉位",
+  "Second Position": "第二轉位",
+  "Third Position": "第三轉位",
 };
 
 function resolveBridgeHttpBase() {
@@ -714,33 +822,121 @@ const sketchJitter = (seed, magnitude) => (sketchNoise(seed) - 0.5) * 2 * magnit
 const OVERLAY_NOTE_NAME_PRIORITY = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
 const FRET_MARKER_SINGLE_FRETS = new Set([3, 5, 7, 9, 15, 17, 19, 21]);
 const FRET_MARKER_DOUBLE_FRETS = new Set([12]);
+const FRETBOARD_ORIENTATION_LEFT = 0;
+const FRETBOARD_ORIENTATION_TOP = 1;
+const FRETBOARD_ORIENTATION_RIGHT = 2;
+const DEFAULT_LANDSCAPE_FRET_START = 1;
+const DEFAULT_LANDSCAPE_FRET_END = 12;
+const DEFAULT_TOP_FRET_SPAN = 7;
+const getVisibleFretStart = () => Math.max(1, Math.min(Math.round(Number(state.fretStart) || 1), state.fretCount));
+const isOpenFretVisible = () => getVisibleFretStart() === 1;
+const getVisibleFretCount = () => Math.max(1, state.fretCount - getVisibleFretStart() + 1);
+const getLeadingAreaWidth = () => (isOpenFretVisible() ? DIMENSIONS.openWidth : 0);
+const getVisibleMinimumFret = () => (isOpenFretVisible() ? 0 : getVisibleFretStart());
+const isBoardFretVisible = (fret) =>
+  Number.isFinite(fret) &&
+  (isOpenFretVisible()
+    ? (fret === 0 || (fret >= 1 && fret <= state.fretCount))
+    : (fret >= getVisibleFretStart() && fret <= state.fretCount));
 const getVisualStringIndex = (stringIndex) => getStringCount() - 1 - stringIndex;
 const getStringSpacing = () => Number(getActiveInstrument()?.stringSpacing ?? DIMENSIONS.stringSpacing) || DIMENSIONS.stringSpacing;
 const getStringY = (stringIndex) =>
   DIMENSIONS.boardPadding + getVisualStringIndex(stringIndex) * getStringSpacing();
 const getCellY = (stringIndex) => getStringY(stringIndex) - getStringSpacing() / 2;
 const getTotalBoardWidth = (fretCount = state.fretCount) =>
-  DIMENSIONS.openWidth + DIMENSIONS.fretSpacing * Math.max(1, Number(fretCount) || 1);
-const getNutX = (fretCount = state.fretCount) =>
-  state.fretboardFlipped ? getTotalBoardWidth(fretCount) - DIMENSIONS.openWidth : DIMENSIONS.openWidth;
-const getOpenAreaX = (fretCount = state.fretCount) =>
-  state.fretboardFlipped ? getTotalBoardWidth(fretCount) - DIMENSIONS.openWidth : 0;
-const getFretboardAreaX = (fretCount = state.fretCount) => (state.fretboardFlipped ? 0 : DIMENSIONS.openWidth);
-const getFretX = (fret) => {
-  if (!state.fretboardFlipped) {
-    return DIMENSIONS.openWidth + (fret - 1) * DIMENSIONS.fretSpacing;
-  }
-  const totalWidth = getTotalBoardWidth();
-  return totalWidth - DIMENSIONS.openWidth - fret * DIMENSIONS.fretSpacing;
-};
+  getLeadingAreaWidth() + DIMENSIONS.fretSpacing * Math.max(1, getVisibleFretCount());
+const getNutX = () => getLeadingAreaWidth();
+const getOpenAreaX = () => 0;
+const getFretboardAreaX = () => getLeadingAreaWidth();
+const getFretX = (fret) => getLeadingAreaWidth() + (fret - getVisibleFretStart()) * DIMENSIONS.fretSpacing;
 const getMarkerCenterX = (fret) =>
-  fret === 0
+  fret === 0 && isOpenFretVisible()
     ? getOpenAreaX() + DIMENSIONS.openWidth / 2
     : getFretX(fret) + DIMENSIONS.fretSpacing / 2;
 const getMarkerDisplayLabel = (marker) =>
   marker.customLabel ?? getNoteName(marker.noteIndex, state.notePreference);
 const getOverlayPreferredNoteName = (noteIndex) => OVERLAY_NOTE_NAME_PRIORITY[mod12(noteIndex)] ?? "C";
 const instrumentShapeCache = new Map();
+
+function getFretboardOrientationFrame(boardWidth, boardHeight) {
+  const orientation = Number(state.fretboardOrientation);
+  if (orientation === FRETBOARD_ORIENTATION_TOP) {
+    return {
+      viewWidth: boardHeight,
+      viewHeight: boardWidth,
+      transform: `translate(${boardHeight} 0) rotate(90)`,
+    };
+  }
+  if (orientation === FRETBOARD_ORIENTATION_RIGHT) {
+    return {
+      viewWidth: boardWidth,
+      viewHeight: boardHeight,
+      transform: `translate(${boardWidth} ${boardHeight}) rotate(180)`,
+    };
+  }
+  return {
+    viewWidth: boardWidth,
+    viewHeight: boardHeight,
+    transform: "",
+  };
+}
+
+function getBoardContentLayer(svg) {
+  if (!(svg instanceof SVGSVGElement)) {
+    return null;
+  }
+  const layer = svg.querySelector(".board-content");
+  return layer instanceof SVGGElement ? layer : svg;
+}
+
+function getTextCounterRotationDegrees() {
+  const orientation = Number(state.fretboardOrientation);
+  if (orientation === FRETBOARD_ORIENTATION_TOP) {
+    return -90;
+  }
+  if (orientation === FRETBOARD_ORIENTATION_RIGHT) {
+    return 180;
+  }
+  return 0;
+}
+
+function getSvgTextTransformValue(x, y) {
+  const degrees = getTextCounterRotationDegrees();
+  if (!degrees) {
+    return "";
+  }
+  return `rotate(${degrees} ${x} ${y})`;
+}
+
+function getSvgTextTransformAttr(x, y) {
+  const transformValue = getSvgTextTransformValue(x, y);
+  if (!transformValue) {
+    return "";
+  }
+  return ` transform="${transformValue}"`;
+}
+
+function getBoardOrientationName() {
+  const orientation = Number(state.fretboardOrientation);
+  if (orientation === FRETBOARD_ORIENTATION_TOP) {
+    return "top";
+  }
+  if (orientation === FRETBOARD_ORIENTATION_RIGHT) {
+    return "right";
+  }
+  return "left";
+}
+
+function getNextFretboardOrientation(currentOrientation = state.fretboardOrientation) {
+  const normalized = Number(currentOrientation);
+  if (normalized === FRETBOARD_ORIENTATION_LEFT) {
+    return FRETBOARD_ORIENTATION_TOP;
+  }
+  if (normalized === FRETBOARD_ORIENTATION_TOP) {
+    return FRETBOARD_ORIENTATION_RIGHT;
+  }
+  return FRETBOARD_ORIENTATION_LEFT;
+}
 
 function projectShapePositionsToInstrument(positions, anchorString, sourceStart, sourceEnd) {
   const normalizedAnchor = Number(anchorString);
@@ -1010,7 +1206,7 @@ function buildSketchInlayDot(cx, cy, r, seedBase) {
   `;
 }
 
-function createFretboardInlays(fretCount, fretWidth) {
+function createFretboardInlays(fretStart, fretEnd, fretWidth) {
   const bottomString = 0;
   const topString = getStringCount() - 1;
   const centerY = (getStringY(bottomString) + getStringY(topString)) / 2;
@@ -1020,7 +1216,7 @@ function createFretboardInlays(fretCount, fretWidth) {
   const yLower = lerp(getStringY(topString), getStringY(bottomString), 0.65);
   const inlays = [];
 
-  for (let fret = 1; fret <= fretCount; fret += 1) {
+  for (let fret = fretStart; fret <= fretEnd; fret += 1) {
     const centerX = getFretX(fret) + fretWidth / 2;
     if (FRET_MARKER_SINGLE_FRETS.has(fret)) {
       inlays.push(
@@ -1059,6 +1255,9 @@ function detectBrowserUiLanguage() {
   ]
     .filter(Boolean)
     .map((value) => `${value}`.toLowerCase());
+  if (languages.some((value) => value.includes("hant") || value.startsWith("zh-tw") || value.startsWith("zh-hk") || value.startsWith("zh-mo"))) {
+    return "zh-hant";
+  }
   return languages.some((value) => value.startsWith("zh")) ? "zh" : "en";
 }
 
@@ -1206,7 +1405,8 @@ function ensureFullAccess(featureKey) {
 }
 
 function applyTranslations() {
-  document.documentElement.lang = state.language === "zh" ? "zh-Hans" : "en";
+  document.documentElement.lang =
+    state.language === "zh" ? "zh-Hans" : state.language === "zh-hant" ? "zh-Hant" : "en";
   document.title = t("meta.title");
 
   document.querySelectorAll("[data-i18n]").forEach((element) => {
@@ -1247,6 +1447,28 @@ function applyTranslations() {
   syncVideoRendererUi();
   refreshAccessUi();
   syncGuitarToneControls();
+}
+
+function shouldUseMobileBoardToolbarPlacement() {
+  return typeof window !== "undefined" && typeof window.matchMedia === "function"
+    ? window.matchMedia(MOBILE_LAYOUT_MEDIA_QUERY).matches
+    : false;
+}
+
+function syncBoardInlineControlsPlacement() {
+  if (!dom.boardInlineControls || !dom.mobileBoardInlineControlsSlot || !dom.boardPanel) {
+    return;
+  }
+  if (shouldUseMobileBoardToolbarPlacement()) {
+    if (dom.boardInlineControls.parentElement !== dom.mobileBoardInlineControlsSlot) {
+      dom.mobileBoardInlineControlsSlot.appendChild(dom.boardInlineControls);
+    }
+    return;
+  }
+  const boardFretboard = dom.boardPanel.querySelector(".board-panel__fretboard");
+  if (boardFretboard && dom.boardInlineControls.parentElement !== boardFretboard) {
+    boardFretboard.appendChild(dom.boardInlineControls);
+  }
 }
 
 function setPaletteOpen(nextOpen) {
@@ -1875,6 +2097,7 @@ let longPressTargetId = null;
 let longPressSuppressedId = null;
 let longPressPointer = { x: 0, y: 0 };
 let enharmonicMenuState = null;
+let pendingSvgClick = null;
 
 const overlays = [];
 let dragShapeId = null;
@@ -2051,12 +2274,16 @@ const SAMPLE_LIBRARY = {
   },
 };
 const AUDIO_UNLOCK_EVENTS = ["pointerdown", "keydown", "touchstart"];
+const CLICK_PREVIEW_DURATION_MS = 420;
+const CLICK_PREVIEW_VELOCITY = 108;
+const SVG_CLICK_DELAY_MS = 220;
 const realtimeAudio = {
   context: null,
   masterGain: null,
   buffers: new Map(),
   loadPromises: new Map(),
   activeVoices: new Map(),
+  stopTimers: new Map(),
   unlockBound: false,
 };
 
@@ -2473,6 +2700,11 @@ function pickBestSampleForMidi(voiceId, midiNote, velocity = 100) {
 }
 
 function stopRealtimeAudioVoice(eventKey, { immediate = false } = {}) {
+  const activeTimer = realtimeAudio.stopTimers.get(eventKey);
+  if (activeTimer) {
+    clearTimeout(activeTimer);
+    realtimeAudio.stopTimers.delete(eventKey);
+  }
   const activeVoice = realtimeAudio.activeVoices.get(eventKey);
   if (!activeVoice) {
     return;
@@ -2502,6 +2734,19 @@ function stopAllRealtimeAudioVoices() {
   Array.from(realtimeAudio.activeVoices.keys()).forEach((eventKey) => {
     stopRealtimeAudioVoice(eventKey, { immediate: true });
   });
+}
+
+function scheduleRealtimeAudioStop(eventKey, durationMs = CLICK_PREVIEW_DURATION_MS) {
+  const safeDurationMs = Math.max(40, Math.round(Number(durationMs) || 0));
+  const activeTimer = realtimeAudio.stopTimers.get(eventKey);
+  if (activeTimer) {
+    clearTimeout(activeTimer);
+  }
+  const timer = window.setTimeout(() => {
+    realtimeAudio.stopTimers.delete(eventKey);
+    stopRealtimeAudioVoice(eventKey);
+  }, safeDurationMs);
+  realtimeAudio.stopTimers.set(eventKey, timer);
 }
 
 function getMidiNoteFromRealtimePosition(position) {
@@ -2575,6 +2820,32 @@ async function playRealtimeAudioNote(eventKey, position, velocity = 100) {
   });
 }
 
+function getBoardClickPreviewEventKey(boardIndex, stringIndex, fret) {
+  return `click:${normalizeBoardIndex(boardIndex)}:${Number(stringIndex)}:${Number(fret)}`;
+}
+
+function previewBoardCellAudio(boardIndex, stringIndex, fret, velocity = CLICK_PREVIEW_VELOCITY) {
+  if (!Number.isInteger(Number(stringIndex)) || !Number.isFinite(Number(fret))) {
+    return;
+  }
+  const normalizedStringIndex = Number(stringIndex);
+  const normalizedFret = Number(fret);
+  if (!isValidRealtimePosition(normalizedStringIndex, normalizedFret)) {
+    return;
+  }
+  const eventKey = getBoardClickPreviewEventKey(boardIndex, normalizedStringIndex, normalizedFret);
+  void playRealtimeAudioNote(
+    eventKey,
+    {
+      stringIndex: normalizedStringIndex,
+      fret: normalizedFret,
+    },
+    velocity
+  ).then(() => {
+    scheduleRealtimeAudioStop(eventKey);
+  });
+}
+
 function warmupRealtimeAudioForActiveVoice() {
   const voiceId = getRealtimeAudioVoiceId();
   const voice = SAMPLE_LIBRARY[voiceId];
@@ -2632,6 +2903,7 @@ function bindFretboardSvgInteractions(svg) {
     return;
   }
   svg.addEventListener("click", handleSvgClick);
+  svg.addEventListener("dblclick", handleSvgDoubleClick);
   svg.addEventListener("pointerdown", handleMarkerPointerDown);
   svg.addEventListener("pointerup", handlePointerUp);
   svg.addEventListener("pointerleave", handlePointerUp);
@@ -2698,17 +2970,54 @@ function sanitizeFretCount(nextCount) {
   return Math.min(MAX_FRET_COUNT, Math.max(1, Math.round(Number(nextCount) || 1)));
 }
 
-function setFretCount(nextCount) {
-  const sanitized = sanitizeFretCount(nextCount);
-  if (state.fretCount === sanitized) {
+function sanitizeFretStart(nextStart, maxFret = state.fretCount) {
+  return Math.max(1, Math.min(Math.round(Number(nextStart) || 1), Math.max(1, Math.round(Number(maxFret) || 1))));
+}
+
+function syncFretRangeInputs() {
+  if (dom.fretStartInput) {
+    dom.fretStartInput.max = `${state.fretCount}`;
+    dom.fretStartInput.value = `${getVisibleFretStart()}`;
+  }
+  if (dom.fretEndInput) {
+    dom.fretEndInput.min = `${getVisibleFretStart()}`;
+    dom.fretEndInput.value = `${state.fretCount}`;
+  }
+}
+
+function applyFretRange(nextStart, nextEnd, { markCustom = false } = {}) {
+  const sanitizedEnd = sanitizeFretCount(nextEnd);
+  const sanitizedStart = sanitizeFretStart(nextStart, sanitizedEnd);
+  if (state.fretStart === sanitizedStart && state.fretCount === sanitizedEnd) {
+    if (markCustom) {
+      state.hasCustomFretRange = true;
+    }
+    syncFretRangeInputs();
     return false;
   }
-  state.fretCount = sanitized;
+  state.fretStart = sanitizedStart;
+  state.fretCount = sanitizedEnd;
+  if (markCustom) {
+    state.hasCustomFretRange = true;
+  }
+  syncFretRangeInputs();
   renderGrid();
   renderMarkers();
   renderOverlays();
   renderRealtimeMarkers();
   return true;
+}
+
+function setFretCount(nextCount, options = {}) {
+  return applyFretRange(state.fretStart, nextCount, options);
+}
+
+function setFretStart(nextStart, options = {}) {
+  return applyFretRange(nextStart, state.fretCount, options);
+}
+
+function setFretRange(nextStart, nextEnd, options = {}) {
+  return applyFretRange(nextStart, nextEnd, options);
 }
 
 function getEnharmonicOptions(noteIndex) {
@@ -2754,6 +3063,54 @@ function toggleMarker(boardIndex, stringIndex, fret) {
   renderMarkers();
   updateMarkerHint();
   renderRecorderPanel();
+}
+
+function ensureMarker(boardIndex, stringIndex, fret, { recordHistory = true } = {}) {
+  const normalizedBoardIndex = normalizeBoardIndex(boardIndex);
+  const board = getBoardState(normalizedBoardIndex);
+  const id = `${stringIndex}-${fret}`;
+  let created = false;
+  if (!board.markers[id]) {
+    if (recordHistory) {
+      rememberBoardHistory(normalizedBoardIndex);
+    }
+    board.markers[id] = {
+      id,
+      stringIndex,
+      fret,
+      noteIndex: getPositionNoteIndex(stringIndex, fret, getActiveTuning()),
+      interval: "",
+      customLabel: null,
+    };
+    created = true;
+  }
+  board.selectedId = id;
+  return {
+    id,
+    created,
+  };
+}
+
+function setRecorderRootMarker(boardIndex, markerId) {
+  const normalizedBoardIndex = normalizeBoardIndex(boardIndex);
+  const board = getBoardState(normalizedBoardIndex);
+  if (!board.markers[markerId]) {
+    return false;
+  }
+  recorder.rootMarkerId = markerId;
+  recorder.output = "";
+  renderMarkers();
+  renderRecorderPanel();
+  return true;
+}
+
+function clearPendingSvgClick() {
+  if (!pendingSvgClick?.timer) {
+    pendingSvgClick = null;
+    return;
+  }
+  clearTimeout(pendingSvgClick.timer);
+  pendingSvgClick = null;
 }
 
 function closeEnharmonicMenu() {
@@ -2884,6 +3241,9 @@ function renderGrid() {
     return;
   }
   const { fretCount } = state;
+  const visibleFretStart = getVisibleFretStart();
+  const visibleFretNumbers = Array.from({ length: getVisibleFretCount() }, (_, index) => visibleFretStart + index);
+  const showOpenFret = isOpenFretVisible();
   const tuning = getActiveTuning();
   const stringCount = getStringCount();
   const width = DIMENSIONS.fretSpacing;
@@ -2893,6 +3253,7 @@ function renderGrid() {
   const boardHeight = Math.max(bottomY - topY, 0);
   const totalWidth = getTotalBoardWidth(fretCount);
   const totalHeight = bottomY + DIMENSIONS.boardPadding + labelOffset;
+  const orientationFrame = getFretboardOrientationFrame(totalWidth, totalHeight);
   const clipId = "fretboardClip";
   const nutX = getNutX(fretCount);
   const openAreaX = getOpenAreaX(fretCount);
@@ -2901,7 +3262,7 @@ function renderGrid() {
   const stringLines = tuning.map((_, index) => {
     const y = getStringY(index);
     const x1 = fretboardAreaX;
-    const x2 = fretboardAreaX + width * fretCount;
+    const x2 = fretboardAreaX + width * visibleFretNumbers.length;
     const cx = (x1 + x2) / 2 + sketchJitter(200 + index, 12);
     const cy = y + sketchJitter(400 + index, 3);
     const y1 = y + sketchJitter(600 + index, 1.8);
@@ -2909,50 +3270,44 @@ function renderGrid() {
     return `<path class="string-line" d="M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}"></path>`;
   });
 
-  const fretLines = Array.from({ length: fretCount }).map(
-    (_, fretIndex) => {
-      const x = getFretX(fretIndex + 1);
-      const xTop = x + sketchJitter(1000 + fretIndex, 1.2);
-      const xBottom = x + sketchJitter(1200 + fretIndex, 1.2);
-      const cx = x + sketchJitter(1400 + fretIndex, 4);
-      const cy = (topY + bottomY) / 2 + sketchJitter(1600 + fretIndex, 8);
+  const fretLines = visibleFretNumbers.map((fretNumber, fretIndex) => {
+      const x = getFretX(fretNumber);
+      const xTop = x + sketchJitter(1000 + fretNumber, 1.2);
+      const xBottom = x + sketchJitter(1200 + fretNumber, 1.2);
+      const cx = x + sketchJitter(1400 + fretNumber, 4);
+      const cy = (topY + bottomY) / 2 + sketchJitter(1600 + fretNumber, 8);
       return `<path class="fret-line" d="M ${xTop} ${topY} Q ${cx} ${cy} ${xBottom} ${bottomY}"></path>`;
-    }
-  );
+    });
 
-  const fretLabels = Array.from({ length: fretCount }).map((_, index) => {
-    const fretNumber = index + 1;
-    return `<text class="fret-label" x="${getFretX(fretNumber) + width / 2}" y="${
-      bottomY + labelOffset - 6
-    }">${fretNumber}</text>`;
+  const fretLabels = visibleFretNumbers.map((fretNumber) => {
+    const x = getFretX(fretNumber) + width / 2;
+    const y =
+      Number(state.fretboardOrientation) === FRETBOARD_ORIENTATION_RIGHT
+        ? Math.max(14, topY - 10)
+        : bottomY + labelOffset - 6;
+    return `<text class="fret-label" x="${x}" y="${y}"${getSvgTextTransformAttr(x, y)}>${fretNumber}</text>`;
   });
 
-  const openCells = tuning.map((_, stringIndex) => createOpenCell(stringIndex));
-  const fretCells = tuning.flatMap((_, stringIndex) =>
-    Array.from({ length: fretCount }).map((_, index) => createFretCell(stringIndex, index + 1))
-  );
-  const fretboardInlays = createFretboardInlays(fretCount, width);
+  const openCells = showOpenFret ? tuning.map((_, stringIndex) => createOpenCell(stringIndex)) : [];
+  const fretCells = tuning.flatMap((_, stringIndex) => visibleFretNumbers.map((fretNumber) => createFretCell(stringIndex, fretNumber)));
+  const fretboardInlays = createFretboardInlays(visibleFretStart, fretCount, width);
 
-  const openNoteLabels = tuning.map((_, stringIndex) => {
+  const openNoteLabels = showOpenFret ? tuning.map((_, stringIndex) => {
     const note = getNoteName(getPositionNoteIndex(stringIndex, 0, tuning), state.notePreference);
-    return `<text class="open-note" x="${getOpenAreaX(fretCount) + DIMENSIONS.openWidth / 2}" y="${
-      getStringY(stringIndex) + 5
-    }">${note}</text>`;
-  });
+    const x = getOpenAreaX(fretCount) + DIMENSIONS.openWidth / 2;
+    const y = getStringY(stringIndex) + 5;
+    return `<text class="open-note" x="${x}" y="${y}"${getSvgTextTransformAttr(x, y)}>${note}</text>`;
+  }) : [];
 
-  const markup = `
-    <defs>
-      <clipPath id="${clipId}">
-        <rect x="0" y="${topY}" width="${totalWidth}" height="${boardHeight}"></rect>
-      </clipPath>
-    </defs>
+  const boardMarkup = `
     <g clip-path="url(#${clipId})">
-      <rect class="open-area" x="${openAreaX}" y="${topY}" width="${DIMENSIONS.openWidth}" height="${boardHeight}"></rect>
-      <rect class="fretboard-area" x="${fretboardAreaX}" y="${topY}" width="${width * fretCount}" height="${boardHeight}"></rect>
+      ${showOpenFret ? `<rect class="open-area" x="${openAreaX}" y="${topY}" width="${DIMENSIONS.openWidth}" height="${boardHeight}"></rect>` : ""}
+      <rect class="fretboard-area" x="${fretboardAreaX}" y="${topY}" width="${width * visibleFretNumbers.length}" height="${boardHeight}"></rect>
       ${fretboardInlays}
     </g>
+    ${!showOpenFret ? `<line class="nut-line" x1="${fretboardAreaX}" y1="${topY}" x2="${fretboardAreaX}" y2="${bottomY}"></line>` : ""}
     ${fretLines.join("")}
-    <line class="nut-line" x1="${nutX}" y1="${topY}" x2="${nutX}" y2="${bottomY}"></line>
+    ${showOpenFret ? `<line class="nut-line" x1="${nutX}" y1="${topY}" x2="${nutX}" y2="${bottomY}"></line>` : ""}
     ${openCells.join("")}
     ${fretCells.join("")}
     ${openNoteLabels.join("")}
@@ -2960,11 +3315,22 @@ function renderGrid() {
     ${stringLines.join("")}
   `;
   svgs.forEach((svg) => {
-    svg.setAttribute("viewBox", `0 0 ${totalWidth} ${totalHeight}`);
+    const transformAttr = orientationFrame.transform ? ` transform="${orientationFrame.transform}"` : "";
+    svg.dataset.boardOrientation = getBoardOrientationName();
+    svg.setAttribute("viewBox", `0 0 ${orientationFrame.viewWidth} ${orientationFrame.viewHeight}`);
     svg.setAttribute("width", "100%");
     svg.setAttribute("height", "100%");
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    svg.innerHTML = markup;
+    svg.innerHTML = `
+      <defs>
+        <clipPath id="${clipId}">
+          <rect x="0" y="${topY}" width="${totalWidth}" height="${boardHeight}"></rect>
+        </clipPath>
+      </defs>
+      <g class="board-content"${transformAttr}>
+        ${boardMarkup}
+      </g>
+    `;
   });
 }
 
@@ -3443,35 +3809,19 @@ function getCellFromClientPoint(clientX, clientY, svg) {
   if (!(svg instanceof SVGSVGElement)) {
     return null;
   }
-  const matrix = svg.getScreenCTM();
-  if (!matrix) {
+  const target = document.elementFromPoint(clientX, clientY);
+  if (!(target instanceof Element)) {
     return null;
   }
-  const point = svg.createSVGPoint();
-  point.x = clientX;
-  point.y = clientY;
-  const svgPoint = point.matrixTransform(matrix.inverse());
-
-  const stringSpacing = getStringSpacing();
-  const topY = getStringY(getStringCount() - 1) - stringSpacing / 2;
-  const bottomY = getStringY(0) + stringSpacing / 2;
-  if (svgPoint.y < topY || svgPoint.y > bottomY) {
+  const cell = target.closest(".cell");
+  if (!(cell instanceof Element) || !svg.contains(cell)) {
     return null;
   }
-
-  const totalWidth = getTotalBoardWidth(state.fretCount);
-  const normalizedX = state.fretboardFlipped ? totalWidth - svgPoint.x : svgPoint.x;
-  let fret = 0;
-  if (normalizedX > DIMENSIONS.openWidth) {
-    const fretIndex = Math.floor((normalizedX - DIMENSIONS.openWidth) / DIMENSIONS.fretSpacing);
-    fret = Math.min(state.fretCount, Math.max(1, fretIndex + 1));
+  const stringIndex = Number(cell.dataset.string);
+  const fret = Number(cell.dataset.fret);
+  if (Number.isNaN(stringIndex) || Number.isNaN(fret)) {
+    return null;
   }
-
-  const visualIndex = Math.min(
-    getStringCount() - 1,
-    Math.max(0, Math.floor((svgPoint.y - topY) / stringSpacing))
-  );
-  const stringIndex = getStringCount() - 1 - visualIndex;
   return { stringIndex, fret };
 }
 
@@ -3599,10 +3949,11 @@ const EXPORT_SVG_INLINE_STYLE = `
   .marker-group { pointer-events: none; }
   .marker-dot { fill: #fff; stroke: #111; stroke-width: 2.2; }
   .marker-dot.marker-open { fill: #fff7d1; stroke: #111; stroke-width: 1.5; }
-  .marker-recorder-root { fill: #ede3a3; stroke-width: 2.6; }
+  .marker-dot.marker-recorder-root { fill: #ede3a3; stroke-width: 2.6; }
   .marker-highlight { fill: none; stroke: #111; stroke-width: 2.4; stroke-dasharray: 4 4; }
-  .marker-note { font-size: 0.85rem; font-weight: 600; fill: #111; text-anchor: middle; }
+  .marker-note { font-size: 0.85rem; font-weight: 600; fill: #111; text-anchor: middle; dominant-baseline: middle; }
   .marker-interval { font-size: 0.65rem; fill: #777; text-anchor: middle; }
+  .realtime-note-text { fill: #111; font-size: 0.82rem; font-weight: 600; text-anchor: middle; dominant-baseline: middle; }
   .overlay-group { pointer-events: none; }
   .overlay-dot { fill: #fff; stroke: #111; stroke-width: 2.2; }
   .overlay-root { fill: #ede3a3; stroke: #111; stroke-width: 2; }
@@ -3811,11 +4162,11 @@ function normalizePlacementAnchorFret(anchorFret, positions) {
     .map((entry) => Number(entry?.fret))
     .filter((value) => Number.isFinite(value));
   if (!offsets.length) {
-    return Math.max(0, baseFret);
+    return Math.max(getVisibleMinimumFret(), baseFret);
   }
   const minOffset = Math.min(...offsets);
   const maxOffset = Math.max(...offsets);
-  const minAnchor = Math.max(0, -minOffset);
+  const minAnchor = Math.max(getVisibleMinimumFret(), getVisibleMinimumFret() - minOffset);
   const maxAnchor = Math.max(0, state.fretCount - maxOffset);
   if (maxAnchor < minAnchor) {
     return minAnchor;
@@ -3986,13 +4337,17 @@ function renderMarkers() {
     const board = getBoardState(boardIndex);
     Object.values(board.markers).forEach((marker) => {
       const { stringIndex, fret } = marker;
+      if (!isBoardFretVisible(fret)) {
+        return;
+      }
       const centerX = getMarkerCenterX(fret);
       const centerY = getStringY(stringIndex);
       const isRecorderRoot =
         boardIndex === state.activeBoardIndex && recorder.rootMarkerId === marker.id;
       const noteLabel = getMarkerDisplayLabel(marker);
+      const noteTransform = getSvgTextTransformAttr(centerX, centerY);
       const intervalLabel = marker.interval
-        ? `<text class="marker-interval" x="${centerX}" y="${centerY + 20}">${marker.interval}</text>`
+        ? `<text class="marker-interval" x="${centerX}" y="${centerY + 19}"${getSvgTextTransformAttr(centerX, centerY + 19)}>${marker.interval}</text>`
         : "";
 
       const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -4000,10 +4355,10 @@ function renderMarkers() {
       group.dataset.id = `${stringIndex}-${fret}`;
       group.innerHTML = `
         <circle class="marker-dot marker-on ${fret === 0 ? "marker-open" : ""} ${isRecorderRoot ? "marker-recorder-root" : ""}" cx="${centerX}" cy="${centerY}" r="16"></circle>
-        <text class="marker-note" x="${centerX}" y="${centerY + 6}">${noteLabel}</text>
+        <text class="marker-note" x="${centerX}" y="${centerY}"${noteTransform}>${noteLabel}</text>
         ${intervalLabel}
       `;
-      svg.appendChild(group);
+      getBoardContentLayer(svg)?.appendChild(group);
     });
   });
   renderOverlays();
@@ -4015,7 +4370,12 @@ function calculateOverlayPositions(shape, anchorString, anchorFret) {
     .map((offset) => {
       const stringIndex = anchorString + offset.string;
       const fret = anchorFret + offset.fret;
-      if (stringIndex < 0 || stringIndex >= getStringCount() || fret < 0 || fret > state.fretCount) {
+      if (
+        stringIndex < 0 ||
+        stringIndex >= getStringCount() ||
+        !isBoardFretVisible(fret) ||
+        fret > state.fretCount
+      ) {
         return null;
       }
       return { stringIndex, fret, interval: offset.interval };
@@ -4257,6 +4617,10 @@ function appendOverlayDot(
   );
   noteText.setAttribute("x", `${centerX}`);
   noteText.setAttribute("y", `${centerY + 1}`);
+  const noteTransform = getSvgTextTransformValue(centerX, centerY + 1);
+  if (noteTransform) {
+    noteText.setAttribute("transform", noteTransform);
+  }
   noteText.textContent = labels.noteName;
   group.appendChild(noteText);
 }
@@ -4278,7 +4642,7 @@ function renderOverlays() {
     svgs.forEach((svg) => {
       const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
       group.classList.add("overlay-group");
-      overlay.positions.forEach((pos) => {
+      overlay.positions.filter((pos) => isBoardFretVisible(pos?.fret)).forEach((pos) => {
         appendOverlayDot(group, {
           pos,
           shape,
@@ -4288,7 +4652,7 @@ function renderOverlays() {
           overlayId: overlay.id,
         });
       });
-      svg.appendChild(group);
+      getBoardContentLayer(svg)?.appendChild(group);
     });
   });
 
@@ -4305,7 +4669,7 @@ function renderOverlays() {
   svgs.forEach((svg) => {
     const previewGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
     previewGroup.classList.add("overlay-preview-group");
-    dragOverlayPreview.positions.forEach((pos) => {
+    dragOverlayPreview.positions.filter((pos) => isBoardFretVisible(pos?.fret)).forEach((pos) => {
       appendOverlayDot(previewGroup, {
         pos,
         shape: previewShape,
@@ -4315,7 +4679,7 @@ function renderOverlays() {
         preview: true,
       });
     });
-    svg.appendChild(previewGroup);
+    getBoardContentLayer(svg)?.appendChild(previewGroup);
   });
 }
 
@@ -4388,7 +4752,9 @@ function resolveRealtimePosition(payload = {}) {
   const midiHistoryKey = `${midiNote}:ch:${Number(payload.channel || 0)}`;
   const previousPosition = realtime.lastMidiPositions.get(midiHistoryKey) ?? null;
   const preferredPosition = getPreferredPositionFromChannel(payload.channel) ?? previousPosition;
-  const positions = getTabPositionsFromMidi(midiNote, state.fretCount, getActiveOpenMidi());
+  const positions = getTabPositionsFromMidi(midiNote, state.fretCount, getActiveOpenMidi()).filter((position) =>
+    isBoardFretVisible(position?.fret)
+  );
   const best = pickBestTabPosition(positions, {
     preferredPosition,
     previousFret: previousPosition?.fret,
@@ -4812,7 +5178,9 @@ function renderRealtimeMarkers() {
     realtime.fxTrails.forEach((trail) => {
       if (
         !isValidRealtimePosition(trail.fromStringIndex, trail.fromFret) ||
-        !isValidRealtimePosition(trail.toStringIndex, trail.toFret)
+        !isValidRealtimePosition(trail.toStringIndex, trail.toFret) ||
+        !isBoardFretVisible(trail.fromFret) ||
+        !isBoardFretVisible(trail.toFret)
       ) {
         return;
       }
@@ -4825,7 +5193,7 @@ function renderRealtimeMarkers() {
       path.setAttribute("d", `M ${x1} ${y1} Q ${(x1 + x2) / 2} ${(y1 + y2) / 2 - 10} ${x2} ${y2}`);
       trailGroup.appendChild(path);
     });
-    svg.appendChild(trailGroup);
+    getBoardContentLayer(svg)?.appendChild(trailGroup);
   });
 
   if (!realtime.markers.size) {
@@ -4835,7 +5203,7 @@ function renderRealtimeMarkers() {
   const markers = Array.from(realtime.markers.values());
   svgs.forEach((svg) => {
     markers.forEach((marker) => {
-      if (!isValidRealtimePosition(marker.stringIndex, marker.fret)) {
+      if (!isValidRealtimePosition(marker.stringIndex, marker.fret) || !isBoardFretVisible(marker.fret)) {
         return;
       }
       const centerX = getMarkerCenterX(marker.fret);
@@ -4845,6 +5213,7 @@ function renderRealtimeMarkers() {
       const fxSet = new Set(Array.isArray(marker.fx) ? marker.fx : []);
       const hasBendFx = fxSet.has("bend");
       const hasGlissFx = fxSet.has("gliss");
+      const noteTransform = getSvgTextTransformAttr(centerX, centerY);
       const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
       group.classList.add("realtime-marker-group");
       group.innerHTML = `
@@ -4854,12 +5223,12 @@ function renderRealtimeMarkers() {
         ${isFxFlash && hasGlissFx ? `<path class="realtime-gliss-slash" d="M ${centerX - 15} ${centerY + 14} L ${centerX + 15} ${centerY - 14}"></path>` : ""}
         <circle class="realtime-dot${isOnsetFlash ? " realtime-dot--flash" : ""}" cx="${centerX}" cy="${centerY}" r="19"></circle>
         <circle class="realtime-dot-core${isOnsetFlash ? " realtime-dot-core--flash" : ""}" cx="${centerX}" cy="${centerY}" r="14"></circle>
-        <text class="realtime-note-text" x="${centerX}" y="${centerY + 6}">${getNoteName(
+        <text class="realtime-note-text" x="${centerX}" y="${centerY}"${noteTransform}>${getNoteName(
           getPositionNoteIndex(marker.stringIndex, marker.fret, getActiveTuning()),
           state.notePreference
         )}</text>
       `;
-      svg.appendChild(group);
+      getBoardContentLayer(svg)?.appendChild(group);
     });
   });
 }
@@ -5393,10 +5762,7 @@ function handleRecorderMarkerListClick(event) {
   if (!board.markers[markerId]) {
     return;
   }
-  recorder.rootMarkerId = markerId;
-  recorder.output = "";
-  renderMarkers();
-  renderRecorderPanel();
+  setRecorderRootMarker(state.activeBoardIndex, markerId);
 }
 
 function exportRecordedShape() {
@@ -5461,6 +5827,28 @@ function updateMarkerHint() {
   dom.markerHint.innerHTML = t("marker.hint", { count });
 }
 
+function runSvgClickAction(key, action) {
+  if (pendingSvgClick?.timer) {
+    if (pendingSvgClick.key !== key && typeof pendingSvgClick.action === "function") {
+      clearTimeout(pendingSvgClick.timer);
+      const pendingAction = pendingSvgClick.action;
+      pendingSvgClick = null;
+      pendingAction();
+    } else {
+      clearTimeout(pendingSvgClick.timer);
+      pendingSvgClick = null;
+    }
+  }
+  pendingSvgClick = {
+    key,
+    action,
+    timer: window.setTimeout(() => {
+      pendingSvgClick = null;
+      action();
+    }, SVG_CLICK_DELAY_MS),
+  };
+}
+
 function handleSvgClick(event) {
   const boardIndex = getBoardIndexFromEvent(event);
   setActiveBoard(boardIndex);
@@ -5469,7 +5857,9 @@ function handleSvgClick(event) {
     const stringIndex = Number(overlayDot.dataset.string);
     const fret = Number(overlayDot.dataset.fret);
     if (!Number.isNaN(stringIndex) && !Number.isNaN(fret)) {
-      removeOverlayPosition(overlayDot.dataset.overlayId, stringIndex, fret);
+      runSvgClickAction(`overlay:${overlayDot.dataset.overlayId}:${stringIndex}:${fret}`, () => {
+        removeOverlayPosition(overlayDot.dataset.overlayId, stringIndex, fret);
+      });
       return;
     }
   }
@@ -5489,7 +5879,38 @@ function handleSvgClick(event) {
     longPressSuppressedId = null;
     return;
   }
-  toggleMarker(boardIndex, stringIndex, fret);
+  runSvgClickAction(`cell:${boardIndex}:${id}`, () => {
+    const board = getBoardState(boardIndex);
+    if (!board.markers[id]) {
+      previewBoardCellAudio(boardIndex, stringIndex, fret);
+    }
+    toggleMarker(boardIndex, stringIndex, fret);
+  });
+}
+
+function handleSvgDoubleClick(event) {
+  clearPendingSvgClick();
+  const target = event.target.closest(".cell");
+  if (!target) {
+    return;
+  }
+  const boardIndex = getBoardIndexFromEvent(event);
+  setActiveBoard(boardIndex, { resetRecorder: false });
+  const stringIndex = Number(target.dataset.string);
+  const fret = Number(target.dataset.fret);
+  if (Number.isNaN(stringIndex) || Number.isNaN(fret)) {
+    return;
+  }
+  const markerId = `${stringIndex}-${fret}`;
+  const board = getBoardState(boardIndex);
+  if (!board.markers[markerId]) {
+    ensureMarker(boardIndex, stringIndex, fret);
+    updateMarkerHint();
+  } else {
+    board.selectedId = markerId;
+  }
+  previewBoardCellAudio(boardIndex, stringIndex, fret);
+  setRecorderRootMarker(boardIndex, markerId);
 }
 
 function clearMarkers(boardIndex = state.activeBoardIndex, { recordHistory = true } = {}) {
@@ -5510,13 +5931,29 @@ function clearMarkers(boardIndex = state.activeBoardIndex, { recordHistory = tru
 }
 
 function bindControls() {
+  syncBoardInlineControlsPlacement();
   syncFretboardCount();
+  syncFretRangeInputs();
 
   dom.boardCountInput?.addEventListener("input", (event) => {
     if (!event?.target) {
       return;
     }
     setBoardCount(event.target.value);
+  });
+
+  dom.fretStartInput?.addEventListener("input", (event) => {
+    if (!event?.target) {
+      return;
+    }
+    setFretStart(event.target.value, { markCustom: true });
+  });
+
+  dom.fretEndInput?.addEventListener("input", (event) => {
+    if (!event?.target) {
+      return;
+    }
+    setFretCount(event.target.value, { markCustom: true });
   });
 
   dom.notePreferenceSelect?.addEventListener("change", (event) => {
@@ -5543,17 +5980,27 @@ function bindControls() {
     clearOverlays();
   });
   dom.flipBoardBtn?.addEventListener("click", () => {
-    state.fretboardFlipped = !state.fretboardFlipped;
+    state.fretboardOrientation = getNextFretboardOrientation();
+    const nextOrientation = Number(state.fretboardOrientation);
+    if (!state.hasCustomFretRange) {
+      if (nextOrientation === FRETBOARD_ORIENTATION_TOP) {
+        if (!setFretRange(DEFAULT_LANDSCAPE_FRET_START, DEFAULT_LANDSCAPE_FRET_START + DEFAULT_TOP_FRET_SPAN - 1)) {
+          renderGrid();
+          renderMarkers();
+          renderOverlays();
+        }
+        return;
+      }
+      if (!setFretRange(DEFAULT_LANDSCAPE_FRET_START, DEFAULT_LANDSCAPE_FRET_END)) {
+        renderGrid();
+        renderMarkers();
+        renderOverlays();
+      }
+      return;
+    }
     renderGrid();
     renderMarkers();
     renderOverlays();
-  });
-
-  dom.addBoardBtn?.addEventListener("click", () => {
-    setFretCount(state.fretCount + 1);
-  });
-  dom.removeBoardBtn?.addEventListener("click", () => {
-    setFretCount(state.fretCount - 1);
   });
 
   dom.languageSwitch?.addEventListener("click", (event) => {
@@ -5736,6 +6183,7 @@ function bindControls() {
   window.addEventListener("pointermove", handleShapePointerMove, { passive: false });
   window.addEventListener("pointerup", handleShapePointerUp, { passive: false });
   window.addEventListener("pointercancel", handleShapePointerCancel, { passive: false });
+  window.addEventListener("resize", syncBoardInlineControlsPlacement);
   dom.overlayList?.addEventListener("click", handleOverlayListClick);
   dom.clearOverlaysBtn?.addEventListener("click", clearOverlays);
 
@@ -5783,6 +6231,7 @@ function init() {
     dom.guitarToneSelect.value = normalizeGuitarTone(state.guitarTone);
   }
   state.isFullAccess = hasFretlabFullAccess();
+  syncFretRangeInputs();
   syncFretboardCount();
   applyTranslations();
   renderGrid();

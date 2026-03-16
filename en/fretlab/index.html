@@ -430,7 +430,7 @@
 
   <body>
     <div id="root"></div>
-    <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.0"></script>
+    <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.3"></script>
     <script defer src="/fretlab/js/fretlab-payment.js?v=1.1.15"></script>
     <script>
       (function () {
@@ -486,7 +486,7 @@
         var SITE_FOOTER_RENDER_KEY = 'site-footer-v3';
         var UPDATE_LOG_CONTENT = {
           zh: {
-            banner: '最后一次版本更新时间：2026年03月08日',
+            banner: '最后一次版本更新时间：2026年03月16日',
             button: '了解详情',
             modalTitle: '更新日志',
             close: '关闭',
@@ -494,14 +494,25 @@
             sectionHistory: '历史更新记录',
             historyButton: '了解详情',
             historyNote: '暂无更早历史记录。',
-            currentVersion: 'v1.0.2（2026年03月08日）',
+            currentVersion: 'v1.0.3（2026年03月16日）',
             currentItems: [
-              '移动端与平板端排版重构，不影响电脑端布局。',
-              '新增触屏拖拽指型到指板，支持预览与落点。',
-              '和弦实时映射优化：优先匹配 Drop 2 / Drop 3，避免同弦多音冲突。',
-              '新增乐器切换与专属指板（吉他 / 贝斯 / 尤克里里），并同步对应指型库。'
+              '新增点击预听；双击可将音符设为黄色根音。',
+              '指板旋转改为三态循环，并支持 Start / End Fret 视窗控制。',
+              '竖向指板默认显示 1-7 品，品位数字与音名位置同步优化。',
+              '手机、平板与桌面顶部布局统一，新增简 / 繁 / en 语言切换。',
+              '官网网页版移除 React Grab，交互更稳定。'
             ],
             historyItems: [
+              {
+                version: 'v1.0.2',
+                detailTitle: 'v1.0.2（2026年03月08日）',
+                detailItems: [
+                  '移动端与平板端排版重构，不影响电脑端布局。',
+                  '新增触屏拖拽指型到指板，支持预览与落点。',
+                  '和弦实时映射优化：优先匹配 Drop 2 / Drop 3，避免同弦多音冲突。',
+                  '新增乐器切换与专属指板（吉他 / 贝斯 / 尤克里里），并同步对应指型库。'
+                ]
+              },
               {
                 version: 'v1.0.1',
                 detailTitle: 'v1.0.1（2026年03月06日）',
@@ -517,7 +528,7 @@
             ],
           },
           en: {
-            banner: 'Last version update: March 8, 2026',
+            banner: 'Last version update: March 16, 2026',
             button: 'View details',
             modalTitle: 'Update Log',
             close: 'Close',
@@ -525,14 +536,25 @@
             sectionHistory: 'History',
             historyButton: 'View details',
             historyNote: 'No earlier history is available.',
-            currentVersion: 'v1.0.2 (March 8, 2026)',
+            currentVersion: 'v1.0.3 (March 16, 2026)',
             currentItems: [
-              'Mobile and tablet layouts were redesigned without affecting desktop.',
-              'Touch drag-and-drop for shapes was added, with preview and drop placement.',
-              'Realtime chord mapping improved: prefers Drop 2 / Drop 3 and avoids multi-note collisions on one string.',
-              'Added instrument switching and dedicated fretboards for Guitar / Bass / Ukulele, with matching shape libraries.'
+              'Clicking a note now previews audio, and double-click sets a yellow root note.',
+              'Board rotation now uses a three-state cycle and supports Start / End Fret window control.',
+              'Vertical view now defaults to frets 1-7, with improved fret-label and note centering.',
+              'Header layout is unified across phone, tablet, and desktop, with Simplified / Traditional / English switching.',
+              'React Grab was removed from the website tool runtime for more stable interaction.'
             ],
             historyItems: [
+              {
+                version: 'v1.0.2',
+                detailTitle: 'v1.0.2 (March 8, 2026)',
+                detailItems: [
+                  'Mobile and tablet layouts were redesigned without affecting desktop.',
+                  'Touch drag-and-drop for shapes was added, with preview and drop placement.',
+                  'Realtime chord mapping improved: prefers Drop 2 / Drop 3 and avoids multi-note collisions on one string.',
+                  'Added instrument switching and dedicated fretboards for Guitar / Bass / Ukulele, with matching shape libraries.'
+                ]
+              },
               {
                 version: 'v1.0.1',
                 detailTitle: 'v1.0.1 (March 6, 2026)',

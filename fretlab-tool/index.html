@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="zh-Hans">
   <head>
-    <script defer src="/js/current-year.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IC Fretboard Lab</title>
@@ -16,33 +15,6 @@
       <header class="app__header">
         <div>
           <div class="header-left-stack">
-            <div
-              id="languageSwitch"
-              class="lang-switch"
-              role="group"
-              aria-label="Language Switch"
-              data-i18n-aria-label="lang.switch.aria"
-            >
-              <button type="button" class="lang-switch__btn" data-ui-lang="zh">中文</button>
-              <button type="button" class="lang-switch__btn" data-ui-lang="en">EN</button>
-            </div>
-            <div class="instrument-switch">
-              <div class="instrument-switch__row">
-                <label for="instrumentSelect" data-i18n="controls.instrument">乐器</label>
-                <select id="instrumentSelect" data-i18n-aria-label="controls.instrument">
-                  <option value="guitar" data-i18n="instrument.guitar">吉他</option>
-                  <option value="bass" data-i18n="instrument.bass">贝斯</option>
-                  <option value="ukulele" data-i18n="instrument.ukulele">尤克里里</option>
-                </select>
-              </div>
-              <div id="guitarToneWrap" class="instrument-switch__row instrument-switch__voice-row" hidden>
-                <label for="guitarToneSelect" data-i18n="controls.guitarTone">吉他音色</label>
-                <select id="guitarToneSelect" data-i18n-aria-label="controls.guitarTone">
-                  <option value="classical" data-i18n="guitarTone.classical">古典吉他</option>
-                  <option value="folk" data-i18n="guitarTone.folk">民谣吉他</option>
-                </select>
-              </div>
-            </div>
             <div class="header-tool-buttons">
               <button
                 id="paletteToggleBtn"
@@ -102,6 +74,36 @@
               <span class="sr-only" data-i18n="video.button">视频</span>
             </button>
             </div>
+            <div class="instrument-switch">
+              <div class="instrument-switch__row">
+                <label for="instrumentSelect" data-i18n="controls.instrument">乐器</label>
+                <select id="instrumentSelect" data-i18n-aria-label="controls.instrument">
+                  <option value="guitar" data-i18n="instrument.guitar">吉他</option>
+                  <option value="bass" data-i18n="instrument.bass">贝斯</option>
+                  <option value="ukulele" data-i18n="instrument.ukulele">尤克里里</option>
+                </select>
+              </div>
+              <div id="guitarToneWrap" class="instrument-switch__row instrument-switch__voice-row" hidden>
+                <label for="guitarToneSelect" data-i18n="controls.guitarTone">吉他音色</label>
+                <select id="guitarToneSelect" data-i18n-aria-label="controls.guitarTone">
+                  <option value="classical" data-i18n="guitarTone.classical">古典吉他</option>
+                  <option value="folk" data-i18n="guitarTone.folk">民谣吉他</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="header-right-stack">
+            <div
+              id="languageSwitch"
+              class="lang-switch"
+              role="group"
+              aria-label="Language Switch"
+              data-i18n-aria-label="lang.switch.aria"
+            >
+              <button type="button" class="lang-switch__btn" data-ui-lang="zh">简</button>
+              <button type="button" class="lang-switch__btn" data-ui-lang="zh-hant">繁</button>
+              <button type="button" class="lang-switch__btn" data-ui-lang="en">en</button>
+            </div>
           </div>
           <img
             class="app__logo"
@@ -137,6 +139,26 @@
                 </datalist>
               </label>
               <label>
+                <span data-i18n="controls.fretStart">起始品位</span>
+                <input
+                  id="fretStartInput"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value="1"
+                />
+              </label>
+              <label>
+                <span data-i18n="controls.fretEnd">结束品位</span>
+                <input
+                  id="fretEndInput"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value="12"
+                />
+              </label>
+              <label>
                 <span data-i18n="controls.notePreference">音名偏好</span>
                 <select id="notePreferenceSelect">
                   <option value="sharps" data-i18n="controls.notePreference.sharps">升号优先</option>
@@ -149,29 +171,9 @@
               <button id="flipBoardBtn" type="button" class="ghost-btn block-btn" data-i18n="controls.flipBoard">
                 翻转指板
               </button>
-              <div class="board-count-controls" data-i18n-aria-label="controls.fretAdjust.aria" aria-label="品格增减">
-                <button
-                  id="removeBoardBtn"
-                  type="button"
-                  class="ghost-btn board-count-btn"
-                  data-i18n-aria-label="controls.fretAdjust.decrease"
-                  aria-label="减少品格"
-                >
-                  −
-                </button>
-                <button
-                  id="addBoardBtn"
-                  type="button"
-                  class="ghost-btn board-count-btn"
-                  data-i18n-aria-label="controls.fretAdjust.increase"
-                  aria-label="增加品格"
-                >
-                  +
-                </button>
-              </div>
             </div>
-            <div class="board-drop-hint" data-i18n="board.dropHint">拖拽指形到指板任意位置</div>
           </div>
+          <div id="mobileBoardInlineControlsSlot" class="board-inline-controls-mobile-slot" aria-hidden="true"></div>
         </section>
 
         <section class="control-panel">
@@ -342,13 +344,16 @@
           <span data-i18n="footer.tagline">认知吉他指板训练工具</span>
         </p>
         <p class="app__footer-line">
-          <span data-i18n="footer.copyrightPrefix">版权所有 ©</span>
-          <span data-current-year>2026</span>
-          <span data-i18n="footer.copyrightSuffix"> · Igor Chen ·</span>
+          <span data-i18n="footer.copyrightPrefix">版权所有 © 2026 · Igor Chen ·</span>
           <a href="https://icstudio.club/" target="_blank" rel="noopener noreferrer">icstudio.club</a>
         </p>
       </footer>
     </div>
     <script type="module" src="app.js"></script>
+    <script defer>
+      if (window.ReactGrab?.init) {
+        window.ReactGrab.init();
+      }
+    </script>
   </body>
 </html>
