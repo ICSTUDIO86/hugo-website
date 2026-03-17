@@ -368,25 +368,22 @@ body {
   height: auto;
   aspect-ratio: 4 / 3;
   transform-style: flat;
-  transform: translate(
+  transform: translate3d(
       calc(-50% + var(--bounce-x, 0%)),
-      calc(-50% + var(--bounce-y, 0%))
+      calc(-50% + var(--bounce-y, 0%)),
+      0
     )
     rotate(var(--bounce-rotate, 0deg));
   animation: hero-bounce-card var(--bounce-duration, 3.8s) ease-in-out infinite;
   animation-delay: var(--bounce-delay, 0s);
   animation-play-state: paused;
   opacity: 0;
-  filter: blur(10px);
-  transition:
-    opacity 0.72s cubic-bezier(0.16, 1, 0.3, 1) var(--hero-fade-delay, 0ms),
-    filter 0.72s cubic-bezier(0.16, 1, 0.3, 1) var(--hero-fade-delay, 0ms);
+  transition: opacity 0.52s cubic-bezier(0.16, 1, 0.3, 1) var(--hero-fade-delay, 0ms);
 }
 
 .hero-card-swap[data-layout="bounce"].is-ready .hero-tool-card {
   animation-play-state: running;
   opacity: 1;
-  filter: blur(0);
 }
 
 .hero-card-swap[data-layout="bounce"] .hero-tool-card:hover {
@@ -409,10 +406,11 @@ body {
   cursor: pointer;
   user-select: none;
   transform-style: preserve-3d;
-  will-change: transform;
+  will-change: transform, opacity;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform-origin: center center;
+  contain: layout paint;
 }
 
 .hero-tool-card::after {
@@ -476,6 +474,7 @@ body {
   display: block;
   object-fit: contain;
   object-position: center;
+  image-rendering: auto;
 }
 
 /* ==================== 按钮样式 ==================== */
@@ -1428,18 +1427,20 @@ body {
   0%,
   100% {
     transform:
-      translate(
+      translate3d(
         calc(-50% + var(--bounce-x, 0%)),
-        calc(-50% + var(--bounce-y, 0%))
+        calc(-50% + var(--bounce-y, 0%)),
+        0
       )
       rotate(var(--bounce-rotate, 0deg))
       translateY(0);
   }
   50% {
     transform:
-      translate(
+      translate3d(
         calc(-50% + var(--bounce-x, 0%)),
-        calc(-50% + var(--bounce-y, 0%))
+        calc(-50% + var(--bounce-y, 0%)),
+        0
       )
       rotate(var(--bounce-rotate, 0deg))
       translateY(var(--bounce-lift, -14px));

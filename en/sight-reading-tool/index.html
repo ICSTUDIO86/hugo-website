@@ -1287,7 +1287,9 @@
                 data-alt-zh="旋律视奏生成器"
                 data-alt-en="Melody Sight-Reading Generator"
                 alt="旋律视奏生成器"
-                loading="lazy"
+                loading="eager"
+                decoding="async"
+                fetchpriority="high"
               >
             </figure>
           </article>
@@ -1303,7 +1305,9 @@
                 data-alt-zh="简谱视奏生成器"
                 data-alt-en="Jianpu Sight-Reading Generator"
                 alt="简谱视奏生成器"
-                loading="lazy"
+                loading="eager"
+                decoding="async"
+                fetchpriority="high"
               >
             </figure>
           </article>
@@ -1319,7 +1323,9 @@
                 data-alt-zh="节奏视奏生成器"
                 data-alt-en="Rhythm Sight-Reading Generator"
                 alt="节奏视奏生成器"
-                loading="lazy"
+                loading="eager"
+                decoding="async"
+                fetchpriority="auto"
               >
             </figure>
           </article>
@@ -1335,7 +1341,9 @@
                 data-alt-zh="和弦视奏生成器"
                 data-alt-en="Chord Sight-Reading Generator"
                 alt="和弦视奏生成器"
-                loading="lazy"
+                loading="eager"
+                decoding="async"
+                fetchpriority="low"
               >
             </figure>
           </article>
@@ -1351,7 +1359,9 @@
                 data-alt-zh="音程视奏生成器"
                 data-alt-en="Interval Sight-Reading Generator"
                 alt="音程视奏生成器"
-                loading="lazy"
+                loading="eager"
+                decoding="async"
+                fetchpriority="low"
               >
             </figure>
           </article>
@@ -2253,6 +2263,7 @@
       const cards = Array.from(swapRoot.querySelectorAll('.hero-tool-card'));
       if (!cards.length) return;
       const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+      const isMobileViewport = () => window.matchMedia('(max-width: 768px)').matches;
       let introPlayed = false;
 
       cards.forEach((card) => {
@@ -2267,6 +2278,7 @@
       const clearCardInlineStyles = () => {
         swapRoot.classList.remove('is-ready');
         cards.forEach((card) => {
+          card.style.removeProperty('display');
           card.style.removeProperty('transform');
           card.style.removeProperty('z-index');
           card.style.removeProperty('animation');
@@ -2289,7 +2301,7 @@
         swapRoot.dataset.layout = 'bounce';
         clearCardInlineStyles();
         const vw = window.innerWidth;
-        const mobileMode = vw <= 768;
+        const mobileMode = isMobileViewport();
         const nearOffset = mobileMode
           ? Math.round(clamp(vw * 0.14, 52, 92))
           : Math.round(clamp(vw * 0.16, 120, 220));
@@ -2307,6 +2319,7 @@
         ];
 
         cards.forEach((card, index) => {
+          card.style.display = '';
           const preset = bouncePresets[index % bouncePresets.length];
           card.style.setProperty('--bounce-x', preset.x);
           card.style.setProperty('--bounce-y', preset.y);
@@ -2318,11 +2331,10 @@
         });
 
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (reduceMotion) {
+        if (reduceMotion || mobileMode) {
           cards.forEach((card) => {
             card.style.animation = 'none';
             card.style.opacity = '1';
-            card.style.filter = 'none';
           });
           swapRoot.classList.add('is-ready');
           introPlayed = true;
@@ -2389,6 +2401,7 @@
     }
 
     function syncHeroToolImagesWithLanguage() {
+      const preloadCache = new Set();
       const getCurrentLang = () => {
         if (window.i18n && window.i18n.currentLang) return window.i18n.currentLang;
         const savedLang = localStorage.getItem('ic-sight-reading-lang');
@@ -2397,18 +2410,30 @@
         return browserLang.startsWith('zh') ? 'zh-CN' : 'en';
       };
 
+      const preloadImage = (src) => {
+        if (!src || preloadCache.has(src)) return;
+        preloadCache.add(src);
+        const image = new Image();
+        image.decoding = 'async';
+        image.src = src;
+      };
+
       const applyHeroImages = (lang) => {
         const normalizedLang = String(lang || '').toLowerCase();
         const useEnglish = normalizedLang.startsWith('en');
         const images = document.querySelectorAll('.hero-tool-image');
 
-        images.forEach((img) => {
+        images.forEach((img, index) => {
           const nextSrc = useEnglish ? img.dataset.srcEn : img.dataset.srcZh;
           const nextAlt = useEnglish ? img.dataset.altEn : img.dataset.altZh;
           const fallbackSrc = img.dataset.fallbackSrc;
 
           if (!nextSrc) return;
 
+          preloadImage(nextSrc);
+          img.loading = 'eager';
+          img.decoding = 'async';
+          img.fetchPriority = index < 2 ? 'high' : (index < 3 ? 'auto' : 'low');
           img.dataset.fallbackApplied = '0';
           img.onerror = () => {
             if (img.dataset.fallbackApplied === '1') return;
