@@ -1538,6 +1538,18 @@
               <h3 data-i18n="payment.cardTitle">解锁你的音乐潜能</h3>
               <p data-i18n="payment.refundPolicy">支持 7 天无理由退款</p>
 
+              <div class="promo-campaign-card">
+                <div class="promo-campaign-eyebrow-wrap">
+                  <div class="promo-campaign-eyebrow">限时活动</div>
+                </div>
+                <div class="promo-campaign-row">
+                  <div class="promo-campaign-copy">
+                    <h4 class="promo-campaign-title">2026 年 3 月 14 日到 4 月 14 日购买 Cognote 完整版，额外赠送 FretLab 完整版。</h4>
+                  </div>
+                  <button type="button" class="promo-campaign-trigger" id="open-promo-offer">了解详情</button>
+                </div>
+              </div>
+
               <a href="/tools/melody-generator.html" target="_blank" class="btn btn-outline" style="display: block; margin-bottom: 1.25rem; text-align: center; font-size: 0.9375rem; padding: 0.875rem;" data-i18n="payment.btnFreeTrial">
                 免费试用
               </a>
@@ -1691,6 +1703,36 @@
             <li><strong>v1.0.0（2026年03月02日）</strong>：更新日志功能上线，开始系统记录版本更新。</li>
           </ul>
           <p class="update-log-history-empty">注：该版本是官网更新日志的记录起点，并非产品首个版本；此前已有多次迭代未纳入历史记录。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="promo-offer-modal" id="promo-offer-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="promo-offer-title">
+      <div class="promo-offer-panel">
+        <button type="button" class="promo-offer-close" id="close-promo-offer" aria-label="关闭">×</button>
+        <h3 class="promo-offer-title" id="promo-offer-title">限时活动详情</h3>
+
+        <section class="promo-offer-block">
+          <h4 class="promo-offer-heading">活动内容</h4>
+          <p class="promo-offer-text">在北京时间 2026 年 3 月 14 日 00:00:00 到 2026 年 4 月 14 日 23:59:59 之间购买 Cognote 完整版的用户，将额外获得 FretLab 完整版授权。</p>
+        </section>
+
+        <section class="promo-offer-block">
+          <h4 class="promo-offer-heading">适用范围</h4>
+          <ul class="promo-offer-list">
+            <li>本次活动仅适用于 Cognote 完整版订单，不适用于单件购买。</li>
+            <li>赠送内容为 FretLab 完整版，无需额外支付。</li>
+            <li>支付成功后，可直接使用同一个 Cognote 完整版访问码去解锁 FretLab。</li>
+          </ul>
+        </section>
+
+        <section class="promo-offer-block">
+          <h4 class="promo-offer-heading">补充说明</h4>
+          <ul class="promo-offer-list">
+            <li>FretLab 访问码验证入口位于 FretLab 官网购买区。</li>
+            <li>若符合活动条件的 Cognote 订单后续退款，对应赠送的 FretLab 权限也会一并失效。</li>
+          </ul>
+          <p class="promo-offer-note">如你已经在活动期内购买 Cognote 完整版，但 FretLab 仍未解锁，可<a href="/contact/">联系我</a>协助核对订单。</p>
         </section>
       </div>
     </div>
@@ -2197,6 +2239,7 @@
       initFeedbackLoopMarquee();
       initPaymentModeToggle();
       initUpdateLogModal();
+      initPromoOfferModal();
       initAnimatedContentCards();
     });
 
@@ -2544,6 +2587,39 @@
       const modal = document.getElementById('update-log-modal');
       const openButton = document.getElementById('open-update-log');
       const closeButton = document.getElementById('close-update-log');
+
+      if (!modal || !openButton || !closeButton) return;
+
+      const closeModal = () => {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+      };
+
+      const openModal = () => {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+      };
+
+      openButton.addEventListener('click', openModal);
+      closeButton.addEventListener('click', closeModal);
+
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+          closeModal();
+        }
+      });
+    }
+
+    function initPromoOfferModal() {
+      const modal = document.getElementById('promo-offer-modal');
+      const openButton = document.getElementById('open-promo-offer');
+      const closeButton = document.getElementById('close-promo-offer');
 
       if (!modal || !openButton || !closeButton) return;
 
