@@ -8,7 +8,7 @@
  *
  * Runtime override example:
  * window.FRETLAB_PAYMENT_CONFIG = {
- *   amount: '38.00',
+ *   amount: '48.00',
  *   downloads: {
  *     windows_x64: 'https://your-cdn/FretLab-win-x64.exe',
  *     mac_arm64: 'https://your-cdn/FretLab-mac-arm64.dmg',
@@ -30,7 +30,7 @@
   const DEFAULT_CONFIG = {
     toolId: 'fretlab',
     productName: 'IC Fretboard Lab',
-    amount: '38.00',
+    amount: '48.00',
     // Temporary preview mode: click pay -> simulate paid -> show success popup.
     // Set to false (or override via window.FRETLAB_PAYMENT_CONFIG) when real payment is ready.
     mockPaymentSuccess: true,
