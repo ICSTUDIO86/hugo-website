@@ -189,6 +189,12 @@ textarea {
   z-index: 1;
 }
 
+.instrument-switch__field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .instrument-switch__voice-row[hidden] {
   display: none;
 }
@@ -218,6 +224,13 @@ textarea {
   color: #111;
   position: relative;
   z-index: 1;
+}
+
+.instrument-switch__edit-btn {
+  padding: 0.2rem 0.55rem;
+  min-width: 0;
+  font-size: 0.82rem;
+  line-height: 1.1;
 }
 
 .header-tool-buttons {
@@ -761,6 +774,249 @@ textarea {
   color: #2f6a2a;
 }
 
+.custom-instrument-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.14);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+  z-index: 81;
+}
+
+.custom-instrument-modal-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.custom-instrument-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.1rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.985);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 82;
+}
+
+.custom-instrument-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.custom-instrument-modal__panel {
+  width: min(560px, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  border-radius: 12px;
+  border: 1px solid rgba(17, 17, 17, 0.14);
+  background: #fff;
+  box-shadow: 0 14px 34px rgba(17, 17, 17, 0.18);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-instrument-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.85rem;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.08);
+}
+
+.custom-instrument-modal__header h2 {
+  margin: 0;
+  font-size: 1.14rem;
+  font-weight: 600;
+}
+
+.custom-instrument-modal__close-btn {
+  border: 1px solid rgba(17, 17, 17, 0.16);
+  background: #fff;
+  color: rgba(17, 17, 17, 0.72);
+  border-radius: 6px;
+  width: 1.8rem;
+  height: 1.8rem;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.custom-instrument-modal__close-btn:hover {
+  background: #f1f3f4;
+}
+
+.custom-instrument-modal__body {
+  padding: 0.95rem 1rem 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
+}
+
+.custom-instrument-modal__field {
+  display: grid;
+  gap: 0.3rem;
+  color: rgba(17, 17, 17, 0.78);
+  font-size: 0.92rem;
+}
+
+.custom-instrument-modal__field input {
+  width: 88px;
+  padding: 0.4rem 0.55rem;
+  border-radius: 9px;
+  border: 1px dashed rgba(17, 17, 17, 0.22);
+  background: #fff;
+}
+
+.custom-instrument-modal__hint {
+  margin: 0.75rem 0 0;
+  color: rgba(17, 17, 17, 0.62);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.custom-instrument-modal__interval-block {
+  margin-top: 0.85rem;
+  padding: 0.7rem;
+  border-radius: 10px;
+  border: 1px dashed rgba(17, 17, 17, 0.16);
+  background: rgba(250, 250, 248, 0.9);
+}
+
+.custom-instrument-modal__interval-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-bottom: 0.65rem;
+  font-size: 0.9rem;
+  color: rgba(17, 17, 17, 0.78);
+}
+
+.custom-instrument-modal__interval-preset {
+  min-width: 160px;
+  padding: 0.38rem 0.55rem;
+  border-radius: 9px;
+  border: 1px dashed rgba(17, 17, 17, 0.22);
+  background: #fff;
+}
+
+.custom-instrument-modal__interval-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.custom-instrument-modal__interval-field {
+  display: grid;
+  gap: 0.28rem;
+  font-size: 0.86rem;
+  color: rgba(17, 17, 17, 0.76);
+}
+
+.custom-instrument-modal__interval-field select {
+  width: 100%;
+  padding: 0.42rem 0.55rem;
+  border-radius: 9px;
+  border: 1px dashed rgba(17, 17, 17, 0.22);
+  background: #fff;
+  font-size: 0.94rem;
+}
+
+.custom-instrument-modal__tuning-grid {
+  margin-top: 0.85rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.custom-instrument-modal__tuning-field {
+  display: grid;
+  gap: 0.28rem;
+  font-size: 0.88rem;
+  color: rgba(17, 17, 17, 0.76);
+}
+
+.custom-instrument-modal__tuning-field input {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border-radius: 9px;
+  border: 1px dashed rgba(17, 17, 17, 0.22);
+  background: #fff;
+  font-size: 0.96rem;
+}
+
+.custom-instrument-modal__tuning-field input[data-auto-derived="true"] {
+  background: rgba(244, 244, 241, 0.92);
+  color: rgba(17, 17, 17, 0.68);
+}
+
+.custom-instrument-modal__status {
+  margin: 0.8rem 0 0;
+  min-height: 1.15rem;
+  color: rgba(17, 17, 17, 0.66);
+  font-size: 0.9rem;
+}
+
+.custom-instrument-modal__actions {
+  margin-top: 0.95rem;
+  padding: 0.82rem 1rem 1rem;
+  border-top: 1px solid rgba(17, 17, 17, 0.08);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  flex-shrink: 0;
+}
+
+.custom-instrument-modal__btn {
+  border-radius: 8px;
+  font-size: 0.92rem;
+  line-height: 1;
+  padding: 0.56rem 0.95rem;
+  min-width: 84px;
+  cursor: pointer;
+}
+
+.custom-instrument-modal__btn--secondary {
+  border: 1px solid rgba(17, 17, 17, 0.16);
+  background: #fff;
+  color: rgba(17, 17, 17, 0.82);
+}
+
+.custom-instrument-modal__btn--secondary:hover {
+  background: #f1f3f4;
+}
+
+.custom-instrument-modal__btn--primary {
+  border: 1px solid #d78400;
+  background: #d78400;
+  color: #fff;
+}
+
+.custom-instrument-modal__btn--primary:hover {
+  background: #b56f00;
+}
+
+@media (max-width: 640px) {
+  .custom-instrument-modal__interval-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .custom-instrument-modal__interval-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .custom-instrument-modal__tuning-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .board-panel {
   flex: 1;
   background: transparent;
@@ -879,7 +1135,7 @@ textarea {
 
 .board-panel__fretboard {
   flex: 1;
-  min-height: 80vh;
+  min-height: max(80vh, calc(180px + var(--fretlab-string-count, 6) * 58px));
   border-radius: 16px;
   padding: 0.45rem;
   background: #fff;
@@ -891,7 +1147,7 @@ textarea {
 }
 
 .board-panel__fretboard.is-single-board {
-  min-height: 68vh;
+  min-height: max(68vh, calc(160px + var(--fretlab-string-count, 6) * 58px));
 }
 
 .fretboard-stack {

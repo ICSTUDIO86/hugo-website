@@ -9,9 +9,11 @@ import {
 const state = {
   language: "zh",
   instrumentId: "guitar",
+  customInstrumentConfig: null,
   guitarTone: "classical",
   paletteOpen: false,
   exportMenuOpen: false,
+  customInstrumentModalOpen: false,
   videoModalOpen: false,
   boardCount: 1,
   activeBoardIndex: 0,
@@ -26,6 +28,7 @@ const state = {
 
 const dom = {
   boardPanel: document.querySelector(".board-panel"),
+  boardFretboard: document.querySelector(".board-panel__fretboard"),
   boardInlineControls: document.querySelector(".board-inline-controls"),
   mobileBoardInlineControlsSlot: document.getElementById("mobileBoardInlineControlsSlot"),
   svg: document.getElementById("fretboardSvg"),
@@ -59,8 +62,19 @@ const dom = {
   recordShapeOutput: document.getElementById("recordShapeOutput"),
   languageSwitch: document.getElementById("languageSwitch"),
   instrumentSelect: document.getElementById("instrumentSelect"),
+  customInstrumentEditBtn: document.getElementById("customInstrumentEditBtn"),
   guitarToneWrap: document.getElementById("guitarToneWrap"),
   guitarToneSelect: document.getElementById("guitarToneSelect"),
+  customInstrumentModal: document.getElementById("customInstrumentModal"),
+  customInstrumentModalBackdrop: document.getElementById("customInstrumentModalBackdrop"),
+  customInstrumentModalCloseBtn: document.getElementById("customInstrumentModalCloseBtn"),
+  customStringCountInput: document.getElementById("customStringCountInput"),
+  customIntervalPresetSelect: document.getElementById("customIntervalPresetSelect"),
+  customIntervalFields: document.getElementById("customIntervalFields"),
+  customTuningFields: document.getElementById("customTuningFields"),
+  customInstrumentStatus: document.getElementById("customInstrumentStatus"),
+  customInstrumentCancelBtn: document.getElementById("customInstrumentCancelBtn"),
+  customInstrumentSaveBtn: document.getElementById("customInstrumentSaveBtn"),
   paletteToggleBtn: document.getElementById("paletteToggleBtn"),
   paletteCloseBtn: document.getElementById("paletteCloseBtn"),
   paletteDrawer: document.getElementById("shapePaletteDrawer"),
@@ -83,10 +97,12 @@ const dom = {
 
 const UI_LANGUAGE_STORAGE_KEY = "ic_fretlab_ui_language";
 const INSTRUMENT_STORAGE_KEY = "ic_fretlab_instrument";
+const CUSTOM_INSTRUMENT_STORAGE_KEY = "ic_fretlab_custom_instrument";
 const GUITAR_TONE_STORAGE_KEY = "ic_fretlab_guitar_tone";
 const MOBILE_LAYOUT_MEDIA_QUERY = "(max-width: 1024px)";
 const UI_LANGUAGES = new Set(["zh", "zh-hant", "en"]);
 const GUITAR_TONES = new Set(["classical", "folk"]);
+const CUSTOM_INSTRUMENT_ID = "custom";
 const INSTRUMENTS = {
   guitar: {
     id: "guitar",
@@ -113,6 +129,28 @@ const INSTRUMENTS = {
     stringSpacing: 66,
   },
 };
+const VALID_INSTRUMENT_IDS = new Set([...Object.keys(INSTRUMENTS), CUSTOM_INSTRUMENT_ID]);
+const STANDARD_GUITAR_TUNING = [...INSTRUMENTS.guitar.tuning];
+const STANDARD_GUITAR_OPEN_MIDI = [...INSTRUMENTS.guitar.openMidi];
+const customInstrumentModal = {
+  draftTuning: [...STANDARD_GUITAR_TUNING],
+  draftIntervals: [],
+  statusMessage: "",
+};
+const INTERVAL_OPTIONS = [
+  { semitones: 1, key: "interval.m2" },
+  { semitones: 2, key: "interval.M2" },
+  { semitones: 3, key: "interval.m3" },
+  { semitones: 4, key: "interval.M3" },
+  { semitones: 5, key: "interval.P4" },
+  { semitones: 6, key: "interval.TT" },
+  { semitones: 7, key: "interval.P5" },
+  { semitones: 8, key: "interval.m6" },
+  { semitones: 9, key: "interval.M6" },
+  { semitones: 10, key: "interval.m7" },
+  { semitones: 11, key: "interval.M7" },
+  { semitones: 12, key: "interval.P8" },
+];
 const UI_TEXT = {
   zh: {
     "lang.switch.aria": "语言切换",
@@ -123,6 +161,7 @@ const UI_TEXT = {
     "controls.title": "指板控制",
     "controls.subhead": "设置指板数量与音名偏好（± 调整品格）",
     "controls.instrument": "乐器",
+    "controls.customInstrument.edit": "编辑",
     "controls.guitarTone": "吉他音色",
     "controls.boardCount": "指板数量",
     "controls.fretStart": "起始品位",
@@ -139,8 +178,38 @@ const UI_TEXT = {
     "instrument.guitar": "吉他",
     "instrument.bass": "贝斯",
     "instrument.ukulele": "尤克里里",
+    "instrument.custom": "自定义",
     "guitarTone.classical": "古典吉他",
     "guitarTone.folk": "民谣吉他",
+    "customInstrument.modal.title": "自定义指板",
+    "customInstrument.modal.close": "关闭自定义指板弹窗",
+    "customInstrument.modal.cancel": "取消",
+    "customInstrument.modal.save": "应用",
+    "customInstrument.stringCount": "弦的数量",
+    "customInstrument.tuningHint": "请按从低音弦到高音弦的顺序填写定音",
+    "customInstrument.intervalTitle": "弦间音程",
+    "customInstrument.intervalPreset.custom": "自定义",
+    "customInstrument.intervalPreset.allFourths": "全部完全四度",
+    "customInstrument.intervalPreset.allFifths": "全部完全五度",
+    "customInstrument.intervalPreset.allMajorThirds": "全部大三度",
+    "customInstrument.intervalPreset.allMinorThirds": "全部小三度",
+    "customInstrument.intervalLabel": "{from}弦 -> {to}弦",
+    "customInstrument.stringLabel": "{string}弦",
+    "customInstrument.notePlaceholder": "例如：F# / Bb",
+    "customInstrument.error.invalidStringCount": "弦数必须至少为 1。",
+    "customInstrument.error.invalidNote": "第 {string} 弦定音无效。请输入 A-G，并可带 # 或 b。",
+    "interval.m2": "小二度",
+    "interval.M2": "大二度",
+    "interval.m3": "小三度",
+    "interval.M3": "大三度",
+    "interval.P4": "完全四度",
+    "interval.TT": "增四/减五",
+    "interval.P5": "完全五度",
+    "interval.m6": "小六度",
+    "interval.M6": "大六度",
+    "interval.m7": "小七度",
+    "interval.M7": "大七度",
+    "interval.P8": "纯八度",
     "export.format": "导出格式",
     "export.option.png": "PNG",
     "export.option.svg": "SVG",
@@ -230,6 +299,7 @@ const UI_TEXT = {
     "controls.title": "Fretboard Controls",
     "controls.subhead": "Set board count and note labels (use +/- to adjust frets)",
     "controls.instrument": "Instrument",
+    "controls.customInstrument.edit": "Edit",
     "controls.guitarTone": "Guitar Tone",
     "controls.boardCount": "Boards",
     "controls.fretStart": "Start fret",
@@ -246,8 +316,38 @@ const UI_TEXT = {
     "instrument.guitar": "Guitar",
     "instrument.bass": "Bass",
     "instrument.ukulele": "Ukulele",
+    "instrument.custom": "Custom",
     "guitarTone.classical": "Classical Guitar",
     "guitarTone.folk": "Folk Guitar",
+    "customInstrument.modal.title": "Custom Fretboard",
+    "customInstrument.modal.close": "Close custom fretboard dialog",
+    "customInstrument.modal.cancel": "Cancel",
+    "customInstrument.modal.save": "Apply",
+    "customInstrument.stringCount": "String count",
+    "customInstrument.tuningHint": "Enter tuning from lowest string to highest string",
+    "customInstrument.intervalTitle": "String intervals",
+    "customInstrument.intervalPreset.custom": "Custom",
+    "customInstrument.intervalPreset.allFourths": "All perfect fourths",
+    "customInstrument.intervalPreset.allFifths": "All perfect fifths",
+    "customInstrument.intervalPreset.allMajorThirds": "All major thirds",
+    "customInstrument.intervalPreset.allMinorThirds": "All minor thirds",
+    "customInstrument.intervalLabel": "String {from} -> String {to}",
+    "customInstrument.stringLabel": "String {string}",
+    "customInstrument.notePlaceholder": "e.g. F# / Bb",
+    "customInstrument.error.invalidStringCount": "String count must be at least 1.",
+    "customInstrument.error.invalidNote": "Invalid tuning on string {string}. Use A-G with optional # or b.",
+    "interval.m2": "m2",
+    "interval.M2": "M2",
+    "interval.m3": "m3",
+    "interval.M3": "M3",
+    "interval.P4": "P4",
+    "interval.TT": "TT",
+    "interval.P5": "P5",
+    "interval.m6": "m6",
+    "interval.M6": "M6",
+    "interval.m7": "m7",
+    "interval.M7": "M7",
+    "interval.P8": "P8",
     "export.format": "Export format",
     "export.option.png": "PNG",
     "export.option.svg": "SVG",
@@ -339,6 +439,7 @@ UI_TEXT["zh-hant"] = {
   "controls.title": "指板控制",
   "controls.subhead": "設定指板數量與音名偏好",
   "controls.instrument": "樂器",
+  "controls.customInstrument.edit": "編輯",
   "controls.guitarTone": "吉他音色",
   "controls.boardCount": "指板數量",
   "controls.fretStart": "起始品位",
@@ -355,8 +456,38 @@ UI_TEXT["zh-hant"] = {
   "instrument.guitar": "吉他",
   "instrument.bass": "貝斯",
   "instrument.ukulele": "烏克麗麗",
+  "instrument.custom": "自訂",
   "guitarTone.classical": "古典吉他",
   "guitarTone.folk": "民謠吉他",
+  "customInstrument.modal.title": "自訂指板",
+  "customInstrument.modal.close": "關閉自訂指板彈窗",
+  "customInstrument.modal.cancel": "取消",
+  "customInstrument.modal.save": "套用",
+  "customInstrument.stringCount": "弦的數量",
+  "customInstrument.tuningHint": "請按從低音弦到高音弦的順序填寫定音",
+  "customInstrument.intervalTitle": "弦間音程",
+  "customInstrument.intervalPreset.custom": "自訂",
+  "customInstrument.intervalPreset.allFourths": "全部完全四度",
+  "customInstrument.intervalPreset.allFifths": "全部完全五度",
+  "customInstrument.intervalPreset.allMajorThirds": "全部大三度",
+  "customInstrument.intervalPreset.allMinorThirds": "全部小三度",
+  "customInstrument.intervalLabel": "{from}弦 -> {to}弦",
+  "customInstrument.stringLabel": "{string}弦",
+  "customInstrument.notePlaceholder": "例如：F# / Bb",
+  "customInstrument.error.invalidStringCount": "弦數必須至少為 1。",
+  "customInstrument.error.invalidNote": "第 {string} 弦定音無效。請輸入 A-G，並可帶 # 或 b。",
+  "interval.m2": "小二度",
+  "interval.M2": "大二度",
+  "interval.m3": "小三度",
+  "interval.M3": "大三度",
+  "interval.P4": "完全四度",
+  "interval.TT": "增四/減五",
+  "interval.P5": "完全五度",
+  "interval.m6": "小六度",
+  "interval.M6": "大六度",
+  "interval.m7": "小七度",
+  "interval.M7": "大七度",
+  "interval.P8": "純八度",
   "export.format": "匯出格式",
   "export.button": "匯出",
   "video.modal.title": "生成 MP4 視頻",
@@ -1038,7 +1169,248 @@ function adaptVariantMapForInstrument(variantMap, sourceStart, sourceEnd, source
   return Object.keys(adapted).length ? adapted : null;
 }
 
+function cloneRelativePositions(positions) {
+  return (positions ?? []).map((pos) => ({
+    ...pos,
+    string: Number(pos?.string),
+    fret: Number(pos?.fret),
+    interval: Number(pos?.interval),
+  }));
+}
+
+function chooseClosestEquivalentFretOffset(baseOffset, preferredOffset = 0) {
+  const normalizedBase = mod12(Number(baseOffset) || 0);
+  const preferred = Number(preferredOffset) || 0;
+  let bestCandidate = normalizedBase;
+  let bestScore = Number.POSITIVE_INFINITY;
+
+  for (let octave = -4; octave <= 4; octave += 1) {
+    const candidate = normalizedBase + octave * 12;
+    const distance = Math.abs(candidate - preferred);
+    const score = distance * 100 + Math.abs(candidate);
+    if (score < bestScore) {
+      bestScore = score;
+      bestCandidate = candidate;
+    }
+  }
+
+  return bestCandidate;
+}
+
+function retuneRelativePositionsForCustomTuning(positions, anchorString, tuning) {
+  const normalizedAnchor = Number(anchorString);
+  if (
+    !Array.isArray(tuning) ||
+    !tuning.length ||
+    !Number.isInteger(normalizedAnchor) ||
+    normalizedAnchor < 0 ||
+    normalizedAnchor >= tuning.length
+  ) {
+    return cloneRelativePositions(positions);
+  }
+
+  const anchorNoteIndex = getNoteIndex(tuning[normalizedAnchor]);
+  if (!Number.isFinite(anchorNoteIndex)) {
+    return cloneRelativePositions(positions);
+  }
+
+  const deduped = new Map();
+  for (const pos of positions ?? []) {
+    const relativeString = Number(pos?.string);
+    const originalFret = Number(pos?.fret);
+    const interval = Number(pos?.interval);
+    const absoluteString = normalizedAnchor + relativeString;
+    if (
+      !Number.isInteger(relativeString) ||
+      !Number.isFinite(originalFret) ||
+      !Number.isFinite(interval) ||
+      absoluteString < 0 ||
+      absoluteString >= tuning.length
+    ) {
+      continue;
+    }
+
+    const stringNoteIndex = getNoteIndex(tuning[absoluteString]);
+    if (!Number.isFinite(stringNoteIndex)) {
+      continue;
+    }
+
+    const requiredFretOffset = mod12(interval + anchorNoteIndex - stringNoteIndex);
+    const adaptedFret = chooseClosestEquivalentFretOffset(requiredFretOffset, originalFret);
+    const nextPos = {
+      ...pos,
+      string: relativeString,
+      fret: adaptedFret,
+      interval: mod12(interval),
+    };
+    const key = `${nextPos.string}:${nextPos.fret}:${nextPos.interval}`;
+    if (!deduped.has(key)) {
+      deduped.set(key, nextPos);
+    }
+  }
+
+  return Array.from(deduped.values()).sort((a, b) => a.string - b.string || a.fret - b.fret);
+}
+
+function buildVariantEntryListFromMap(variantMap) {
+  if (!variantMap || typeof variantMap !== "object") {
+    return [];
+  }
+  return Object.entries(variantMap)
+    .map(([variantId, variant]) => ({
+      variantId,
+      stringSetStart: Number(variant?.stringSetStart ?? variantId),
+      anchorString: Number(variant?.anchorString),
+      positions: cloneRelativePositions(variant?.positions),
+    }))
+    .filter(
+      (variant) =>
+        Number.isFinite(variant.stringSetStart) &&
+        Number.isInteger(variant.anchorString) &&
+        Array.isArray(variant.positions) &&
+        variant.positions.length
+    );
+}
+
+function dedupePlacementVariantList(entries) {
+  const deduped = new Map();
+  for (const entry of entries ?? []) {
+    const key = [
+      Math.round(Number(entry?.stringSetStart)),
+      Math.round(Number(entry?.anchorString)),
+      (entry?.positions ?? [])
+        .map((pos) => `${Math.round(Number(pos?.string))}:${Math.round(Number(pos?.fret))}:${Math.round(Number(pos?.interval))}`)
+        .sort()
+        .join("|"),
+    ].join("::");
+    if (!deduped.has(key)) {
+      deduped.set(key, {
+        ...entry,
+        stringSetStart: Math.round(Number(entry?.stringSetStart)),
+        anchorString: Math.round(Number(entry?.anchorString)),
+        positions: cloneRelativePositions(entry?.positions),
+      });
+    }
+  }
+  return Array.from(deduped.values()).sort(
+    (a, b) => a.stringSetStart - b.stringSetStart || a.anchorString - b.anchorString || `${a.variantId}`.localeCompare(`${b.variantId}`)
+  );
+}
+
+function buildCustomPlacementVariantList(shape, instrument, variantMap) {
+  const sourceWindows = Array.isArray(instrument?.sourceWindows) ? instrument.sourceWindows : [];
+  if (!sourceWindows.length) {
+    return [];
+  }
+
+  const entries = [];
+  sourceWindows.forEach((window, windowIndex) => {
+    const sourceStart = Number(window?.sourceStart ?? 0);
+    const sourceCount = Number(window?.sourceCount ?? STANDARD_GUITAR_TUNING.length);
+    const targetStart = Number(window?.targetStart ?? 0);
+    const sourceEnd = sourceStart + sourceCount - 1;
+    const adaptedMain = buildAdaptedShapePositions(shape?.positions ?? [], shape?.anchorString, sourceStart, sourceEnd);
+    const adaptedVariantMap = adaptVariantMapForInstrument(variantMap, sourceStart, sourceEnd, sourceCount);
+    const windowEntries = buildVariantEntryListFromMap(adaptedVariantMap);
+
+    if (windowEntries.length) {
+      windowEntries.forEach((entry, entryIndex) => {
+        const absoluteAnchorString = Number(entry.anchorString) + targetStart;
+        const retunedPositions = retuneRelativePositionsForCustomTuning(
+          entry.positions,
+          absoluteAnchorString,
+          instrument?.tuning
+        );
+        if (!retunedPositions.length) {
+          return;
+        }
+        entries.push({
+          variantId: `${windowIndex}:${entry.variantId}:${entryIndex}`,
+          stringSetStart: Number(entry.stringSetStart) + targetStart,
+          anchorString: absoluteAnchorString,
+          positions: retunedPositions,
+        });
+      });
+      return;
+    }
+
+    if (!adaptedMain) {
+      return;
+    }
+
+    const absoluteAnchorString = adaptedMain.anchorString + targetStart;
+    const retunedPositions = retuneRelativePositionsForCustomTuning(
+      adaptedMain.positions,
+      absoluteAnchorString,
+      instrument?.tuning
+    );
+    if (!retunedPositions.length) {
+      return;
+    }
+
+    entries.push({
+      variantId: `${windowIndex}:base`,
+      stringSetStart: targetStart,
+      anchorString: absoluteAnchorString,
+      positions: retunedPositions,
+    });
+  });
+
+  return dedupePlacementVariantList(entries);
+}
+
 function adaptShapeForInstrument(shape, instrument) {
+  if (instrument?.id === CUSTOM_INSTRUMENT_ID) {
+    const sourceWindows = Array.isArray(instrument?.sourceWindows) ? instrument.sourceWindows : [];
+    const primaryWindow = sourceWindows[0];
+    if (!primaryWindow) {
+      return null;
+    }
+    const sourceStart = Number(primaryWindow.sourceStart ?? 0);
+    const sourceCount = Number(primaryWindow.sourceCount ?? STANDARD_GUITAR_TUNING.length);
+    const sourceEnd = sourceStart + sourceCount - 1;
+    const targetStart = Number(primaryWindow.targetStart ?? 0);
+    const adaptedMain = buildAdaptedShapePositions(shape?.positions ?? [], shape?.anchorString, sourceStart, sourceEnd);
+    if (!adaptedMain) {
+      return null;
+    }
+
+    const absoluteAnchorString = adaptedMain.anchorString + targetStart;
+    const retunedMainPositions = retuneRelativePositionsForCustomTuning(
+      adaptedMain.positions,
+      absoluteAnchorString,
+      instrument?.tuning
+    );
+    if (!retunedMainPositions.length) {
+      return null;
+    }
+
+    const dragPlacementVariantList = buildCustomPlacementVariantList(shape, instrument, shape?.dragPlacementVariants);
+    const drop2VariantList = buildCustomPlacementVariantList(shape, instrument, shape?.drop2Variants);
+    const dragPlacementStarts = dragPlacementVariantList
+      .map((variant) => Number(variant?.stringSetStart))
+      .filter((value) => Number.isFinite(value))
+      .sort((a, b) => a - b);
+    const drop2StringSetStarts = drop2VariantList
+      .map((variant) => Number(variant?.stringSetStart))
+      .filter((value) => Number.isFinite(value))
+      .sort((a, b) => a - b);
+
+    return {
+      ...shape,
+      anchorString: absoluteAnchorString,
+      anchorLabel: getStringLabelByCount(absoluteAnchorString, instrument.tuning.length),
+      positions: retunedMainPositions,
+      dragPlacementStarts: dragPlacementStarts.length ? Array.from(new Set(dragPlacementStarts)) : undefined,
+      dragPlacementVariantList: dragPlacementVariantList.length ? dragPlacementVariantList : undefined,
+      dragPlacementVariants: undefined,
+      drop2StringSetStarts: drop2StringSetStarts.length ? Array.from(new Set(drop2StringSetStarts)) : undefined,
+      drop2VariantList: drop2VariantList.length ? drop2VariantList : undefined,
+      drop2Variants: undefined,
+      anchorHintLabel: undefined,
+    };
+  }
+
   const sourceStart = Number(instrument?.sourceStringStart ?? 0);
   const sourceCount = Number(instrument?.sourceStringCount ?? 6);
   const sourceEnd = sourceStart + sourceCount - 1;
@@ -1157,8 +1529,9 @@ function getActiveShapes() {
     return GUITAR_SCALE_SHAPES;
   }
 
-  if (instrumentShapeCache.has(instrument.id)) {
-    return instrumentShapeCache.get(instrument.id);
+  const cacheKey = `${instrument.cacheKey ?? instrument.id}`;
+  if (instrumentShapeCache.has(cacheKey)) {
+    return instrumentShapeCache.get(cacheKey);
   }
 
   const adapted = GUITAR_SCALE_SHAPES.map((shape) => adaptShapeForInstrument(shape, instrument)).filter(Boolean);
@@ -1170,7 +1543,7 @@ function getActiveShapes() {
       (shape) => !isDrop2Shape(shape) && !isDrop3Shape(shape) && !isUkuleleExcludedShape(shape)
     );
   }
-  instrumentShapeCache.set(instrument.id, filtered);
+  instrumentShapeCache.set(cacheKey, filtered);
   return filtered;
 }
 
@@ -1261,9 +1634,232 @@ function detectBrowserUiLanguage() {
   return languages.some((value) => value.startsWith("zh")) ? "zh" : "en";
 }
 
+function sanitizeCustomStringCount(value) {
+  return Math.max(1, Math.round(Number(value) || STANDARD_GUITAR_TUNING.length));
+}
+
+function normalizeTuningNoteName(value) {
+  const raw = `${value ?? ""}`.trim();
+  if (!raw) {
+    return "";
+  }
+  const match = raw.match(/^([A-Ga-g])([#bB]{0,2})$/);
+  if (!match) {
+    return "";
+  }
+  const letter = match[1].toUpperCase();
+  const accidental = (match[2] || "")
+    .split("")
+    .map((char) => (char === "#" ? "#" : "b"))
+    .join("");
+  const normalized = `${letter}${accidental}`;
+  return Number.isFinite(getNoteIndex(normalized)) ? normalized : "";
+}
+
+function buildDefaultCustomTuning(count = STANDARD_GUITAR_TUNING.length) {
+  const targetCount = sanitizeCustomStringCount(count);
+  const tuning = [...STANDARD_GUITAR_TUNING];
+  let lowestNote = tuning[0];
+  while (tuning.length < targetCount) {
+    const lowestIndex = getNoteIndex(lowestNote);
+    lowestNote = getNoteName(lowestIndex - 5, "sharps");
+    tuning.unshift(lowestNote);
+  }
+  return tuning.slice(-targetCount);
+}
+
+function resizeCustomTuningDraft(tuning, nextCount) {
+  const current = Array.isArray(tuning) ? tuning.map((note) => normalizeTuningNoteName(note) || "") : [];
+  const targetCount = sanitizeCustomStringCount(nextCount);
+  if (current.length === targetCount) {
+    return current;
+  }
+  if (current.length > targetCount) {
+    return current.slice(current.length - targetCount);
+  }
+  const next = [...current];
+  let lowestNote = normalizeTuningNoteName(next[0]) || buildDefaultCustomTuning(1)[0];
+  while (next.length < targetCount) {
+    const lowestIndex = getNoteIndex(lowestNote);
+    lowestNote = getNoteName(lowestIndex - 5, "sharps");
+    next.unshift(lowestNote);
+  }
+  return next;
+}
+
+function getPreferredAccidentalFromNoteName(noteName) {
+  return `${noteName ?? ""}`.includes("b") ? "flats" : "sharps";
+}
+
+function shiftNoteNameBySemitones(noteName, semitones) {
+  const normalized = normalizeTuningNoteName(noteName);
+  if (!normalized) {
+    return "";
+  }
+  const nextIndex = getNoteIndex(normalized) + Number(semitones || 0);
+  return getNoteName(nextIndex, getPreferredAccidentalFromNoteName(normalized));
+}
+
+function calculateIntervalsFromTuning(tuning) {
+  const normalized = (tuning ?? []).map((note) => normalizeTuningNoteName(note));
+  const intervals = [];
+  for (let index = 0; index < normalized.length - 1; index += 1) {
+    const current = normalized[index];
+    const next = normalized[index + 1];
+    if (!current || !next) {
+      intervals.push(5);
+      continue;
+    }
+    const delta = ((getNoteIndex(next) - getNoteIndex(current)) % 12 + 12) % 12 || 12;
+    intervals.push(delta);
+  }
+  return intervals;
+}
+
+function buildTuningFromIntervals(lowestNote, intervals) {
+  const first = normalizeTuningNoteName(lowestNote) || buildDefaultCustomTuning(1)[0];
+  const tuning = [first];
+  for (const interval of intervals ?? []) {
+    tuning.push(shiftNoteNameBySemitones(tuning[tuning.length - 1], interval) || tuning[tuning.length - 1]);
+  }
+  return tuning;
+}
+
+function getMidiCandidatesForNoteName(noteName) {
+  const noteIndex = getNoteIndex(noteName);
+  if (!Number.isFinite(noteIndex)) {
+    return [];
+  }
+  const candidates = [];
+  for (let midi = noteIndex; midi <= 127; midi += 12) {
+    candidates.push(midi);
+  }
+  return candidates;
+}
+
+function chooseMidiCandidate(noteName, targetMidi, { minExclusive = -1 } = {}) {
+  const candidates = getMidiCandidatesForNoteName(noteName).filter((midi) => midi > minExclusive && midi >= 12);
+  if (!candidates.length) {
+    return Math.max(12, Math.min(127, Math.round(targetMidi || 40)));
+  }
+  return candidates.sort((a, b) => Math.abs(a - targetMidi) - Math.abs(b - targetMidi) || a - b)[0];
+}
+
+function deriveOpenMidiFromTuning(tuning, referenceOpenMidi = []) {
+  const openMidi = [];
+  let previous = -1;
+  tuning.forEach((noteName, index) => {
+    const target =
+      Number.isFinite(referenceOpenMidi?.[index]) ? Number(referenceOpenMidi[index]) : previous >= 0 ? previous + 5 : 40;
+    const midi = chooseMidiCandidate(noteName, target, { minExclusive: previous });
+    openMidi.push(midi);
+    previous = midi;
+  });
+  return openMidi;
+}
+
+function normalizeCustomInstrumentConfig(config, fallbackConfig = null) {
+  const fallback =
+    fallbackConfig && Array.isArray(fallbackConfig.tuning) && fallbackConfig.tuning.length
+      ? fallbackConfig
+      : { tuning: STANDARD_GUITAR_TUNING, openMidi: STANDARD_GUITAR_OPEN_MIDI };
+  const rawTuning = Array.isArray(config?.tuning) && config.tuning.length ? config.tuning : fallback.tuning;
+  const tuning = rawTuning
+    .map((note) => normalizeTuningNoteName(note))
+    .filter(Boolean)
+    .slice();
+  const normalizedTuning = tuning.length ? tuning : [...fallback.tuning];
+  const referenceOpenMidi = Array.isArray(config?.openMidi) && config.openMidi.length ? config.openMidi : fallback.openMidi;
+  return {
+    tuning: normalizedTuning,
+    openMidi: deriveOpenMidiFromTuning(normalizedTuning, referenceOpenMidi),
+  };
+}
+
+function getInitialCustomInstrumentConfig() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_INSTRUMENT_STORAGE_KEY);
+    if (!raw) {
+      return normalizeCustomInstrumentConfig({ tuning: STANDARD_GUITAR_TUNING, openMidi: STANDARD_GUITAR_OPEN_MIDI });
+    }
+    return normalizeCustomInstrumentConfig(JSON.parse(raw));
+  } catch {
+    return normalizeCustomInstrumentConfig({ tuning: STANDARD_GUITAR_TUNING, openMidi: STANDARD_GUITAR_OPEN_MIDI });
+  }
+}
+
+function persistCustomInstrumentConfig(config) {
+  try {
+    localStorage.setItem(CUSTOM_INSTRUMENT_STORAGE_KEY, JSON.stringify(config));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function getCustomStringSpacing(stringCount) {
+  return DIMENSIONS.stringSpacing;
+}
+
+function findBestCustomSourceStart(tuning, sourceCount) {
+  const target = Array.isArray(tuning) ? tuning.slice(-sourceCount) : [];
+  if (!target.length) {
+    return 0;
+  }
+  let bestStart = 0;
+  let bestScore = Number.POSITIVE_INFINITY;
+  for (let start = 0; start <= STANDARD_GUITAR_TUNING.length - sourceCount; start += 1) {
+    let score = 0;
+    for (let index = 0; index < sourceCount; index += 1) {
+      const targetIndex = getNoteIndex(target[index]);
+      const sourceIndex = getNoteIndex(STANDARD_GUITAR_TUNING[start + index]);
+      score += targetIndex === sourceIndex ? 0 : 1;
+    }
+    if (score < bestScore) {
+      bestScore = score;
+      bestStart = start;
+    }
+  }
+  return bestStart;
+}
+
+function buildCustomSourceWindows(tuning) {
+  const stringCount = Array.isArray(tuning) ? tuning.length : STANDARD_GUITAR_TUNING.length;
+  const sourceCount = Math.min(STANDARD_GUITAR_TUNING.length, Math.max(1, stringCount));
+  if (stringCount <= STANDARD_GUITAR_TUNING.length) {
+    const sourceStart = findBestCustomSourceStart(tuning, sourceCount);
+    return [{ sourceStart, targetStart: 0, sourceCount }];
+  }
+  return Array.from({ length: stringCount - STANDARD_GUITAR_TUNING.length + 1 }, (_, targetStart) => ({
+    sourceStart: 0,
+    targetStart,
+    sourceCount: STANDARD_GUITAR_TUNING.length,
+  }));
+}
+
+function getCustomInstrumentConfigSignature(config) {
+  const normalized = normalizeCustomInstrumentConfig(config);
+  return `${normalized.tuning.join(",")}|${normalized.openMidi.join(",")}`;
+}
+
+function buildCustomInstrumentDefinition(config) {
+  const normalized = normalizeCustomInstrumentConfig(config);
+  const sourceWindows = buildCustomSourceWindows(normalized.tuning);
+  const primaryWindow = sourceWindows[0] ?? { sourceStart: 0, targetStart: 0, sourceCount: normalized.tuning.length };
+  return {
+    id: CUSTOM_INSTRUMENT_ID,
+    tuning: normalized.tuning,
+    openMidi: normalized.openMidi,
+    stringSpacing: getCustomStringSpacing(normalized.tuning.length),
+    sourceStringStart: primaryWindow.sourceStart,
+    sourceStringCount: primaryWindow.sourceCount,
+    sourceWindows,
+    cacheKey: `${CUSTOM_INSTRUMENT_ID}:${getCustomInstrumentConfigSignature(normalized)}`,
+  };
+}
+
 function normalizeInstrumentId(instrumentId) {
   const normalized = `${instrumentId ?? ""}`.trim().toLowerCase();
-  return Object.prototype.hasOwnProperty.call(INSTRUMENTS, normalized) ? normalized : "guitar";
+  return VALID_INSTRUMENT_IDS.has(normalized) ? normalized : "guitar";
 }
 
 function normalizeGuitarTone(tone) {
@@ -1272,7 +1868,11 @@ function normalizeGuitarTone(tone) {
 }
 
 function getActiveInstrument() {
-  return INSTRUMENTS[normalizeInstrumentId(state.instrumentId)] ?? INSTRUMENTS.guitar;
+  const instrumentId = normalizeInstrumentId(state.instrumentId);
+  if (instrumentId === CUSTOM_INSTRUMENT_ID) {
+    return buildCustomInstrumentDefinition(state.customInstrumentConfig);
+  }
+  return INSTRUMENTS[instrumentId] ?? INSTRUMENTS.guitar;
 }
 
 function getActiveTuning() {
@@ -1446,7 +2046,11 @@ function applyTranslations() {
 
   syncVideoRendererUi();
   refreshAccessUi();
-  syncGuitarToneControls();
+  syncInstrumentControls();
+  if (state.customInstrumentModalOpen) {
+    renderCustomIntervalFields();
+    renderCustomTuningFields();
+  }
 }
 
 function shouldUseMobileBoardToolbarPlacement() {
@@ -2017,8 +2621,18 @@ function normalizeMarkersForInstrument() {
   }
 }
 
-function syncGuitarToneControls() {
-  const isGuitar = normalizeInstrumentId(state.instrumentId) === "guitar";
+function getCurrentInstrumentLabel() {
+  const instrumentId = normalizeInstrumentId(state.instrumentId);
+  if (instrumentId === CUSTOM_INSTRUMENT_ID) {
+    return t("instrument.custom");
+  }
+  return t(`instrument.${instrumentId}`);
+}
+
+function syncInstrumentControls() {
+  const instrumentId = normalizeInstrumentId(state.instrumentId);
+  const isGuitar = instrumentId === "guitar";
+  const isCustom = instrumentId === CUSTOM_INSTRUMENT_ID;
   if (dom.guitarToneWrap) {
     dom.guitarToneWrap.hidden = !isGuitar;
   }
@@ -2026,6 +2640,181 @@ function syncGuitarToneControls() {
     dom.guitarToneSelect.value = normalizeGuitarTone(state.guitarTone);
     dom.guitarToneSelect.disabled = !isGuitar;
   }
+  if (dom.customInstrumentEditBtn) {
+    dom.customInstrumentEditBtn.hidden = !isCustom;
+  }
+}
+
+function updateCustomInstrumentStatus(message = "") {
+  customInstrumentModal.statusMessage = message;
+  if (dom.customInstrumentStatus) {
+    dom.customInstrumentStatus.textContent = message;
+  }
+}
+
+function getUniformIntervalPresetValue(intervals) {
+  if (!Array.isArray(intervals) || !intervals.length) {
+    return "custom";
+  }
+  const first = Number(intervals[0]);
+  const isUniform = intervals.every((value) => Number(value) === first);
+  if (!isUniform || ![3, 4, 5, 7].includes(first)) {
+    return "custom";
+  }
+  return `${first}`;
+}
+
+function getSelectedIntervalPresetSemitones() {
+  const value = dom.customIntervalPresetSelect?.value ?? getUniformIntervalPresetValue(customInstrumentModal.draftIntervals);
+  const semitones = Number(value);
+  return Number.isFinite(semitones) ? semitones : null;
+}
+
+function renderCustomIntervalFields() {
+  if (!dom.customIntervalFields) {
+    return;
+  }
+  const intervals = Array.isArray(customInstrumentModal.draftIntervals) ? customInstrumentModal.draftIntervals : [];
+  const tuning = Array.isArray(customInstrumentModal.draftTuning) ? customInstrumentModal.draftTuning : [];
+  const count = sanitizeCustomStringCount(tuning.length || STANDARD_GUITAR_TUNING.length);
+  dom.customIntervalFields.innerHTML = intervals
+    .map((interval, index) => {
+      const fromString = count - index;
+      const toString = count - index - 1;
+      const options = INTERVAL_OPTIONS.map(
+        (entry) =>
+          `<option value="${entry.semitones}"${Number(interval) === entry.semitones ? " selected" : ""}>${escapeHtml(
+            t(entry.key)
+          )}</option>`
+      ).join("");
+      return `
+        <label class="custom-instrument-modal__interval-field">
+          <span>${escapeHtml(t("customInstrument.intervalLabel", { from: fromString, to: toString }))}</span>
+          <select data-custom-interval-index="${index}">${options}</select>
+        </label>
+      `;
+    })
+    .join("");
+  if (dom.customIntervalPresetSelect) {
+    dom.customIntervalPresetSelect.value = getUniformIntervalPresetValue(intervals);
+  }
+}
+
+function renderCustomTuningFields() {
+  if (!dom.customTuningFields) {
+    return;
+  }
+  const tuning = Array.isArray(customInstrumentModal.draftTuning) ? customInstrumentModal.draftTuning : [];
+  const count = sanitizeCustomStringCount(tuning.length || STANDARD_GUITAR_TUNING.length);
+  const presetSemitones = getSelectedIntervalPresetSemitones();
+  dom.customTuningFields.innerHTML = tuning
+    .map(
+      (note, index) => `
+        <label class="custom-instrument-modal__tuning-field">
+          <span>${escapeHtml(t("customInstrument.stringLabel", { string: count - index }))}</span>
+          <input
+            type="text"
+            value="${escapeHtml(note || "")}"
+            data-custom-string-index="${index}"
+            placeholder="${escapeHtml(t("customInstrument.notePlaceholder"))}"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            ${presetSemitones !== null && index > 0 ? "readonly data-auto-derived=\"true\"" : ""}
+          />
+        </label>
+      `
+    )
+    .join("");
+}
+
+function syncCustomInstrumentModalDraft(count, tuning, { keepStatus = false } = {}) {
+  customInstrumentModal.draftTuning = resizeCustomTuningDraft(tuning, count);
+  customInstrumentModal.draftIntervals = calculateIntervalsFromTuning(customInstrumentModal.draftTuning);
+  if (dom.customStringCountInput) {
+    dom.customStringCountInput.value = `${sanitizeCustomStringCount(customInstrumentModal.draftTuning.length)}`;
+  }
+  renderCustomIntervalFields();
+  renderCustomTuningFields();
+  if (!keepStatus) {
+  }
+}
+
+function setCustomInstrumentModalOpen(nextOpen) {
+  const isOpen = Boolean(nextOpen);
+  state.customInstrumentModalOpen = isOpen;
+  dom.customInstrumentModal?.classList.toggle("is-open", isOpen);
+  dom.customInstrumentModalBackdrop?.classList.toggle("is-open", isOpen);
+  dom.customInstrumentModal?.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  dom.customInstrumentModalBackdrop?.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  if (!isOpen && dom.instrumentSelect) {
+    dom.instrumentSelect.value = normalizeInstrumentId(state.instrumentId);
+  }
+}
+
+function openCustomInstrumentModal(baseConfig = null) {
+  const sourceConfig =
+    baseConfig ??
+    (normalizeInstrumentId(state.instrumentId) === CUSTOM_INSTRUMENT_ID
+      ? state.customInstrumentConfig
+      : {
+          tuning: getActiveInstrument().tuning,
+          openMidi: getActiveInstrument().openMidi,
+        });
+  const normalized = normalizeCustomInstrumentConfig(sourceConfig, state.customInstrumentConfig);
+  syncCustomInstrumentModalDraft(normalized.tuning.length, normalized.tuning);
+  setCustomInstrumentModalOpen(true);
+}
+
+function closeCustomInstrumentModal() {
+  setCustomInstrumentModalOpen(false);
+}
+
+function applyCustomInstrumentConfig() {
+  const draftTuning = Array.isArray(customInstrumentModal.draftTuning) ? customInstrumentModal.draftTuning : [];
+  const stringCount = sanitizeCustomStringCount(draftTuning.length);
+  if (stringCount < 1) {
+    const message = t("customInstrument.error.invalidStringCount");
+    updateCustomInstrumentStatus(message);
+    showUiToast(message, "error");
+    return;
+  }
+
+  const normalizedTuning = [];
+  for (let index = 0; index < stringCount; index += 1) {
+    const noteName = normalizeTuningNoteName(draftTuning[index]);
+    if (!noteName) {
+      const stringNumber = stringCount - index;
+      const message = t("customInstrument.error.invalidNote", { string: stringNumber });
+      updateCustomInstrumentStatus(message);
+      showUiToast(message, "error");
+      const targetInput = dom.customTuningFields?.querySelector(`[data-custom-string-index="${index}"]`);
+      if (targetInput instanceof HTMLInputElement) {
+        targetInput.focus();
+        targetInput.select();
+      }
+      return;
+    }
+    normalizedTuning.push(noteName);
+  }
+
+  const nextConfig = normalizeCustomInstrumentConfig(
+    {
+      tuning: normalizedTuning,
+      openMidi:
+        normalizeInstrumentId(state.instrumentId) === CUSTOM_INSTRUMENT_ID
+          ? state.customInstrumentConfig?.openMidi
+          : getActiveInstrument().openMidi,
+    },
+    state.customInstrumentConfig
+  );
+  state.customInstrumentConfig = nextConfig;
+  persistCustomInstrumentConfig(nextConfig);
+  instrumentShapeCache.clear();
+  setInstrument(CUSTOM_INSTRUMENT_ID, {
+    forceRefresh: normalizeInstrumentId(state.instrumentId) === CUSTOM_INSTRUMENT_ID,
+  });
+  closeCustomInstrumentModal();
 }
 
 function setGuitarTone(tone, { persist = true } = {}) {
@@ -2034,7 +2823,7 @@ function setGuitarTone(tone, { persist = true } = {}) {
     dom.guitarToneSelect.value = next;
   }
   if (state.guitarTone === next) {
-    syncGuitarToneControls();
+    syncInstrumentControls();
     if (normalizeInstrumentId(state.instrumentId) === "guitar") {
       warmupRealtimeAudioForActiveVoice();
     }
@@ -2048,19 +2837,19 @@ function setGuitarTone(tone, { persist = true } = {}) {
       // ignore storage errors
     }
   }
-  syncGuitarToneControls();
+  syncInstrumentControls();
   if (normalizeInstrumentId(state.instrumentId) === "guitar") {
     warmupRealtimeAudioForActiveVoice();
   }
 }
 
-function setInstrument(instrumentId, { persist = true } = {}) {
+function setInstrument(instrumentId, { persist = true, forceRefresh = false } = {}) {
   const next = normalizeInstrumentId(instrumentId);
   if (dom.instrumentSelect) {
     dom.instrumentSelect.value = next;
   }
-  if (state.instrumentId === next) {
-    syncGuitarToneControls();
+  if (state.instrumentId === next && !forceRefresh) {
+    syncInstrumentControls();
     return;
   }
 
@@ -2074,7 +2863,7 @@ function setInstrument(instrumentId, { persist = true } = {}) {
   }
 
   normalizeMarkersForInstrument();
-  syncGuitarToneControls();
+  syncInstrumentControls();
   resetMarkerHistory();
   clearOverlays();
   dragShapeId = null;
@@ -3332,6 +4121,10 @@ function renderGrid() {
       </g>
     `;
   });
+  if (dom.boardFretboard) {
+    dom.boardFretboard.style.setProperty("--fretlab-string-count", `${stringCount}`);
+    dom.boardFretboard.style.setProperty("--fretlab-board-height", `${Math.round(totalHeight)}`);
+  }
 }
 
 function groupShapesForLibrary(shapes) {
@@ -4142,18 +4935,56 @@ function getLockedAnchorString(shape, fallbackStringIndex) {
   return fallbackStringIndex;
 }
 
-function getVariantStringSetStartForPointer(shape, stringIndex) {
-  const starts = shape?.dragPlacementStarts ?? shape?.drop2StringSetStarts;
-  if (!Array.isArray(starts) || !starts.length) {
+function getPlacementVariantEntries(shape) {
+  if (Array.isArray(shape?.dragPlacementVariantList) && shape.dragPlacementVariantList.length) {
+    return shape.dragPlacementVariantList;
+  }
+  if (shape?.dragPlacementVariants && typeof shape.dragPlacementVariants === "object") {
+    return buildVariantEntryListFromMap(shape.dragPlacementVariants);
+  }
+  if (Array.isArray(shape?.drop2VariantList) && shape.drop2VariantList.length) {
+    return shape.drop2VariantList;
+  }
+  if (shape?.drop2Variants && typeof shape.drop2Variants === "object") {
+    return buildVariantEntryListFromMap(shape.drop2Variants);
+  }
+  return [];
+}
+
+function getPlacementVariantRange(entry) {
+  const offsets = (entry?.positions ?? []).map((pos) => Number(pos?.string)).filter((value) => Number.isFinite(value));
+  const anchorString = Number(entry?.anchorString ?? 0);
+  if (!offsets.length) {
+    return { min: anchorString, max: anchorString };
+  }
+  return {
+    min: anchorString + Math.min(...offsets),
+    max: anchorString + Math.max(...offsets),
+  };
+}
+
+function getPlacementVariantForPointer(shape, stringIndex) {
+  const entries = getPlacementVariantEntries(shape);
+  if (!entries.length) {
     return null;
   }
-  const numericStarts = starts.map((value) => Number(value)).filter((value) => !Number.isNaN(value));
-  if (!numericStarts.length) {
-    return null;
-  }
-  const minStart = Math.min(...numericStarts);
-  const maxStart = Math.max(...numericStarts);
-  return Math.max(minStart, Math.min(maxStart, Number(stringIndex)));
+  const pointerString = Number(stringIndex);
+  let bestVariant = null;
+  let bestScore = Number.POSITIVE_INFINITY;
+
+  entries.forEach((entry) => {
+    const range = getPlacementVariantRange(entry);
+    const distance =
+      pointerString < range.min ? range.min - pointerString : pointerString > range.max ? pointerString - range.max : 0;
+    const center = (range.min + range.max) / 2;
+    const score = distance * 10 + Math.abs(pointerString - center);
+    if (score < bestScore) {
+      bestScore = score;
+      bestVariant = entry;
+    }
+  });
+
+  return bestVariant;
 }
 
 function normalizePlacementAnchorFret(anchorFret, positions) {
@@ -4179,16 +5010,11 @@ function resolveShapePlacement(shape, cell) {
     return null;
   }
 
-  const dragPlacementVariants = shape.dragPlacementVariants ?? shape.drop2Variants;
-  if (dragPlacementVariants) {
-    const stringSetStart = getVariantStringSetStartForPointer(shape, cell.stringIndex);
-    const variant = dragPlacementVariants[String(stringSetStart)];
-    if (!variant) {
-      return null;
-    }
-    const anchorString = variant.anchorString;
-    const anchorFret = normalizePlacementAnchorFret(cell.fret, variant.positions);
-    const positions = calculateOverlayPositions({ positions: variant.positions }, anchorString, anchorFret);
+  const placementVariant = getPlacementVariantForPointer(shape, cell.stringIndex);
+  if (placementVariant) {
+    const anchorString = placementVariant.anchorString;
+    const anchorFret = normalizePlacementAnchorFret(cell.fret, placementVariant.positions);
+    const positions = calculateOverlayPositions({ positions: placementVariant.positions }, anchorString, anchorFret);
     if (!positions.length) {
       return null;
     }
@@ -4196,7 +5022,7 @@ function resolveShapePlacement(shape, cell) {
       anchorString,
       anchorFret,
       positions,
-      dragStringSetStart: stringSetStart,
+      dragStringSetStart: Number(placementVariant.stringSetStart ?? 0),
     };
   }
 
@@ -4805,10 +5631,26 @@ function buildMidiMultisetKey(values = []) {
 }
 
 function getShapePlacementVariants(shape) {
+  if (Array.isArray(shape?.dragPlacementVariantList) && shape.dragPlacementVariantList.length) {
+    return shape.dragPlacementVariantList
+      .map((variant, index) => ({
+        variantId: variant?.variantId ?? `drag-${index}`,
+        positions: Array.isArray(variant?.positions) ? variant.positions : [],
+      }))
+      .filter((entry) => entry.positions.length);
+  }
   if (shape?.dragPlacementVariants && typeof shape.dragPlacementVariants === "object") {
     return Object.entries(shape.dragPlacementVariants)
       .map(([variantId, variant]) => ({
         variantId,
+        positions: Array.isArray(variant?.positions) ? variant.positions : [],
+      }))
+      .filter((entry) => entry.positions.length);
+  }
+  if (Array.isArray(shape?.drop2VariantList) && shape.drop2VariantList.length) {
+    return shape.drop2VariantList
+      .map((variant, index) => ({
+        variantId: variant?.variantId ?? `drop2-${index}`,
         positions: Array.isArray(variant?.positions) ? variant.positions : [],
       }))
       .filter((entry) => entry.positions.length);
@@ -5966,7 +6808,14 @@ function bindControls() {
     if (!event?.target) {
       return;
     }
+    if (normalizeInstrumentId(event.target.value) === CUSTOM_INSTRUMENT_ID) {
+      openCustomInstrumentModal();
+      return;
+    }
     setInstrument(event.target.value);
+  });
+  dom.customInstrumentEditBtn?.addEventListener("click", () => {
+    openCustomInstrumentModal();
   });
   dom.guitarToneSelect?.addEventListener("change", (event) => {
     if (!event?.target) {
@@ -5974,6 +6823,92 @@ function bindControls() {
     }
     setGuitarTone(event.target.value);
   });
+  dom.customStringCountInput?.addEventListener("input", (event) => {
+    if (!event?.target) {
+      return;
+    }
+    const count = sanitizeCustomStringCount(event.target.value);
+    const presetSemitones = getSelectedIntervalPresetSemitones();
+    if (presetSemitones !== null) {
+      const nextIntervals = Array.from({ length: Math.max(0, count - 1) }, () => presetSemitones);
+      const nextTuning = buildTuningFromIntervals(customInstrumentModal.draftTuning[0], nextIntervals);
+      customInstrumentModal.draftIntervals = nextIntervals;
+      customInstrumentModal.draftTuning = nextTuning;
+      if (dom.customStringCountInput) {
+        dom.customStringCountInput.value = `${count}`;
+      }
+      renderCustomIntervalFields();
+      renderCustomTuningFields();
+        return;
+    }
+    syncCustomInstrumentModalDraft(count, customInstrumentModal.draftTuning);
+  });
+  dom.customIntervalPresetSelect?.addEventListener("change", (event) => {
+    const value = Number(event?.target?.value);
+    if (!Number.isFinite(value)) {
+      renderCustomIntervalFields();
+      return;
+    }
+    const count = sanitizeCustomStringCount(customInstrumentModal.draftTuning.length || dom.customStringCountInput?.value);
+    const nextIntervals = Array.from({ length: Math.max(0, count - 1) }, () => value);
+    const nextTuning = buildTuningFromIntervals(customInstrumentModal.draftTuning[0], nextIntervals);
+    customInstrumentModal.draftIntervals = nextIntervals;
+    customInstrumentModal.draftTuning = nextTuning;
+    renderCustomIntervalFields();
+    renderCustomTuningFields();
+  });
+  dom.customIntervalFields?.addEventListener("change", (event) => {
+    const select = event.target.closest("select[data-custom-interval-index]");
+    if (!(select instanceof HTMLSelectElement)) {
+      return;
+    }
+    const index = Number(select.dataset.customIntervalIndex);
+    const semitones = Number(select.value);
+    if (!Number.isInteger(index) || !Number.isFinite(semitones)) {
+      return;
+    }
+    const nextIntervals = [...(customInstrumentModal.draftIntervals || [])];
+    nextIntervals[index] = semitones;
+    const nextTuning = buildTuningFromIntervals(customInstrumentModal.draftTuning[0], nextIntervals);
+    customInstrumentModal.draftIntervals = nextIntervals;
+    customInstrumentModal.draftTuning = nextTuning;
+    renderCustomIntervalFields();
+    renderCustomTuningFields();
+  });
+  dom.customTuningFields?.addEventListener("input", (event) => {
+    const input = event.target.closest("input[data-custom-string-index]");
+    if (!(input instanceof HTMLInputElement)) {
+      return;
+    }
+    const index = Number(input.dataset.customStringIndex);
+    if (!Number.isInteger(index) || index < 0) {
+      return;
+    }
+    const presetSemitones = getSelectedIntervalPresetSemitones();
+    if (presetSemitones !== null) {
+      if (index > 0) {
+        renderCustomTuningFields();
+        return;
+      }
+      customInstrumentModal.draftTuning[0] = input.value;
+      const nextTuning = buildTuningFromIntervals(customInstrumentModal.draftTuning[0], customInstrumentModal.draftIntervals);
+      customInstrumentModal.draftTuning = nextTuning;
+      renderCustomTuningFields();
+      return;
+    }
+    customInstrumentModal.draftTuning[index] = input.value;
+    customInstrumentModal.draftIntervals = calculateIntervalsFromTuning(customInstrumentModal.draftTuning);
+    renderCustomIntervalFields();
+  });
+  dom.customInstrumentModalCloseBtn?.addEventListener("click", closeCustomInstrumentModal);
+  dom.customInstrumentCancelBtn?.addEventListener("click", closeCustomInstrumentModal);
+  dom.customInstrumentModalBackdrop?.addEventListener("click", closeCustomInstrumentModal);
+  dom.customInstrumentModal?.addEventListener("click", (event) => {
+    if (event.target === dom.customInstrumentModal) {
+      closeCustomInstrumentModal();
+    }
+  });
+  dom.customInstrumentSaveBtn?.addEventListener("click", applyCustomInstrumentConfig);
 
   dom.clearBtn?.addEventListener("click", () => {
     clearMarkers();
@@ -6173,6 +7108,9 @@ function bindControls() {
     if (state.videoModalOpen && !videoRenderer.busy) {
       setVideoModalOpen(false);
     }
+    if (state.customInstrumentModalOpen) {
+      closeCustomInstrumentModal();
+    }
   });
 
   dom.shapeLibrary?.addEventListener("dragstart", handleShapeDragStart);
@@ -6223,7 +7161,10 @@ function init() {
   bindRealtimeAudioUnlockGestures();
   state.language = getInitialUiLanguage();
   state.instrumentId = getInitialInstrumentId();
+  state.customInstrumentConfig = getInitialCustomInstrumentConfig();
   state.guitarTone = getInitialGuitarTone();
+  customInstrumentModal.draftTuning = [...state.customInstrumentConfig.tuning];
+  customInstrumentModal.draftIntervals = calculateIntervalsFromTuning(customInstrumentModal.draftTuning);
   if (dom.instrumentSelect) {
     dom.instrumentSelect.value = normalizeInstrumentId(state.instrumentId);
   }
@@ -6244,7 +7185,7 @@ function init() {
   syncVideoRendererUi();
   bindControls();
   initRealtimeInputs();
-  syncGuitarToneControls();
+  syncInstrumentControls();
   warmupRealtimeAudioForActiveVoice();
   refreshAccessUi();
 }

@@ -510,7 +510,7 @@
 
   <body>
     <div id="root"></div>
-    <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.3"></script>
+    <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.4"></script>
     <script defer src="/fretlab/js/fretlab-payment.js?v=1.1.15"></script>
     <script>
       (function () {
@@ -566,7 +566,7 @@
         var SITE_FOOTER_RENDER_KEY = 'site-footer-v3';
         var UPDATE_LOG_CONTENT = {
           zh: {
-            banner: '最后一次版本更新时间：2026年03月16日',
+            banner: '最后一次版本更新时间：2026年03月24日',
             button: '了解详情',
             modalTitle: '更新日志',
             close: '关闭',
@@ -574,15 +574,26 @@
             sectionHistory: '历史更新记录',
             historyButton: '了解详情',
             historyNote: '暂无更早历史记录。',
-            currentVersion: 'v1.0.3（2026年03月16日）',
+            currentVersion: 'v1.0.4（2026年03月24日）',
             currentItems: [
-              '新增点击预听；双击可将音符设为黄色根音。',
-              '指板旋转改为三态循环，并支持 Start / End Fret 视窗控制。',
-              '竖向指板默认显示 1-7 品，品位数字与音名位置同步优化。',
-              '手机、平板与桌面顶部布局统一，新增简 / 繁 / en 语言切换。',
-              '官网网页版移除 React Grab，交互更稳定。'
+              '新增自定义指板：可设置任意弦数、每根弦定音与统一/逐段弦间音程。',
+              '预制指型拖到自定义调弦后会自动换算品位与音名，不再按标准吉他硬搬。',
+              '高弦数自定义指板会自动扩展容器高度，并保持正常弦距与弹窗滚动。',
+              '指板支持点击预听、双击设根音、三态旋转与 Start / End Fret 视窗控制。',
+              '手机、平板与桌面顶部布局进一步统一，官网工具页保留稳定交互。'
             ],
             historyItems: [
+              {
+                version: 'v1.0.3',
+                detailTitle: 'v1.0.3（2026年03月16日）',
+                detailItems: [
+                  '新增点击预听；双击可将音符设为黄色根音。',
+                  '指板旋转改为三态循环，并支持 Start / End Fret 视窗控制。',
+                  '竖向指板默认显示 1-7 品，品位数字与音名位置同步优化。',
+                  '手机、平板与桌面顶部布局统一，新增简 / 繁 / en 语言切换。',
+                  '官网网页版移除 React Grab，交互更稳定。'
+                ]
+              },
               {
                 version: 'v1.0.2',
                 detailTitle: 'v1.0.2（2026年03月08日）',
@@ -608,7 +619,7 @@
             ],
           },
           en: {
-            banner: 'Last version update: March 16, 2026',
+            banner: 'Last version update: March 24, 2026',
             button: 'View details',
             modalTitle: 'Update Log',
             close: 'Close',
@@ -616,15 +627,26 @@
             sectionHistory: 'History',
             historyButton: 'View details',
             historyNote: 'No earlier history is available.',
-            currentVersion: 'v1.0.3 (March 16, 2026)',
+            currentVersion: 'v1.0.4 (March 24, 2026)',
             currentItems: [
-              'Clicking a note now previews audio, and double-click sets a yellow root note.',
-              'Board rotation now uses a three-state cycle and supports Start / End Fret window control.',
-              'Vertical view now defaults to frets 1-7, with improved fret-label and note centering.',
-              'Header layout is unified across phone, tablet, and desktop, with Simplified / Traditional / English switching.',
-              'React Grab was removed from the website tool runtime for more stable interaction.'
+              'Added Custom Fretboard with arbitrary string counts, per-string tuning, and interval presets.',
+              'Preset shapes now retune themselves on custom tuning instead of being copied from standard guitar 1:1.',
+              'High-string-count boards now expand the container height automatically while keeping normal string spacing and modal scrolling.',
+              'The board now supports click-to-preview audio, double-click root notes, three-state rotation, and Start / End Fret window control.',
+              'Header layout is further unified across phone, tablet, and desktop while keeping the website tool interaction stable.'
             ],
             historyItems: [
+              {
+                version: 'v1.0.3',
+                detailTitle: 'v1.0.3 (March 16, 2026)',
+                detailItems: [
+                  'Clicking a note now previews audio, and double-click sets a yellow root note.',
+                  'Board rotation now uses a three-state cycle and supports Start / End Fret window control.',
+                  'Vertical view now defaults to frets 1-7, with improved fret-label and note centering.',
+                  'Header layout is unified across phone, tablet, and desktop, with Simplified / Traditional / English switching.',
+                  'React Grab was removed from the website tool runtime for more stable interaction.'
+                ]
+              },
               {
                 version: 'v1.0.2',
                 detailTitle: 'v1.0.2 (March 8, 2026)',
