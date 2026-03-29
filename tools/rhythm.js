@@ -30,7 +30,8 @@
             countInTimer: null,
             countInActive: false,
             countInState: null,
-            countInUiTimers: []
+            countInUiTimers: [],
+            restoreMetronomeAfterStop: false
         },
         calibration: {
             enabled: false,
@@ -159,6 +160,7 @@
             'controls.practiceAdd': '+',
             'controls.practiceReset': '-',
             'controls.play': '播放',
+            'controls.pause': '暂停',
             'controls.stop': '停止',
             'modal.rhythm.title': '节奏设置',
             'modal.timeSignature.title': '拍号设置',
@@ -329,6 +331,7 @@
             'controls.practiceAdd': '+',
             'controls.practiceReset': '-',
             'controls.play': '播放',
+            'controls.pause': '暫停',
             'controls.stop': '停止',
             'modal.rhythm.title': '節奏設置',
             'modal.timeSignature.title': '拍號設置',
@@ -499,6 +502,7 @@
             'controls.practiceAdd': '+',
             'controls.practiceReset': '-',
             'controls.play': 'Play',
+            'controls.pause': 'Pause',
             'controls.stop': 'Stop',
             'modal.rhythm.title': 'Rhythm Settings',
             'modal.timeSignature.title': 'Time Signature Settings',
@@ -763,12 +767,13 @@
         return { beats: settings.beats, den: settings.beatType };
     }
 
-    function getMetronomePatternInfo(tempoOverride) {
+    function getMetronomePatternInfo(tempoOverride, beatOnly = false) {
         const tempo = Math.max(1, tempoOverride || 80);
-        if (!metronomePattern.enabled) {
+        if (beatOnly || !metronomePattern.enabled) {
+            const tsInfo = getMetronomeTimeSignatureInfo();
             return {
                 usePattern: false,
-                stepDuration: 60.0 / tempo
+                stepDuration: (60.0 / tempo) * (4 / tsInfo.den)
             };
         }
 
@@ -1195,7 +1200,7 @@
     function updatePlayButtonState(isPlaying) {
         const btn = document.getElementById('playRhythmBtn');
         if (!btn) return;
-        btn.textContent = getTranslation(isPlaying ? 'controls.stop' : 'controls.play');
+        btn.textContent = getTranslation(isPlaying ? 'controls.pause' : 'controls.play');
     }
 
     function applyTranslations() {
@@ -1276,6 +1281,351 @@
 
     function closeSettings() {
         closeSettingsModal();
+    }
+
+    const toolParameterConfig = {
+        toolKey: 'rhythm',
+        toolName: '节奏',
+        storageKey: 'cognote_tool_parameters_rhythm',
+        schemaVersion: 1,
+        defaultTheme: 'light',
+        defaultLanguage: 'zh-CN'
+    };
+    let toolParameterDefaultSnapshot = null;
+
+    function getToolParameterControls() {
+        return Array.from(document.querySelectorAll('input[id], select[id], textarea[id]')).filter((control) => {
+            if (!control || !control.id) return false;
+            if (control.id === 'parameterImportFileInput') return false;
+            const type = String(control.type || '').toLowerCase();
+            return type !== 'file';
+        });
+    }
+
+    function getToolParameterControlsById(controlId) {
+        return getToolParameterControls().filter((control) => control.id === controlId);
+    }
+
+    function captureToolParameterSnapshot(useDefault) {
+        const snapshot = {};
+        const seenIds = new Set();
+        getToolParameterControls().forEach((control) => {
+            if (seenIds.has(control.id)) return;
+            seenIds.add(control.id);
+            const tag = control.tagName.toLowerCase();
+            const type = String(control.type || '').toLowerCase();
+            const state = { tag, type };
+            if (tag === 'select') {
+                if (control.multiple) {
+                    const selected = Array.from(control.options)
+                        .filter((option) => useDefault ? option.defaultSelected : option.selected)
+                        .map((option) => option.value);
+                    state.value = selected;
+                } else if (useDefault) {
+                    const defaultOption = Array.from(control.options).find((option) => option.defaultSelected);
+                    state.value = defaultOption ? defaultOption.value : (control.options[0] ? control.options[0].value : control.value);
+                } else {
+                    state.value = control.value;
+                }
+            } else if (type === 'checkbox' || type === 'radio') {
+                state.checked = useDefault ? control.defaultChecked : control.checked;
+            } else {
+                state.value = useDefault ? control.defaultValue : control.value;
+            }
+            snapshot[control.id] = state;
+        });
+        return snapshot;
+    }
+
+    function applyToolParameterSnapshot(snapshot) {
+        if (!snapshot || typeof snapshot !== 'object') return 0;
+        let changedCount = 0;
+        Object.keys(snapshot).forEach((id) => {
+            const state = snapshot[id];
+            if (!state || typeof state !== 'object') return;
+            const controls = getToolParameterControlsById(id);
+            if (!controls.length) return;
+            controls.forEach((control) => {
+                const tag = control.tagName.toLowerCase();
+                const type = String(control.type || '').toLowerCase();
+                let changed = false;
+
+                if (tag === 'select') {
+                    if (control.multiple) {
+                        const selectedValues = Array.isArray(state.value) ? state.value.map(String) : [];
+                        Array.from(control.options).forEach((option) => {
+                            const nextSelected = selectedValues.includes(option.value);
+                            if (option.selected !== nextSelected) {
+                                option.selected = nextSelected;
+                                changed = true;
+                            }
+                        });
+                    } else {
+                        const nextValue = state.value == null ? '' : String(state.value);
+                        if (control.value !== nextValue) {
+                            control.value = nextValue;
+                            changed = true;
+                        }
+                    }
+                } else if (type === 'checkbox') {
+                    const nextChecked = !!state.checked;
+                    if (control.checked !== nextChecked) {
+                        control.checked = nextChecked;
+                        changed = true;
+                    }
+                } else if (type === 'radio') {
+                    if (state.checked) {
+                        if (!control.checked) {
+                            control.checked = true;
+                            changed = true;
+                        }
+                    }
+                } else {
+                    const nextValue = state.value == null ? '' : String(state.value);
+                    if (control.value !== nextValue) {
+                        control.value = nextValue;
+                        changed = true;
+                    }
+                }
+
+                if (changed) {
+                    changedCount += 1;
+                    control.dispatchEvent(new Event('input', { bubbles: true }));
+                    control.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+        });
+        return changedCount;
+    }
+
+    function buildToolParameterPayload(snapshot) {
+        const language = (typeof currentLanguage !== 'undefined' && currentLanguage)
+            ? currentLanguage
+            : (localStorage.getItem('preferredLanguage') || toolParameterConfig.defaultLanguage);
+        return {
+            schema: 'cognote-parameters',
+            version: toolParameterConfig.schemaVersion,
+            toolKey: toolParameterConfig.toolKey,
+            toolName: toolParameterConfig.toolName,
+            exportedAt: new Date().toISOString(),
+            preferences: {
+                theme: document.documentElement.getAttribute('data-theme') || toolParameterConfig.defaultTheme,
+                language
+            },
+            controls: snapshot
+        };
+    }
+
+    function applyToolParameterPreferences(preferences) {
+        if (!preferences || typeof preferences !== 'object') return;
+        const nextTheme = typeof preferences.theme === 'string' ? preferences.theme : '';
+        const nextLanguage = typeof preferences.language === 'string' ? preferences.language : '';
+        if (nextTheme) {
+            if (typeof setTheme === 'function') {
+                try { setTheme(nextTheme); } catch (_) {
+                    document.documentElement.setAttribute('data-theme', nextTheme);
+                }
+            } else {
+                document.documentElement.setAttribute('data-theme', nextTheme);
+            }
+        }
+        if (nextLanguage && typeof switchLanguage === 'function') {
+            try { switchLanguage(nextLanguage); } catch (_) {}
+        }
+    }
+
+    function getToolParameterBootstrapPreferences(preferences) {
+        const nextPreferences = (preferences && typeof preferences === 'object')
+            ? { ...preferences }
+            : {};
+        const savedTheme = localStorage.getItem('preferredTheme');
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+
+        if (savedTheme) {
+            nextPreferences.theme = savedTheme;
+        }
+        if (savedLanguage && translations[savedLanguage]) {
+            nextPreferences.language = savedLanguage;
+        }
+        return nextPreferences;
+    }
+
+    function finalizeToolParameterApply() {
+        const syncFnNames = [
+            'saveRhythmSettings',
+            'saveTimeSignatureSettings',
+            'saveMeasureSettings',
+            'saveVoiceSettings',
+            'saveMetronomePatternSettings',
+            'saveOstinatoState',
+            'updateMetronomePatternTimeSig',
+            'updateMetronomePatternUI',
+            'updateOstinatoPatternTimeSig',
+            'updateOstinatoPatternUI',
+            'updateOstinatoUI',
+            'updateDensityLabels',
+            'updateFrequencyLabels',
+            'applyTranslations'
+        ];
+        syncFnNames.forEach((name) => {
+            const fn = window[name];
+            if (typeof fn === 'function') {
+                try { fn(); } catch (_) {}
+            }
+        });
+        if (typeof window.updateRhythmOptionsForTimeSignature === 'function') {
+            try {
+                const timeSignatureSelect = document.getElementById('timeSignature');
+                window.updateRhythmOptionsForTimeSignature(timeSignatureSelect ? timeSignatureSelect.value : '4/4');
+            } catch (_) {}
+        }
+    }
+
+    function persistToolParameterPayload(payload) {
+        try {
+            localStorage.setItem(toolParameterConfig.storageKey, JSON.stringify(payload));
+        } catch (_) {}
+    }
+
+    function readSavedToolParameterPayload() {
+        try {
+            const raw = localStorage.getItem(toolParameterConfig.storageKey);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object') return null;
+            if (parsed.toolKey !== toolParameterConfig.toolKey) return null;
+            if (!parsed.controls || typeof parsed.controls !== 'object') return null;
+            return parsed;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function downloadToolParameterPayload(payload) {
+        const fileName = `Cognote ${toolParameterConfig.toolName}参数.json`;
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    function ensureToolParameterFeedbackModal() {
+        let modal = document.getElementById('toolParameterFeedbackModal');
+        if (modal) return modal;
+        modal = document.createElement('div');
+        modal.id = 'toolParameterFeedbackModal';
+        modal.className = 'modal';
+        modal.style.display = 'none';
+        modal.innerHTML = [
+            '<div class="modal-content" style="max-width: 420px;">',
+            '  <div class="modal-header">',
+            '    <h3>参数提示</h3>',
+            '    <button class="close-btn" type="button" aria-label="关闭">×</button>',
+            '  </div>',
+            '  <div class="modal-body">',
+            '    <p id="toolParameterFeedbackText" style="margin: 0; line-height: 1.6;"></p>',
+            '    <div class="modal-buttons" style="margin-top: 16px;">',
+            '      <button type="button" class="btn-primary">确定</button>',
+            '    </div>',
+            '  </div>',
+            '</div>'
+        ].join('');
+        const closeModal = () => { modal.style.display = 'none'; };
+        const closeBtn = modal.querySelector('.close-btn');
+        const confirmBtn = modal.querySelector('.btn-primary');
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (confirmBtn) confirmBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) closeModal();
+        });
+        document.body.appendChild(modal);
+        return modal;
+    }
+
+    function showToolParameterFeedback(message) {
+        const modal = ensureToolParameterFeedbackModal();
+        const textEl = document.getElementById('toolParameterFeedbackText');
+        if (textEl) textEl.textContent = message;
+        showModal(modal);
+    }
+
+    function saveToolParameters() {
+        const snapshot = captureToolParameterSnapshot(false);
+        const payload = buildToolParameterPayload(snapshot);
+        persistToolParameterPayload(payload);
+        downloadToolParameterPayload(payload);
+        showToolParameterFeedback('参数已保存到本地并导出文件。');
+    }
+
+    function resetToolParameters() {
+        if (!toolParameterDefaultSnapshot) {
+            toolParameterDefaultSnapshot = captureToolParameterSnapshot(true);
+        }
+        applyToolParameterPreferences({
+            theme: toolParameterConfig.defaultTheme,
+            language: toolParameterConfig.defaultLanguage
+        });
+        const changedCount = applyToolParameterSnapshot(toolParameterDefaultSnapshot);
+        finalizeToolParameterApply();
+        const payload = buildToolParameterPayload(captureToolParameterSnapshot(false));
+        persistToolParameterPayload(payload);
+        showToolParameterFeedback(changedCount > 0 ? `参数已重置为默认值（更新 ${changedCount} 项）。` : '参数已重置为默认值。');
+    }
+
+    function importToolParameters() {
+        const fileInput = document.getElementById('parameterImportFileInput');
+        if (!fileInput) {
+            alert('导入控件不可用。');
+            return;
+        }
+        fileInput.value = '';
+        fileInput.click();
+    }
+
+    async function handleToolParameterFileImport(file) {
+        if (!file) return;
+        try {
+            const text = await file.text();
+            const parsed = JSON.parse(text);
+            if (!parsed || typeof parsed !== 'object' || !parsed.controls || typeof parsed.controls !== 'object') {
+                throw new Error('bad-format');
+            }
+            if (parsed.toolKey !== toolParameterConfig.toolKey) {
+                alert(`导入失败：该文件属于${parsed.toolName || '其他'}工具，请导入 ${toolParameterConfig.toolName} 参数文件。`);
+                return;
+            }
+            applyToolParameterPreferences(parsed.preferences);
+            const changedCount = applyToolParameterSnapshot(parsed.controls);
+            finalizeToolParameterApply();
+            const payload = buildToolParameterPayload(captureToolParameterSnapshot(false));
+            persistToolParameterPayload(payload);
+            showToolParameterFeedback(changedCount > 0 ? `参数导入成功，已更新 ${changedCount} 项。` : '参数导入完成，未检测到差异。');
+        } catch (_) {
+            alert('导入失败：文件格式不正确。');
+        }
+    }
+
+    function initializeToolParameterExchange() {
+        toolParameterDefaultSnapshot = captureToolParameterSnapshot(true);
+        const fileInput = document.getElementById('parameterImportFileInput');
+        if (fileInput && fileInput.dataset.bound !== 'true') {
+            fileInput.dataset.bound = 'true';
+            fileInput.addEventListener('change', async (event) => {
+                const file = event.target && event.target.files ? event.target.files[0] : null;
+                await handleToolParameterFileImport(file);
+            });
+        }
+        const savedPayload = readSavedToolParameterPayload();
+        if (savedPayload && savedPayload.controls) {
+            applyToolParameterPreferences(getToolParameterBootstrapPreferences(savedPayload.preferences));
+            applyToolParameterSnapshot(savedPayload.controls);
+            finalizeToolParameterApply();
+        }
     }
 
     function toggleFunctionSelector() {
@@ -4784,6 +5134,7 @@
 
     function generateRhythm() {
         stopPlayback();
+        clearRhythmPlaybackSelection({ resetTimeline: true });
         const settings = getSettings();
         state.lastSettings = settings;
         const ostinato = settings.ostinato || { voice: 'none' };
@@ -4820,12 +5171,14 @@
 
     function previousRhythm() {
         if (currentHistoryIndex > 0) {
+            clearRhythmPlaybackSelection({ resetTimeline: true });
             renderHistory(currentHistoryIndex - 1);
         }
     }
 
     function nextRhythm() {
         if (currentHistoryIndex < rhythmHistory.length - 1) {
+            clearRhythmPlaybackSelection({ resetTimeline: true });
             renderHistory(currentHistoryIndex + 1);
         }
     }
@@ -4922,7 +5275,7 @@
 
     function getCurrentTempo() {
         const bpmInput = document.getElementById('metronomeBpm');
-        const tempo = Math.max(1, parseInt(bpmInput?.value || '80', 10) || 80);
+        const tempo = Math.max(1, Math.min(999, parseInt(bpmInput?.value || '80', 10) || 80));
         return tempo;
     }
 
@@ -5514,8 +5867,10 @@
                 (measure || []).forEach(event => {
                     const voice = event.voice || (voiceIndex + 1);
                     if (!event.rest) {
+                        const absoluteTick = measureIndex * measureTicks + position;
                         events.push({
-                            ticks: measureIndex * measureTicks + position,
+                            ticks: absoluteTick,
+                            sourceTick: absoluteTick,
                             voice,
                             tieType: event.tieType || null
                         });
@@ -5547,6 +5902,349 @@
         return { events, totalTicks, settings };
     }
 
+    function getRhythmPlaybackCursorState() {
+        if (!state.playback.cursorState) {
+            state.playback.cursorState = {
+                timeline: [],
+                cacheKey: '',
+                selectedIndex: -1,
+                cursorEl: null,
+                measureRects: [],
+                followTimers: [],
+                refreshTimer: null,
+                observer: null
+            };
+        }
+        return state.playback.cursorState;
+    }
+
+    function isRhythmPlaybackSelectableTarget(target) {
+        if (!target || !target.closest) return false;
+        return !!target.closest('g.vf-stavenote, g.vf-note, g.vf-rest, .vf-notehead, .vf-rest, .vf-stem, .vf-flag, .vf-beam, .vf-dot');
+    }
+
+    function isPointInsideRenderedRhythmScore(clientX, clientY) {
+        const scoreElement = document.getElementById('score');
+        const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+        if (!scoreElement || !svg) return false;
+        const svgRect = svg.getBoundingClientRect();
+        return clientX >= svgRect.left &&
+            clientX <= svgRect.right &&
+            clientY >= svgRect.top &&
+            clientY <= svgRect.bottom;
+    }
+
+    function getRhythmScoreRelativePoint(clientX, clientY) {
+        const scoreElement = document.getElementById('score');
+        if (!scoreElement) return null;
+        const rect = scoreElement.getBoundingClientRect();
+        return {
+            x: clientX - rect.left + scoreElement.scrollLeft,
+            y: clientY - rect.top + scoreElement.scrollTop
+        };
+    }
+
+    function ensureRhythmPlaybackCursor() {
+        const cursorState = getRhythmPlaybackCursorState();
+        const scoreElement = document.getElementById('score');
+        if (!scoreElement) return null;
+        if (!cursorState.cursorEl || !cursorState.cursorEl.isConnected) {
+            const cursor = document.createElement('div');
+            cursor.id = 'rhythmPlaybackCursor';
+            cursor.style.position = 'absolute';
+            cursor.style.top = '0';
+            cursor.style.width = '12px';
+            cursor.style.height = '100%';
+            cursor.style.left = '0';
+            cursor.style.background = 'rgba(255,79,163,0.25)';
+            cursor.style.border = '1px solid rgba(255,79,163,0.4)';
+            cursor.style.borderRadius = '4px';
+            cursor.style.pointerEvents = 'none';
+            cursor.style.display = 'none';
+            scoreElement.appendChild(cursor);
+            cursorState.cursorEl = cursor;
+        }
+        return cursorState.cursorEl;
+    }
+
+    function clearRhythmPlaybackSelection(options = {}) {
+        const cursorState = getRhythmPlaybackCursorState();
+        cursorState.selectedIndex = -1;
+        if (options.resetTimeline) {
+            cursorState.timeline = [];
+            cursorState.cacheKey = '';
+            cursorState.measureRects = [];
+        }
+        if (cursorState.cursorEl) cursorState.cursorEl.style.display = 'none';
+    }
+
+    function getRhythmMeasureRects() {
+        if (typeof window.getOSMDMeasureRects === 'function') {
+            try {
+                const rects = window.getOSMDMeasureRects();
+                if (Array.isArray(rects) && rects.length) return rects;
+            } catch (_) {}
+        }
+        const scoreElement = document.getElementById('score');
+        const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+        const measureCount = Array.isArray(state.lastVoices?.[0]) ? state.lastVoices[0].length : 0;
+        if (!scoreElement || !svg || !measureCount) return [];
+        const scoreRect = scoreElement.getBoundingClientRect();
+        const svgRect = svg.getBoundingClientRect();
+        const startX = svgRect.left - scoreRect.left + scoreElement.scrollLeft;
+        const startY = svgRect.top - scoreRect.top + scoreElement.scrollTop;
+        const width = svgRect.width / measureCount;
+        return Array.from({ length: measureCount }, (_, index) => ({
+            x: startX + index * width,
+            y: startY,
+            width,
+            height: svgRect.height
+        }));
+    }
+
+    function buildRhythmTimelineTicks() {
+        const settings = state.lastSettings || getSettings();
+        const voices = state.lastVoices || [];
+        const ticksPerBeat = divisions * (4 / settings.beatType);
+        const measureTicks = ticksPerBeat * settings.beats;
+        const map = new Map();
+        voices.forEach((measures) => {
+            if (!Array.isArray(measures)) return;
+            measures.forEach((measure, measureIndex) => {
+                let position = 0;
+                (measure || []).forEach((event) => {
+                    const absTicks = measureIndex * measureTicks + position;
+                    const key = `${absTicks}`;
+                    if (!map.has(key)) {
+                        map.set(key, {
+                            ticks: absTicks,
+                            measureIndex,
+                            hasSound: !event.rest
+                        });
+                    } else if (!event.rest) {
+                        map.get(key).hasSound = true;
+                    }
+                    position += event.duration || 0;
+                });
+            });
+        });
+        return Array.from(map.values()).sort((a, b) => a.ticks - b.ticks).map((event, index) => ({
+            ...event,
+            index,
+            sourceTick: event.ticks
+        }));
+    }
+
+    function collectRhythmPlaybackCandidates(measureRects) {
+        const scoreElement = document.getElementById('score');
+        const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+        if (!scoreElement || !svg) return measureRects.map(() => []);
+        const scoreRect = scoreElement.getBoundingClientRect();
+        const selector = 'g.vf-stavenote, g.vf-note, g.vf-rest, .vf-notehead, .vf-rest';
+        const seen = new Set();
+        const byMeasure = measureRects.map(() => []);
+        svg.querySelectorAll(selector).forEach((node) => {
+            const target = node.closest ? (node.closest('.vf-notehead, .vf-rest') || node.closest('g.vf-stavenote, g.vf-note, g.vf-rest') || node) : node;
+            if (!target || seen.has(target)) return;
+            const rect = target.getBoundingClientRect ? target.getBoundingClientRect() : null;
+            if (!rect || (rect.width <= 0 && rect.height <= 0)) return;
+            seen.add(target);
+            const candidate = {
+                el: target,
+                left: rect.left - scoreRect.left + scoreElement.scrollLeft,
+                right: rect.right - scoreRect.left + scoreElement.scrollLeft,
+                top: rect.top - scoreRect.top + scoreElement.scrollTop,
+                bottom: rect.bottom - scoreRect.top + scoreElement.scrollTop,
+                cx: rect.left - scoreRect.left + scoreElement.scrollLeft + rect.width / 2,
+                cy: rect.top - scoreRect.top + scoreElement.scrollTop + rect.height / 2
+            };
+            for (let i = 0; i < measureRects.length; i += 1) {
+                const measureRect = measureRects[i];
+                if (candidate.cx >= (measureRect.x - 8) && candidate.cx <= (measureRect.x + measureRect.width + 8)) {
+                    byMeasure[i].push(candidate);
+                    break;
+                }
+            }
+        });
+        return byMeasure.map((items) => items.sort((a, b) => a.cx - b.cx));
+    }
+
+    function clusterRhythmPlaybackCandidates(items) {
+        if (!items.length) return [];
+        const widths = items.map((item) => Math.max(4, item.right - item.left)).sort((a, b) => a - b);
+        const tolerance = Math.max(8, (widths[Math.floor(widths.length / 2)] || 12) * 0.85);
+        const clusters = [];
+        items.forEach((item) => {
+            const last = clusters[clusters.length - 1];
+            if (!last || Math.abs(item.cx - last.cx) > tolerance) {
+                clusters.push({
+                    cx: item.cx,
+                    left: item.left,
+                    right: item.right,
+                    top: item.top,
+                    bottom: item.bottom,
+                    elements: [item.el]
+                });
+                return;
+            }
+            last.left = Math.min(last.left, item.left);
+            last.right = Math.max(last.right, item.right);
+            last.top = Math.min(last.top, item.top);
+            last.bottom = Math.max(last.bottom, item.bottom);
+            last.cx = (last.left + last.right) / 2;
+            if (!last.elements.includes(item.el)) last.elements.push(item.el);
+        });
+        return clusters;
+    }
+
+    function buildRhythmPlaybackTimeline() {
+        const measureRects = getRhythmMeasureRects();
+        const logicalEvents = buildRhythmTimelineTicks();
+        const grouped = measureRects.map(() => []);
+        logicalEvents.forEach((event) => {
+            if (grouped[event.measureIndex]) grouped[event.measureIndex].push(event);
+        });
+        const candidatesByMeasure = collectRhythmPlaybackCandidates(measureRects);
+        const timeline = [];
+        grouped.forEach((events, measureIndex) => {
+            const clusters = clusterRhythmPlaybackCandidates(candidatesByMeasure[measureIndex] || []);
+            events.forEach((event, eventIndex) => {
+                const clusterIndex = events.length <= 1 ? 0 : Math.round(eventIndex * Math.max(0, clusters.length - 1) / Math.max(1, events.length - 1));
+                const cluster = clusters[clusterIndex] || null;
+                timeline.push({
+                    ...event,
+                    x: cluster ? cluster.cx : null,
+                    cursorLeft: cluster ? cluster.left : null,
+                    cursorRight: cluster ? cluster.right : null,
+                    top: cluster ? cluster.top : null,
+                    height: cluster ? Math.max(2, cluster.bottom - cluster.top) : null,
+                    elements: cluster ? cluster.elements : []
+                });
+            });
+        });
+        return { timeline, measureRects };
+    }
+
+    function refreshRhythmPlaybackTimeline(options = {}) {
+        const cursorState = getRhythmPlaybackCursorState();
+        const cacheKey = `${currentHistoryIndex}:${state.lastVoices?.[0]?.length || 0}`;
+        if (!options.force && cursorState.cacheKey === cacheKey && cursorState.timeline.length) {
+            return cursorState.timeline;
+        }
+        const built = buildRhythmPlaybackTimeline();
+        cursorState.timeline = built.timeline;
+        cursorState.cacheKey = cacheKey;
+        cursorState.measureRects = built.measureRects;
+        if (cursorState.selectedIndex >= 0) {
+            if (!setRhythmPlaybackSelectionByIndex(cursorState.selectedIndex)) {
+                clearRhythmPlaybackSelection();
+            }
+        }
+        return cursorState.timeline;
+    }
+
+    function queueRhythmPlaybackRefresh(delayMs = 180) {
+        const cursorState = getRhythmPlaybackCursorState();
+        if (cursorState.refreshTimer) clearTimeout(cursorState.refreshTimer);
+        cursorState.refreshTimer = setTimeout(() => {
+            cursorState.refreshTimer = null;
+            refreshRhythmPlaybackTimeline({ force: true });
+        }, delayMs);
+    }
+
+    function stopRhythmPlaybackCursorFollow() {
+        const cursorState = getRhythmPlaybackCursorState();
+        if (Array.isArray(cursorState.followTimers) && cursorState.followTimers.length) {
+            cursorState.followTimers.forEach((timerId) => clearTimeout(timerId));
+        }
+        cursorState.followTimers = [];
+    }
+
+    function startRhythmPlaybackCursorFollow(scheduledEvents, startTime, secondsPerTick) {
+        const cursorState = getRhythmPlaybackCursorState();
+        const timeline = refreshRhythmPlaybackTimeline();
+        if (!timeline.length || !Array.isArray(scheduledEvents) || !scheduledEvents.length || !state.playback.audioCtx) {
+            return;
+        }
+
+        stopRhythmPlaybackCursorFollow();
+
+        const firstTimelineIndex = timeline.findIndex((item) => item.sourceTick === scheduledEvents[0].sourceTick);
+        if (firstTimelineIndex >= 0) {
+            setRhythmPlaybackSelectionByIndex(firstTimelineIndex);
+        }
+
+        scheduledEvents.forEach((event) => {
+            const timelineIndex = timeline.findIndex((item) => item.sourceTick === event.sourceTick);
+            const delayMs = Math.max(0, ((startTime + event.ticks * secondsPerTick) - state.playback.audioCtx.currentTime) * 1000);
+            const timerId = setTimeout(() => {
+                if (!state.playback.isPlaying) return;
+                if (timelineIndex >= 0) {
+                    setRhythmPlaybackSelectionByIndex(timelineIndex);
+                }
+            }, delayMs);
+            cursorState.followTimers.push(timerId);
+        });
+    }
+
+    function setRhythmPlaybackSelectionByIndex(index) {
+        const cursorState = getRhythmPlaybackCursorState();
+        const event = cursorState.timeline[index];
+        const cursor = ensureRhythmPlaybackCursor();
+        if (!event || !cursor || !Number.isFinite(event.x)) {
+            clearRhythmPlaybackSelection();
+            return false;
+        }
+        cursorState.selectedIndex = index;
+        const width = (Number.isFinite(event.cursorLeft) && Number.isFinite(event.cursorRight))
+            ? Math.max(12, event.cursorRight - event.cursorLeft)
+            : 12;
+        const left = Number.isFinite(event.cursorLeft) ? event.cursorLeft : (event.x - width / 2);
+        cursor.style.transform = `translateX(${left}px)`;
+        cursor.style.width = `${width}px`;
+        cursor.style.top = `${Number.isFinite(event.top) ? event.top : 0}px`;
+        cursor.style.height = `${Number.isFinite(event.height) ? event.height : 64}px`;
+        cursor.style.display = 'block';
+        return true;
+    }
+
+    function initializeRhythmPlaybackCursorSystem() {
+        const scoreElement = document.getElementById('score');
+        const cursorState = getRhythmPlaybackCursorState();
+        if (!scoreElement) return;
+        if (scoreElement.dataset.playbackCursorBound !== 'true') {
+            scoreElement.dataset.playbackCursorBound = 'true';
+            scoreElement.addEventListener('click', (event) => {
+                if (window.__icChallenge && typeof window.__icChallenge.isActive === 'function' && window.__icChallenge.isActive()) {
+                    return;
+                }
+                if (!isRhythmPlaybackSelectableTarget(event.target)) return;
+                const timeline = refreshRhythmPlaybackTimeline();
+                if (!timeline.length) return;
+                const point = getRhythmScoreRelativePoint(event.clientX, event.clientY);
+                let best = null;
+                let bestDistance = Infinity;
+                timeline.forEach((item) => {
+                    if (!Number.isFinite(item.x)) return;
+                    const distance = Math.abs(item.x - point.x);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        best = item;
+                    }
+                });
+                if (!best) return;
+                setRhythmPlaybackSelectionByIndex(best.index);
+            });
+        }
+        if (!cursorState.observer) {
+            cursorState.observer = new MutationObserver(() => {
+                queueRhythmPlaybackRefresh(220);
+            });
+            cursorState.observer.observe(scoreElement, { childList: true, subtree: true });
+        }
+        queueRhythmPlaybackRefresh(260);
+    }
+
     function stopPlayback() {
         if (state.playback.countInTimer) {
             clearTimeout(state.playback.countInTimer);
@@ -5563,9 +6261,13 @@
             clearTimeout(state.playback.stopTimer);
             state.playback.stopTimer = null;
         }
+        stopRhythmPlaybackCursorFollow();
         if (state.metronome.isRunning && state.metronome.startedByPlayback) {
             stopMetronome();
+        } else if (state.playback.restoreMetronomeAfterStop && !state.metronome.isRunning) {
+            startMetronome(undefined, false);
         }
+        state.playback.restoreMetronomeAfterStop = false;
         muteAudioGain(state.metronome.outputGain, state.metronome.audioCtx);
         if (state.calibration.active) {
             stopCalibration();
@@ -5587,18 +6289,23 @@
         }
     }
 
-    function startPlaybackAt(startTime, tempoOverride) {
+    function startPlaybackAt(startTime, tempoOverride, startTick = 0) {
         const { events, totalTicks, settings } = buildPlaybackEvents();
         const ctx = ensurePlaybackContext();
         const tempo = Math.max(1, tempoOverride || getCurrentTempo());
         const secondsPerTick = (60 / tempo) / divisions;
-        const useTwoVoices = (settings && settings.voiceMode > 1) || events.some(event => event.voice === 2);
+        const scheduledEvents = events
+            .filter(event => event.ticks >= startTick)
+            .map(event => ({ ...event, ticks: event.ticks - startTick }));
+        const adjustedTotalTicks = Math.max(0, totalTicks - startTick);
+        const useTwoVoices = (settings && settings.voiceMode > 1) || scheduledEvents.some(event => event.voice === 2);
 
-        if (!events.length) {
+        if (!scheduledEvents.length) {
             playSnare(startTime || (ctx.currentTime + 0.05), 0.95);
             const delay = Math.max(0, ((startTime || ctx.currentTime) - ctx.currentTime) * 1000);
             state.playback.stopTimer = setTimeout(() => {
                 state.playback.isPlaying = false;
+                stopRhythmPlaybackCursorFollow();
                 updatePlayButtonState(false);
                 if (state.metronome.isRunning && state.metronome.startedByPlayback) {
                     stopMetronome();
@@ -5611,7 +6318,8 @@
         }
 
         const baseTime = startTime || (ctx.currentTime + 0.08);
-        events.forEach(event => {
+        startRhythmPlaybackCursorFollow(scheduledEvents, baseTime, secondsPerTick);
+        scheduledEvents.forEach(event => {
             const time = baseTime + event.ticks * secondsPerTick;
             if (useTwoVoices) {
                 if (event.voice === 2) {
@@ -5624,10 +6332,11 @@
             }
         });
 
-        const totalDuration = Math.max(totalTicks * secondsPerTick, 0.2);
+        const totalDuration = Math.max(adjustedTotalTicks * secondsPerTick, 0.2);
         const delayMs = Math.max(0, (baseTime - ctx.currentTime) * 1000);
         state.playback.stopTimer = setTimeout(() => {
             state.playback.isPlaying = false;
+            stopRhythmPlaybackCursorFollow();
             updatePlayButtonState(false);
             if (state.metronome.isRunning && state.metronome.startedByPlayback) {
                 stopMetronome();
@@ -5656,9 +6365,11 @@
 
     function startPlaybackWithCountIn() {
         stopPlayback();
+        const wasMetronomeRunning = state.metronome.isRunning;
         if (state.metronome.isRunning) {
             stopMetronome();
         }
+        state.playback.restoreMetronomeAfterStop = wasMetronomeRunning;
         const ctx = ensurePlaybackContext();
         const output = getPlaybackOutputGain(ctx);
         const metOutput = getMetronomeOutputGain(ctx);
@@ -5671,59 +6382,28 @@
             metOutput.gain.setValueAtTime(1, ctx.currentTime);
         }
         const settings = state.lastSettings || getSettings();
-        const countInInfo = getPlaybackCountInInfo(settings);
-        const countInBeats = countInInfo.beats;
-        const initialTime = ctx.currentTime + 0.08;
+        const cursorState = getRhythmPlaybackCursorState();
+        const timeline = refreshRhythmPlaybackTimeline();
+        const startTick = (cursorState.selectedIndex >= 0 && timeline[cursorState.selectedIndex])
+            ? (timeline[cursorState.selectedIndex].sourceTick || 0)
+            : 0;
+        const startTime = ctx.currentTime + 0.08;
+        const tempoAtStart = getCurrentTempo();
+        const ticksPerBeat = divisions * (4 / Math.max(1, settings.beatType || 4));
+        const startBeatOffset = ticksPerBeat > 0
+            ? Math.max(0, (startTick / ticksPerBeat) % Math.max(1, settings.beats || 4))
+            : 0;
 
         state.playback.isPlaying = true;
         updatePlayButtonState(true);
-
-        state.playback.countInActive = true;
-        state.playback.countInState = {
-            remaining: countInBeats,
-            total: countInBeats,
-            nextTime: initialTime
-        };
-        const scheduleNextCountIn = () => {
-            if (!state.playback.countInActive || !state.playback.countInState) return;
-            const tempo = getCurrentTempo();
-            const beatDuration = getMetronomeBeatDuration(tempo);
-            const { remaining, total } = state.playback.countInState;
-            const countIndex = (total - remaining) + 1;
-            const isDownbeat = (countInInfo.beats === 6 && countInInfo.beatType === 8)
-                ? (countIndex === 1 || countIndex === 4)
-                : (countIndex === 1);
-            const scheduledTime = state.playback.countInState.nextTime;
-
-            playClick(isDownbeat, scheduledTime);
-            schedulePlaybackCountdown(countIndex, scheduledTime, isDownbeat);
-
-            state.playback.countInState.remaining -= 1;
-            state.playback.countInState.nextTime = scheduledTime + beatDuration;
-
-            if (state.playback.countInState.remaining <= 0) {
-                state.playback.countInActive = false;
-                const startTime = state.playback.countInState.nextTime;
-                const tempoAtStart = getCurrentTempo();
-                if (state.calibration.enabled) {
-                    startCalibrationAt(startTime, tempoAtStart);
-                }
-                startMetronome(startTime, true);
-                startPlaybackAt(startTime, tempoAtStart);
-                const hideDelayMs = Math.max(0, (startTime - ctx.currentTime) * 1000);
-                const hideId = setTimeout(() => {
-                    hidePlaybackCountdown();
-                }, hideDelayMs);
-                state.playback.countInUiTimers.push(hideId);
-                return;
-            }
-
-            const lookahead = 0.05;
-            const delayMs = Math.max(0, (state.playback.countInState.nextTime - ctx.currentTime - lookahead) * 1000);
-            state.playback.countInTimer = setTimeout(scheduleNextCountIn, delayMs);
-        };
-
-        scheduleNextCountIn();
+        state.playback.countInActive = false;
+        state.playback.countInState = null;
+        hidePlaybackCountdown();
+        if (state.calibration.enabled) {
+            startCalibrationAt(startTime, tempoAtStart);
+        }
+        startMetronome(startTime, !wasMetronomeRunning, startBeatOffset);
+        startPlaybackAt(startTime, tempoAtStart, startTick);
     }
 
     function directPlayTest() {
@@ -5811,7 +6491,7 @@
         osc.stop(scheduleTime + 0.05);
     }
 
-    function startMetronome(startAtTime, startedByPlayback = false) {
+    function startMetronome(startAtTime, startedByPlayback = false, beatOffset = 0) {
         const settings = getSettings();
         const beatsPerMeasure = settings.beats;
         const ctx = getRhythmAudioContext();
@@ -5823,11 +6503,22 @@
         const startTime = typeof startAtTime === 'number'
             ? startAtTime
             : (ctx.currentTime + 0.05);
+        const currentTempo = getCurrentTempo();
+        const secondsPerBeat = (60 / currentTempo) * (4 / Math.max(1, settings.beatType || 4));
+        const anchorTime = (typeof startAtTime === 'number' && isFinite(startAtTime))
+            ? (startTime - (Math.max(0, Number(beatOffset) || 0) * secondsPerBeat))
+            : startTime;
         state.metronome.beatIndex = 0;
         state.metronome.stepIndex = 0;
         state.metronome.isRunning = true;
         state.metronome.startedByPlayback = !!startedByPlayback;
-        state.metronome.nextTime = Math.max(startTime, state.metronome.audioCtx.currentTime + 0.02);
+        if (typeof startAtTime === 'number' && isFinite(startAtTime)) {
+            const patternInfo = getMetronomePatternInfo(currentTempo, !!startedByPlayback);
+            const stepDuration = patternInfo.stepDuration || secondsPerBeat;
+            state.metronome.nextTime = anchorTime + Math.max(0, Math.ceil(((ctx.currentTime + 0.02) - anchorTime) / stepDuration)) * stepDuration;
+        } else {
+            state.metronome.nextTime = Math.max(startTime, state.metronome.audioCtx.currentTime + 0.02);
+        }
 
         const schedule = () => {
             if (!state.metronome.isRunning || !state.metronome.audioCtx) return;
@@ -5835,8 +6526,8 @@
             const lookahead = 0.12;
 
             while (state.metronome.nextTime < ctx.currentTime + lookahead) {
-                const currentTempo = getCurrentTempo();
-                const patternInfo = getMetronomePatternInfo(currentTempo);
+                const loopTempo = getCurrentTempo();
+                const patternInfo = getMetronomePatternInfo(loopTempo, !!state.metronome.startedByPlayback);
                 const subdivision = patternInfo.usePattern ? patternInfo.subdivision : 1;
                 let shouldPlay = true;
                 if (patternInfo.usePattern && patternInfo.stepsPerPattern) {
@@ -5853,7 +6544,7 @@
                 }
                 scheduleMetronomeIndicator(shouldPlay, accent, state.metronome.nextTime);
                 state.metronome.stepIndex += 1;
-                const stepDuration = patternInfo.stepDuration || (60 / currentTempo);
+                const stepDuration = patternInfo.stepDuration || (60 / loopTempo);
                 state.metronome.nextTime += stepDuration;
             }
 
@@ -5889,6 +6580,109 @@
         }
     }
 
+    function bindBpmReactGrab(input) {
+        if (!input) return;
+        let isDragging = false;
+        let startY = 0;
+        let startValue = 0;
+        let dragTimeout = null;
+        let hasStartedDrag = false;
+
+        const clamp = (value) => {
+            if (!Number.isFinite(value)) return 80;
+            return Math.max(1, Math.min(999, value));
+        };
+
+        const handleDragStart = function(event) {
+            if (event.button !== undefined && event.button !== 0) return;
+            startY = event.clientY;
+            startValue = parseInt(this.value, 10);
+            if (!Number.isFinite(startValue)) startValue = 80;
+            hasStartedDrag = false;
+
+            dragTimeout = setTimeout(() => {
+                isDragging = true;
+                hasStartedDrag = true;
+                event.preventDefault();
+                document.body.style.userSelect = 'none';
+                document.body.style.webkitUserSelect = 'none';
+                document.body.style.mozUserSelect = 'none';
+                document.body.style.msUserSelect = 'none';
+                this.style.cursor = 'ns-resize';
+                this.classList.add('dragging');
+                this.blur();
+            }, 80);
+        };
+
+        const handlePointerDown = function(event) {
+            if (event.pointerType === 'mouse') return;
+            handleDragStart.call(this, event);
+        };
+
+        const handleMouseMove = function(event) {
+            if (!isDragging || !hasStartedDrag) return;
+            const deltaY = startY - event.clientY;
+            const nextValue = clamp(startValue + Math.round(deltaY));
+            input.value = String(nextValue);
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            event.preventDefault();
+            event.stopPropagation();
+        };
+
+        const handleMouseUp = function() {
+            if (dragTimeout) {
+                clearTimeout(dragTimeout);
+                dragTimeout = null;
+            }
+            if (!isDragging || !hasStartedDrag) return;
+            isDragging = false;
+            hasStartedDrag = false;
+            document.body.style.userSelect = '';
+            document.body.style.webkitUserSelect = '';
+            document.body.style.mozUserSelect = '';
+            document.body.style.msUserSelect = '';
+            input.style.cursor = '';
+            input.classList.remove('dragging');
+        };
+
+        input.addEventListener('mousedown', handleDragStart);
+        if ('PointerEvent' in window) {
+            input.addEventListener('pointerdown', handlePointerDown);
+        }
+        document.addEventListener('mousemove', handleMouseMove, true);
+        document.addEventListener('mouseup', handleMouseUp, true);
+        if ('PointerEvent' in window) {
+            document.addEventListener('pointermove', function(event) {
+                if (event.pointerType === 'mouse') return;
+                handleMouseMove(event);
+            }, true);
+            document.addEventListener('pointerup', function(event) {
+                if (event.pointerType === 'mouse') return;
+                handleMouseUp(event);
+            }, true);
+            document.addEventListener('pointercancel', function(event) {
+                if (event.pointerType === 'mouse') return;
+                handleMouseUp(event);
+            }, true);
+        }
+        input.addEventListener('mouseleave', function() {
+            if (dragTimeout && !isDragging) {
+                clearTimeout(dragTimeout);
+                dragTimeout = null;
+            }
+        });
+        input.addEventListener('blur', function() {
+            const normalized = clamp(parseInt(input.value, 10));
+            input.value = String(normalized);
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        input.addEventListener('contextmenu', function(event) {
+            if (isDragging) {
+                event.preventDefault();
+            }
+        });
+    }
+
     function bindEvents() {
         const secondaryDensity = document.getElementById('secondaryDensity');
         const voiceMode = document.getElementById('voiceMode');
@@ -5897,6 +6691,8 @@
         const previousBtn = document.getElementById('previousBtn');
         const nextBtn = document.getElementById('nextBtn');
         const metronomeBtn = document.getElementById('metronomeToggleBtn');
+        const metronomeBpmInput = document.getElementById('metronomeBpm');
+        const challengeBpmInput = document.getElementById('challengeBPM');
         const scoreContainer = document.getElementById('score');
         const ostinatoVoice = document.getElementById('ostinatoVoiceSelect');
         const timeSignatureSelect = document.getElementById('timeSignature');
@@ -5945,11 +6741,18 @@
         if (previousBtn) previousBtn.addEventListener('click', previousRhythm);
         if (nextBtn) nextBtn.addEventListener('click', nextRhythm);
         metronomeBtn.addEventListener('click', toggleMetronome);
+        if (metronomeBpmInput) bindBpmReactGrab(metronomeBpmInput);
+        if (challengeBpmInput) bindBpmReactGrab(challengeBpmInput);
         if (scoreContainer) {
-            scoreContainer.addEventListener('click', () => {
+            scoreContainer.addEventListener('click', event => {
+                if (isRhythmPlaybackSelectableTarget(event.target) ||
+                    isPointInsideRenderedRhythmScore(event.clientX, event.clientY)) {
+                    return;
+                }
                 triggerGenerate();
             });
         }
+        initializeRhythmPlaybackCursorSystem();
         const voiceOptions = document.querySelectorAll('input[name="voiceOption"]');
         voiceOptions.forEach(option => {
             option.addEventListener('change', () => {
@@ -5980,6 +6783,7 @@
         setupModalAutoSave('voiceSettingsModal', saveVoiceSettings);
         setupModalAutoSave('metronomePatternModal', saveMetronomePatternSettingsAndClose);
         setupModalAutoSave('settingsModal', closeSettingsModal);
+        initializeToolParameterExchange();
         setEmptyScore();
 
         // ============ 跨工具同步监听机制 ============
@@ -6079,6 +6883,9 @@
     window.closeSettingsModal = closeSettingsModal;
     window.setTheme = setTheme;
     window.switchLanguage = switchLanguage;
+    window.saveToolParameters = saveToolParameters;
+    window.resetToolParameters = resetToolParameters;
+    window.importToolParameters = importToolParameters;
     window.switchFunction = switchFunction;
     window.openRhythmSettings = openRhythmSettings;
     window.closeRhythmSettings = closeRhythmSettings;

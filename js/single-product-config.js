@@ -20,10 +20,10 @@
         name: 'Cognote 旋律生成器',
         startUrl: '/tools/melody-generator.html',
         downloads: {
-          mac_arm64: `${STORAGE_BASE}/melody/Cognote-melody-1.0.0-mac-arm64.dmg`,
-          mac_x64: `${STORAGE_BASE}/melody/Cognote-melody-1.0.0-mac-x64.dmg`,
-          windows_x64: `${STORAGE_BASE}/melody/Cognote-melody-1.0.0-win-x64-setup.exe`,
-          linux_amd64: `${STORAGE_BASE}/melody/Cognote-melody-1.0.0-linux-amd64.deb`
+          mac_arm64: `${STORAGE_BASE}/melody/Cognote-melody-mac-arm64.dmg`,
+          mac_x64: `${STORAGE_BASE}/melody/Cognote-melody-mac-x64.dmg`,
+          windows_x64: `${STORAGE_BASE}/melody/Cognote-melody-win-x64-setup.exe`,
+          linux_amd64: `${STORAGE_BASE}/melody/Cognote-melody-linux-amd64.deb`
         }
       },
       jianpu: {
@@ -31,10 +31,10 @@
         name: 'Cognote 简谱生成器',
         startUrl: '/tools/jianpu-generator.html',
         downloads: {
-          mac_arm64: `${STORAGE_BASE}/jianpu/Cognote-jianpu-1.0.0-mac-arm64.dmg`,
-          mac_x64: `${STORAGE_BASE}/jianpu/Cognote-jianpu-1.0.0-mac-x64.dmg`,
-          windows_x64: `${STORAGE_BASE}/jianpu/Cognote-jianpu-1.0.0-win-x64-setup.exe`,
-          linux_amd64: `${STORAGE_BASE}/jianpu/Cognote-jianpu-1.0.0-linux-amd64.deb`
+          mac_arm64: `${STORAGE_BASE}/jianpu/Cognote-jianpu-mac-arm64.dmg`,
+          mac_x64: `${STORAGE_BASE}/jianpu/Cognote-jianpu-mac-x64.dmg`,
+          windows_x64: `${STORAGE_BASE}/jianpu/Cognote-jianpu-win-x64-setup.exe`,
+          linux_amd64: `${STORAGE_BASE}/jianpu/Cognote-jianpu-linux-amd64.deb`
         }
       },
       rhythm: {
@@ -42,10 +42,10 @@
         name: 'Cognote 节奏生成器',
         startUrl: '/tools/rhythm.html',
         downloads: {
-          mac_arm64: `${STORAGE_BASE}/rhythm/Cognote-rhythm-1.0.0-mac-arm64.dmg`,
-          mac_x64: `${STORAGE_BASE}/rhythm/Cognote-rhythm-1.0.0-mac-x64.dmg`,
-          windows_x64: `${STORAGE_BASE}/rhythm/Cognote-rhythm-1.0.0-win-x64-setup.exe`,
-          linux_amd64: `${STORAGE_BASE}/rhythm/Cognote-rhythm-1.0.0-linux-amd64.deb`
+          mac_arm64: `${STORAGE_BASE}/rhythm/Cognote-rhythm-mac-arm64.dmg`,
+          mac_x64: `${STORAGE_BASE}/rhythm/Cognote-rhythm-mac-x64.dmg`,
+          windows_x64: `${STORAGE_BASE}/rhythm/Cognote-rhythm-win-x64-setup.exe`,
+          linux_amd64: `${STORAGE_BASE}/rhythm/Cognote-rhythm-linux-amd64.deb`
         }
       },
       chord: {
@@ -53,10 +53,10 @@
         name: 'Cognote 和弦生成器',
         startUrl: '/tools/chord-generator.html',
         downloads: {
-          mac_arm64: `${STORAGE_BASE}/chord/Cognote-chord-1.0.0-mac-arm64.dmg`,
-          mac_x64: `${STORAGE_BASE}/chord/Cognote-chord-1.0.0-mac-x64.dmg`,
-          windows_x64: `${STORAGE_BASE}/chord/Cognote-chord-1.0.0-win-x64-setup.exe`,
-          linux_amd64: `${STORAGE_BASE}/chord/Cognote-chord-1.0.0-linux-amd64.deb`
+          mac_arm64: `${STORAGE_BASE}/chord/Cognote-chord-mac-arm64.dmg`,
+          mac_x64: `${STORAGE_BASE}/chord/Cognote-chord-mac-x64.dmg`,
+          windows_x64: `${STORAGE_BASE}/chord/Cognote-chord-win-x64-setup.exe`,
+          linux_amd64: `${STORAGE_BASE}/chord/Cognote-chord-linux-amd64.deb`
         }
       },
       interval: {
@@ -64,10 +64,10 @@
         name: 'Cognote 音程生成器',
         startUrl: '/tools/interval-generator.html',
         downloads: {
-          mac_arm64: `${STORAGE_BASE}/interval/Cognote-interval-1.0.0-mac-arm64.dmg`,
-          mac_x64: `${STORAGE_BASE}/interval/Cognote-interval-1.0.0-mac-x64.dmg`,
-          windows_x64: `${STORAGE_BASE}/interval/Cognote-interval-1.0.0-win-x64-setup.exe`,
-          linux_amd64: `${STORAGE_BASE}/interval/Cognote-interval-1.0.0-linux-amd64.deb`
+          mac_arm64: `${STORAGE_BASE}/interval/Cognote-interval-mac-arm64.dmg`,
+          mac_x64: `${STORAGE_BASE}/interval/Cognote-interval-mac-x64.dmg`,
+          windows_x64: `${STORAGE_BASE}/interval/Cognote-interval-win-x64-setup.exe`,
+          linux_amd64: `${STORAGE_BASE}/interval/Cognote-interval-linux-amd64.deb`
         }
       }
     }

@@ -1086,10 +1086,12 @@ function projectShapePositionsToInstrument(positions, anchorString, sourceStart,
     if (sourceString < sourceStart || sourceString > sourceEnd) {
       continue;
     }
+    const sourceOpenNoteIndex = getNoteIndex(STANDARD_GUITAR_TUNING[sourceString]);
     projected.push({
       mappedString: sourceString - sourceStart,
       fret,
       interval: Number.isFinite(interval) ? mod12(interval) : 0,
+      sourceNoteIndex: Number.isFinite(sourceOpenNoteIndex) ? mod12(sourceOpenNoteIndex + fret) : null,
     });
   }
   return projected;
@@ -1120,6 +1122,7 @@ function buildAdaptedShapePositions(positions, anchorString, sourceStart, source
         string: relativeString,
         fret: pos.fret,
         interval: pos.interval,
+        sourceNoteIndex: Number.isFinite(pos.sourceNoteIndex) ? mod12(pos.sourceNoteIndex) : null,
       });
     }
   });
@@ -1175,6 +1178,7 @@ function cloneRelativePositions(positions) {
     string: Number(pos?.string),
     fret: Number(pos?.fret),
     interval: Number(pos?.interval),
+    sourceNoteIndex: Number.isFinite(pos?.sourceNoteIndex) ? mod12(Number(pos.sourceNoteIndex)) : null,
   }));
 }
 
@@ -1235,13 +1239,17 @@ function retuneRelativePositionsForCustomTuning(positions, anchorString, tuning)
       continue;
     }
 
-    const requiredFretOffset = mod12(interval + anchorNoteIndex - stringNoteIndex);
+    const sourceNoteIndex = Number.isFinite(pos?.sourceNoteIndex) ? mod12(Number(pos.sourceNoteIndex)) : null;
+    const requiredFretOffset = Number.isFinite(sourceNoteIndex)
+      ? mod12(sourceNoteIndex - stringNoteIndex)
+      : mod12(interval + anchorNoteIndex - stringNoteIndex);
     const adaptedFret = chooseClosestEquivalentFretOffset(requiredFretOffset, originalFret);
     const nextPos = {
       ...pos,
       string: relativeString,
       fret: adaptedFret,
       interval: mod12(interval),
+      sourceNoteIndex: Number.isFinite(sourceNoteIndex) ? sourceNoteIndex : null,
     };
     const key = `${nextPos.string}:${nextPos.fret}:${nextPos.interval}`;
     if (!deduped.has(key)) {
@@ -5401,8 +5409,9 @@ function getOverlayToneLabel(shape, anchorString, anchorFret, pos, rootNoteName 
   const degreeMap = getOverlayDegreeMap(shape);
   const degreeToken = degreeMap?.[mod12(pos.interval)] ?? `${mod12(pos.interval)}`;
   const fallbackNoteName = getOverlayPositionNoteName(pos.stringIndex, pos.fret);
+  const prefersAbsoluteNoteName = getActiveInstrument()?.id === CUSTOM_INSTRUMENT_ID;
   const spelledByDegree =
-    rootNoteName && degreeMap
+    !prefersAbsoluteNoteName && rootNoteName && degreeMap
       ? spellNoteFromRootAndDegree(rootNoteName, degreeToken === "R" ? "1" : degreeToken)
       : null;
   const noteName = spelledByDegree ?? fallbackNoteName;

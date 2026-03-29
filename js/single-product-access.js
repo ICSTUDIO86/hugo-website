@@ -55,6 +55,21 @@
       alert('访问码已验证，但未找到对应产品信息');
       return;
     }
+    const lang = document.documentElement.lang && document.documentElement.lang.indexOf('zh') === 0 ? 'zh' : 'en';
+    const singleRoot = document.querySelector('[data-payment-panel="single"] .single-products-grid') || document.body;
+    const successTitle = source === 'payment'
+      ? (lang === 'zh' ? '支付成功' : 'Payment successful')
+      : (lang === 'zh' ? '访问码验证成功' : 'Access code verified');
+
+    if (window.BundlePayment && typeof window.BundlePayment.showProductSuccessModal === 'function') {
+      window.BundlePayment.showProductSuccessModal(singleRoot, lang, accessCode, orderInfo, {
+        toolOnly: 'cognote',
+        successTitle,
+        downloads: toolConfig.downloads || {}
+      });
+      return;
+    }
+
     const displayOrderNumber = (
       orderInfo?.order_info?.alipay_trade_no ||
       orderInfo?.order_info?.zpay_trade_no ||

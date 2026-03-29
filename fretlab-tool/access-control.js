@@ -7,7 +7,9 @@ const FRETLAB_MIDI_SOURCES = new Set(["live", "daw-midi"]);
 const LOCAL_BLOCK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
 const ONLINE_ENTRY_URL = "https://icstudio.club/fretlab-tool/";
 const ENABLE_LOCALHOST_BLOCK = false;
+const INSTRUMENT_STORAGE_KEY = "ic_fretlab_instrument";
 const MIDI_LOCK_TOAST_MS = 2600;
+const CUSTOM_INSTRUMENT_LOCK_TOAST_MS = 2600;
 
 function shouldBlockLocalRuntime() {
   if (typeof window === "undefined" || !window.location) {
@@ -189,18 +191,28 @@ function getMidiLockedMessage() {
   return "MIDI 功能仅限完整版。请先在 Landing Page 完成支付并验证访问码。";
 }
 
-function showMidiLockedToast() {
+function getCustomInstrumentLockedMessage() {
+  const docLang = typeof document !== "undefined" ? document.documentElement?.lang || "" : "";
+  const navLang = typeof navigator !== "undefined" ? navigator.language || "" : "";
+  const lang = (docLang || navLang || "zh").toLowerCase();
+  if (lang.startsWith("en")) {
+    return "Custom Fretboard is a full-version feature. Please unlock first on /fretlab/.";
+  }
+  return "自定义指板仅限完整版。请先在 Landing Page 完成支付并验证访问码。";
+}
+
+function showLockedToast(id, message, durationMs) {
   if (typeof document === "undefined" || !document.body) {
     return;
   }
-  const activeToast = document.getElementById("fretlab-midi-lock-toast");
+  const activeToast = document.getElementById(id);
   if (activeToast) {
     activeToast.remove();
   }
 
   const toast = document.createElement("div");
-  toast.id = "fretlab-midi-lock-toast";
-  toast.textContent = getMidiLockedMessage();
+  toast.id = id;
+  toast.textContent = message;
   toast.setAttribute(
     "style",
     [
@@ -221,11 +233,146 @@ function showMidiLockedToast() {
   document.body.appendChild(toast);
   window.setTimeout(() => {
     toast.remove();
-  }, MIDI_LOCK_TOAST_MS);
+  }, durationMs);
+}
+
+function showMidiLockedToast() {
+  showLockedToast("fretlab-midi-lock-toast", getMidiLockedMessage(), MIDI_LOCK_TOAST_MS);
 }
 
 function shouldBlockMidiForTrial() {
   return !hasFretlabFullAccess();
+}
+
+function shouldBlockCustomInstrumentForTrial() {
+  return !hasFretlabFullAccess();
+}
+
+function getFallbackInstrumentId(select) {
+  const lastAllowed = `${select?.dataset?.lastAllowedInstrument || ""}`.trim().toLowerCase();
+  return lastAllowed && lastAllowed !== "custom" ? lastAllowed : "guitar";
+}
+
+function persistFallbackInstrumentId(instrumentId) {
+  try {
+    localStorage.setItem(INSTRUMENT_STORAGE_KEY, instrumentId);
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function forceTrialInstrumentFallback(select = null) {
+  const targetSelect =
+    select ||
+    (typeof document !== "undefined" ? document.getElementById("instrumentSelect") : null);
+  const fallbackInstrumentId = getFallbackInstrumentId(targetSelect);
+  if (targetSelect) {
+    targetSelect.value = fallbackInstrumentId;
+    targetSelect.dataset.lastAllowedInstrument = fallbackInstrumentId;
+  }
+  persistFallbackInstrumentId(fallbackInstrumentId);
+}
+
+function syncCustomInstrumentTrialUi() {
+  if (typeof document === "undefined") {
+    return;
+  }
+  const blocked = shouldBlockCustomInstrumentForTrial();
+  const instrumentSelect = document.getElementById("instrumentSelect");
+  const customOption = instrumentSelect?.querySelector?.('option[value="custom"]');
+  if (customOption) {
+    customOption.disabled = blocked;
+  }
+  if (blocked && instrumentSelect?.value === "custom") {
+    forceTrialInstrumentFallback(instrumentSelect);
+  }
+  const editButton = document.getElementById("customInstrumentEditBtn");
+  if (editButton instanceof HTMLElement) {
+    editButton.hidden = blocked;
+    editButton.setAttribute("aria-disabled", blocked ? "true" : "false");
+  }
+}
+
+function normalizeTrialInstrumentStorage() {
+  if (!shouldBlockCustomInstrumentForTrial()) {
+    return;
+  }
+  try {
+    const currentInstrument = `${localStorage.getItem(INSTRUMENT_STORAGE_KEY) || ""}`.trim().toLowerCase();
+    if (currentInstrument === "custom") {
+      localStorage.setItem(INSTRUMENT_STORAGE_KEY, "guitar");
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function installCustomInstrumentTrialGuard() {
+  if (typeof document === "undefined" || typeof window === "undefined") {
+    return;
+  }
+  if (window.__FRETLAB_CUSTOM_INSTRUMENT_GUARD_INSTALLED__) {
+    return;
+  }
+  window.__FRETLAB_CUSTOM_INSTRUMENT_GUARD_INSTALLED__ = true;
+
+  normalizeTrialInstrumentStorage();
+  const syncUi = () => syncCustomInstrumentTrialUi();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", syncUi, { once: true });
+  } else {
+    syncUi();
+  }
+
+  document.addEventListener(
+    "change",
+    (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLSelectElement) || target.id !== "instrumentSelect") {
+        return;
+      }
+      if (target.value !== "custom") {
+        target.dataset.lastAllowedInstrument = target.value;
+        persistFallbackInstrumentId(target.value);
+        return;
+      }
+      if (!shouldBlockCustomInstrumentForTrial()) {
+        return;
+      }
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      forceTrialInstrumentFallback(target);
+      showLockedToast(
+        "fretlab-custom-instrument-lock-toast",
+        getCustomInstrumentLockedMessage(),
+        CUSTOM_INSTRUMENT_LOCK_TOAST_MS
+      );
+    },
+    true
+  );
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+      const editButton = target.closest("#customInstrumentEditBtn");
+      if (!editButton || !shouldBlockCustomInstrumentForTrial()) {
+        return;
+      }
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      forceTrialInstrumentFallback();
+      showLockedToast(
+        "fretlab-custom-instrument-lock-toast",
+        getCustomInstrumentLockedMessage(),
+        CUSTOM_INSTRUMENT_LOCK_TOAST_MS
+      );
+    },
+    true
+  );
 }
 
 function shouldSuppressRealtimeMidiEvent(rawData) {
@@ -330,3 +477,4 @@ function installRealtimeMidiEventGuard() {
 enforceFretlabRuntimeGuard();
 installWebMidiGuard();
 installRealtimeMidiEventGuard();
+installCustomInstrumentTrialGuard();

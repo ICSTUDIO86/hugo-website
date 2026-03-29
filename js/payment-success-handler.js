@@ -147,6 +147,19 @@
         async function createAndShowPaymentSuccess() {
             // 获取订单详细信息
             const orderData = await getOrderInfo();
+            const lang = document.documentElement.lang && document.documentElement.lang.indexOf('zh') === 0 ? 'zh' : 'en';
+            const fullRoot = document.querySelector('[data-payment-panel="full"] .payment-card') || document.body;
+            const successTitle = source === 'manual-verify'
+                ? (lang === 'zh' ? '访问码验证成功' : 'Access code verified')
+                : (lang === 'zh' ? '支付成功' : 'Payment successful');
+
+            if (window.BundlePayment && typeof window.BundlePayment.showProductSuccessModal === 'function') {
+                window.BundlePayment.showProductSuccessModal(fullRoot, lang, accessCode, orderData, {
+                    toolOnly: 'cognote',
+                    successTitle
+                });
+                return orderData;
+            }
 
             // 准备显示数据
             console.log('📋 订单数据详情:', orderData);

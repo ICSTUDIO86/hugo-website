@@ -1379,7 +1379,7 @@ button {
     position: relative;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     z-index: 9998;
 }
 
@@ -1400,6 +1400,7 @@ button {
     white-space: nowrap;
     min-width: 120px;
     justify-content: center;
+    width: 100%;
 }
 
 .function-btn:hover {
@@ -1426,7 +1427,8 @@ button {
     box-shadow: 0 12px 48px var(--card-shadow-hover);
     overflow: visible;
     z-index: 9999;
-    min-width: 180px;
+    width: 100%;
+    min-width: 100%;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
@@ -2034,17 +2036,18 @@ button {
     }
     
     .function-selector {
-        align-items: center;
+        align-items: stretch;
     }
     
     .function-menu {
-        left: 50%;
-        transform: translateX(-50%) translateY(-10px);
-        min-width: 180px;
+        left: 0;
+        width: 100%;
+        min-width: 100%;
+        transform: translateY(-10px);
     }
     
     .function-menu.show {
-        transform: translateX(-50%) translateY(0);
+        transform: translateY(0);
     }
     
     .settings-dropdown {

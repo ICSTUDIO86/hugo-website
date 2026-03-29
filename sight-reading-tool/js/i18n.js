@@ -125,6 +125,30 @@ class I18n {
   }
 
   /**
+   * 强制同步 header 导航文案，避免被页面内其他运行时逻辑覆盖回默认文本
+   */
+  syncHeaderNav() {
+    const headerNav = document.querySelector('.landing-header-nav');
+    if (!headerNav) return;
+
+    const navMap = [
+      ['header.nav.features', 0],
+      ['header.nav.reviews', 1],
+      ['header.nav.buy', 2],
+      ['header.nav.faq', 3]
+    ];
+
+    navMap.forEach(([key, index]) => {
+      const link = headerNav.querySelectorAll('a')[index];
+      if (!link) return;
+      const translation = this.translate(key);
+      if (translation && translation !== key) {
+        link.textContent = translation;
+      }
+    });
+  }
+
+  /**
    * 切换语言
    * @param {string} lang - 目标语言代码
    */
@@ -147,6 +171,8 @@ class I18n {
 
     // 应用翻译
     this.applyTranslations();
+    this.syncHeaderNav();
+    document.documentElement.lang = this.currentLang === 'zh-CN' ? 'zh-CN' : 'en';
 
     // 更新语言切换器按钮状态
     this.updateLanguageSwitcher();
@@ -190,6 +216,8 @@ class I18n {
 
     // 应用翻译
     this.applyTranslations();
+    this.syncHeaderNav();
+    document.documentElement.lang = this.currentLang === 'zh-CN' ? 'zh-CN' : 'en';
 
     // 更新切换器状态
     this.updateLanguageSwitcher();

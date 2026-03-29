@@ -22,6 +22,15 @@
     "pill": "Cognote"
   },
 
+  "header": {
+    "nav": {
+      "features": "Features",
+      "reviews": "Reviews",
+      "buy": "Buy",
+      "faq": "FAQ"
+    }
+  },
+
   "products": {
     "title": "Five Core Tools",
     "subtitle": "Professional sight reading practice solutions for different training needs",

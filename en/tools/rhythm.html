@@ -1,10 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="zh-CN" data-theme="light">
 <head>
-<script src="/js/url-language-force.js"></script>
-<script defer src="/js/current-year.js"></script>
-<script defer src="/js/en-tools-route-guard.js"></script>
-  <base href="/tools/">
 <script>
     (function() {
       var isFile = location.protocol === 'file:' || location.origin === 'null';
@@ -24,8 +20,7 @@
       try {
         console.warn('🚫 检测到file://协议，已阻止');
       } catch (e) {}
-      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,"Helvetica Neue","PingFang SC","Segoe UI",sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div>
-</body></html>';
+      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,"Helvetica Neue","PingFang SC","Segoe UI",sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
       document.open();
       document.write(html);
       document.close();
@@ -34,59 +29,8 @@
   </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
-    <title>Rhythm Sight Reading Generator | Cognote - Timing & Groove Practice Tool</title>
-    <meta name="description" content="Professional rhythm sight-reading generator for timing, syncopation and groove control. Create single or multi-voice rhythm drills with customizable bars, time signatures and metronome settings. 专业级节奏视奏训练工具，支持单/双声部、拍号与小节自定义。">
-    <meta name="keywords" content="rhythm sight reading,rhythm generator,metronome training,syncopation practice,timing practice,music rhythm exercises,drum reading,percussion notation,节奏视奏,节奏训练,拍号练习,节拍器练习,节奏生成器,Cognote">
-    <meta name="author" content="Igor Chen - Cognote">
-    <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="theme-color" content="#ec4899">
-    <link rel="canonical" href="https://icstudio.club/en/tools/rhythm.html">
-    <link rel="alternate" hreflang="zh-CN" href="https://icstudio.club/tools/rhythm.html">
-    <link rel="alternate" hreflang="en" href="https://icstudio.club/en/tools/rhythm.html">
-    <link rel="alternate" hreflang="x-default" href="https://icstudio.club/tools/rhythm.html">
-
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://icstudio.club/en/tools/rhythm.html" />
-    <meta property="og:title" content="Rhythm Sight Reading Generator | Cognote">
-    <meta property="og:description" content="Train rhythm reading, syncopation and timing with customizable rhythm drills and metronome controls. 通过可自定义节奏练习提高读谱与节奏稳定性。">
-    <meta property="og:image" content="https://icstudio.club/images/hero-rhythm-en.png">
-    <meta property="og:image:alt" content="Cognote Rhythm Sight-Reading Generator Interface">
-    <meta property="og:site_name" content="Cognote">
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:locale:alternate" content="zh_CN" />
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@ICStudio86">
-    <meta name="twitter:url" content="https://icstudio.club/en/tools/rhythm.html" />
-    <meta name="twitter:title" content="Rhythm Sight Reading Generator | Cognote">
-    <meta name="twitter:description" content="Customizable rhythm sight-reading drills for timing and groove control.">
-    <meta name="twitter:image" content="https://icstudio.club/images/hero-rhythm-en.png">
-
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Cognote Rhythm Sight Reading Generator",
-      "alternateName": ["Cognote 节奏视奏生成器", "IC 节奏视奏工具"],
-      "url": "https://icstudio.club/en/tools/rhythm.html",
-      "applicationCategory": "MusicApplication",
-      "operatingSystem": "Web Browser",
-      "inLanguage": ["en-US", "zh-CN"],
-      "description": "Rhythm sight-reading and timing control tool with customizable time signatures, bar counts, voice modes and metronome settings.",
-      "publisher": {
-        "@type": "Organization",
-        "name": "Cognote",
-        "url": "https://icstudio.club"
-      },
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "CNY",
-        "availability": "https://schema.org/InStock"
-      }
-    }
-    </script>
+    <title>Rhythm Sight Reading Tool | Cognote</title>
+    <meta name="description" content="Professional rhythm sight-reading tool for timing, syncopation, and rhythmic accuracy. Single-line percussion staff with customizable density, time signatures, and multi-voice practice.">
     <link rel="icon" type="image/svg+xml" href="assets/icon/cognote.svg">
     <link rel="icon" type="image/png" href="assets/icon/cognote.png">
 
@@ -97,6 +41,25 @@
     <script src="./IC 旋律视奏工具_files/opensheetmusicdisplay.min.js"></script>
     <link rel="stylesheet" href="IC 节奏视奏工具/rhythm.css">
     <link rel="stylesheet" href="assets/css/midi-input.css">
+    <style>
+      .function-btn {
+        justify-content: center;
+        text-align: center;
+      }
+      .function-btn #currentFunction {
+        flex: 1 1 auto;
+        text-align: center;
+      }
+      .function-menu .function-option {
+        justify-content: center;
+        text-align: center;
+      }
+      .function-menu .function-option span {
+        display: block;
+        width: 100%;
+        text-align: center;
+      }
+    </style>
     <script src="IC 节奏视奏工具/rhythm.js?v=20260203" defer></script>
     <script src="assets/js/midi-input.js?v=1" defer></script>
     <script src="assets/js/rhythm-challenge-mode.js" defer></script>
@@ -112,34 +75,29 @@
                 <div class="header-controls">
                     <div class="function-selector">
                         <button class="function-btn" id="functionBtn" onclick="toggleFunctionSelector()">
-                            🥁 <span id="currentFunction" data-i18n="app.rhythmMode">节奏视奏</span>
+                            <span id="currentFunction" data-i18n="app.rhythmMode">节奏视奏</span>
                         </button>
                         <div class="function-menu" id="functionMenu">
                             <div class="function-option" onclick="switchFunction('melody')">
-                                <span class="function-icon">🎵</span>
                                 <span data-i18n="app.melodyMode">旋律视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('jianpu')">
-                                <span class="function-icon">🔢</span>
                                 <span data-i18n="app.jianpuMode">简谱视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('interval')">
-                                <span class="function-icon">🎼</span>
                                 <span data-i18n="app.intervalMode">音程视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('chord')">
-                                <span class="function-icon">🎹</span>
                                 <span data-i18n="app.chordMode">和弦视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('rhythm')">
-                                <span class="function-icon">🥁</span>
                                 <span data-i18n="app.rhythmMode">节奏视奏</span>
                             </div>
                         </div>
                     </div>
                     <div class="settings-dropdown">
                         <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">
-                            ⚙️ <span data-i18n="settings.title">设置</span>
+                            <span data-i18n="settings.title">设置</span>
                         </button>
                     </div>
                 </div>
@@ -258,7 +216,7 @@
                 <strong>Cognote</strong> - 专业级节奏视奏训练工具
             </p>
             <p style="margin: 8px 0 0 0; font-size: 13px; opacity: 0.8;">
-                Copyright © <span data-current-year>2026</span>. All rights reserved. Igor Chen -
+                Copyright © 2026. All rights reserved. Igor Chen -
                 <a href="https://icstudio.club/" target="_blank" style="color: var(--primary-blue); text-decoration: none;">icstudio.club</a>
             </p>
         </div>
@@ -421,8 +379,8 @@
                             <div class="frequency-item" id="freq-sixteenth-item">
                                 <label for="freq-16th" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="frequency.sixteenth">十六分音符频率:</label>
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="range" id="freq-16th" min="0" max="100" value="6" style="flex: 1;">
-                                    <span id="freq-16th-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">6%</span>
+                                    <input type="range" id="freq-16th" min="0" max="100" value="20" style="flex: 1;">
+                                    <span id="freq-16th-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #1d1d1f;">20%</span>
                                 </div>
                             </div>
                             <div class="frequency-item" id="freq-triplet-item">
@@ -783,6 +741,9 @@
         </div>
     </div>
 
-    <script defer src="/js/tool-access-loader.js?v=1.0.2"></script>
+    <script src="/js/trial-limiter.js?v=20250909"></script>
+    <script src="/js/advanced-trial-protection.js?v=20250920"></script>
+    <script src="/js/melody-counter-system.js?v=20250920"></script>
+    <script src="/js/integrated-trial-manager.js?v=20250920"></script>
 </body>
 </html>

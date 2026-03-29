@@ -12,6 +12,7 @@ class PaymentStateManager {
         };
         
         this.apiUrl = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/verify-access-code';
+        this.bundleApiUrl = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/verifyBundleAccessCode';
         this.debugMode = localStorage.getItem('ic-debug-mode') === 'true';
         
         this.log('PaymentStateManager 初始化完成');
@@ -96,9 +97,12 @@ class PaymentStateManager {
         }
         
         // 格式检查
-        if (!/^[A-Z0-9]{11,12}$/.test(accessCode)) {
-            return { success: false, error: '访问码格式不正确（应为11-12位字母数字）' };
+        if (!/^[A-Z0-9]{6,30}$/.test(accessCode)) {
+            return { success: false, error: '访问码格式不正确（应为6-30位字母数字）' };
         }
+
+        const isBundleCode = this.isBundleAccessCode(accessCode);
+        const endpoint = isBundleCode ? this.bundleApiUrl : this.apiUrl;
         
         try {
             const requestBody = {
@@ -109,7 +113,7 @@ class PaymentStateManager {
             
             this.log(`发送API请求: ${JSON.stringify(requestBody)}`);
             
-            const response = await fetch(this.apiUrl, {
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -128,20 +132,27 @@ class PaymentStateManager {
             const result = await response.json();
             this.log(`API响应内容: ${JSON.stringify(result)}`);
             
-            if (result.success && result.data) {
-                // 验证成功，保存状态
-                this.savePaymentState(accessCode, result.data.order_info);
-                this.activatePremiumAccess(accessCode, result.data);
+            const normalized = this.normalizeVerifyResult(result, isBundleCode);
+            
+            if (normalized.success) {
+                if (isBundleCode && window.BundlePayment && typeof window.BundlePayment.persistBundleAccess === 'function') {
+                    window.BundlePayment.persistBundleAccess(accessCode, normalized.data);
+                } else if (isBundleCode) {
+                    this.persistBundleFallback(accessCode, normalized.data);
+                } else {
+                    this.savePaymentState(accessCode, normalized.data.order_info);
+                    this.activatePremiumAccess(accessCode, normalized.data);
+                }
                 
                 return {
                     success: true,
-                    data: result.data,
+                    data: normalized.data,
                     message: '验证成功'
                 };
             } else {
                 return {
                     success: false,
-                    error: result.message || result.error || '访问码无效'
+                    error: normalized.error
                 };
             }
             
@@ -152,6 +163,69 @@ class PaymentStateManager {
                 error: `网络错误: ${error.message}`
             };
         }
+    }
+
+    isBundleAccessCode(accessCode) {
+        return /^BDL[A-Z0-9]{3,27}$/i.test(String(accessCode || '').trim());
+    }
+
+    normalizeVerifyResult(result, isBundleCode) {
+        if (!isBundleCode) {
+            if (result && result.success && result.data) {
+                return { success: true, data: result.data };
+            }
+            return {
+                success: false,
+                error: (result && (result.message || result.error)) || '访问码无效'
+            };
+        }
+
+        if (result && result.valid === true && result.ok === true) {
+            return {
+                success: true,
+                data: {
+                    product_name: result.product_name || 'IC Studio 套装（Cognote + FretLab）',
+                    amount: result.amount || '168.00',
+                    order_info: result.order_info || null,
+                    tool_id: result.tool_id || 'bundle',
+                    unlock_tools: result.unlock_tools || ['cognote', 'fretlab'],
+                    out_trade_no: result.out_trade_no || null
+                }
+            };
+        }
+
+        return {
+            success: false,
+            error: (result && (result.msg || result.message || result.error)) || '访问码无效'
+        };
+    }
+
+    persistBundleFallback(accessCode, data) {
+        const now = Date.now();
+        const safeCode = String(accessCode || '').trim().toUpperCase();
+        if (!safeCode) return;
+
+        try {
+            localStorage.setItem('ic-bundle-license-v1', JSON.stringify({
+                version: 1,
+                toolId: 'bundle',
+                code: safeCode,
+                verifiedAt: now,
+                order: data && data.order_info ? data.order_info : null,
+                unlockTools: ['cognote', 'fretlab']
+            }));
+            localStorage.setItem('ic-fretlab-access', safeCode);
+            localStorage.setItem('ic-fretlab-license-v1', JSON.stringify({
+                version: 1,
+                toolId: 'fretlab',
+                code: safeCode,
+                verifiedAt: now,
+                order: data && data.order_info ? data.order_info : null
+            }));
+        } catch (_) {}
+
+        this.savePaymentState(safeCode, data && data.order_info ? data.order_info : null);
+        this.activatePremiumAccess(safeCode, data || {});
     }
     
     // 验证存储的访问码

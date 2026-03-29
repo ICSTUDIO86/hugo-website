@@ -21,11 +21,11 @@
   
   <!-- Icon -->    
    
-  <link rel="icon" type="image/png" href="/ICLOGO.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/ICLOGO.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/ICLOGO.png">
-  <link rel="icon" type="image/png" sizes="64x64" href="/ICLOGO.png">
-  <meta name="msapplication-TileImage" content="/ICLOGO.png">
+  <link rel="icon" type="image/png" href="/sight-reading-tool/images/cognote-favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/sight-reading-tool/images/cognote-favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/sight-reading-tool/images/cognote-favicon.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="/sight-reading-tool/images/cognote-favicon.png">
+  <meta name="msapplication-TileImage" content="/sight-reading-tool/images/cognote-favicon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
 
   <!-- Umami Analytics -->
@@ -59,10 +59,10 @@
   <link rel="alternate" hreflang="x-default" href="https://icstudio.club/sight-reading-tool/">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/png" href="/sight-reading-tool/images/cognote-favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/sight-reading-tool/images/cognote-favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/sight-reading-tool/images/cognote-favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/sight-reading-tool/images/cognote-favicon.png">
 
   <!-- Performance Optimization -->
   <link rel="preconnect" href="https://imgcache.qq.com">
@@ -590,6 +590,8 @@
 
     .payment-mode-toggle {
       display: inline-flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 8px;
       background: rgba(15, 23, 42, 0.08);
       padding: 6px;
@@ -603,6 +605,7 @@
       border: none;
       background: transparent;
       padding: 8px 16px;
+      min-width: 88px;
       border-radius: 999px;
       font-weight: 600;
       font-size: 14px;
@@ -960,6 +963,48 @@
       color: #64748b;
     }
 
+    .update-log-history-entry {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .update-log-history-entry + .update-log-history-entry {
+      margin-top: 0.75rem;
+    }
+
+    .update-log-history-toggle {
+      width: 100%;
+      border: none;
+      background: transparent;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      cursor: pointer;
+      color: #0f172a;
+      text-align: left;
+      font: inherit;
+    }
+
+    .update-log-history-badge {
+      flex-shrink: 0;
+      border: 1px solid rgba(148, 163, 184, 0.38);
+      background: #ffffff;
+      border-radius: 999px;
+      padding: 0.22rem 0.7rem;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .update-log-history-detail {
+      margin-top: 0.65rem;
+      padding-top: 0.65rem;
+      border-top: 1px dashed rgba(148, 163, 184, 0.45);
+    }
+
     @media (max-width: 900px) {
       .single-payment-body {
         grid-template-columns: 1fr;
@@ -1179,10 +1224,10 @@
           </div>
         </div>
         <nav class="landing-header-nav">
-          <a href="#features">Features</a>
-          <a href="#feedback-section">Reviews</a>
-          <a href="#payment-section">Buy</a>
-          <a href="#faq-section">FAQ</a>
+          <a href="#features" data-i18n="header.nav.features">Features</a>
+          <a href="#feedback-section" data-i18n="header.nav.reviews">Reviews</a>
+          <a href="#payment-section" data-i18n="header.nav.buy">Buy</a>
+          <a href="#faq-section" data-i18n="header.nav.faq">FAQ</a>
         </nav>
         <div class="landing-header-actions">
           <!-- 语言切换器 -->
@@ -1232,6 +1277,38 @@
       </div>
     </div>
   </header>
+
+  <script>
+    (function () {
+      const headerNavText = {
+        'zh-CN': ['功能', '评价', '购买', 'FAQ'],
+        en: ['Features', 'Reviews', 'Buy', 'FAQ']
+      };
+
+      function syncCognoteHeaderNav(lang) {
+        const labels = headerNavText[lang === 'en' ? 'en' : 'zh-CN'];
+        const links = document.querySelectorAll('.landing-header-nav a');
+        links.forEach((link, index) => {
+          if (labels[index]) {
+            link.textContent = labels[index];
+          }
+        });
+      }
+
+      const applyCurrent = () => {
+        const nextLang = (window.i18n && window.i18n.currentLang) || document.documentElement.lang || 'zh-CN';
+        syncCognoteHeaderNav(nextLang);
+      };
+
+      applyCurrent();
+      window.addEventListener('ic-language-changed', applyCurrent);
+      document.querySelectorAll('.lang-option').forEach((button) => {
+        button.addEventListener('click', () => {
+          window.setTimeout(applyCurrent, 0);
+        });
+      });
+    })();
+  </script>
 
   <!-- ==================== 主要内容区域 ==================== -->
   <main id="main-content">
@@ -1539,29 +1616,18 @@
             <span class="payment-price-line" data-payment-price-line>⚡ <strong data-i18n="payment.price">128.00¥</strong> —— <span data-i18n="payment.priceText">一次购买，终身受用</span></span>
           </div>
           <div class="payment-mode-toggle" role="tablist" aria-label="购买方式选择">
-            <button type="button" class="active" data-payment-mode="bundle" data-i18n="payment.mode.bundle">完整版</button>
+            <button type="button" class="active" data-payment-mode="full">Full Version</button>
+            <button type="button" data-payment-mode="bundle">Bundle</button>
             <button type="button" data-payment-mode="single" data-i18n="payment.mode.single">单件购买</button>
           </div>
         </div>
 
-        <div class="payment-mode-panel is-active" data-payment-panel="bundle">
+        <div class="payment-mode-panel is-active" data-payment-panel="full">
           <div class="payment-grid">
             <!-- 左侧：支付选项 -->
             <div class="payment-card">
               <h3 data-i18n="payment.cardTitle">解锁你的音乐潜能</h3>
               <p data-i18n="payment.refundPolicy">支持 7 天无理由退款</p>
-
-              <div class="promo-campaign-card">
-                <div class="promo-campaign-eyebrow-wrap">
-                  <div class="promo-campaign-eyebrow">Limited Offer</div>
-                </div>
-                <div class="promo-campaign-row">
-                  <div class="promo-campaign-copy">
-                    <h4 class="promo-campaign-title">Buy the Cognote full version between March 14, 2026 and April 14, 2026, and you also get the full version of FretLab.</h4>
-                  </div>
-                  <button type="button" class="promo-campaign-trigger" id="open-promo-offer">Read details</button>
-                </div>
-              </div>
 
               <a href="/en/tools/melody-generator.html" target="_blank" class="btn btn-outline" style="display: block; margin-bottom: 1.25rem; text-align: center; font-size: 0.9375rem; padding: 0.875rem;" data-i18n="payment.btnFreeTrial">
                 免费试用
@@ -1575,18 +1641,6 @@
                   微信支付
                 </button>
               </div>
-              <button
-                type="button"
-                class="payment-button payment-button-coming-soon"
-                disabled
-                aria-disabled="true"
-                aria-label="Other payment methods, coming soon"
-                title="Other payment methods"
-              >
-                <span class="payment-button-coming-soon-main">Card Payment</span>
-                <span class="payment-button-coming-soon-sub">Not available yet</span>
-              </button>
-
               <div class="access-code-section">
                 <h4 data-i18n="payment.accessCodeTitle">🔑 已有访问码？立即使用</h4>
                 <div class="access-code-input-group">
@@ -1620,6 +1674,58 @@
                 height="100%"
                 style="border: 0; min-height: 500px;">
               </iframe>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="payment-mode-panel" data-payment-panel="bundle">
+          <div class="payment-grid">
+            <div
+              class="payment-card bundle-offer-card"
+              data-bundle-offer
+              data-bundle-theme="cognote"
+              data-bundle-lang="en"
+              data-bundle-name-zh="IC Studio 套装（Cognote + FretLab）"
+              data-bundle-name-en="IC Studio Bundle (Cognote + FretLab)"
+            >
+              <div class="bundle-offer-head">
+                <span class="bundle-offer-badge">Cognote + FretLab</span>
+              </div>
+
+              <div class="bundle-offer-info">
+                <div class="bundle-offer-price">¥168</div>
+                <h3>Unlock Cognote and FretLab at once</h3>
+              </div>
+
+              <div class="payment-buttons">
+                <button type="button" class="payment-button payment-button-alipay" data-bundle-pay-trigger="alipay">
+                  Alipay
+                </button>
+                <button type="button" class="payment-button payment-button-wechat" data-bundle-pay-trigger="wechat">
+                  WeChat Pay
+                </button>
+              </div>
+
+              <div class="access-code-section bundle-access-section">
+                <h4>🔑 Already have a bundle access code?</h4>
+                <div class="access-code-input-group">
+                  <input
+                    type="text"
+                    class="access-code-input"
+                    data-bundle-access-input
+                    placeholder="Enter Bundle Access Code"
+                  >
+                  <button
+                    type="button"
+                    class="access-code-button active"
+                    data-bundle-verify-btn
+                  >
+                    Verify
+                  </button>
+                </div>
+                <div class="verify-result" data-bundle-verify-result></div>
+              </div>
             </div>
 
           </div>
@@ -1685,70 +1791,60 @@
         </div>
 
         <div class="payment-update-meta">
-          <span>最后一次版本更新时间：2026年03月02日</span>
-          <button type="button" class="payment-update-link" id="open-update-log">了解详情</button>
+          <span>Last version update: March 28, 2026</span>
+          <button type="button" class="payment-update-link" id="open-update-log">View details</button>
         </div>
       </div>
     </div>
 
     <div class="update-log-modal" id="update-log-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="update-log-title">
       <div class="update-log-panel">
-        <button type="button" class="update-log-close" id="close-update-log" aria-label="关闭">×</button>
-        <h3 class="update-log-title" id="update-log-title">更新日志</h3>
+        <button type="button" class="update-log-close" id="close-update-log" aria-label="Close">×</button>
+        <h3 class="update-log-title" id="update-log-title">Update Log</h3>
 
         <section class="update-log-block">
-          <h4 class="update-log-heading">当前版本：v1.0.0（2026年03月02日）</h4>
-          <ol class="update-log-list">
-            <li>
-              <strong>节拍器同步</strong>
-              <p>每个工具里的节拍器（包括挑战模式里的节拍器和设置页面顶部的节拍器）现在都进行了同步。</p>
-            </li>
-            <li>
-              <strong>参数管理按钮</strong>
-              <p>在设置中加入了三个按钮，方便用户操作：保存参数、导入参数、重置参数。</p>
-            </li>
-          </ol>
-        </section>
-
-        <section class="update-log-block">
-          <h4 class="update-log-heading">历史更新记录</h4>
+          <h4 class="update-log-heading">Current Version</h4>
+          <p style="margin:0 0 0.7rem;color:#0f172a;"><strong>v2.0.1 (March 28, 2026)</strong></p>
           <ul class="update-log-list">
-            <li><strong>v1.0.0（2026年03月02日）</strong>：更新日志功能上线，开始系统记录版本更新。</li>
+            <li>
+              <strong>Playback and cursor stability pass</strong>
+              <p>Fixed remaining cursor-follow drift, mid-playback start issues, and related timing problems across melody, jianpu, and rhythm flows, and removed the leftover English play-button emoji in the chord tool.</p>
+            </li>
+            <li>
+              <strong>Cross-tool language sync completed</strong>
+              <p>Changing the language in any tool now keeps that language across the full tool suite until the user explicitly changes it again.</p>
+            </li>
+            <li>
+              <strong>UI consistency refinements</strong>
+              <p>The Jianpu tool subtitle color now matches the rest of the suite, and the English tool menu switcher labels are aligned with the Rhythm tool’s shorter naming style.</p>
+            </li>
           </ul>
-          <p class="update-log-history-empty">注：该版本是官网更新日志的记录起点，并非产品首个版本；此前已有多次迭代未纳入历史记录。</p>
+        </section>
+
+        <section class="update-log-block">
+          <h4 class="update-log-heading">History</h4>
+          <ul class="update-log-list" style="list-style:none;padding-left:0;">
+            <li class="update-log-history-entry">
+              <details>
+                <summary class="update-log-history-toggle">
+                  <strong>v2.0.0</strong>
+                  <span class="update-log-history-badge">View details</span>
+                </summary>
+                <div class="update-log-history-detail">
+                  <p style="margin:0;color:#0f172a;"><strong>v2.0.0 (March 2, 2026)</strong></p>
+                  <ul class="update-log-list" style="margin-top:0.45rem;">
+                    <li>Completed metronome synchronization across the tool flow and challenge flow.</li>
+                    <li>Added Save Parameters, Import Parameters, and Reset Parameters buttons in Settings.</li>
+                  </ul>
+                </div>
+              </details>
+            </li>
+          </ul>
+          <p class="update-log-history-empty">Note: this version is the starting point of the website update log, not the first product release; earlier iterations were not logged here.</p>
         </section>
       </div>
     </div>
 
-    <div class="promo-offer-modal" id="promo-offer-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="promo-offer-title">
-      <div class="promo-offer-panel">
-        <button type="button" class="promo-offer-close" id="close-promo-offer" aria-label="Close">×</button>
-        <h3 class="promo-offer-title" id="promo-offer-title">Offer details</h3>
-
-        <section class="promo-offer-block">
-          <h4 class="promo-offer-heading">What this offer includes</h4>
-          <p class="promo-offer-text">If you buy the Cognote full version between March 14, 2026 00:00:00 and April 14, 2026 23:59:59, Beijing time, you also receive full access to FretLab.</p>
-        </section>
-
-        <section class="promo-offer-block">
-          <h4 class="promo-offer-heading">Eligibility</h4>
-          <ul class="promo-offer-list">
-            <li>This offer applies only to Cognote full-version orders, not single-product purchases.</li>
-            <li>The included bonus is full FretLab access at no extra cost.</li>
-            <li>After payment, you can use the same Cognote full-version access code to unlock FretLab.</li>
-          </ul>
-        </section>
-
-        <section class="promo-offer-block">
-          <h4 class="promo-offer-heading">Notes</h4>
-          <ul class="promo-offer-list">
-            <li>The FretLab access-code verification area is in the FretLab purchase section.</li>
-            <li>If the qualifying Cognote order is refunded later, the gifted FretLab entitlement will also be revoked.</li>
-          </ul>
-          <p class="promo-offer-note">If you purchased the Cognote full version during the offer period but FretLab is still not unlocked, <a href="/contact/">contact me</a> and I can help verify the order.</p>
-        </section>
-      </div>
-    </div>
   </section>
 
   <!-- ==================== FAQ 区域 ==================== -->
@@ -1946,6 +2042,7 @@
   <script defer src="/js/single-product-config.js?v=1.0.0"></script>
   <script defer src="/js/single-product-access.js?v=1.0.0"></script>
   <script defer src="/js/single-product-payment.js?v=1.0.0"></script>
+  <script defer src="/js/bundle-payment.js?v=1.0.0"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
   <!-- 内联 JavaScript 函数 -->
@@ -1971,11 +2068,12 @@
           return;
         }
 
-        const isMerchantOrder = /^ICS?\d{17}$/.test(orderNumber);
+        const isBundleMerchantOrder = /^IBD\d{10,24}$/i.test(orderNumber);
+        const isMerchantOrder = /^ICS?\d{17}$/.test(orderNumber) || isBundleMerchantOrder;
         const isAlipayTrade = /^\d{28}$/.test(orderNumber);
 
         if (!isMerchantOrder && !isAlipayTrade) {
-          resultDiv.innerHTML = '<div style="color: #e74c3c; padding: 10px; background: #ffeaa7; border-radius: 8px; font-size: 14px;">❌ 请输入有效的订单号格式<br><small>商家订单号：IC/ICS开头的号码；支付宝交易号：28位数字</small></div>';
+          resultDiv.innerHTML = '<div style="color: #e74c3c; padding: 10px; background: #ffeaa7; border-radius: 8px; font-size: 14px;">❌ 请输入有效的订单号格式<br><small>Merchant order: IC/ICS/IBD prefix; payment trade no: 28 digits</small></div>';
           return;
         }
 
@@ -1991,6 +2089,7 @@
 
           const SINGLE_LOOKUP_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findSingleAccessCodeByOrderNo';
           const FULL_LOOKUP_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findAccessCodeProxy';
+          const BUNDLE_LOOKUP_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findBundleAccessCodeByOrderNo';
 
           async function fetchLookup(endpoint) {
             const response = await fetch(endpoint, {
@@ -2003,29 +2102,32 @@
             return await response.json();
           }
 
-          let actualResult;
+          let actualResult = null;
+          const lookupChain = isBundleMerchantOrder
+            ? [BUNDLE_LOOKUP_ENDPOINT]
+            : [SINGLE_LOOKUP_ENDPOINT, FULL_LOOKUP_ENDPOINT, BUNDLE_LOOKUP_ENDPOINT];
 
-          try {
-            actualResult = await fetchLookup(SINGLE_LOOKUP_ENDPOINT);
-            console.log('🔍 单件查找结果:', actualResult);
-          } catch (singleError) {
-            console.warn('⚠️ 单件查找失败，尝试完整版:', singleError);
-            actualResult = null;
-          }
+          for (const endpoint of lookupChain) {
+            try {
+              actualResult = await fetchLookup(endpoint);
+              console.log('🔍 查找结果:', endpoint, actualResult);
+            } catch (lookupError) {
+              console.warn('⚠️ 查找失败，尝试下一个接口:', endpoint, lookupError);
+              actualResult = null;
+            }
 
-          const shouldFallback = !actualResult || (actualResult && actualResult.success === false && (
-            actualResult.code === 'ORDER_NOT_FOUND' ||
-            /未找到/.test(actualResult.error || '')
-          ));
-
-          if (shouldFallback) {
-            actualResult = await fetchLookup(FULL_LOOKUP_ENDPOINT);
-            console.log('🔍 完整版查找结果:', actualResult);
+            if (actualResult && (actualResult.success || !(
+              actualResult.code === 'ORDER_NOT_FOUND' ||
+              /未找到/.test(actualResult.error || '')
+            ))) {
+              break;
+            }
           }
 
           if (actualResult && actualResult.success && actualResult.result) {
             const orderInfo = actualResult.result.order_info;
             const accessCode = actualResult.result.access_code;
+            const tradeNo = orderInfo.alipay_trade_no || orderInfo.payment_trade_no || orderInfo.trade_no || '';
 
             const resultHtml = `
                 <div style="background: #f0fff4; border: 1px solid #9ae6b4; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
@@ -2050,7 +2152,7 @@
                     <div style="margin-bottom: 5px;">
                         <strong>商家订单号：</strong><span style="font-family: monospace; font-size: 12px;">${orderInfo.merchant_order_no}</span>
                     </div>
-                    ${orderInfo.alipay_trade_no ? `<div style="margin-bottom: 5px;"><strong>订单号：</strong><span style="font-family: monospace; font-size: 12px;">${orderInfo.alipay_trade_no}</span></div>` : ''}
+                    ${tradeNo ? `<div style="margin-bottom: 5px;"><strong>订单号：</strong><span style="font-family: monospace; font-size: 12px;">${tradeNo}</span></div>` : ''}
                 </div>
             `;
 
@@ -2124,7 +2226,8 @@
       const code = input.value.trim();
       const isFullCode = code.length >= 11 && code.length <= 12 && /^[A-Z0-9]+$/.test(code);
       const isSingleCode = /^(MEL|JPU|RHY|CHD|INT)[A-Z0-9]{12}$/.test(code);
-      const isValid = isFullCode || isSingleCode;
+      const isBundleCode = /^BDL[A-Z0-9]{3,27}$/i.test(code);
+      const isValid = isFullCode || isSingleCode || isBundleCode;
 
       btn.dataset.valid = isValid;
       btn.classList.toggle('active', isValid);
@@ -2180,7 +2283,31 @@
           button.style.opacity = '1';
 
           setTimeout(() => {
+            const isBundleCode = /^BDL[A-Z0-9]{3,27}$/i.test(code);
             // 优先调用完整弹窗函数
+            if (isBundleCode && window.BundlePayment && typeof window.BundlePayment.showSuccessModal === 'function') {
+              console.log('🎉 显示 Bundle 验证成功弹窗');
+              const bundleRoot = document.querySelector('[data-bundle-offer][data-bundle-theme="cognote"]');
+              if (bundleRoot) {
+                window.BundlePayment.showSuccessModal(bundleRoot, document.documentElement.lang && document.documentElement.lang.indexOf('zh') === 0 ? 'zh' : 'en', code, result.data);
+                return;
+              }
+            }
+            if (window.BundlePayment && typeof window.BundlePayment.showProductSuccessModal === 'function') {
+              console.log('🎉 显示 Cognote full-version verify success modal');
+              const fullRoot = document.querySelector('[data-payment-panel="full"] .payment-card') || document.body;
+              window.BundlePayment.showProductSuccessModal(
+                fullRoot,
+                document.documentElement.lang && document.documentElement.lang.indexOf('zh') === 0 ? 'zh' : 'en',
+                code,
+                result.data,
+                {
+                  toolOnly: 'cognote',
+                  successTitle: 'Access code verified'
+                }
+              );
+              return;
+            }
             if (typeof window.showUnifiedPaymentSuccess === 'function') {
               console.log('🎉 显示完整验证成功弹窗');
               window.showUnifiedPaymentSuccess(code, 'manual-verify', result.data);
@@ -2252,7 +2379,6 @@
       initFeedbackLoopMarquee();
       initPaymentModeToggle();
       initUpdateLogModal();
-      initPromoOfferModal();
       initAnimatedContentCards();
     });
 
@@ -2469,19 +2595,42 @@
 
       if (!toggleButtons.length || !panels.length) return;
 
+      const paymentMeta = {
+        full: {
+          price: '128.00¥',
+          text: 'One purchase, lifetime access'
+        },
+        bundle: {
+          price: '168.00¥',
+          text: 'One code unlocks Cognote + FretLab'
+        }
+      };
+
+      const applyMode = (mode, activeButton) => {
+        toggleButtons.forEach((item) => item.classList.toggle('active', item === activeButton));
+        panels.forEach((panel) => {
+          panel.classList.toggle('is-active', panel.dataset.paymentPanel === mode);
+        });
+        if (!priceLine) return;
+        if (mode === 'single') {
+          priceLine.style.display = 'none';
+          return;
+        }
+        const meta = paymentMeta[mode] || paymentMeta.full;
+        priceLine.style.display = '';
+        priceLine.innerHTML = `⚡ <strong>${meta.price}</strong> —— ${meta.text}`;
+      };
+
       toggleButtons.forEach((btn) => {
         btn.addEventListener('click', () => {
-          const mode = btn.dataset.paymentMode;
-
-          toggleButtons.forEach((item) => item.classList.toggle('active', item === btn));
-          panels.forEach((panel) => {
-            panel.classList.toggle('is-active', panel.dataset.paymentPanel === mode);
-          });
-          if (priceLine) {
-            priceLine.style.display = mode === 'single' ? 'none' : '';
-          }
+          applyMode(btn.dataset.paymentMode, btn);
         });
       });
+
+      const activeButton = document.querySelector('[data-payment-mode].active') || toggleButtons[0];
+      if (activeButton) {
+        applyMode(activeButton.dataset.paymentMode, activeButton);
+      }
     }
 
     function initFeedbackAuthorColors() {
@@ -2615,39 +2764,6 @@
       const modal = document.getElementById('update-log-modal');
       const openButton = document.getElementById('open-update-log');
       const closeButton = document.getElementById('close-update-log');
-
-      if (!modal || !openButton || !closeButton) return;
-
-      const closeModal = () => {
-        modal.classList.remove('is-open');
-        modal.setAttribute('aria-hidden', 'true');
-      };
-
-      const openModal = () => {
-        modal.classList.add('is-open');
-        modal.setAttribute('aria-hidden', 'false');
-      };
-
-      openButton.addEventListener('click', openModal);
-      closeButton.addEventListener('click', closeModal);
-
-      modal.addEventListener('click', (event) => {
-        if (event.target === modal) {
-          closeModal();
-        }
-      });
-
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && modal.classList.contains('is-open')) {
-          closeModal();
-        }
-      });
-    }
-
-    function initPromoOfferModal() {
-      const modal = document.getElementById('promo-offer-modal');
-      const openButton = document.getElementById('open-promo-offer');
-      const closeButton = document.getElementById('close-promo-offer');
 
       if (!modal || !openButton || !closeButton) return;
 

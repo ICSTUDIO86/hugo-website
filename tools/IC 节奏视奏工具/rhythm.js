@@ -30,7 +30,8 @@
             countInTimer: null,
             countInActive: false,
             countInState: null,
-            countInUiTimers: []
+            countInUiTimers: [],
+            restoreMetronomeAfterStop: false
         },
         calibration: {
             enabled: false,
@@ -766,12 +767,13 @@
         return { beats: settings.beats, den: settings.beatType };
     }
 
-    function getMetronomePatternInfo(tempoOverride) {
+    function getMetronomePatternInfo(tempoOverride, beatOnly = false) {
         const tempo = Math.max(1, tempoOverride || 80);
-        if (!metronomePattern.enabled) {
+        if (beatOnly || !metronomePattern.enabled) {
+            const tsInfo = getMetronomeTimeSignatureInfo();
             return {
                 usePattern: false,
-                stepDuration: 60.0 / tempo
+                stepDuration: (60.0 / tempo) * (4 / tsInfo.den)
             };
         }
 
@@ -1432,6 +1434,22 @@
         }
     }
 
+    function getToolParameterBootstrapPreferences(preferences) {
+        const nextPreferences = (preferences && typeof preferences === 'object')
+            ? { ...preferences }
+            : {};
+        const savedTheme = localStorage.getItem('preferredTheme');
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+
+        if (savedTheme) {
+            nextPreferences.theme = savedTheme;
+        }
+        if (savedLanguage && translations[savedLanguage]) {
+            nextPreferences.language = savedLanguage;
+        }
+        return nextPreferences;
+    }
+
     function finalizeToolParameterApply() {
         const syncFnNames = [
             'saveRhythmSettings',
@@ -1604,7 +1622,7 @@
         }
         const savedPayload = readSavedToolParameterPayload();
         if (savedPayload && savedPayload.controls) {
-            applyToolParameterPreferences(savedPayload.preferences);
+            applyToolParameterPreferences(getToolParameterBootstrapPreferences(savedPayload.preferences));
             applyToolParameterSnapshot(savedPayload.controls);
             finalizeToolParameterApply();
         }
@@ -5116,6 +5134,7 @@
 
     function generateRhythm() {
         stopPlayback();
+        clearRhythmPlaybackSelection({ resetTimeline: true });
         const settings = getSettings();
         state.lastSettings = settings;
         const ostinato = settings.ostinato || { voice: 'none' };
@@ -5152,12 +5171,14 @@
 
     function previousRhythm() {
         if (currentHistoryIndex > 0) {
+            clearRhythmPlaybackSelection({ resetTimeline: true });
             renderHistory(currentHistoryIndex - 1);
         }
     }
 
     function nextRhythm() {
         if (currentHistoryIndex < rhythmHistory.length - 1) {
+            clearRhythmPlaybackSelection({ resetTimeline: true });
             renderHistory(currentHistoryIndex + 1);
         }
     }
@@ -5328,6 +5349,15 @@
             label.style.color = 'var(--text-color)';
             label.style.opacity = '0.75';
         }
+    }
+
+    function isPlaybackCountInStrongBeat(beatIndex, countInInfo) {
+        const beats = Math.max(1, parseInt(countInInfo?.beats, 10) || 4);
+        const beatType = Math.max(1, parseInt(countInInfo?.beatType, 10) || 4);
+        if (beatType === 8 && beats === 6) {
+            return beatIndex === 0 || beatIndex === 3;
+        }
+        return beatIndex === 0;
     }
 
     function hidePlaybackCountdown() {
@@ -5846,8 +5876,10 @@
                 (measure || []).forEach(event => {
                     const voice = event.voice || (voiceIndex + 1);
                     if (!event.rest) {
+                        const absoluteTick = measureIndex * measureTicks + position;
                         events.push({
-                            ticks: measureIndex * measureTicks + position,
+                            ticks: absoluteTick,
+                            sourceTick: absoluteTick,
                             voice,
                             tieType: event.tieType || null
                         });
@@ -5874,9 +5906,365 @@
                 openTieByVoice.delete(voiceKey);
             }
         });
+        const tieStartTickByGroup = new Map();
+        events.forEach((ev) => {
+            if (ev.tieGroup && !tieStartTickByGroup.has(ev.tieGroup)) {
+                tieStartTickByGroup.set(ev.tieGroup, ev.sourceTick);
+            }
+        });
+        events.forEach((ev) => {
+            ev.followSourceTick = ev.tieGroup
+                ? (tieStartTickByGroup.get(ev.tieGroup) ?? ev.sourceTick)
+                : ev.sourceTick;
+        });
         const totalTicks = measureTicks * (voices[0] ? voices[0].length : 0);
         events.sort((a, b) => a.ticks - b.ticks);
         return { events, totalTicks, settings };
+    }
+
+    function getRhythmPlaybackCursorState() {
+        if (!state.playback.cursorState) {
+            state.playback.cursorState = {
+                timeline: [],
+                cacheKey: '',
+                selectedIndex: -1,
+                cursorEl: null,
+                measureRects: [],
+                followTimers: [],
+                refreshTimer: null,
+                observer: null
+            };
+        }
+        return state.playback.cursorState;
+    }
+
+    function isRhythmPlaybackSelectableTarget(target) {
+        if (!target || !target.closest) return false;
+        return !!target.closest('g.vf-stavenote, g.vf-note, g.vf-rest, .vf-notehead, .vf-rest, .vf-stem, .vf-flag, .vf-beam, .vf-dot');
+    }
+
+    function isPointInsideRenderedRhythmScore(clientX, clientY) {
+        const scoreElement = document.getElementById('score');
+        const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+        if (!scoreElement || !svg) return false;
+        const svgRect = svg.getBoundingClientRect();
+        return clientX >= svgRect.left &&
+            clientX <= svgRect.right &&
+            clientY >= svgRect.top &&
+            clientY <= svgRect.bottom;
+    }
+
+    function getRhythmScoreRelativePoint(clientX, clientY) {
+        const scoreElement = document.getElementById('score');
+        if (!scoreElement) return null;
+        const rect = scoreElement.getBoundingClientRect();
+        return {
+            x: clientX - rect.left + scoreElement.scrollLeft,
+            y: clientY - rect.top + scoreElement.scrollTop
+        };
+    }
+
+    function ensureRhythmPlaybackCursor() {
+        const cursorState = getRhythmPlaybackCursorState();
+        const scoreElement = document.getElementById('score');
+        if (!scoreElement) return null;
+        if (!cursorState.cursorEl || !cursorState.cursorEl.isConnected) {
+            const cursor = document.createElement('div');
+            cursor.id = 'rhythmPlaybackCursor';
+            cursor.style.position = 'absolute';
+            cursor.style.top = '0';
+            cursor.style.width = '12px';
+            cursor.style.height = '100%';
+            cursor.style.left = '0';
+            cursor.style.background = 'rgba(255,79,163,0.25)';
+            cursor.style.border = '1px solid rgba(255,79,163,0.4)';
+            cursor.style.borderRadius = '4px';
+            cursor.style.pointerEvents = 'none';
+            cursor.style.display = 'none';
+            scoreElement.appendChild(cursor);
+            cursorState.cursorEl = cursor;
+        }
+        return cursorState.cursorEl;
+    }
+
+    function clearRhythmPlaybackSelection(options = {}) {
+        const cursorState = getRhythmPlaybackCursorState();
+        cursorState.selectedIndex = -1;
+        if (options.resetTimeline) {
+            cursorState.timeline = [];
+            cursorState.cacheKey = '';
+            cursorState.measureRects = [];
+        }
+        if (cursorState.cursorEl) cursorState.cursorEl.style.display = 'none';
+    }
+
+    function getRhythmMeasureRects() {
+        if (typeof window.getOSMDMeasureRects === 'function') {
+            try {
+                const rects = window.getOSMDMeasureRects();
+                if (Array.isArray(rects) && rects.length) return rects;
+            } catch (_) {}
+        }
+        const scoreElement = document.getElementById('score');
+        const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+        const measureCount = Array.isArray(state.lastVoices?.[0]) ? state.lastVoices[0].length : 0;
+        if (!scoreElement || !svg || !measureCount) return [];
+        const scoreRect = scoreElement.getBoundingClientRect();
+        const svgRect = svg.getBoundingClientRect();
+        const startX = svgRect.left - scoreRect.left + scoreElement.scrollLeft;
+        const startY = svgRect.top - scoreRect.top + scoreElement.scrollTop;
+        const width = svgRect.width / measureCount;
+        return Array.from({ length: measureCount }, (_, index) => ({
+            x: startX + index * width,
+            y: startY,
+            width,
+            height: svgRect.height
+        }));
+    }
+
+    function buildRhythmTimelineTicks() {
+        const settings = state.lastSettings || getSettings();
+        const voices = state.lastVoices || [];
+        const ticksPerBeat = divisions * (4 / settings.beatType);
+        const measureTicks = ticksPerBeat * settings.beats;
+        const map = new Map();
+        voices.forEach((measures) => {
+            if (!Array.isArray(measures)) return;
+            measures.forEach((measure, measureIndex) => {
+                let position = 0;
+                (measure || []).forEach((event) => {
+                    const absTicks = measureIndex * measureTicks + position;
+                    const key = `${absTicks}`;
+                    if (!map.has(key)) {
+                        map.set(key, {
+                            ticks: absTicks,
+                            measureIndex,
+                            hasSound: !event.rest
+                        });
+                    } else if (!event.rest) {
+                        map.get(key).hasSound = true;
+                    }
+                    position += event.duration || 0;
+                });
+            });
+        });
+        return Array.from(map.values()).sort((a, b) => a.ticks - b.ticks).map((event, index) => ({
+            ...event,
+            index,
+            sourceTick: event.ticks
+        }));
+    }
+
+    function collectRhythmPlaybackCandidates(measureRects) {
+        const scoreElement = document.getElementById('score');
+        const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+        if (!scoreElement || !svg) return measureRects.map(() => []);
+        const scoreRect = scoreElement.getBoundingClientRect();
+        const selector = 'g.vf-stavenote, g.vf-note, g.vf-rest, .vf-notehead, .vf-rest';
+        const seen = new Set();
+        const byMeasure = measureRects.map(() => []);
+        svg.querySelectorAll(selector).forEach((node) => {
+            const target = node.closest ? (node.closest('.vf-notehead, .vf-rest') || node.closest('g.vf-stavenote, g.vf-note, g.vf-rest') || node) : node;
+            if (!target || seen.has(target)) return;
+            const rect = target.getBoundingClientRect ? target.getBoundingClientRect() : null;
+            if (!rect || (rect.width <= 0 && rect.height <= 0)) return;
+            seen.add(target);
+            const candidate = {
+                el: target,
+                left: rect.left - scoreRect.left + scoreElement.scrollLeft,
+                right: rect.right - scoreRect.left + scoreElement.scrollLeft,
+                top: rect.top - scoreRect.top + scoreElement.scrollTop,
+                bottom: rect.bottom - scoreRect.top + scoreElement.scrollTop,
+                cx: rect.left - scoreRect.left + scoreElement.scrollLeft + rect.width / 2,
+                cy: rect.top - scoreRect.top + scoreElement.scrollTop + rect.height / 2
+            };
+            for (let i = 0; i < measureRects.length; i += 1) {
+                const measureRect = measureRects[i];
+                if (candidate.cx >= (measureRect.x - 8) && candidate.cx <= (measureRect.x + measureRect.width + 8)) {
+                    byMeasure[i].push(candidate);
+                    break;
+                }
+            }
+        });
+        return byMeasure.map((items) => items.sort((a, b) => a.cx - b.cx));
+    }
+
+    function clusterRhythmPlaybackCandidates(items) {
+        if (!items.length) return [];
+        const widths = items.map((item) => Math.max(4, item.right - item.left)).sort((a, b) => a - b);
+        const tolerance = Math.max(8, (widths[Math.floor(widths.length / 2)] || 12) * 0.85);
+        const clusters = [];
+        items.forEach((item) => {
+            const last = clusters[clusters.length - 1];
+            if (!last || Math.abs(item.cx - last.cx) > tolerance) {
+                clusters.push({
+                    cx: item.cx,
+                    left: item.left,
+                    right: item.right,
+                    top: item.top,
+                    bottom: item.bottom,
+                    elements: [item.el]
+                });
+                return;
+            }
+            last.left = Math.min(last.left, item.left);
+            last.right = Math.max(last.right, item.right);
+            last.top = Math.min(last.top, item.top);
+            last.bottom = Math.max(last.bottom, item.bottom);
+            last.cx = (last.left + last.right) / 2;
+            if (!last.elements.includes(item.el)) last.elements.push(item.el);
+        });
+        return clusters;
+    }
+
+    function buildRhythmPlaybackTimeline() {
+        const measureRects = getRhythmMeasureRects();
+        const logicalEvents = buildRhythmTimelineTicks();
+        const grouped = measureRects.map(() => []);
+        logicalEvents.forEach((event) => {
+            if (grouped[event.measureIndex]) grouped[event.measureIndex].push(event);
+        });
+        const candidatesByMeasure = collectRhythmPlaybackCandidates(measureRects);
+        const timeline = [];
+        grouped.forEach((events, measureIndex) => {
+            const clusters = clusterRhythmPlaybackCandidates(candidatesByMeasure[measureIndex] || []);
+            events.forEach((event, eventIndex) => {
+                const clusterIndex = events.length <= 1 ? 0 : Math.round(eventIndex * Math.max(0, clusters.length - 1) / Math.max(1, events.length - 1));
+                const cluster = clusters[clusterIndex] || null;
+                timeline.push({
+                    ...event,
+                    x: cluster ? cluster.cx : null,
+                    cursorLeft: cluster ? cluster.left : null,
+                    cursorRight: cluster ? cluster.right : null,
+                    top: cluster ? cluster.top : null,
+                    height: cluster ? Math.max(2, cluster.bottom - cluster.top) : null,
+                    elements: cluster ? cluster.elements : []
+                });
+            });
+        });
+        return { timeline, measureRects };
+    }
+
+    function refreshRhythmPlaybackTimeline(options = {}) {
+        const cursorState = getRhythmPlaybackCursorState();
+        const cacheKey = `${currentHistoryIndex}:${state.lastVoices?.[0]?.length || 0}`;
+        if (!options.force && cursorState.cacheKey === cacheKey && cursorState.timeline.length) {
+            return cursorState.timeline;
+        }
+        const built = buildRhythmPlaybackTimeline();
+        cursorState.timeline = built.timeline;
+        cursorState.cacheKey = cacheKey;
+        cursorState.measureRects = built.measureRects;
+        if (cursorState.selectedIndex >= 0) {
+            if (!setRhythmPlaybackSelectionByIndex(cursorState.selectedIndex)) {
+                clearRhythmPlaybackSelection();
+            }
+        }
+        return cursorState.timeline;
+    }
+
+    function queueRhythmPlaybackRefresh(delayMs = 180) {
+        const cursorState = getRhythmPlaybackCursorState();
+        if (cursorState.refreshTimer) clearTimeout(cursorState.refreshTimer);
+        cursorState.refreshTimer = setTimeout(() => {
+            cursorState.refreshTimer = null;
+            refreshRhythmPlaybackTimeline({ force: true });
+        }, delayMs);
+    }
+
+    function stopRhythmPlaybackCursorFollow() {
+        const cursorState = getRhythmPlaybackCursorState();
+        if (Array.isArray(cursorState.followTimers) && cursorState.followTimers.length) {
+            cursorState.followTimers.forEach((timerId) => clearTimeout(timerId));
+        }
+        cursorState.followTimers = [];
+    }
+
+    function startRhythmPlaybackCursorFollow(scheduledEvents, startTime, secondsPerTick) {
+        const cursorState = getRhythmPlaybackCursorState();
+        const timeline = refreshRhythmPlaybackTimeline();
+        if (!timeline.length || !Array.isArray(scheduledEvents) || !scheduledEvents.length || !state.playback.audioCtx) {
+            return;
+        }
+
+        stopRhythmPlaybackCursorFollow();
+
+        const firstSourceTick = scheduledEvents[0].followSourceTick ?? scheduledEvents[0].sourceTick;
+        const firstTimelineIndex = timeline.findIndex((item) => item.sourceTick === firstSourceTick);
+        if (firstTimelineIndex >= 0) {
+            setRhythmPlaybackSelectionByIndex(firstTimelineIndex);
+        }
+
+        scheduledEvents.forEach((event) => {
+            const targetSourceTick = event.followSourceTick ?? event.sourceTick;
+            const timelineIndex = timeline.findIndex((item) => item.sourceTick === targetSourceTick);
+            const delayMs = Math.max(0, ((startTime + event.ticks * secondsPerTick) - state.playback.audioCtx.currentTime) * 1000);
+            const timerId = setTimeout(() => {
+                if (!state.playback.isPlaying) return;
+                if (timelineIndex >= 0) {
+                    setRhythmPlaybackSelectionByIndex(timelineIndex);
+                }
+            }, delayMs);
+            cursorState.followTimers.push(timerId);
+        });
+    }
+
+    function setRhythmPlaybackSelectionByIndex(index) {
+        const cursorState = getRhythmPlaybackCursorState();
+        const event = cursorState.timeline[index];
+        const cursor = ensureRhythmPlaybackCursor();
+        if (!event || !cursor || !Number.isFinite(event.x)) {
+            clearRhythmPlaybackSelection();
+            return false;
+        }
+        cursorState.selectedIndex = index;
+        const width = (Number.isFinite(event.cursorLeft) && Number.isFinite(event.cursorRight))
+            ? Math.max(12, event.cursorRight - event.cursorLeft)
+            : 12;
+        const left = Number.isFinite(event.cursorLeft) ? event.cursorLeft : (event.x - width / 2);
+        cursor.style.transform = `translateX(${left}px)`;
+        cursor.style.width = `${width}px`;
+        cursor.style.top = `${Number.isFinite(event.top) ? event.top : 0}px`;
+        cursor.style.height = `${Number.isFinite(event.height) ? event.height : 64}px`;
+        cursor.style.display = 'block';
+        return true;
+    }
+
+    function initializeRhythmPlaybackCursorSystem() {
+        const scoreElement = document.getElementById('score');
+        const cursorState = getRhythmPlaybackCursorState();
+        if (!scoreElement) return;
+        if (scoreElement.dataset.playbackCursorBound !== 'true') {
+            scoreElement.dataset.playbackCursorBound = 'true';
+            scoreElement.addEventListener('click', (event) => {
+                if (window.__icChallenge && typeof window.__icChallenge.isActive === 'function' && window.__icChallenge.isActive()) {
+                    return;
+                }
+                if (!isRhythmPlaybackSelectableTarget(event.target)) return;
+                const timeline = refreshRhythmPlaybackTimeline();
+                if (!timeline.length) return;
+                const point = getRhythmScoreRelativePoint(event.clientX, event.clientY);
+                let best = null;
+                let bestDistance = Infinity;
+                timeline.forEach((item) => {
+                    if (!Number.isFinite(item.x)) return;
+                    const distance = Math.abs(item.x - point.x);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        best = item;
+                    }
+                });
+                if (!best) return;
+                setRhythmPlaybackSelectionByIndex(best.index);
+            });
+        }
+        if (!cursorState.observer) {
+            cursorState.observer = new MutationObserver(() => {
+                queueRhythmPlaybackRefresh(220);
+            });
+            cursorState.observer.observe(scoreElement, { childList: true, subtree: true });
+        }
+        queueRhythmPlaybackRefresh(260);
     }
 
     function stopPlayback() {
@@ -5895,9 +6283,13 @@
             clearTimeout(state.playback.stopTimer);
             state.playback.stopTimer = null;
         }
+        stopRhythmPlaybackCursorFollow();
         if (state.metronome.isRunning && state.metronome.startedByPlayback) {
             stopMetronome();
+        } else if (state.playback.restoreMetronomeAfterStop && !state.metronome.isRunning) {
+            startMetronome(undefined, false);
         }
+        state.playback.restoreMetronomeAfterStop = false;
         muteAudioGain(state.metronome.outputGain, state.metronome.audioCtx);
         if (state.calibration.active) {
             stopCalibration();
@@ -5919,18 +6311,23 @@
         }
     }
 
-    function startPlaybackAt(startTime, tempoOverride) {
+    function startPlaybackAt(startTime, tempoOverride, startTick = 0) {
         const { events, totalTicks, settings } = buildPlaybackEvents();
         const ctx = ensurePlaybackContext();
         const tempo = Math.max(1, tempoOverride || getCurrentTempo());
         const secondsPerTick = (60 / tempo) / divisions;
-        const useTwoVoices = (settings && settings.voiceMode > 1) || events.some(event => event.voice === 2);
+        const scheduledEvents = events
+            .filter(event => event.ticks >= startTick)
+            .map(event => ({ ...event, ticks: event.ticks - startTick }));
+        const adjustedTotalTicks = Math.max(0, totalTicks - startTick);
+        const useTwoVoices = (settings && settings.voiceMode > 1) || scheduledEvents.some(event => event.voice === 2);
 
-        if (!events.length) {
+        if (!scheduledEvents.length) {
             playSnare(startTime || (ctx.currentTime + 0.05), 0.95);
             const delay = Math.max(0, ((startTime || ctx.currentTime) - ctx.currentTime) * 1000);
             state.playback.stopTimer = setTimeout(() => {
                 state.playback.isPlaying = false;
+                stopRhythmPlaybackCursorFollow();
                 updatePlayButtonState(false);
                 if (state.metronome.isRunning && state.metronome.startedByPlayback) {
                     stopMetronome();
@@ -5943,7 +6340,8 @@
         }
 
         const baseTime = startTime || (ctx.currentTime + 0.08);
-        events.forEach(event => {
+        startRhythmPlaybackCursorFollow(scheduledEvents, baseTime, secondsPerTick);
+        scheduledEvents.forEach(event => {
             const time = baseTime + event.ticks * secondsPerTick;
             if (useTwoVoices) {
                 if (event.voice === 2) {
@@ -5956,10 +6354,11 @@
             }
         });
 
-        const totalDuration = Math.max(totalTicks * secondsPerTick, 0.2);
+        const totalDuration = Math.max(adjustedTotalTicks * secondsPerTick, 0.2);
         const delayMs = Math.max(0, (baseTime - ctx.currentTime) * 1000);
         state.playback.stopTimer = setTimeout(() => {
             state.playback.isPlaying = false;
+            stopRhythmPlaybackCursorFollow();
             updatePlayButtonState(false);
             if (state.metronome.isRunning && state.metronome.startedByPlayback) {
                 stopMetronome();
@@ -5986,11 +6385,18 @@
         return { beats, beatType };
     }
 
+    function shouldUseRhythmPlaybackCountIn(startTick = 0) {
+        const normalizedTick = Number(startTick);
+        return !Number.isFinite(normalizedTick) || normalizedTick <= 0;
+    }
+
     function startPlaybackWithCountIn() {
         stopPlayback();
+        const wasMetronomeRunning = state.metronome.isRunning;
         if (state.metronome.isRunning) {
             stopMetronome();
         }
+        state.playback.restoreMetronomeAfterStop = wasMetronomeRunning;
         const ctx = ensurePlaybackContext();
         const output = getPlaybackOutputGain(ctx);
         const metOutput = getMetronomeOutputGain(ctx);
@@ -6003,59 +6409,69 @@
             metOutput.gain.setValueAtTime(1, ctx.currentTime);
         }
         const settings = state.lastSettings || getSettings();
+        const cursorState = getRhythmPlaybackCursorState();
+        const timeline = refreshRhythmPlaybackTimeline();
+        const startTick = (cursorState.selectedIndex >= 0 && timeline[cursorState.selectedIndex])
+            ? (timeline[cursorState.selectedIndex].sourceTick || 0)
+            : 0;
+        const tempoAtStart = getCurrentTempo();
         const countInInfo = getPlaybackCountInInfo(settings);
-        const countInBeats = countInInfo.beats;
-        const initialTime = ctx.currentTime + 0.08;
+        const ticksPerBeat = divisions * (4 / Math.max(1, countInInfo.beatType || settings.beatType || 4));
+        const startBeatOffset = ticksPerBeat > 0
+            ? Math.max(0, (startTick / ticksPerBeat) % Math.max(1, settings.beats || 4))
+            : 0;
+        const useCountIn = shouldUseRhythmPlaybackCountIn(startTick);
+        const startTime = ctx.currentTime + 0.08;
 
         state.playback.isPlaying = true;
         updatePlayButtonState(true);
+        state.playback.countInActive = useCountIn;
+        state.playback.countInState = null;
+        hidePlaybackCountdown();
 
-        state.playback.countInActive = true;
-        state.playback.countInState = {
-            remaining: countInBeats,
-            total: countInBeats,
-            nextTime: initialTime
-        };
-        const scheduleNextCountIn = () => {
-            if (!state.playback.countInActive || !state.playback.countInState) return;
-            const tempo = getCurrentTempo();
-            const beatDuration = getMetronomeBeatDuration(tempo);
-            const { remaining, total } = state.playback.countInState;
-            const countIndex = (total - remaining) + 1;
-            const isDownbeat = (countInInfo.beats === 6 && countInInfo.beatType === 8)
-                ? (countIndex === 1 || countIndex === 4)
-                : (countIndex === 1);
-            const scheduledTime = state.playback.countInState.nextTime;
+        if (useCountIn) {
+            const secondsPerBeat = (60 / tempoAtStart) * (4 / Math.max(1, countInInfo.beatType || 4));
+            const countInStartTime = startTime;
+            const playbackStartAt = countInStartTime + (countInInfo.beats * secondsPerBeat);
 
-            playClick(isDownbeat, scheduledTime);
-            schedulePlaybackCountdown(countIndex, scheduledTime, isDownbeat);
+            state.playback.countInState = {
+                beats: countInInfo.beats,
+                beatType: countInInfo.beatType,
+                startTime: countInStartTime,
+                playbackStartAt
+            };
 
-            state.playback.countInState.remaining -= 1;
-            state.playback.countInState.nextTime = scheduledTime + beatDuration;
-
-            if (state.playback.countInState.remaining <= 0) {
-                state.playback.countInActive = false;
-                const startTime = state.playback.countInState.nextTime;
-                const tempoAtStart = getCurrentTempo();
-                if (state.calibration.enabled) {
-                    startCalibrationAt(startTime, tempoAtStart);
-                }
-                startMetronome(startTime, true);
-                startPlaybackAt(startTime, tempoAtStart);
-                const hideDelayMs = Math.max(0, (startTime - ctx.currentTime) * 1000);
-                const hideId = setTimeout(() => {
-                    hidePlaybackCountdown();
-                }, hideDelayMs);
-                state.playback.countInUiTimers.push(hideId);
-                return;
+            for (let beat = 0; beat < countInInfo.beats; beat++) {
+                const beatTime = countInStartTime + (beat * secondsPerBeat);
+                const isStrong = isPlaybackCountInStrongBeat(beat, countInInfo);
+                playClick(isStrong, beatTime);
+                schedulePlaybackCountdown(beat + 1, beatTime, isStrong);
             }
 
-            const lookahead = 0.05;
-            const delayMs = Math.max(0, (state.playback.countInState.nextTime - ctx.currentTime - lookahead) * 1000);
-            state.playback.countInTimer = setTimeout(scheduleNextCountIn, delayMs);
-        };
+            state.playback.countInUiTimers.push(setTimeout(() => {
+                hidePlaybackCountdown();
+            }, Math.max(0, (playbackStartAt - ctx.currentTime) * 1000)));
 
-        scheduleNextCountIn();
+            state.playback.countInTimer = setTimeout(() => {
+                state.playback.countInTimer = null;
+                state.playback.countInActive = false;
+                state.playback.countInState = null;
+                hidePlaybackCountdown();
+                if (!state.playback.isPlaying) return;
+                if (state.calibration.enabled) {
+                    startCalibrationAt(playbackStartAt, tempoAtStart);
+                }
+                startMetronome(playbackStartAt, !wasMetronomeRunning, 0);
+                startPlaybackAt(playbackStartAt, tempoAtStart, 0);
+            }, Math.max(0, (playbackStartAt - ctx.currentTime) * 1000));
+            return;
+        }
+
+        if (state.calibration.enabled) {
+            startCalibrationAt(startTime, tempoAtStart);
+        }
+        startMetronome(startTime, !wasMetronomeRunning, startBeatOffset);
+        startPlaybackAt(startTime, tempoAtStart, startTick);
     }
 
     function directPlayTest() {
@@ -6143,7 +6559,7 @@
         osc.stop(scheduleTime + 0.05);
     }
 
-    function startMetronome(startAtTime, startedByPlayback = false) {
+    function startMetronome(startAtTime, startedByPlayback = false, beatOffset = 0) {
         const settings = getSettings();
         const beatsPerMeasure = settings.beats;
         const ctx = getRhythmAudioContext();
@@ -6155,11 +6571,22 @@
         const startTime = typeof startAtTime === 'number'
             ? startAtTime
             : (ctx.currentTime + 0.05);
+        const currentTempo = getCurrentTempo();
+        const secondsPerBeat = (60 / currentTempo) * (4 / Math.max(1, settings.beatType || 4));
+        const anchorTime = (typeof startAtTime === 'number' && isFinite(startAtTime))
+            ? (startTime - (Math.max(0, Number(beatOffset) || 0) * secondsPerBeat))
+            : startTime;
         state.metronome.beatIndex = 0;
         state.metronome.stepIndex = 0;
         state.metronome.isRunning = true;
         state.metronome.startedByPlayback = !!startedByPlayback;
-        state.metronome.nextTime = Math.max(startTime, state.metronome.audioCtx.currentTime + 0.02);
+        if (typeof startAtTime === 'number' && isFinite(startAtTime)) {
+            const patternInfo = getMetronomePatternInfo(currentTempo, !!startedByPlayback);
+            const stepDuration = patternInfo.stepDuration || secondsPerBeat;
+            state.metronome.nextTime = anchorTime + Math.max(0, Math.ceil(((ctx.currentTime + 0.02) - anchorTime) / stepDuration)) * stepDuration;
+        } else {
+            state.metronome.nextTime = Math.max(startTime, state.metronome.audioCtx.currentTime + 0.02);
+        }
 
         const schedule = () => {
             if (!state.metronome.isRunning || !state.metronome.audioCtx) return;
@@ -6167,8 +6594,8 @@
             const lookahead = 0.12;
 
             while (state.metronome.nextTime < ctx.currentTime + lookahead) {
-                const currentTempo = getCurrentTempo();
-                const patternInfo = getMetronomePatternInfo(currentTempo);
+                const loopTempo = getCurrentTempo();
+                const patternInfo = getMetronomePatternInfo(loopTempo, !!state.metronome.startedByPlayback);
                 const subdivision = patternInfo.usePattern ? patternInfo.subdivision : 1;
                 let shouldPlay = true;
                 if (patternInfo.usePattern && patternInfo.stepsPerPattern) {
@@ -6185,7 +6612,7 @@
                 }
                 scheduleMetronomeIndicator(shouldPlay, accent, state.metronome.nextTime);
                 state.metronome.stepIndex += 1;
-                const stepDuration = patternInfo.stepDuration || (60 / currentTempo);
+                const stepDuration = patternInfo.stepDuration || (60 / loopTempo);
                 state.metronome.nextTime += stepDuration;
             }
 
@@ -6385,10 +6812,15 @@
         if (metronomeBpmInput) bindBpmReactGrab(metronomeBpmInput);
         if (challengeBpmInput) bindBpmReactGrab(challengeBpmInput);
         if (scoreContainer) {
-            scoreContainer.addEventListener('click', () => {
+            scoreContainer.addEventListener('click', event => {
+                if (isRhythmPlaybackSelectableTarget(event.target) ||
+                    isPointInsideRenderedRhythmScore(event.clientX, event.clientY)) {
+                    return;
+                }
                 triggerGenerate();
             });
         }
+        initializeRhythmPlaybackCursorSystem();
         const voiceOptions = document.querySelectorAll('input[name="voiceOption"]');
         voiceOptions.forEach(option => {
             option.addEventListener('change', () => {

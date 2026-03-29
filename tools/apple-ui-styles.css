@@ -401,6 +401,17 @@ input[type="range"]::-moz-range-thumb {
     gap: 8px;
 }
 
+.metronome-label-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.metronome-label-row label {
+    margin-bottom: 0;
+}
+
 /* Reduce spacing specifically for metronome group */
 .metronome-group {
     margin-left: -16px !important;
@@ -524,44 +535,6 @@ input[type="range"]::-moz-range-thumb {
     letter-spacing: 0.5px;
 }
 
-.metronome-label-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 8px;
-    margin-bottom: 6px;
-}
-
-.metronome-label-row label {
-    margin: 0;
-}
-
-.metronome-settings-btn {
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    background: var(--neutral-white);
-    border: 1px solid var(--border-color);
-    border-radius: 50%;
-    color: var(--neutral-black);
-    font-size: 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.metronome-settings-btn:hover {
-    border-color: var(--border-color-medium);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-    transform: translateY(-1px);
-}
-
-.metronome-settings-btn:active {
-    transform: translateY(0);
-}
-
 .metronome-play-btn {
     width: 28px;
     height: 28px;
@@ -594,6 +567,32 @@ input[type="range"]::-moz-range-thumb {
 
 .metronome-play-btn.active:hover {
     background: #E6850E;
+}
+
+.metronome-settings-btn {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: var(--neutral-white);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    color: var(--neutral-black);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.metronome-settings-btn:hover {
+    border-color: var(--border-color-medium);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.metronome-settings-btn:active {
+    transform: translateY(0);
 }
 
 .metronome-beat-indicator {
@@ -1318,8 +1317,8 @@ button {
     display: flex !important;
     gap: 12px !important;
     justify-content: flex-end !important;
-    margin-top: 0 !important;
-    padding: 20px 32px 28px 32px !important; /* top right bottom left: align with header/body side paddings */
+    margin-top: 32px !important;
+    padding-top: 24px !important;
     border-top: 1px solid var(--border-color) !important;
     position: relative !important;
     z-index: 10002 !important;
@@ -1329,6 +1328,16 @@ button {
 /* All modal elements should be interactive */
 .modal *, .modal-content *, .modal-body *, .modal-header *, .modal-buttons * {
     pointer-events: auto !important;
+    position: relative !important;
+}
+
+/* Restore absolute positioning for modal toggle switches */
+.modal .toggle-slider {
+    position: absolute !important;
+}
+
+.modal .toggle-button {
+    position: absolute !important;
 }
 
 /* Empty score message */
@@ -1522,55 +1531,7 @@ text[class*="PartName"] {
     background: #4f8bff;
 }
 
-/* Notation panel below the score */
-.aux-notation {
-    margin-top: 12px;
-    padding: 12px 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    background: var(--neutral-white);
-    box-shadow: 0 4px 18px var(--card-shadow);
-}
-
-.notation-line {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-top: 6px;
-}
-
-.notation-line:first-child {
-    margin-top: 0;
-}
-
-.notation-label {
-    font-weight: 600;
-    color: var(--neutral-dark);
-    min-width: 54px;
-    font-size: 0.95rem;
-}
-
-.notation-content {
-    flex: 1;
-    font-family: var(--font-mono);
-    color: var(--neutral-black);
-    word-break: break-word;
-    line-height: 1.6;
-}
-
-[data-theme="dark"] .aux-notation {
-    background: rgba(30, 30, 32, 0.9);
-    border-color: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
-}
-
-[data-theme="dark"] .notation-label {
-    color: #b0b0b5;
-}
-
-[data-theme="dark"] .notation-content {
-    color: #e9ecef;
-}
+/* Note: Dark mode is now controlled by data-theme attribute instead of prefers-color-scheme */
 
 /* Practice counter */
 .practice-counter {
@@ -1623,8 +1584,6 @@ text[class*="PartName"] {
     background: none;
     border-color: rgba(255, 255, 255, 0.12);
 }
-
-/* Note: Dark mode is now controlled by data-theme attribute instead of prefers-color-scheme */
 
 /* Smooth animations and micro-interactions */
 * {
@@ -2320,23 +2279,10 @@ body::before {
 }
 
 /* 深色模式下的悬浮颜色 */
-[data-theme="dark"] .function-option:hover {
-    color: #FFFFFF !important;
-}
-
-/* 旋律视奏 - 蓝色 */
-[data-theme="dark"] .function-option:nth-child(1):hover {
-    background: #007AFF !important;
-}
-
-/* 音程视奏 - 绿色 */
-[data-theme="dark"] .function-option:nth-child(2):hover {
-    background: #34C759 !important;
-}
-
-/* 和弦视奏 - 橙色 */
-[data-theme="dark"] .function-option:nth-child(3):hover {
-    background: #FF9500 !important;
+[data-theme="dark"] .function-option:hover,
+[data-theme="dark"] .function-option:focus {
+    background: rgba(10, 132, 255, 0.2) !important;
+    color: var(--primary-blue) !important;
 }
 
 [data-theme="dark"] .function-option:active {
@@ -2422,7 +2368,7 @@ button.language-btn:focus {
     position: relative;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     z-index: 9998;
 }
 
@@ -2443,6 +2389,7 @@ button.language-btn:focus {
     white-space: nowrap;
     min-width: 120px;
     justify-content: center;
+    width: 100%;
 }
 
 .function-btn span {
@@ -2473,7 +2420,8 @@ button.language-btn:focus {
     box-shadow: 0 12px 48px var(--card-shadow-hover);
     overflow: visible;
     z-index: 9999;
-    min-width: 180px;
+    width: 100%;
+    min-width: 100%;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
@@ -2513,24 +2461,11 @@ button.language-btn:focus {
     border-bottom-right-radius: 16px;
 }
 
-/* 为不同功能设置特定的悬浮颜色 */
-.function-option:hover {
-    color: #FFFFFF;
-}
-
-/* 旋律视奏 - 蓝色 */
-.function-option:nth-child(1):hover {
-    background: #007AFF;
-}
-
-/* 音程视奏 - 绿色 */
-.function-option:nth-child(2):hover {
-    background: #34C759;
-}
-
-/* 和弦视奏 - 橙色 */
-.function-option:nth-child(3):hover {
-    background: #FF9500;
+/* 功能菜单悬浮风格（与简谱一致：淡色背景 + 主题色文字） */
+.function-option:hover,
+.function-option:focus {
+    background: rgba(0, 122, 255, 0.12);
+    color: #0056CC;
 }
 
 .function-option:active {
@@ -2761,17 +2696,18 @@ button.theme-switcher:hover {
     }
 
     .function-selector {
-        align-items: center;
+        align-items: stretch;
     }
 
     .function-menu {
-        left: 50%;
-        transform: translateX(-50%) translateY(-10px);
-        min-width: 200px;
+        left: 0;
+        width: 100%;
+        min-width: 100%;
+        transform: translateY(-10px);
     }
 
     .function-menu.show {
-        transform: translateX(-50%) translateY(0);
+        transform: translateY(0);
     }
 
     .function-btn {
@@ -2800,6 +2736,7 @@ button.theme-switcher:hover {
         height: 6px;
     }
 }
+
 
 /* Mobile landscape optimization - 手机横屏优化 */
 @media (orientation: landscape) and (max-height: 599px) {

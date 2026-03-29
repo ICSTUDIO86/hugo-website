@@ -21,7 +21,6 @@
     countInTimerId: null,
     noteTimerId: null,
     beatTimerId: null,
-    restTimeouts: null,
     metronomeTimerId: null,
     observer: null,
     startTs: 0,
@@ -58,18 +57,50 @@
     judgeTimerId: null,
     judgeWindowMs: 160,
     judgeBeatDurationSec: 0,
-    judgeOctShift: null,
     judgeGateUntilSec: 0,
-    judgeInputQueue: [],
-    judgeAligned: false,
-    cursorNoteIndex: -1,
-    judgeState: null,
-    renderQueue: new Set(),
-    renderRafId: null,
     judgedElements: new Set(),
   };
 
   function $(id){ return document.getElementById(id); }
+  let isSyncingChallengeBpmInput = false;
+
+  function clampChallengeTempo(value){
+    const parsed = parseInt(value, 10);
+    if (!isFinite(parsed)) return 60;
+    return Math.max(1, Math.min(999, parsed));
+  }
+
+  function getUnifiedTempoFromHeader(){
+    try {
+      if (typeof getUnifiedMetronomeTempo === 'function') {
+        return clampChallengeTempo(getUnifiedMetronomeTempo());
+      }
+    } catch(_) {}
+    const headerInput = document.getElementById('headerMetronomeBpm');
+    return clampChallengeTempo(headerInput ? headerInput.value : 60);
+  }
+
+  function getChallengeTempoValue(){
+    const bpmInput = $('challengeBPM');
+    return clampChallengeTempo(bpmInput ? bpmInput.value : getUnifiedTempoFromHeader());
+  }
+
+  function syncTempoAcrossInputs(rawTempo){
+    const tempo = clampChallengeTempo(rawTempo);
+    if (typeof setMetronomeTempo === 'function') {
+      setMetronomeTempo(tempo);
+    } else {
+      const headerInput = document.getElementById('headerMetronomeBpm');
+      if (headerInput) headerInput.value = String(tempo);
+    }
+    const bpmInput = $('challengeBPM');
+    if (bpmInput && parseInt(bpmInput.value, 10) !== tempo) {
+      isSyncingChallengeBpmInput = true;
+      bpmInput.value = String(tempo);
+      isSyncingChallengeBpmInput = false;
+    }
+    return tempo;
+  }
 
   function isMidiConnected(){
     try {
@@ -214,9 +245,23 @@
     return el.closest('g.vf-stavenote, g.vf-note, g.vf-notehead') || el.closest('g') || el;
   }
 
+  function dedupeElementsByPaintTarget(elements){
+    const list = Array.isArray(elements) ? elements : [];
+    const seen = new Set();
+    const out = [];
+    list.forEach((el) => {
+      if (!el) return;
+      const paint = getNotePaintTarget(el) || el;
+      if (seen.has(paint)) return;
+      seen.add(paint);
+      out.push(el);
+    });
+    return out;
+  }
+
   function getElementCenterY(el){
     try{
-      const r = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+      const r = el && el.getBoundingClientRect ? el.getBoundingClientRect() : null;
       if (!r) return null;
       const containerRect = scoreEl.getBoundingClientRect();
       return r.top - containerRect.top + scoreEl.scrollTop + r.height / 2;
@@ -226,20 +271,21 @@
   }
 
   function buildJudgeTargets(expectedMidis, elements){
-    const expected = Array.isArray(expectedMidis) ? expectedMidis.slice() : [];
+    const expected = Array.isArray(expectedMidis)
+      ? expectedMidis.filter(m => isFinite(m)).map(m => Math.round(m)).sort((a,b)=>a-b)
+      : [];
     if (!expected.length) return [];
-    const sortedMidis = expected.slice().sort((a,b)=>a-b);
-    let mappedEls = [];
-    if (Array.isArray(elements) && elements.length){
-      const elInfos = elements.map(el => ({ el, y: getElementCenterY(el) }));
-      elInfos.sort((a,b)=>{
-        const ay = isFinite(a.y) ? a.y : -Infinity;
-        const by = isFinite(b.y) ? b.y : -Infinity;
-        return by - ay; // lower pitch first (larger y)
-      });
-      mappedEls = elInfos.map(e => e.el);
-    }
-    return sortedMidis.map((midi, idx) => ({
+    const mappedEls = Array.isArray(elements)
+      ? dedupeElementsByPaintTarget(elements)
+          .map(el => ({ el, y: getElementCenterY(el) }))
+          .sort((a,b)=>{
+            const ay = isFinite(a.y) ? a.y : -Infinity;
+            const by = isFinite(b.y) ? b.y : -Infinity;
+            return by - ay; // lower pitch first (larger y)
+          })
+          .map(item => item.el)
+      : [];
+    return expected.map((midi, idx) => ({
       midi,
       element: mappedEls[idx] || null,
       status: 'unjudged'
@@ -248,283 +294,53 @@
 
   function markJudgeTarget(target, status){
     if (!target) return;
-    setTargetStatus(target, status);
+    const next = status === 'correct' ? 'correct' : 'wrong';
+    if (target.status === 'correct' && next === 'wrong') return;
+    if (target.status === next) return;
+    target.status = next;
+    const el = target.element;
+    if (!el) return;
+    const node = getNotePaintTarget(el);
+    if (!node) return;
+    node.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+    node.classList.add(next === 'correct' ? 'midi-judge-correct' : 'midi-judge-wrong');
+    state.judgedElements.add(node);
+  }
+
+  function isJudgeEventComplete(ev){
+    if (!ev || !Array.isArray(ev.targets) || !ev.targets.length) return false;
+    return !ev.targets.some(t => t && t.status !== 'correct');
+  }
+
+  function finalizeJudgeEventAsMiss(ev){
+    if (!ev || ev.judged) return;
+    if (Array.isArray(ev.targets) && ev.targets.length){
+      ev.targets.forEach(t => {
+        if (!t || t.status === 'correct') return;
+        markJudgeTarget(t, 'wrong');
+      });
+      ev.judged = true;
+      return;
+    }
+    markJudgeEvent(ev, 'wrong');
   }
 
   function markJudgeEvent(ev, status){
     if (!ev || ev.judged) return;
     ev.judged = true;
-    if (Array.isArray(ev.targets)){
-      const ids = [];
-      ev.targets.forEach(t => {
-        if (!t) return;
-        setTargetStatusForce(t, status);
-        if (t.id) ids.push(t.id);
-      });
-      if (ids.length) scheduleRender(ids);
+    if (Array.isArray(ev.targets) && ev.targets.length){
+      ev.targets.forEach(t => markJudgeTarget(t, status));
+      return;
     }
-  }
-
-  function markJudgeEventWrong(ev){
-    if (!ev) return;
-    if (Array.isArray(ev.targets)){
-      const ids = [];
-      ev.targets.forEach(t => {
-        if (!t) return;
-        setTargetStatus(t, 'wrong');
-        if (t.id) ids.push(t.id);
-      });
-      if (ids.length) scheduleRender(ids);
-    }
-    ev.judged = true;
-  }
-
-  function initIntervalJudgeState(events){
-    const judgedMap = new Map();
-    const targetsById = new Map();
-    const safeEvents = Array.isArray(events) ? events : [];
-    safeEvents.forEach((ev, evIdx) => {
-      ev.id = `ev${evIdx}`;
-      if (Array.isArray(ev.targets)) {
-        ev.targets.forEach((t, tIdx) => {
-          if (!t) return;
-          t.id = `${ev.id}-t${tIdx}`;
-          judgedMap.set(t.id, 'unjudged');
-          targetsById.set(t.id, t);
-        });
-      }
-    });
-    state.judgeState = {
-      events: safeEvents,
-      currentIndex: 0,
-      step: 0,
-      currentTargetId: safeEvents[0] && safeEvents[0].targets && safeEvents[0].targets[0]
-        ? safeEvents[0].targets[0].id
-        : null,
-      windowOpen: false,
-      windowStart: 0,
-      windowEnd: 0,
-      gateUntilSec: 0,
-      octaveOffset: null,
-      judged: { step0: null, step1: null },
-      inputConsumed: 0,
-      judgedMap,
-      targetsById,
-      inputBuffer: []
-    };
-  }
-
-  function resetIntervalJudgeState(){
-    state.judgeState = null;
-  }
-
-  function advanceJudgeIndex(){
-    state.judgeIndex += 1;
-    if (!state.judgeState) return;
-    state.judgeState.currentIndex = state.judgeIndex;
-    state.judgeState.step = 0;
-    state.judgeState.inputBuffer = [];
-    state.judgeState.windowOpen = false;
-    state.judgeState.windowStart = 0;
-    state.judgeState.windowEnd = 0;
-    state.judgeState.judged = { step0: null, step1: null };
-    state.judgeState.inputConsumed = 0;
-    state.judgeState.octaveOffset = null;
-    updateCurrentTargetId();
-  }
-
-  function setTargetStatus(target, status){
-    if (!target || !target.id || !state.judgeState || !state.judgeState.judgedMap) return;
-    const current = state.judgeState.judgedMap.get(target.id) || 'unjudged';
-    const next = status === 'correct' ? 'correct' : 'wrong';
-    if (current === 'wrong') return;
-    if (current === next) return;
-    if (current === 'correct' && next === 'wrong') return;
-    state.judgeState.judgedMap.set(target.id, next);
-    target.status = next;
-  }
-
-  function setTargetStatusForce(target, status){
-    if (!target || !target.id || !state.judgeState || !state.judgeState.judgedMap) return;
-    const next = status === 'correct' ? 'correct' : 'wrong';
-    state.judgeState.judgedMap.set(target.id, next);
-    target.status = next;
-  }
-
-  function renderFromState(targetIds){
-    if (!state.judgeState || !state.judgeState.targetsById) return;
-    const ids = targetIds
-      ? (Array.isArray(targetIds) ? targetIds : [targetIds])
-      : Array.from(state.judgeState.targetsById.keys());
-    ids.forEach(id => {
-      const target = state.judgeState.targetsById.get(id);
+    const cls = status === 'correct' ? 'midi-judge-correct' : 'midi-judge-wrong';
+    const els = Array.isArray(ev.elements) ? ev.elements : [];
+    els.forEach(el => {
+      const target = getNotePaintTarget(el);
       if (!target) return;
-      const status = state.judgeState.judgedMap.get(id) || 'unjudged';
-      if (status === 'unjudged') return;
-      const el = target.element;
-      if (!el) return;
-      const node = getNotePaintTarget(el);
-      if (!node) return;
-      node.classList.remove('midi-judge-correct', 'midi-judge-wrong');
-      node.classList.add(status === 'correct' ? 'midi-judge-correct' : 'midi-judge-wrong');
-      state.judgedElements.add(node);
+      target.classList.remove('midi-judge-correct', 'midi-judge-wrong');
+      target.classList.add(cls);
+      state.judgedElements.add(target);
     });
-  }
-
-  function scheduleRender(targetIds){
-    const ids = targetIds
-      ? (Array.isArray(targetIds) ? targetIds : [targetIds])
-      : [];
-    ids.forEach(id => {
-      if (id) state.renderQueue.add(id);
-    });
-    if (state.renderRafId) return;
-    state.renderRafId = requestAnimationFrame(() => {
-      const pending = Array.from(state.renderQueue);
-      state.renderQueue.clear();
-      state.renderRafId = null;
-      if (pending.length) renderFromState(pending);
-    });
-  }
-
-  function updateCurrentTargetId(){
-    if (!state.judgeState) return;
-    const ev = state.judgeState.events[state.judgeState.currentIndex];
-    const target = ev && ev.targets ? ev.targets[state.judgeState.step] : null;
-    state.judgeState.currentTargetId = target ? target.id : null;
-  }
-
-  function getNowSec(perfMs){
-    if (!state.judgeStartMs) return 0;
-    const nowSecRaw = (perfMs - state.judgeStartMs) / 1000;
-    return (state.calibrationEnabled && state.calibrationOffsetSec)
-      ? (nowSecRaw - state.calibrationOffsetSec)
-      : nowSecRaw;
-  }
-
-  function advanceToNextEvent(){
-    if (!state.judgeState) return;
-    state.judgeState.currentIndex += 1;
-    state.judgeState.step = 0;
-    state.judgeState.inputBuffer = [];
-    state.judgeState.windowOpen = false;
-    state.judgeState.windowStart = 0;
-    state.judgeState.windowEnd = 0;
-    state.judgeState.judged = { step0: null, step1: null };
-    state.judgeState.inputConsumed = 0;
-    state.judgeState.octaveOffset = null;
-    // Interval tool: establish octave offset per interval (per event)
-    state.judgeOctShift = null;
-    updateCurrentTargetId();
-    state.judgeIndex = state.judgeState.currentIndex;
-  }
-
-  function getTargetStatus(target){
-    if (!target) return 'unjudged';
-    if (state.judgeState && state.judgeState.judgedMap && target.id) {
-      return state.judgeState.judgedMap.get(target.id) || 'unjudged';
-    }
-    return target.status || 'unjudged';
-  }
-
-  function isEventComplete(ev){
-    if (!ev || !Array.isArray(ev.targets) || !ev.targets.length) return true;
-    return !ev.targets.some(t => t && getTargetStatus(t) === 'unjudged');
-  }
-
-  function findMatchingTarget(ev, midi){
-    if (!ev || !Array.isArray(ev.targets) || !ev.targets.length) return null;
-    for (const t of ev.targets){
-      if (!t || getTargetStatus(t) !== 'unjudged') continue;
-      if (!isFinite(t.midi)) continue;
-      if (t.midi === midi) return t;
-    }
-    return null;
-  }
-
-  function getPitchClass(n){
-    return ((n % 12) + 12) % 12;
-  }
-
-  function matchTargetsWithInputs(targets, inputs, matcher){
-    const remaining = Array.isArray(inputs) ? inputs.slice() : [];
-    const matches = [];
-    (Array.isArray(targets) ? targets : []).forEach(t => {
-      if (!t || !isFinite(t.midi)) return;
-      const idx = remaining.findIndex(inp => inp && isFinite(inp.midi) && matcher(t, inp));
-      if (idx >= 0){
-        matches.push({ target: t, input: remaining[idx] });
-        remaining.splice(idx, 1);
-      }
-    });
-    return matches;
-  }
-
-  function findBestShiftAndMatches(targets, inputs){
-    const matches = matchTargetsWithInputs(
-      targets,
-      inputs,
-      (t, inp) => t.midi === inp.midi
-    );
-    return { shift: null, matches };
-  }
-
-  function judgeEventByInputs(ev, inputs, options){
-    if (!ev || !Array.isArray(ev.targets) || !ev.targets.length) return;
-    const opts = options || {};
-    const finalize = opts.finalize !== false;
-    const allowCalibration = opts.updateCalibration !== false;
-    const targets = ev.targets;
-    const cleanInputs = Array.isArray(inputs)
-      ? inputs.filter(inp => inp && isFinite(inp.midi))
-      : [];
-    const inputCount = cleanInputs.length;
-    if (inputCount === 0 || inputCount > 2){
-      targets.forEach(t => setTargetStatusForce(t, 'wrong'));
-      if (state.judgeState && targets.length){
-        if (targets[0]) state.judgeState.judged.step0 = 'wrong';
-        if (targets[1]) state.judgeState.judged.step1 = 'wrong';
-      }
-      if (Array.isArray(ev.targets)) scheduleRender(ev.targets.map(t => t.id));
-      if (finalize) ev.judged = true;
-      return { allCorrect: false, matchedCount: 0 };
-    }
-    let matches = [];
-    if (inputCount === 1 || inputCount === 2){
-      const result = findBestShiftAndMatches(targets, cleanInputs);
-      matches = result.matches || [];
-    }
-    const matchedTargets = new Set(matches.map(m => m.target));
-    const allCorrect = matchedTargets.size === targets.length;
-    targets.forEach(t => {
-      const status = matchedTargets.has(t) ? 'correct' : 'wrong';
-      setTargetStatusForce(t, status);
-    });
-    if (state.judgeState && targets.length){
-      if (targets[0]) state.judgeState.judged.step0 = matchedTargets.has(targets[0]) ? 'correct' : 'wrong';
-      if (targets[1]) state.judgeState.judged.step1 = matchedTargets.has(targets[1]) ? 'correct' : 'wrong';
-    }
-    if (allCorrect && matches.length && state.calibrationEnabled && allowCalibration){
-      const matchedInputs = matches.map(m => m.input).filter(inp => inp && isFinite(inp.perfMs));
-      if (matchedInputs.length){
-        const earliest = matchedInputs.reduce((a,b) => (a.perfMs <= b.perfMs ? a : b));
-        const nowSecRaw = (earliest.perfMs - state.judgeStartMs) / 1000;
-        const delta = nowSecRaw - ev.timeSec;
-        const nextOffset = (state.calibrationOffsetSec * 0.7) + (delta * 0.3);
-        state.calibrationOffsetSec = Math.max(-0.25, Math.min(0.25, nextOffset));
-      }
-    }
-    if (Array.isArray(ev.targets)) scheduleRender(ev.targets.map(t => t.id));
-    if (finalize) ev.judged = true;
-    return { allCorrect, matchedCount: matchedTargets.size };
-  }
-
-  function getNextUnjudgedTarget(ev){
-    if (!ev || !Array.isArray(ev.targets) || !ev.targets.length) return null;
-    for (const t of ev.targets){
-      if (t && getTargetStatus(t) === 'unjudged') return t;
-    }
-    return null;
   }
 
   function clamp(value, min, max){
@@ -538,52 +354,155 @@
     return { beatSec, strict };
   }
 
-  function getJudgeWindowForEvent(ev, judgeWindows, isFirst){
+  function buildExpectedMidiSet(expectedMidis){
+    const list = Array.isArray(expectedMidis) ? expectedMidis : [];
+    const cleaned = list.filter(n => isFinite(n)).map(n => Math.round(n));
+    return new Set(cleaned);
+  }
+
+  function ensureJudgeEventRuntime(ev){
+    if (!ev) return;
+    if (!(ev.expectedMidiSet instanceof Set)) ev.expectedMidiSet = buildExpectedMidiSet(ev.expectedMidis);
+    if (!(ev.hitMidis instanceof Set)) ev.hitMidis = new Set();
+    if (!Array.isArray(ev.targets) || !ev.targets.length) ev.targets = buildJudgeTargets(ev.expectedMidis, ev.elements);
+    if (!Number.isFinite(ev.firstHitSec)) ev.firstHitSec = null;
+    if (!Number.isFinite(ev.firstHitRawSec)) ev.firstHitRawSec = null;
+  }
+
+  function getJudgeEventWindow(ev, judgeWindows, isFirst){
     const strictTolSec = (isFinite(ev?.strictTolSec) && ev.strictTolSec > 0)
       ? ev.strictTolSec
       : judgeWindows.strict;
     const startSec = (typeof ev?.startWindowSec === 'number') ? ev.startWindowSec : ((ev?.timeSec || 0) - strictTolSec);
     const endSec = (typeof ev?.endWindowSec === 'number') ? ev.endWindowSec : ((ev?.timeSec || 0) + strictTolSec);
-    const baseGrace = clamp(strictTolSec * 0.9, 0.03, 0.09);
-    const firstExtra = isFirst ? Math.max(0.04, baseGrace) : 0;
-    const acceptStart = startSec - baseGrace * 0.6 - (isFirst ? baseGrace * 0.4 : 0);
-    const acceptEnd = endSec + baseGrace + firstExtra;
-    const closeEnd = endSec + baseGrace + firstExtra;
+    const chordSize = Array.isArray(ev?.expectedMidis) ? ev.expectedMidis.length : 1;
+    const baseGrace = clamp(strictTolSec * 1.4, 0.06, 0.14);
+    const chordExtra = clamp((Math.max(1, chordSize) - 1) * 0.045, 0, 0.18);
+    const firstExtra = isFirst ? 0.08 : 0.02;
+    const acceptStart = startSec - (baseGrace * 0.55) - (isFirst ? 0.04 : 0.01);
+    const acceptEnd = endSec + baseGrace + chordExtra + firstExtra;
+    const closeEnd = acceptEnd + (chordSize > 1 ? 0.08 : 0.04);
     return { strictTolSec, startSec, endSec, acceptStart, acceptEnd, closeEnd };
+  }
+
+  function buildMeasureCandidateRanges(measureRects){
+    const rects = Array.isArray(measureRects) ? measureRects : [];
+    return rects.map((m, i) => {
+      const prev = i > 0 ? rects[i - 1] : null;
+      const next = i < rects.length - 1 ? rects[i + 1] : null;
+      const left = prev ? ((prev.x + prev.width + m.x) / 2) : (m.x - 6);
+      const right = next ? ((m.x + m.width + next.x) / 2) : (m.x + m.width + 6);
+      const top = m.y - (m.height * 0.6);
+      const bottom = m.y + (m.height * 1.9);
+      return { index: i, left, right, top, bottom };
+    });
+  }
+
+  function pickMeasureIndexForPoint(cx, cy, ranges, strictY){
+    if (!isFinite(cx) || !Array.isArray(ranges) || !ranges.length) return -1;
+    const hits = [];
+    for (const r of ranges){
+      if (!r) continue;
+      if (cx < r.left || cx > r.right) continue;
+      if (strictY && isFinite(cy) && (cy < r.top || cy > r.bottom)) continue;
+      hits.push(r);
+    }
+    if (hits.length === 1) return hits[0].index;
+    if (hits.length > 1){
+      let best = hits[0];
+      let bestDist = Infinity;
+      for (const r of hits){
+        const mid = (r.left + r.right) / 2;
+        const dist = Math.abs(cx - mid);
+        if (dist < bestDist){
+          bestDist = dist;
+          best = r;
+        }
+      }
+      return best.index;
+    }
+    return -1;
+  }
+
+  function isElementInMeasure(el, measureRects, measureIndex, ranges){
+    if (!el || !Array.isArray(measureRects) || measureIndex < 0 || measureIndex >= measureRects.length) return false;
+    const containerRect = scoreEl.getBoundingClientRect();
+    const r = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+    if (!r) return false;
+    const cx = r.left - containerRect.left + scoreEl.scrollLeft + r.width / 2;
+    const cy = r.top - containerRect.top + scoreEl.scrollTop + r.height / 2;
+    const measureRanges = Array.isArray(ranges) && ranges.length ? ranges : buildMeasureCandidateRanges(measureRects);
+    const idx = pickMeasureIndexForPoint(cx, cy, measureRanges, false);
+    return idx === measureIndex;
   }
 
   function collectNoteheadCandidates(measureRects){
     const svg = scoreEl.querySelector('svg');
     if (!svg) return { byMeasure: [], all: [] };
     const containerRect = scoreEl.getBoundingClientRect();
+    const measureRanges = buildMeasureCandidateRanges(measureRects);
     const selector = [
       '.vf-notehead',
       '.vf-notehead path',
       '.vf-notehead ellipse',
       '.vf-notehead use',
-      '[class*="notehead" i]',
+      '[class*="notehead"]',
       '[class*="NoteHead"]',
+      '[class*="stavenote"]',
+      '[class*="StaveNote"]',
       'use[href*="notehead" i]'
     ].join(',');
     const nodes = Array.from(svg.querySelectorAll(selector));
-    const candidates = [];
-    nodes.forEach(el => {
+    const bestByPaint = new Map();
+    nodes.forEach(rawEl => {
+      const el = rawEl || null;
+      if (!el) return;
       const r = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
       if (!r || (r.width === 0 && r.height === 0)) return;
       const cx = r.left - containerRect.left + scoreEl.scrollLeft + r.width / 2;
       const cy = r.top - containerRect.top + scoreEl.scrollTop + r.height / 2;
       if (!isFinite(cx) || !isFinite(cy)) return;
-      candidates.push({ el, cx, cy });
+      const paint = getNotePaintTarget(el) || el;
+      const area = Math.max(1, r.width * r.height);
+      const shapePenalty = Math.abs(r.width - r.height) * 0.12;
+      const score = area + shapePenalty;
+      const prev = bestByPaint.get(paint);
+      if (!prev || score < prev.score){
+        bestByPaint.set(paint, { el, cx, cy, score });
+      }
     });
+    const candidates = Array.from(bestByPaint.values()).map(item => ({ el: item.el, cx: item.cx, cy: item.cy }));
     const byMeasure = measureRects.map(() => []);
     candidates.forEach(c => {
+      const byBoundary = pickMeasureIndexForPoint(c.cx, c.cy, measureRanges, false);
+      if (byBoundary >= 0){
+        byMeasure[byBoundary].push(c);
+        return;
+      }
+      let bestIdx = -1;
+      let bestScore = Infinity;
       for (let i=0; i<measureRects.length; i++){
         const m = measureRects[i];
-        const inX = c.cx >= (m.x - 6) && c.cx <= (m.x + m.width + 6);
-        const inY = c.cy >= (m.y - m.height) && c.cy <= (m.y + m.height * 2);
-        if (inX && inY) {
-          byMeasure[i].push(c);
-          break;
+        if (!m || !isFinite(m.x) || !isFinite(m.y) || !isFinite(m.width) || !isFinite(m.height)) continue;
+        const left = m.x - 8;
+        const right = m.x + m.width + 8;
+        const top = m.y - m.height * 0.55;
+        const bottom = m.y + m.height * 1.75;
+        const dx = c.cx < left ? (left - c.cx) : (c.cx > right ? (c.cx - right) : 0);
+        const dy = c.cy < top ? (top - c.cy) : (c.cy > bottom ? (c.cy - bottom) : 0);
+        const centerY = m.y + (m.height / 2);
+        const dyCenter = Math.abs(c.cy - centerY);
+        const score = (dx * 1.0) + (dy * 2.2) + (dyCenter * 0.08);
+        if (score < bestScore){
+          bestScore = score;
+          bestIdx = i;
+        }
+      }
+      if (bestIdx >= 0){
+        const m = measureRects[bestIdx];
+        const scoreCap = Math.max(38, (m?.width || 0) * 0.36);
+        if (bestScore <= scoreCap){
+          byMeasure[bestIdx].push(c);
         }
       }
     });
@@ -595,7 +514,8 @@
     let best = null;
     let bestDist = Infinity;
     for (const c of list){
-      if (used.has(c.el)) continue;
+      const paint = getNotePaintTarget(c.el) || c.el;
+      if (used.has(paint)) continue;
       const dx = c.cx - x;
       const dy = c.cy - y;
       const dist = Math.abs(dx) + Math.abs(dy);
@@ -604,15 +524,96 @@
         best = c;
       }
     }
-    if (best && bestDist <= 18){
-      used.add(best.el);
-      return best.el;
-    }
-    if (best && bestDist <= 34){
-      used.add(best.el);
+    if (best){
+      const paint = getNotePaintTarget(best.el) || best.el;
+      used.add(paint);
       return best.el;
     }
     return null;
+  }
+
+  function buildCandidateClusters(candidates){
+    const list = Array.isArray(candidates) ? candidates.filter(c => c && c.el && isFinite(c.cx) && isFinite(c.cy)) : [];
+    if (!list.length) return [];
+    const sorted = list.slice().sort((a,b)=> (a.cx - b.cx) || (a.cy - b.cy));
+    const clusters = [];
+    const gapPx = 20;
+    for (const c of sorted){
+      const last = clusters[clusters.length - 1];
+      if (!last || Math.abs(c.cx - last.x) > gapPx){
+        clusters.push({ x: c.cx, list: [c] });
+      } else {
+        last.list.push(c);
+        last.x = (last.x * (last.list.length - 1) + c.cx) / last.list.length;
+      }
+    }
+    return clusters.map(cluster => {
+      const ordered = cluster.list
+        .slice()
+        .sort((a,b)=> b.cy - a.cy)
+        .map(item => item.el);
+      return { x: cluster.x, elements: dedupeElementsByPaintTarget(ordered) };
+    }).filter(cluster => cluster.elements.length);
+  }
+
+  function getNodeTagName(node){
+    if (!node || !node.tagName) return '';
+    return String(node.tagName).toLowerCase();
+  }
+
+  function parseDurationDivFromNode(node){
+    if (!node || typeof node.querySelector !== 'function') return 0;
+    const durEl = node.querySelector('duration');
+    return durEl ? Math.max(0, parseInt(durEl.textContent || '0', 10) || 0) : 0;
+  }
+
+  function collectMeasureNoteEntries(measure, divisions, absQN){
+    const safeDivisions = Math.max(1, divisions || 1);
+    let posDiv = 0;
+    let lastStartDiv = 0;
+    const entries = [];
+    const children = Array.from(measure?.children || []);
+    for (const child of children){
+      const tag = getNodeTagName(child);
+      if (tag === 'backup'){
+        const backDiv = parseDurationDivFromNode(child);
+        posDiv = Math.max(0, posDiv - backDiv);
+        lastStartDiv = posDiv;
+        continue;
+      }
+      if (tag === 'forward'){
+        const forwardDiv = parseDurationDivFromNode(child);
+        posDiv += forwardDiv;
+        lastStartDiv = posDiv;
+        continue;
+      }
+      if (tag !== 'note') continue;
+      const noteEl = child;
+      const isChord = !!noteEl.querySelector('chord');
+      const durDiv = parseDurationDivFromNode(noteEl);
+      const startDiv = isChord ? lastStartDiv : posDiv;
+      if (!isChord) lastStartDiv = startDiv;
+      const isRest = !!noteEl.querySelector('rest');
+      const ties = Array.from(noteEl.querySelectorAll('tie')).map(x => x.getAttribute('type'));
+      const hasStart = ties.includes('start');
+      const hasStop = ties.includes('stop');
+      const startQNAbs = absQN + (startDiv / safeDivisions);
+      const startQNInMeasure = startDiv / safeDivisions;
+      entries.push({
+        noteEl,
+        isChord,
+        isRest,
+        durDiv,
+        durQN: durDiv / safeDivisions,
+        startDiv,
+        startQNAbs,
+        startQNInMeasure,
+        hasStart,
+        hasStop
+      });
+      if (!isChord) posDiv += durDiv;
+    }
+    return entries;
   }
 
   function parseJudgeEventsFromXML(xml){
@@ -625,7 +626,6 @@
       let beatsNum = 4, beatType = 4;
       let absQN = 0;
       const events = [];
-      let lastStartQNAbs = null;
       for (let mi=0; mi<measures.length; mi++){
         const m = measures[mi];
         const attr = m.querySelector('attributes');
@@ -642,49 +642,48 @@
             }
           }
         }
-        let posDiv = 0;
-        const notes = Array.from(m.querySelectorAll('note'));
-        for (let ni=0; ni<notes.length; ni++){
-          const n = notes[ni];
-          const isRest = !!n.querySelector('rest');
-          const durEl = n.querySelector('duration');
-          const durDiv = durEl ? Math.max(0, parseInt(durEl.textContent||'0',10)||0) : 0;
-          const isChord = !!n.querySelector('chord');
-          const ties = Array.from(n.querySelectorAll('tie')).map(x=>x.getAttribute('type'));
-          const hasStart = ties.includes('start');
-          const hasStop = ties.includes('stop');
-          const startQNAbsRaw = absQN + (posDiv/divisions);
-          const startQNAbs = (isChord && isFinite(lastStartQNAbs)) ? lastStartQNAbs : startQNAbsRaw;
-          if (!isRest && !(hasStop && !hasStart) && !(hasStop && hasStart)){
-            const pitch = n.querySelector('pitch');
-            const step = pitch?.querySelector('step')?.textContent;
-            const octave = parseInt(pitch?.querySelector('octave')?.textContent || '0', 10);
-            const alter = parseInt(pitch?.querySelector('alter')?.textContent || '0', 10) || 0;
-            if (step && isFinite(octave)){
-              const stepToSemitone = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
-              const base = stepToSemitone[step];
-              if (base != null){
-                const midi = (octave + 1) * 12 + base + alter;
-                events.push({ startQN: startQNAbs, midi });
-              }
+        const entries = collectMeasureNoteEntries(m, divisions, absQN);
+        for (const entry of entries){
+          if (!entry || entry.isRest || (entry.hasStop && !entry.hasStart)) continue;
+          const pitch = entry.noteEl.querySelector('pitch');
+          const step = pitch?.querySelector('step')?.textContent;
+          const octave = parseInt(pitch?.querySelector('octave')?.textContent || '0', 10);
+          const alter = parseInt(pitch?.querySelector('alter')?.textContent || '0', 10) || 0;
+          if (step && isFinite(octave)){
+            const stepToSemitone = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
+            const base = stepToSemitone[step];
+            if (base != null){
+              const midi = (octave + 1) * 12 + base + alter;
+              events.push({
+                startQN: entry.startQNAbs,
+                posQNInMeasure: entry.startQNInMeasure,
+                measureQN: beatsNum * (4 / beatType),
+                measureIndex: mi,
+                midi
+              });
             }
-          }
-          if (!isChord) {
-            posDiv += durDiv;
-            lastStartQNAbs = startQNAbsRaw;
           }
         }
         absQN += beatsNum * (4/beatType);
       }
-      events.sort((a,b)=> a.startQN - b.startQN);
+      events.sort((a,b)=> {
+        if (a.startQN !== b.startQN) return a.startQN - b.startQN;
+        return (a.measureIndex || 0) - (b.measureIndex || 0);
+      });
       const grouped = [];
-      const eps = 1e-4;
+      const eps = 1e-3;
       for (const ev of events){
         const last = grouped[grouped.length - 1];
         if (last && Math.abs(ev.startQN - last.startQN) <= eps){
           last.expectedMidis.push(ev.midi);
         } else {
-          grouped.push({ startQN: ev.startQN, expectedMidis: [ev.midi] });
+          grouped.push({
+            startQN: ev.startQN,
+            posQNInMeasure: ev.posQNInMeasure,
+            measureQN: ev.measureQN,
+            measureIndex: ev.measureIndex,
+            expectedMidis: [ev.midi]
+          });
         }
       }
       return grouped;
@@ -752,9 +751,7 @@
                 const ySvg = (bb.absolutePosition.y + bb.size.height * 0.5) * scale;
                 const px = osmdToScorePx(xSvg, 0).x;
                 const py = osmdToScorePx(0, ySvg).y;
-                const list = candidates.byMeasure[i] && candidates.byMeasure[i].length
-                  ? candidates.byMeasure[i]
-                  : candidates.all;
+                const list = candidates.all;
                 const picked = pickClosestCandidate(list, px, py, used);
                 if (picked) noteEls.push(picked);
               }
@@ -780,57 +777,155 @@
     }catch(_){ return []; }
   }
 
-  function buildJudgeTimeline(measureRects, bpm, noteEvents){
+  function pickFallbackJudgeElements(ev, measureRects, candidates, used, neededCount, existingElements){
+    try{
+      if (!ev || !Array.isArray(measureRects) || !measureRects.length) return [];
+      const mi = (typeof ev.measureIndex === 'number') ? ev.measureIndex : -1;
+      if (mi < 0 || mi >= measureRects.length) return [];
+      const mr = measureRects[mi];
+      if (!mr) return [];
+      const perMeasureQN = (isFinite(ev.measureQN) && ev.measureQN > 0) ? ev.measureQN : 4;
+      const posQN = isFinite(ev.posQNInMeasure) ? ev.posQNInMeasure : 0;
+      const ratio = clamp(posQN / Math.max(0.0001, perMeasureQN), 0, 1);
+      const targetX = mr.x + mr.width * ratio;
+      const targetCount = Math.max(1, isFinite(neededCount) ? Math.round(neededCount) : (Array.isArray(ev.expectedMidis) ? ev.expectedMidis.length : 1));
+      const list = (candidates && Array.isArray(candidates.all)) ? candidates.all : [];
+      if (!list.length) return [];
+      const blocked = new Set(
+        Array.isArray(existingElements)
+          ? existingElements.filter(Boolean).map(el => getNotePaintTarget(el) || el)
+          : []
+      );
+      const softLeft = mr.x - Math.max(12, mr.width * 0.08);
+      const softRight = mr.x + mr.width + Math.max(6, mr.width * 0.04);
+      const midY = mr.y + (mr.height / 2);
+      const ranked = list
+        .filter(c => {
+          if (!c || !c.el) return false;
+          const paint = getNotePaintTarget(c.el) || c.el;
+          if (used.has(paint)) return false;
+          if (blocked.has(paint)) return false;
+          return true;
+        })
+        .map(c => {
+          const dx = Math.abs(c.cx - targetX);
+          const dy = Math.abs(c.cy - midY);
+          const outsideX = c.cx < softLeft ? (softLeft - c.cx) : (c.cx > softRight ? (c.cx - softRight) : 0);
+          const score = dx + (dy * 1.2) + (outsideX * 2.8);
+          return { c, dx, dy, outsideX, score };
+        })
+        .sort((a,b) => (a.score - b.score) || (a.outsideX - b.outsideX) || (a.dx - b.dx) || (a.dy - b.dy));
+      if (!ranked.length) return [];
+      const picked = [];
+      for (const item of ranked){
+        picked.push(item.c.el);
+        const paint = getNotePaintTarget(item.c.el) || item.c.el;
+        used.add(paint);
+        if (picked.length >= targetCount) break;
+      }
+      return picked;
+    }catch(_){
+      return [];
+    }
+  }
+
+  function buildJudgeTimeline(measureRects, bpm){
     try{
       const xml = getCurrentMelodyXML();
       if (!xml) return [];
       const grouped = parseJudgeEventsFromXML(xml);
       if (!grouped || !grouped.length) return [];
       const graphicEvents = buildGraphicJudgeEvents(measureRects);
-      let gi = 0;
+      const fallbackCandidates = collectNoteheadCandidates(measureRects);
+      const candidateClusters = buildCandidateClusters(fallbackCandidates.all);
+      const useClusterByOrder = candidateClusters.length >= grouped.length;
+      let clusterCursor = 0;
+      const fallbackUsed = new Set();
+      const usedGraphicIndices = new Set();
       const bpmSafe = Math.max(1, bpm || 80);
       const judgeWindows = computeJudgeWindows(bpmSafe);
-      const noteTimes = Array.isArray(noteEvents)
-        ? noteEvents.filter(ev => !ev.isRest).map(ev => ev.timeSec)
-        : [];
-      const timeMap = new Map();
-      if (Array.isArray(noteEvents)) {
-        noteEvents.forEach(ev => {
-          if (!ev || ev.isRest) return;
-          if (isFinite(ev.absBeats) && isFinite(ev.timeSec)) {
-            if (!timeMap.has(ev.absBeats)) timeMap.set(ev.absBeats, ev.timeSec);
+      grouped.forEach(ev => {
+        const expectedCount = Math.max(1, Array.isArray(ev.expectedMidis) ? ev.expectedMidis.length : 1);
+        if (useClusterByOrder && clusterCursor < candidateClusters.length){
+          const cluster = candidateClusters[clusterCursor++];
+          if (cluster && Array.isArray(cluster.elements) && cluster.elements.length){
+            ev.elements = cluster.elements.slice(0, expectedCount);
           }
-        });
-      }
-      grouped.forEach((ev, idx) => {
-        while (gi < graphicEvents.length && graphicEvents[gi].timeQN + 0.02 < ev.startQN){
-          gi++;
         }
         let matched = null;
-        if (gi < graphicEvents.length && Math.abs(graphicEvents[gi].timeQN - ev.startQN) <= 0.04) {
-          matched = graphicEvents[gi];
-          gi++;
-        } else if (gi < graphicEvents.length) {
-          matched = graphicEvents[gi];
-          gi++;
+        let matchedIdx = -1;
+        let bestDiff = Infinity;
+        const preferMeasure = typeof ev.measureIndex === 'number';
+        const sameMeasureTolQN = 0.22;
+        const globalTolQN = 0.35;
+
+        if (!ev.elements && preferMeasure){
+          for (let i = 0; i < graphicEvents.length; i++){
+            if (usedGraphicIndices.has(i)) continue;
+            const ge = graphicEvents[i];
+            if (!ge || ge.measureIndex !== ev.measureIndex) continue;
+            const diff = Math.abs(ge.timeQN - ev.startQN);
+            if (diff < bestDiff){
+              bestDiff = diff;
+              matched = ge;
+              matchedIdx = i;
+            }
+          }
+          if (!(matched && bestDiff <= sameMeasureTolQN)){
+            matched = null;
+            matchedIdx = -1;
+            bestDiff = Infinity;
+          }
         }
-        if (matched){
+
+        if (!ev.elements && !matched){
+          for (let i = 0; i < graphicEvents.length; i++){
+            if (usedGraphicIndices.has(i)) continue;
+            const ge = graphicEvents[i];
+            if (!ge) continue;
+            const diff = Math.abs(ge.timeQN - ev.startQN);
+            if (diff < bestDiff){
+              bestDiff = diff;
+              matched = ge;
+              matchedIdx = i;
+            }
+          }
+          if (!(matched && bestDiff <= globalTolQN)){
+            matched = null;
+            matchedIdx = -1;
+          }
+        }
+
+        if (!ev.elements && matched){
+          usedGraphicIndices.add(matchedIdx);
           ev.elements = matched.elements || [];
-          ev.measureIndex = matched.measureIndex;
+          if (typeof ev.measureIndex !== 'number' && typeof matched.measureIndex === 'number') {
+            ev.measureIndex = matched.measureIndex;
+          }
         }
-        const fallbackTime = ev.startQN * (60 / Math.max(1, bpm));
-        const alignedTime = timeMap.has(ev.startQN)
-          ? timeMap.get(ev.startQN)
-          : (idx >= 0 && idx < noteTimes.length && isFinite(noteTimes[idx]) ? noteTimes[idx] : fallbackTime);
-        ev.timeSec = alignedTime;
+        if (!Array.isArray(ev.elements)) ev.elements = [];
+        if (ev.elements.length < expectedCount){
+          const need = expectedCount - ev.elements.length;
+          const fallbackEls = pickFallbackJudgeElements(ev, measureRects, fallbackCandidates, fallbackUsed, need, ev.elements);
+          if (fallbackEls.length) ev.elements = ev.elements.concat(fallbackEls);
+        }
+        ev.elements = dedupeElementsByPaintTarget(ev.elements);
+        if (ev.elements.length > expectedCount){
+          ev.elements = ev.elements.slice(0, expectedCount);
+        }
+        ev.timeSec = ev.startQN * (60 / Math.max(1, bpm));
         ev.strictTolSec = judgeWindows.strict;
         ev.startWindowSec = ev.timeSec - ev.strictTolSec;
         ev.endWindowSec = ev.timeSec + ev.strictTolSec;
-        ev.expectedMidis = Array.isArray(ev.expectedMidis) ? ev.expectedMidis.slice().sort((a,b)=>a-b) : [];
+        ev.expectedMidis = Array.from(buildExpectedMidiSet(ev.expectedMidis)).sort((a,b)=>a-b);
+        ev.expectedMidiSet = buildExpectedMidiSet(ev.expectedMidis);
+        ev.hitMidis = new Set();
         ev.targets = buildJudgeTargets(ev.expectedMidis, ev.elements);
+        ev.firstHitSec = null;
+        ev.firstHitRawSec = null;
         ev.judged = false;
       });
-      return grouped.filter(ev => Array.isArray(ev.targets) && ev.targets.length);
+      return grouped.filter(ev => Array.isArray(ev.expectedMidis) && ev.expectedMidis.length);
     }catch(_){ return []; }
   }
 
@@ -839,39 +934,24 @@
     state.judgeStartMs = startMs;
     state.judgeIndex = 0;
     state.judgeGateUntilSec = 0;
-    state.judgeAligned = false;
-    state.cursorNoteIndex = -1;
-    initIntervalJudgeState(state.judgeEvents || []);
-    const windowMs = Math.max(90, Math.min(220, state.judgeWindowMs || 160));
-    const fallbackTolSec = windowMs / 1000;
+    if (Array.isArray(state.judgeEvents)) {
+      state.judgeEvents.forEach((ev) => {
+        if (!ev) return;
+        ev.judged = false;
+        ev.expectedMidiSet = buildExpectedMidiSet(ev.expectedMidis);
+        ev.hitMidis = new Set();
+        ev.targets = buildJudgeTargets(ev.expectedMidis, ev.elements);
+        ev.firstHitSec = null;
+        ev.firstHitRawSec = null;
+      });
+    }
     state.judgeTimerId = setInterval(() => {
       if (!state.active) return;
       const nowMs = performance.now();
-      const nowSec = getNowSec(nowMs);
-      const js = state.judgeState;
-      if (!js || !js.events || !js.events.length) return;
-      if (js.gateUntilSec && nowSec <= js.gateUntilSec) {
-        js.windowOpen = false;
-        return;
-      }
-      const ev = js.events[js.currentIndex];
-      if (!ev) return;
-      const endTolSec = (isFinite(ev.strictTolSec) && ev.strictTolSec > 0) ? ev.strictTolSec : fallbackTolSec;
-      const startSec = (typeof ev.startWindowSec === 'number') ? ev.startWindowSec : (ev.timeSec - endTolSec);
-      const endSec = (typeof ev.endWindowSec === 'number') ? ev.endWindowSec : (ev.timeSec + endTolSec);
-      js.windowStart = startSec;
-      js.windowEnd = endSec;
-      js.windowOpen = nowSec >= startSec && nowSec <= endSec;
-      if (nowSec > endSec){
-        if (!ev.judged){
-          judgeEventByInputs(ev, js.inputBuffer || [], { finalize: true, updateCalibration: true });
-        }
-        js.windowOpen = false;
-        js.gateUntilSec = Math.max(js.gateUntilSec || 0, endSec);
-        state.judgeGateUntilSec = js.gateUntilSec;
-        advanceToNextEvent();
-        updateCurrentTargetId();
-      }
+      const nowSec = (nowMs - state.judgeStartMs) / 1000;
+      const bpmVal = getChallengeTempoValue();
+      const judgeWindows = computeJudgeWindows(bpmVal);
+      settleExpiredJudgeEvents(nowSec, judgeWindows);
     }, 80);
   }
 
@@ -881,109 +961,69 @@
     state.judgeIndex = 0;
     state.judgeGateUntilSec = 0;
     state.judgeEvents = [];
-    state.judgeInputQueue = [];
-    state.judgeAligned = false;
-    state.cursorNoteIndex = -1;
-    resetIntervalJudgeState();
   }
 
-  function enqueueJudgeInput(midi){
+  function settleExpiredJudgeEvents(nowSec, judgeWindows){
+    while (state.judgeIndex < state.judgeEvents.length){
+      const ev = state.judgeEvents[state.judgeIndex];
+      if (!ev || ev.judged){
+        state.judgeIndex++;
+        continue;
+      }
+      const window = getJudgeEventWindow(ev, judgeWindows, state.judgeIndex === 0);
+      if (nowSec <= window.closeEnd) break;
+      if (state.calibrationEnabled){
+        finalizeJudgeEventAsMiss(ev);
+      } else {
+        ev.judged = true;
+      }
+      state.judgeIndex++;
+    }
+  }
+
+  function handleJudgeInput(midi){
     if (!state.active || !toggleEl || !toggleEl.checked) return;
     if (!state.judgeEvents || !state.judgeEvents.length || !state.judgeStartMs) return;
-    const js = state.judgeState;
-    if (!js) return;
-    const perfMs = performance.now();
-    const nowSec = getNowSec(perfMs);
-    const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
+    if (!isFinite(midi)) return;
+    const nowSecRaw = (performance.now() - state.judgeStartMs) / 1000;
+    const nowSec = (state.calibrationEnabled && state.calibrationOffsetSec)
+      ? (nowSecRaw - state.calibrationOffsetSec)
+      : nowSecRaw;
+    const bpmVal = getChallengeTempoValue();
     const judgeWindows = computeJudgeWindows(bpmVal);
+    settleExpiredJudgeEvents(nowSec, judgeWindows);
     if (state.judgeGateUntilSec && nowSec <= state.judgeGateUntilSec) return;
     if (state.judgeGateUntilSec && nowSec > state.judgeGateUntilSec) {
       state.judgeGateUntilSec = 0;
     }
-    const ev = js.events[js.currentIndex];
+    const ev = state.judgeEvents[state.judgeIndex];
     if (!ev || ev.judged) return;
-    const strictTolSec = (isFinite(ev.strictTolSec) && ev.strictTolSec > 0)
-      ? ev.strictTolSec
-      : judgeWindows.strict;
-    const startSec = (typeof ev.startWindowSec === 'number') ? ev.startWindowSec : (ev.timeSec - strictTolSec);
-    const endSec = (typeof ev.endWindowSec === 'number') ? ev.endWindowSec : (ev.timeSec + strictTolSec);
+    const window = getJudgeEventWindow(ev, judgeWindows, state.judgeIndex === 0);
+    if (nowSec < window.acceptStart) return;
+    if (nowSec > window.acceptEnd) return;
 
-    if (nowSec < startSec) return;
-    if (nowSec > endSec) return;
+    ensureJudgeEventRuntime(ev);
+    const targets = Array.isArray(ev.targets) ? ev.targets : [];
+    if (!targets.length) return;
+    const pendingMatches = targets.filter(t => t && t.status !== 'correct' && isFinite(t.midi) && t.midi === midi);
+    if (!pendingMatches.length) return;
 
-    if (js.inputBuffer) js.inputBuffer.push({ midi, timeSec: nowSec, perfMs });
-    if (js.inputBuffer && js.inputBuffer.length > 8) js.inputBuffer.shift();
+    pendingMatches.forEach((target) => {
+      markJudgeTarget(target, 'correct');
+    });
+    if (!Number.isFinite(ev.firstHitSec)) ev.firstHitSec = nowSec;
+    if (!Number.isFinite(ev.firstHitRawSec)) ev.firstHitRawSec = nowSecRaw;
 
-    const cleanInputs = (js.inputBuffer || []).filter(inp => inp && isFinite(inp.midi));
-    if (cleanInputs.length >= 2){
-      judgeEventByInputs(ev, cleanInputs, { finalize: false, updateCalibration: false });
+    if (!isJudgeEventComplete(ev)) return;
+
+    ev.judged = true;
+    if (state.calibrationEnabled && Number.isFinite(ev.firstHitRawSec)){
+      const delta = Math.max(-0.16, Math.min(0.16, ev.firstHitRawSec - ev.timeSec));
+      const nextOffset = (state.calibrationOffsetSec * 0.84) + (delta * 0.16);
+      state.calibrationOffsetSec = Math.max(-0.25, Math.min(0.25, nextOffset));
     }
-  }
-
-  function processJudgeQueue(nowPerf){
-    if (!state.judgeEvents || !state.judgeEvents.length || !state.judgeStartMs) return;
-    if (!state.judgeInputQueue || !state.judgeInputQueue.length) return;
-    const bpmVal = $('challengeBPM')?.value ? parseInt($('challengeBPM').value, 10) : 80;
-    const judgeWindows = computeJudgeWindows(bpmVal);
-    const gateUntil = state.judgeGateUntilSec || 0;
-    if (gateUntil){
-      while (state.judgeInputQueue.length){
-        const item = state.judgeInputQueue[0];
-        const nowSec = getNowSec(item.perfMs);
-        if (nowSec <= gateUntil){
-          state.judgeInputQueue.shift();
-          continue;
-        }
-        break;
-      }
-      if (!state.judgeInputQueue.length) return;
-      const nextItem = state.judgeInputQueue[0];
-      const nextSec = getNowSec(nextItem.perfMs);
-      if (nextSec <= gateUntil) return;
-      state.judgeGateUntilSec = 0;
-    }
-
-    const js = state.judgeState;
-    if (!js || !js.events || !js.events.length) return;
-    const ev = js.events[js.currentIndex];
-    if (!ev) return;
-    const window = getJudgeWindowForEvent(ev, judgeWindows, js.currentIndex === 0);
-    const startSec = window.startSec;
-    const endSec = window.endSec;
-
-    while (state.judgeInputQueue.length){
-      const item = state.judgeInputQueue[0];
-      const nowSec = getNowSec(item.perfMs);
-      if (nowSec < window.acceptStart){
-        state.judgeInputQueue.shift();
-        continue;
-      }
-      if (nowSec > window.acceptEnd){
-        state.judgeInputQueue.shift();
-        continue;
-      }
-      state.judgeInputQueue.shift();
-      const buffer = js.inputBuffer || [];
-      const cleanInputs = buffer.filter(inp => inp && isFinite(inp.midi));
-      if (cleanInputs.length === 1){
-        const result = findBestShiftAndMatches(ev.targets || [], cleanInputs);
-        const matched = result.matches || [];
-        if (matched.length){
-          matched.forEach(m => setTargetStatus(m.target, 'correct'));
-          scheduleRender(matched.map(m => m.target && m.target.id).filter(Boolean));
-        }
-        return;
-      }
-      if (cleanInputs.length >= 2){
-        judgeEventByInputs(ev, cleanInputs);
-        js.windowOpen = false;
-        js.gateUntilSec = Math.max(js.gateUntilSec || 0, window.closeEnd);
-        state.judgeGateUntilSec = js.gateUntilSec;
-        state.judgeInputQueue = [];
-        advanceToNextEvent();
-      }
-      return;
-    }
+    state.judgeGateUntilSec = nowSec + 0.03;
+    state.judgeIndex++;
   }
 
   function applyCalibrationAuto(connected){
@@ -1016,7 +1056,7 @@
     let hasMetronomePref = false;
     let hasHidePref = false;
     try {
-      const saved = JSON.parse(localStorage.getItem('ic_interval_challenge_settings')||'{}');
+      const saved = JSON.parse(localStorage.getItem('ic_chord_challenge_settings')||'{}');
       if (typeof saved.prep === 'number') prep.value = saved.prep;
       if (typeof saved.bpm === 'number') bpm.value = saved.bpm;
       if (cursorToggle && typeof saved.cursor === 'boolean') { cursorToggle.checked = saved.cursor; hasCursorPref = true; }
@@ -1024,6 +1064,9 @@
       if (hideToggle && typeof saved.hide === 'boolean') { hideToggle.checked = saved.hide; hasHidePref = true; }
       if (calibrationToggle && typeof saved.calibration === 'boolean') { calibrationToggle.checked = saved.calibration; }
     } catch(_) {}
+    if (bpm) {
+      syncTempoAcrossInputs(getUnifiedTempoFromHeader());
+    }
     if (modalModeToggle) modalModeToggle.checked = !!(toggleEl && toggleEl.checked);
     if (cursorToggle && !hasCursorPref) cursorToggle.checked = true;
     if (metronomeToggle && !hasMetronomePref) metronomeToggle.checked = true;
@@ -1058,12 +1101,12 @@
 
   async function confirmChallengeSetup(){
     const prep = Math.max(0, parseInt(($('challengePrepTime').value||'0'), 10));
-    const bpm = Math.max(40, Math.min(240, parseInt(($('challengeBPM').value||'80'), 10)));
+    const bpm = syncTempoAcrossInputs(getChallengeTempoValue());
     const cursorEnabled = $('challengeCursorToggle') ? $('challengeCursorToggle').checked : true;
     const metronomeEnabled = $('challengeMetronomeToggle') ? $('challengeMetronomeToggle').checked : true;
     const hideEnabled = $('challengeHideToggle') ? $('challengeHideToggle').checked : false;
     const calibrationEnabled = $('challengeCalibrationToggle') ? $('challengeCalibrationToggle').checked : false;
-    try { localStorage.setItem('ic_interval_challenge_settings', JSON.stringify({ prep, bpm, cursor: cursorEnabled, metronome: metronomeEnabled, hide: hideEnabled, calibration: calibrationEnabled })); } catch(_) {}
+    try { localStorage.setItem('ic_chord_challenge_settings', JSON.stringify({ prep, bpm, cursor: cursorEnabled, metronome: metronomeEnabled, hide: hideEnabled, calibration: calibrationEnabled })); } catch(_) {}
     state.calibrationEnabled = calibrationEnabled;
     state.calibrationOffsetSec = 0;
     hideChallengeModal();
@@ -1076,7 +1119,7 @@
     const knob = slider ? slider.querySelector('.slider-button') : null;
     if (!slider || !knob) return;
     if (toggleEl.checked){
-      slider.style.backgroundColor = '#34C759';
+      slider.style.backgroundColor = '#FF9500';
       knob.style.transform = 'translateX(26px)';
     } else {
       slider.style.backgroundColor = '#ccc';
@@ -1089,7 +1132,7 @@
     const knob = slider ? slider.querySelector('.slider-button') : null;
     if (!slider || !knob) return;
     if (cursorToggleEl.checked){
-      slider.style.backgroundColor = '#34C759';
+      slider.style.backgroundColor = '#FF9500';
       knob.style.transform = 'translateX(26px)';
     } else {
       slider.style.backgroundColor = '#ccc';
@@ -1102,7 +1145,7 @@
     const knob = slider ? slider.querySelector('.slider-button') : null;
     if (!slider || !knob) return;
     if (metronomeToggleEl.checked){
-      slider.style.backgroundColor = '#34C759';
+      slider.style.backgroundColor = '#FF9500';
       knob.style.transform = 'translateX(26px)';
     } else {
       slider.style.backgroundColor = '#ccc';
@@ -1115,7 +1158,7 @@
     const knob = slider ? slider.querySelector('.slider-button') : null;
     if (!slider || !knob) return;
     if (hideToggleEl.checked){
-      slider.style.backgroundColor = '#34C759';
+      slider.style.backgroundColor = '#FF9500';
       knob.style.transform = 'translateX(26px)';
     } else {
       slider.style.backgroundColor = '#ccc';
@@ -1128,7 +1171,7 @@
     const knob = slider ? slider.querySelector('.slider-button') : null;
     if (!slider || !knob) return;
     if (calibrationToggleEl.checked){
-      slider.style.backgroundColor = '#34C759';
+      slider.style.backgroundColor = '#FF9500';
       knob.style.transform = 'translateX(26px)';
     } else {
       slider.style.backgroundColor = '#ccc';
@@ -1142,7 +1185,7 @@
     const knob = slider ? slider.querySelector('.slider-button') : null;
     if (!slider || !knob) return;
     if (modalModeToggleEl.checked){
-      slider.style.backgroundColor = '#34C759';
+      slider.style.backgroundColor = '#FF9500';
       knob.style.transform = 'translateX(26px)';
     } else {
       slider.style.backgroundColor = '#ccc';
@@ -1160,10 +1203,10 @@
         cursor.style.left = '0';
         cursor.style.width = `${state.cursorWidth || 12}px`;
         cursor.style.height = '100%';
-        cursor.style.background = 'rgba(52,199,89,0.25)';
-        cursor.style.border = '1px solid rgba(52,199,89,0.45)';
+        cursor.style.background = 'rgba(255,149,0,0.25)';
+        cursor.style.border = '1px solid rgba(255,149,0,0.45)';
         cursor.style.borderRadius = '4px';
-        cursor.style.boxShadow = '0 0 0 0 rgba(52,199,89,0.35)';
+        cursor.style.boxShadow = '0 0 0 0 rgba(255,149,0,0.35)';
         cursor.style.transition = 'box-shadow 0.12s ease';
         state.overlayEl.appendChild(cursor);
         state.cursorEl = cursor;
@@ -1188,10 +1231,10 @@
       cursor.style.left = '0';
       cursor.style.width = `${state.cursorWidth || 12}px`;
       cursor.style.height = '100%';
-      cursor.style.background = 'rgba(52,199,89,0.25)';
-      cursor.style.border = '1px solid rgba(52,199,89,0.45)';
+      cursor.style.background = 'rgba(255,149,0,0.25)';
+      cursor.style.border = '1px solid rgba(255,149,0,0.45)';
       cursor.style.borderRadius = '4px';
-      cursor.style.boxShadow = '0 0 0 0 rgba(52,199,89,0.35)';
+      cursor.style.boxShadow = '0 0 0 0 rgba(255,149,0,0.35)';
       cursor.style.transition = 'box-shadow 0.12s ease';
       overlay.appendChild(cursor);
       state.cursorEl = cursor;
@@ -1202,17 +1245,15 @@
 
   function positionCursorRect(x, y, width, height){
     if (!state.cursorEl) return;
+    const svg = scoreEl ? scoreEl.querySelector('svg') : null;
     let offsetX = 0;
     let offsetY = 0;
-    try{
-      const svg = scoreEl.querySelector('svg');
-      if (svg){
-        const svgRect = svg.getBoundingClientRect();
-        const scoreRect = scoreEl.getBoundingClientRect();
-        offsetX = svgRect.left - scoreRect.left;
-        offsetY = svgRect.top - scoreRect.top;
-      }
-    }catch(_){}
+    if (svg && scoreEl){
+      const scoreRect = scoreEl.getBoundingClientRect();
+      const svgRect = svg.getBoundingClientRect();
+      offsetX = svgRect.left - scoreRect.left;
+      offsetY = svgRect.top - scoreRect.top;
+    }
     state.cursorEl.style.transform = `translateX(${x + offsetX}px)`;
     state.cursorEl.style.top = `${y + offsetY}px`;
     state.cursorEl.style.width = `${Math.max(1, width)}px`;
@@ -1231,8 +1272,8 @@
   async function ensureScoreReady(){
     // ensure svg exists
     let svg = scoreEl.querySelector('svg');
-    if (!svg && typeof window.generateIntervals === 'function') {
-      try { window.generateIntervals(); } catch(_) {}
+    if (!svg && typeof window.generateChords === 'function') {
+      try { window.generateChords(); } catch(_) {}
     }
     const t0 = Date.now();
     while (!svg && Date.now() - t0 < 6000){
@@ -1255,36 +1296,33 @@
   function getCurrentTimeSignature(){
     let timeSig = '4/4';
     try{
-      const ts = (window.currentIntervalProgression && window.currentIntervalProgression.timeSignature)
-        ? window.currentIntervalProgression.timeSignature
-        : window.intervalPlaybackTimeSignature;
-      if (ts){
-        if (typeof ts === 'string'){
-          timeSig = ts;
-        } else {
-          const beats = ts.beats ?? ts.numerator ?? ts.num;
-          const beatType = ts.beatType ?? ts.denominator ?? ts.den;
-          if (beats && beatType) timeSig = `${beats}/${beatType}`;
-        }
+      const xml = getCurrentMelodyXML();
+      const ts = xml ? parseTimeSigFromXML(xml) : null;
+      if (ts && ts.num && ts.den){
+        timeSig = `${ts.num}/${ts.den}`;
+      } else if (window.chordSettings && Array.isArray(window.chordSettings.timeSignatures) && window.chordSettings.timeSignatures.length){
+        timeSig = window.chordSettings.timeSignatures[0];
       }
     }catch(_){}
     return String(timeSig);
   }
 
   function getCurrentMelodyXML(){
-    if (state.musicXML && typeof state.musicXML === 'string' && state.musicXML.length > 0){
-      return state.musicXML;
-    }
+    if (state.musicXML) return state.musicXML;
     try{
-      if (window.currentIntervalProgression && window.intervalGenerator && typeof window.intervalGenerator.generateMusicXML === 'function'){
-        const xml = window.intervalGenerator.generateMusicXML(window.currentIntervalProgression);
+      if (window.currentChords && typeof window.currentChords.musicXML === 'string' && window.currentChords.musicXML.length > 0){
+        state.musicXML = window.currentChords.musicXML;
+        return state.musicXML;
+      }
+      if (window.currentChords && typeof window.generateMusicXML === 'function'){
+        const xml = window.generateMusicXML(window.currentChords);
         if (typeof xml === 'string' && xml.length > 0){
           state.musicXML = xml;
           return xml;
         }
       }
     }catch(_){}
-    return state.musicXML || null;
+    return null;
   }
 
   function parseTimeSigFromXML(xml){
@@ -1371,7 +1409,7 @@
     }
 
     function dedupRects(rects){
-      const eps = 6;
+      const eps = 2;
       const dedup = [];
       for (const m of rects){
         const last = dedup[dedup.length - 1];
@@ -1571,28 +1609,19 @@
     return measures;
   }
 
-  function getMeasureRectsForMapping(){
-    let base = Array.isArray(state.measureRects) ? state.measureRects : [];
-    if (!base.length) base = sampleBestMeasureRects();
-    if (!base.length) return base;
-    if (typeof window.getOSMDMeasureRects === 'function'){
-      try {
-        const r = window.getOSMDMeasureRects();
-        if (Array.isArray(r) && r.length === base.length) return r;
-      } catch(_) {}
-    }
-    return base;
-  }
-
   function getExpectedMeasureCountFromXML(){
     try{
       if (typeof osmd !== 'undefined' && osmd && osmd.GraphicSheet && Array.isArray(osmd.GraphicSheet.MeasureList)){
         const n = osmd.GraphicSheet.MeasureList.length;
         if (n && n > 0) return n;
       }
-      if (window.currentIntervalProgression && Array.isArray(window.currentIntervalProgression.measures)){
-        const n = window.currentIntervalProgression.measures.length;
-        if (n && n > 0) return n;
+      if (window.currentChords){
+        if (Array.isArray(window.currentChords.progression) && window.currentChords.progression.length){
+          return window.currentChords.progression.length;
+        }
+        if (Array.isArray(window.currentChords.measures) && window.currentChords.measures.length){
+          return window.currentChords.measures.length;
+        }
       }
       const xml = getCurrentMelodyXML();
       if (!xml) return 0;
@@ -2108,16 +2137,16 @@
       if (label) label.textContent = String(beatNum);
       if (state.cursorEl){
         if (strongBeat(beatNum)){
-          state.cursorEl.style.boxShadow = '0 0 0 8px rgba(52,199,89,0.20)';
-          if (label) label.style.color = '#34C759';
+          state.cursorEl.style.boxShadow = '0 0 0 8px rgba(255,149,0,0.20)';
+          if (label) label.style.color = '#FF9500';
           if (label) label.style.opacity = '1';
         } else {
-          state.cursorEl.style.boxShadow = '0 0 0 4px rgba(52,199,89,0.10)';
+          state.cursorEl.style.boxShadow = '0 0 0 4px rgba(255,149,0,0.10)';
           if (label) label.style.color = 'var(--text-color)';
           if (label) label.style.opacity = '0.75';
         }
         setTimeout(() => {
-          if (state.cursorEl) state.cursorEl.style.boxShadow = '0 0 0 0 rgba(52,199,89,0)';
+          if (state.cursorEl) state.cursorEl.style.boxShadow = '0 0 0 0 rgba(255,149,0,0)';
         }, Math.min(220, beatSec * 800));
       }
       if (i >= beats){
@@ -2197,7 +2226,7 @@
       const measureTotals = [];
       let absQN = 0; // 四分音符为单位的绝对时间
       // 跨小节tie累积
-      let tieOpen = false; let tieDurDiv = 0; let tieIsRest = false; let tieStartAbsQN = 0; let tieMidi = null;
+      let tieOpen = false; let tieDurDiv = 0; let tieIsRest = false; let tieStartAbsQN = 0;
       for (let mi=0; mi<measures.length; mi++){
         const m = measures[mi];
         const attr = m.querySelector('attributes');
@@ -2217,50 +2246,26 @@
         measureStarts.push(absQN);
         const measureTotalQN = beatsNum * (4/beatType); // 一小节的四分拍总数
         measureTotals.push(measureTotalQN);
-        let posDiv = 0;
-        const notes = Array.from(m.querySelectorAll('note'));
-        for (let ni=0; ni<notes.length; ni++){
-          const n = notes[ni];
-          const isRest = !!n.querySelector('rest');
-          const durEl = n.querySelector('duration');
-          const durDiv = durEl ? Math.max(0, parseInt(durEl.textContent||'0',10)||0) : 0;
-          const durQN = durDiv / divisions; // 四分拍单位
-          const isChord = !!n.querySelector('chord');
-          const ties = Array.from(n.querySelectorAll('tie')).map(x=>x.getAttribute('type'));
-          const hasStart = ties.includes('start');
-          const hasStop = ties.includes('stop');
-          let midi = null;
-          if (!isRest){
-            const pitch = n.querySelector('pitch');
-            const step = pitch?.querySelector('step')?.textContent;
-            const octave = parseInt(pitch?.querySelector('octave')?.textContent || '0', 10);
-            const alter = parseInt(pitch?.querySelector('alter')?.textContent || '0', 10) || 0;
-            if (step && isFinite(octave)){
-              const stepToSemitone = { C:0, D:2, E:4, F:5, G:7, A:9, B:11 };
-              const base = stepToSemitone[step];
-              if (base != null){
-                midi = (octave + 1) * 12 + base + alter;
-              }
-            }
-          }
-          const startQNAbs = absQN + (posDiv/divisions);
-          const startQNInMeasure = (posDiv/divisions);
-          if (hasStart){
-            if (!tieOpen){ tieOpen = true; tieDurDiv = durDiv; tieIsRest = isRest; tieStartAbsQN = startQNAbs; tieMidi = midi; }
+        const entries = collectMeasureNoteEntries(m, divisions, absQN);
+        for (const entry of entries){
+          const isRest = !!entry.isRest;
+          const durDiv = entry.durDiv;
+          const durQN = entry.durQN; // 四分拍单位
+          const startQNAbs = entry.startQNAbs;
+          const startQNInMeasure = entry.startQNInMeasure;
+          if (entry.hasStart){
+            if (!tieOpen){ tieOpen = true; tieDurDiv = durDiv; tieIsRest = isRest; tieStartAbsQN = startQNAbs; }
             else { tieDurDiv += durDiv; }
-          } else if (hasStop && tieOpen){
+          } else if (entry.hasStop && tieOpen){
             tieDurDiv += durDiv;
             const durQNsum = tieDurDiv / divisions;
-            events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: tieStartAbsQN, durBeats: durQNsum, isRest: tieIsRest, midi: tieIsRest ? null : tieMidi });
-            tieOpen = false; tieDurDiv = 0; tieIsRest = false; tieMidi = null;
+            events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: tieStartAbsQN, durBeats: durQNsum, isRest: tieIsRest });
+            tieOpen = false; tieDurDiv = 0; tieIsRest = false;
           } else if (tieOpen){
             tieDurDiv += durDiv; // tie延续
-          } else {
-            if (!isChord){
-              events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: startQNAbs, durBeats: durQN, isRest, midi: isRest ? null : midi });
-            }
+          } else if (!entry.isChord){
+            events.push({ measure: mi, posBeats: startQNInMeasure, absBeats: startQNAbs, durBeats: durQN, isRest });
           }
-          if (!isChord) posDiv += durDiv; // chord后续音不推进时间
         }
         absQN += measureTotalQN;
       }
@@ -2270,12 +2275,11 @@
 
   function mapEventsToPositions(timeline){
     const events = Array.isArray(timeline) ? timeline : (timeline && timeline.events ? timeline.events : []);
-    const measureRectsForMapping = getMeasureRectsForMapping();
-    if (!events || !events.length || !measureRectsForMapping || !measureRectsForMapping.length) return { events: [], measureStarts: [], measureTotals: [] };
+    if (!events || !events.length || !state.measureRects || !state.measureRects.length) return { events: [], measureStarts: [], measureTotals: [] };
     const measureTotals = (timeline && timeline.measureTotals && timeline.measureTotals.length) ? timeline.measureTotals : null;
     // 先用比例位置作为回退
     const mapped = events.map(ev => {
-      const mr = measureRectsForMapping[Math.min(ev.measure, measureRectsForMapping.length-1)];
+      const mr = state.measureRects[Math.min(ev.measure, state.measureRects.length-1)];
       const perMeas = measureTotals ? measureTotals[Math.min(ev.measure, measureTotals.length-1)] : (function(){ const xml = getCurrentMelodyXML(); const ts = xml ? parseTimeSigFromXML(xml) : null; return (ts ? ts.num : 4) * (4/(ts ? ts.den : 4)); })();
       const x = mr.x + Math.max(0, Math.min(1, (ev.posBeats / Math.max(0.0001, perMeas)))) * mr.width;
       const y1 = mr.y + mr.height * 0.05;
@@ -2284,11 +2288,9 @@
     });
     // 用真实 notehead 细化位置（按拍点就近匹配音头），休止符保持比例位置
     try {
-      const osmdEntryMap = collectOsmdEntriesByMeasure();
-      const headMap = collectNoteheadGroupsByMeasure();
-      const staveMap = collectStavenoteGroupsByMeasure();
+      const headMap = collectNoteheadCentersByMeasure();
       const offsetPx = 0; // 对齐到音头中心
-      const snapTolBase = 28; // 与音头的最近吸附阈值（像素）
+      const snapTol = 15; // 与音头的最近吸附阈值（像素）
       const defaultPerMeasure = (function(){
         const xml = getCurrentMelodyXML();
         const ts = xml ? parseTimeSigFromXML(xml) : null;
@@ -2301,286 +2303,48 @@
         eventsByMeasure.set(ev.measure, arr);
       }
       for (const [mIndex, evs] of eventsByMeasure.entries()){
-        const headsRaw = headMap.get(mIndex) || [];
+        const heads = headMap.get(mIndex) || [];
         const perMeas = (measureTotals && measureTotals[mIndex] != null) ? measureTotals[mIndex] : defaultPerMeasure;
         const noteEvents = evs.filter(e => !e.isRest);
-        const restEvents = evs.filter(e => e.isRest);
         const ordered = noteEvents.slice().sort((a,b)=> (a.posBeats - b.posBeats) || (a.absBeats - b.absBeats));
-        const orderedAll = evs.slice().sort((a,b)=> (a.posBeats - b.posBeats) || (a.absBeats - b.absBeats));
 
-        const osmdEntries = osmdEntryMap.get(mIndex) || [];
-        const osmdRestTargets = osmdEntries.filter(e => e && e.isRest && isFinite(e.x)).map(e => e.x);
-        if (osmdEntries.length){
-          const entryOrder = osmdEntries.slice().sort((a,b)=> (a.relVal ?? 0) - (b.relVal ?? 0) || a.x - b.x);
-          const restEntryXs = entryOrder.filter(e => e.isRest).map(e => e.x);
-          if (entryOrder.length === orderedAll.length && orderedAll.length){
-            for (let k = 0; k < orderedAll.length; k++){
-              const ev = orderedAll[k];
-              const entry = entryOrder[k];
-              if (!entry) continue;
-              if (!ev.isRest){
-                ev.x = Math.max(0, entry.x - offsetPx);
-                if (isFinite(entry.top) && isFinite(entry.bottom)){
-                  const pad = Math.max(2, (entry.bottom - entry.top) * 0.2);
-                  ev.y1 = entry.top - pad;
-                  ev.y2 = entry.bottom + pad;
-                }
-                if (isFinite(entry.width)){
-                  ev.width = Math.max(6, entry.width + 2);
-                }
-              } else {
-                ev.x = entry.x;
-              }
-            }
-            continue;
-          }
-          const entryNotes = entryOrder.filter(e => !e.isRest);
-          if (entryNotes.length === ordered.length && ordered.length){
-            for (let k = 0; k < ordered.length; k++){
-              const ev = ordered[k];
-              const entry = entryNotes[k];
-              if (!entry) continue;
-              ev.x = Math.max(0, entry.x - offsetPx);
-              if (isFinite(entry.top) && isFinite(entry.bottom)){
-                const pad = Math.max(2, (entry.bottom - entry.top) * 0.2);
-                ev.y1 = entry.top - pad;
-                ev.y2 = entry.bottom + pad;
-              }
-              if (isFinite(entry.width)){
-                ev.width = Math.max(6, entry.width + 2);
-              }
-              if (restEntryXs.length){
-                const restAvoid = Math.max(10, measureRectsForMapping[mIndex].width * 0.04);
-                let distRest = Infinity;
-                for (const rx of restEntryXs){ distRest = Math.min(distRest, Math.abs(ev.x - rx)); }
-                if (distRest <= restAvoid){
-                  const targetX = measureRectsForMapping[mIndex].x +
-                    Math.max(0, Math.min(1, ev.posBeats / Math.max(0.0001, perMeas))) * measureRectsForMapping[mIndex].width;
-                  if (Math.abs(targetX - ev.x) > 4) ev.x = targetX;
-                }
-              }
-            }
-            continue;
-          }
-        }
-
-        const stavesNotes = (staveMap.get(mIndex) || []).filter(s => s && s.hasNotehead).sort((a,b)=>a.x-b.x);
-        if (stavesNotes.length === ordered.length && ordered.length){
+        if (heads.length === ordered.length){
           for (let k = 0; k < ordered.length; k++){
             const ev = ordered[k];
-            const sn = stavesNotes[k];
-            if (!sn) continue;
-            ev.x = Math.max(0, sn.x - offsetPx);
-            if (isFinite(sn.top) && isFinite(sn.bottom)){
-              const pad = Math.max(2, (sn.bottom - sn.top) * 0.2);
-              ev.y1 = sn.top - pad;
-              ev.y2 = sn.bottom + pad;
+            const head = heads[k];
+            if (!head) continue;
+            ev.x = Math.max(0, head.x - offsetPx);
+            if (isFinite(head.top) && isFinite(head.bottom)){
+              const pad = Math.max(1, (head.bottom - head.top) * 0.1);
+              ev.y1 = head.top - pad;
+              ev.y2 = head.bottom + pad;
             }
-            if (isFinite(sn.width)){
-              ev.width = Math.max(6, sn.width + 2);
-            }
-          }
-          continue;
-        }
-
-        if (!headsRaw.length || !ordered.length) continue;
-        const targets = ordered.map(ev => (
-          measureRectsForMapping[mIndex].x +
-          Math.max(0, Math.min(1, ev.posBeats / Math.max(0.0001, perMeas))) * measureRectsForMapping[mIndex].width
-        ));
-        const restTargets = osmdRestTargets.length ? osmdRestTargets : restEvents.map(ev => (
-          measureRectsForMapping[mIndex].x +
-          Math.max(0, Math.min(1, ev.posBeats / Math.max(0.0001, perMeas))) * measureRectsForMapping[mIndex].width
-        ));
-        let heads = headsRaw;
-        if (restTargets.length && headsRaw.length > ordered.length){
-          const restSnapTol = Math.max(18, measureRectsForMapping[mIndex].width * 0.18);
-          const restBias = 4;
-          const candidates = headsRaw.map(h => {
-            let distNote = Infinity;
-            for (const nx of targets){ distNote = Math.min(distNote, Math.abs(h.x - nx)); }
-            let distRest = Infinity;
-            for (const rx of restTargets){ distRest = Math.min(distRest, Math.abs(h.x - rx)); }
-            return { h, distNote, distRest };
-          });
-          candidates.sort((a,b) => (a.distRest - a.distNote) - (b.distRest - b.distNote));
-          let toRemove = headsRaw.length - ordered.length;
-          const kept = [];
-          for (const c of candidates){
-            const restLike = isFinite(c.distRest) && c.distRest <= restSnapTol && (c.distRest + restBias) < c.distNote;
-            if (restLike && toRemove > 0){
-              toRemove -= 1;
-              continue;
-            }
-            kept.push(c.h);
-          }
-          heads = kept.length >= ordered.length ? kept : headsRaw;
-        }
-
-        let finalHeads = heads;
-        if (heads.length > ordered.length && ordered.length){
-          const buckets = Array.from({ length: ordered.length }, () => []);
-          for (const h of heads){
-            let bestIdx = 0;
-            let bestDist = Infinity;
-            for (let i = 0; i < targets.length; i++){
-              const d = Math.abs(h.x - targets[i]);
-              if (d < bestDist){
-                bestDist = d;
-                bestIdx = i;
-              }
-            }
-            buckets[bestIdx].push(h);
-          }
-          const merged = buckets.map((arr, idx) => {
-            if (!arr.length) return null;
-            let minX = Infinity;
-            let maxX = -Infinity;
-            let top = Infinity;
-            let bottom = -Infinity;
-            let best = null;
-            let bestDist = Infinity;
-            arr.forEach(h => {
-              const half = (isFinite(h.width) && h.width > 0) ? (h.width / 2) : 4;
-              minX = Math.min(minX, h.x - half);
-              maxX = Math.max(maxX, h.x + half);
-              if (isFinite(h.top)) top = Math.min(top, h.top);
-              if (isFinite(h.bottom)) bottom = Math.max(bottom, h.bottom);
-              const d = Math.abs(h.x - targets[idx]);
-              if (d < bestDist){
-                bestDist = d;
-                best = h;
-              }
-            });
-            const width = Math.max(2, maxX - minX);
-            const x = best ? best.x : (minX + maxX) / 2;
-            return { x, top, bottom, width };
-          }).filter(Boolean);
-          if (merged.length === ordered.length) finalHeads = merged;
-        }
-
-        const restAvoid = Math.max(10, measureRectsForMapping[mIndex].width * 0.04);
-
-        if (finalHeads.length === ordered.length){
-          for (let k = 0; k < ordered.length; k++){
-            const ev = ordered[k];
-            const head = finalHeads[k];
-            if (head){
-              ev.x = Math.max(0, head.x - offsetPx);
-              if (isFinite(head.top) && isFinite(head.bottom)){
-                const pad = Math.max(2, (head.bottom - head.top) * 0.2);
-                ev.y1 = head.top - pad;
-                ev.y2 = head.bottom + pad;
-              }
-              if (isFinite(head.width)){
-                ev.width = Math.max(6, head.width + 2);
-              }
-              if (restTargets.length){
-                const targetX = targets[k];
-                let distRest = Infinity;
-                let distTarget = Infinity;
-                for (const rx of restTargets){
-                  distRest = Math.min(distRest, Math.abs(ev.x - rx));
-                  distTarget = Math.min(distTarget, Math.abs(targetX - rx));
-                }
-                if (distRest <= restAvoid && distTarget > distRest + 6){
-                  ev.x = targetX;
-                }
-              }
-            } else {
-              ev.x = targets[k];
-            }
-          }
-        } else if (finalHeads.length >= ordered.length){
-          const m = ordered.length;
-          const n = finalHeads.length;
-          const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(Infinity));
-          const choose = Array.from({ length: m + 1 }, () => Array(n + 1).fill(false));
-          for (let j = 0; j <= n; j++) dp[0][j] = 0;
-          for (let i = 1; i <= m; i++){
-            for (let j = 1; j <= n; j++){
-              const skip = dp[i][j - 1];
-              const use = dp[i - 1][j - 1] + Math.abs(finalHeads[j - 1].x - targets[i - 1]);
-              if (use <= skip){
-                dp[i][j] = use;
-                choose[i][j] = true;
-              } else {
-                dp[i][j] = skip;
-              }
-            }
-          }
-          const matched = Array(m).fill(null);
-          let i = m, j = n;
-          while (i > 0 && j > 0){
-            if (choose[i][j]){
-              matched[i - 1] = finalHeads[j - 1];
-              i--; j--;
-            } else {
-              j--;
-            }
-          }
-          for (let k = 0; k < m; k++){
-            const ev = ordered[k];
-            const head = matched[k];
-            if (head){
-              ev.x = Math.max(0, head.x - offsetPx);
-              if (isFinite(head.top) && isFinite(head.bottom)){
-                const pad = Math.max(2, (head.bottom - head.top) * 0.2);
-                ev.y1 = head.top - pad;
-                ev.y2 = head.bottom + pad;
-              }
-              if (isFinite(head.width)){
-                ev.width = Math.max(6, head.width + 2);
-              }
-              if (restTargets.length){
-                const targetX = targets[k];
-                let distRest = Infinity;
-                let distTarget = Infinity;
-                for (const rx of restTargets){
-                  distRest = Math.min(distRest, Math.abs(ev.x - rx));
-                  distTarget = Math.min(distTarget, Math.abs(targetX - rx));
-                }
-                if (distRest <= restAvoid && distTarget > distRest + 6){
-                  ev.x = targetX;
-                }
-              }
-            } else {
-              ev.x = targets[k];
+            if (isFinite(head.width)){
+              ev.width = Math.max(6, head.width + 2);
             }
           }
         } else {
-          for (let k = 0; k < ordered.length; k++){
-            const ev = ordered[k];
-            const targetX = targets[k];
+          for (const ev of ordered){
+            const targetX = state.measureRects[mIndex].x + Math.max(0, Math.min(1, ev.posBeats/Math.max(0.0001, perMeas))) * state.measureRects[mIndex].width;
             let bestHead = null;
             let bestDist = Infinity;
-            for (const h of heads){
+            heads.forEach(h => {
               const d = Math.abs(h.x - targetX);
               if (d < bestDist){
                 bestDist = d;
                 bestHead = h;
               }
-            }
-            if (bestHead){
+            });
+
+            if (bestHead && bestDist <= snapTol){
               ev.x = Math.max(0, bestHead.x - offsetPx);
               if (isFinite(bestHead.top) && isFinite(bestHead.bottom)){
-                const pad = Math.max(2, (bestHead.bottom - bestHead.top) * 0.2);
+                const pad = Math.max(1, (bestHead.bottom - bestHead.top) * 0.1);
                 ev.y1 = bestHead.top - pad;
                 ev.y2 = bestHead.bottom + pad;
               }
               if (isFinite(bestHead.width)){
                 ev.width = Math.max(6, bestHead.width + 2);
-              }
-              if (restTargets.length){
-                let distRest = Infinity;
-                let distTarget = Infinity;
-                for (const rx of restTargets){
-                  distRest = Math.min(distRest, Math.abs(ev.x - rx));
-                  distTarget = Math.min(distTarget, Math.abs(targetX - rx));
-                }
-                if (distRest <= restAvoid && distTarget > distRest + 6){
-                  ev.x = targetX;
-                }
               }
             } else {
               ev.x = targetX;
@@ -2588,79 +2352,22 @@
           }
         }
       }
-    } catch(_) {}
-    // Final DOM notehead alignment pass (avoids OSMD entry scaling drift)
-    try {
-      const headMapFinal = collectNoteheadGroupsByMeasure();
-      const measureRectsForMapping = getMeasureRectsForMapping();
-      if (measureRectsForMapping.length){
-        const defaultPerMeasure = (function(){
-          const xml = getCurrentMelodyXML();
-          const ts = xml ? parseTimeSigFromXML(xml) : null;
-          return (ts ? ts.num : 4) * (4/(ts ? ts.den : 4));
-        })();
-        const eventsByMeasure = new Map();
-        for (const ev of mapped){
-          if (!ev || ev.isRest) continue;
-          const arr = eventsByMeasure.get(ev.measure) || [];
-          arr.push(ev);
-          eventsByMeasure.set(ev.measure, arr);
-        }
-        for (const [mIndex, evs] of eventsByMeasure.entries()){
-          const heads = headMapFinal.get(mIndex) || [];
-          if (!heads.length) continue;
-          const perMeas = (measureTotals && measureTotals[mIndex] != null) ? measureTotals[mIndex] : defaultPerMeasure;
-          const ordered = evs.slice().sort((a,b)=> (a.posBeats - b.posBeats) || (a.absBeats - b.absBeats));
-          const sortedHeads = heads.slice().sort((a,b)=>a.x-b.x);
-          if (sortedHeads.length >= ordered.length){
-            let lastIdx = -1;
-            for (const ev of ordered){
-              const targetX = measureRectsForMapping[mIndex].x +
-                Math.max(0, Math.min(1, ev.posBeats / Math.max(0.0001, perMeas))) * measureRectsForMapping[mIndex].width;
-              let best = null;
-              let bestIdx = -1;
-              let bestDist = Infinity;
-              for (let i = lastIdx + 1; i < sortedHeads.length; i++){
-                const h = sortedHeads[i];
-                const d = Math.abs(h.x - targetX);
-                if (d < bestDist){ bestDist = d; best = h; bestIdx = i; }
-              }
-              if (best){
-                ev.x = best.x;
-                if (isFinite(best.top) && isFinite(best.bottom)){
-                  const pad = Math.max(2, (best.bottom - best.top) * 0.2);
-                  ev.y1 = best.top - pad;
-                  ev.y2 = best.bottom + pad;
-                }
-                if (isFinite(best.width)){
-                  ev.width = Math.max(6, best.width + 2);
-                }
-                lastIdx = bestIdx;
-              }
-            }
-          } else {
-            const snapTol = Math.max(12, measureRectsForMapping[mIndex].width * 0.12);
-            for (const ev of ordered){
-              const targetX = measureRectsForMapping[mIndex].x +
-                Math.max(0, Math.min(1, ev.posBeats / Math.max(0.0001, perMeas))) * measureRectsForMapping[mIndex].width;
-              let best = null;
-              let bestDist = Infinity;
-              for (const h of heads){
-                const d = Math.abs(h.x - targetX);
-                if (d < bestDist){ bestDist = d; best = h; }
-              }
-              if (best && bestDist <= snapTol){
-                ev.x = best.x;
-                if (isFinite(best.top) && isFinite(best.bottom)){
-                  const pad = Math.max(2, (best.bottom - best.top) * 0.2);
-                  ev.y1 = best.top - pad;
-                  ev.y2 = best.bottom + pad;
-                }
-                if (isFinite(best.width)){
-                  ev.width = Math.max(6, best.width + 2);
-                }
-              }
-            }
+      // 若小节边界不稳定（如等分估计导致的偏移），改用全局音头序列按时间顺序对齐
+      const globalHeads = collectNoteheadGroupsGlobal();
+      const orderedAll = mapped.filter(e => !e.isRest).slice().sort((a,b)=> (a.absBeats - b.absBeats) || (a.posBeats - b.posBeats));
+      if (globalHeads.length && globalHeads.length === orderedAll.length){
+        for (let i=0; i<orderedAll.length; i++){
+          const ev = orderedAll[i];
+          const head = globalHeads[i];
+          if (!head) continue;
+          ev.x = Math.max(0, head.x - offsetPx);
+          if (isFinite(head.top) && isFinite(head.bottom)){
+            const pad = Math.max(1, (head.bottom - head.top) * 0.1);
+            ev.y1 = head.top - pad;
+            ev.y2 = head.bottom + pad;
+          }
+          if (isFinite(head.width)){
+            ev.width = Math.max(6, head.width + 2);
           }
         }
       }
@@ -2668,11 +2375,9 @@
     return { events: mapped, measureTotals: measureTotals || [], measureStarts: (timeline && timeline.measureStarts) ? timeline.measureStarts : [] };
   }
 
-  function collectNoteheadGroupsByMeasure(){
-    const map = new Map();
+  function collectNoteheadGroupsGlobal(){
     const svg = scoreEl.querySelector('svg');
-    const measureRects = getMeasureRectsForMapping();
-    if (!svg || !measureRects || !measureRects.length) return map;
+    if (!svg) return [];
     const selector = '[class*="notehead"], [class*="NoteHead"], use[href*="notehead" i]';
     const svgBBox = svg.getBoundingClientRect();
     const headsAll = Array.from(svg.querySelectorAll(selector));
@@ -2705,169 +2410,116 @@
       bottom: g.bottom,
       width: Math.max(2, g.maxX - g.minX)
     }));
-    for (let mi=0; mi<measureRects.length; mi++){
-      const mr = measureRects[mi];
-      const prev = mi > 0 ? measureRects[mi - 1] : null;
-      const next = mi < measureRects.length - 1 ? measureRects[mi + 1] : null;
-      const sameLinePrev = prev && Math.abs(prev.y - mr.y) <= (mr.height * 0.5);
-      const sameLineNext = next && Math.abs(next.y - mr.y) <= (mr.height * 0.5);
-      const leftBound = sameLinePrev ? (prev.x + prev.width + mr.x) / 2 : (mr.x - 2);
-      const rightBound = sameLineNext ? (mr.x + mr.width + next.x) / 2 : (mr.x + mr.width + 2);
-      const padY = Math.max(8, Math.min(24, mr.height * 0.25));
-      const heads = [];
-      baseGroups.forEach(g=>{
-        const cx = g.x;
-        const top = g.top;
-        const bottom = g.bottom;
-        const cy = (top + bottom) / 2;
-        if (cx >= (leftBound - 1) && cx <= (rightBound + 1) && cy >= (mr.y - padY) && cy <= (mr.y + mr.height + padY)){
-          heads.push({ x: cx, top, bottom, width: g.width });
-        }
-      });
-      heads.sort((a,b)=>a.x-b.x);
-      const groups = [];
-      const eps = 6;
-      heads.forEach(h=>{
-        const last = groups[groups.length - 1];
-        if (last && Math.abs(h.x - last.x) <= eps){
-          last.x = (last.x + h.x) / 2;
-          last.top = Math.min(last.top, h.top);
-          last.bottom = Math.max(last.bottom, h.bottom);
-          last.width = Math.max(last.width, h.width || 0);
-        } else {
-          groups.push({ x: h.x, top: h.top, bottom: h.bottom, width: h.width || 0 });
-        }
-      });
-      map.set(mi, groups.map(g => ({ x: g.x, top: g.top, bottom: g.bottom, width: g.width })));
-    }
-    return map;
-  }
-
-  function collectOsmdEntriesByMeasure(){
-    const map = new Map();
-    try{
-      const osmd = window.intervalRenderer && window.intervalRenderer.osmd;
-      const ml = osmd && osmd.GraphicSheet && Array.isArray(osmd.GraphicSheet.MeasureList) ? osmd.GraphicSheet.MeasureList : null;
-      if (!ml || !ml.length) return map;
-      for (let mi = 0; mi < ml.length; mi++){
-        const gm = ml[mi] && ml[mi][0];
-        if (!gm || !Array.isArray(gm.staffEntries)) continue;
-        const entries = [];
-        gm.staffEntries.forEach(se => {
-          const gves = Array.isArray(se.graphicalVoiceEntries) ? se.graphicalVoiceEntries : [];
-          if (!gves.length) return;
-          let vex = null;
-          let bbox = null;
-          for (const gve of gves){
-            const v = gve && gve.mVexFlowStaveNote;
-            if (!v) continue;
-            const bb = (typeof v.getBoundingBox === 'function') ? v.getBoundingBox() : null;
-            vex = v;
-            bbox = bb || bbox;
-            if (bb) break;
-          }
-          if (!vex) return;
-          const x = bbox ? (bbox.getX() + bbox.getW()/2) : (typeof vex.getAbsoluteX === 'function' ? vex.getAbsoluteX() : null);
-          if (!isFinite(x)) return;
-          const top = bbox ? bbox.getY() : null;
-          const bottom = bbox ? (bbox.getY() + bbox.getH()) : null;
-          const width = bbox ? bbox.getW() : null;
-          let hasNote = false;
-          let hasRest = false;
-          gves.forEach(gve => {
-            const notes = gve && gve.parentVoiceEntry && Array.isArray(gve.parentVoiceEntry.notes) ? gve.parentVoiceEntry.notes : [];
-            notes.forEach(n => {
-              let isRest = false;
-              if (n && typeof n.isRest === 'function') isRest = n.isRest();
-              else if (n && typeof n.isRestFlag === 'boolean') isRest = n.isRestFlag;
-              if (isRest) hasRest = true;
-              else hasNote = true;
-            });
-          });
-          const isRest = !hasNote && hasRest;
-          const ts = se.relInMeasureTimestamp;
-          const relVal = ts ? (ts.RealValue != null ? ts.RealValue : (ts.Numerator != null && ts.Denominator ? ts.Numerator / ts.Denominator : null)) : null;
-          entries.push({ x, top, bottom, width, isRest, relVal });
-        });
-        if (entries.length) map.set(mi, entries);
-      }
-    }catch(_){}
-    return map;
-  }
-
-  function collectStavenoteGroupsByMeasure(){
-    const map = new Map();
-    const svg = scoreEl.querySelector('svg');
-    const measureRects = getMeasureRectsForMapping();
-    if (!svg || !measureRects || !measureRects.length) return map;
-    const svgBBox = svg.getBoundingClientRect();
-    const noteheadSelector = '[class*="notehead"], [class*="NoteHead"], use[href*="notehead" i]';
-    const stavesAll = Array.from(svg.querySelectorAll('.vf-stavenote, [class*="StaveNote"]'));
-    const items = [];
-    stavesAll.forEach(el => {
-      const r = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
-      if (!r || r.width <= 0 || r.height <= 0) return;
-      let headMinX = Infinity;
-      let headMaxX = -Infinity;
-      let headTop = Infinity;
-      let headBottom = -Infinity;
-      if (el.querySelectorAll){
-        const heads = el.querySelectorAll(noteheadSelector);
-        heads.forEach(h => {
-          const hr = h.getBoundingClientRect ? h.getBoundingClientRect() : null;
-          if (!hr || hr.width <= 0 || hr.height <= 0) return;
-          const left = hr.left - svgBBox.left;
-          const right = hr.right - svgBBox.left;
-          const top = hr.top - svgBBox.top;
-          const bottom = hr.bottom - svgBBox.top;
-          headMinX = Math.min(headMinX, left);
-          headMaxX = Math.max(headMaxX, right);
-          headTop = Math.min(headTop, top);
-          headBottom = Math.max(headBottom, bottom);
-        });
-      }
-      const hasNotehead = isFinite(headMinX) && isFinite(headMaxX) && headMaxX > headMinX;
-      if (hasNotehead){
-        items.push({
-          x: (headMinX + headMaxX) / 2,
-          top: headTop,
-          bottom: headBottom,
-          width: Math.max(2, headMaxX - headMinX),
-          hasNotehead: true
-        });
+    baseGroups.sort((a,b)=>a.x-b.x);
+    const merged = [];
+    const eps = 2;
+    baseGroups.forEach(g => {
+      const last = merged[merged.length - 1];
+      if (last && Math.abs(g.x - last.x) <= eps){
+        last.x = (last.x + g.x) / 2;
+        last.top = Math.min(last.top, g.top);
+        last.bottom = Math.max(last.bottom, g.bottom);
+        last.width = Math.max(last.width, g.width || 0);
       } else {
-        const left = r.left - svgBBox.left;
-        const right = r.right - svgBBox.left;
-        const top = r.top - svgBBox.top;
-        const bottom = r.bottom - svgBBox.top;
-        items.push({
-          x: (left + right) / 2,
-          top,
-          bottom,
-          width: Math.max(2, right - left),
-          hasNotehead: false
-        });
+        merged.push({ x: g.x, top: g.top, bottom: g.bottom, width: g.width });
       }
     });
-    for (let mi=0; mi<measureRects.length; mi++){
-      const mr = measureRects[mi];
-      const prev = mi > 0 ? measureRects[mi - 1] : null;
-      const next = mi < measureRects.length - 1 ? measureRects[mi + 1] : null;
-      const sameLinePrev = prev && Math.abs(prev.y - mr.y) <= (mr.height * 0.5);
-      const sameLineNext = next && Math.abs(next.y - mr.y) <= (mr.height * 0.5);
-      const leftBound = sameLinePrev ? (prev.x + prev.width + mr.x) / 2 : (mr.x - 2);
-      const rightBound = sameLineNext ? (mr.x + mr.width + next.x) / 2 : (mr.x + mr.width + 2);
+    const systems = (state.systems && state.systems.length) ? state.systems : computeSystemsFromMeasures(state.measureRects || []);
+    const withSys = merged.map(g => {
+      const cy = (g.top + g.bottom) / 2;
+      let sysIndex = 0;
+      if (systems && systems.length){
+        let found = -1;
+        for (let i=0; i<systems.length; i++){
+          const sys = systems[i];
+          if (cy >= sys.y - 6 && cy <= sys.y + sys.height + 6){ found = i; break; }
+        }
+        if (found < 0){
+          let best = 0;
+          let bestDist = Infinity;
+          for (let i=0; i<systems.length; i++){
+            const sys = systems[i];
+            const mid = sys.y + sys.height / 2;
+            const d = Math.abs(cy - mid);
+            if (d < bestDist){ bestDist = d; best = i; }
+          }
+          sysIndex = best;
+        } else {
+          sysIndex = found;
+        }
+      }
+      return { x: g.x, top: g.top, bottom: g.bottom, width: g.width, sysIndex };
+    });
+    withSys.sort((a,b)=> (a.sysIndex - b.sysIndex) || (a.x - b.x));
+    return withSys;
+  }
+
+  function collectNoteheadCentersByMeasure(){
+    const map = new Map();
+    const svg = scoreEl.querySelector('svg');
+    if (!svg || !state.measureRects || !state.measureRects.length) return map;
+    const selector = '[class*="notehead"], [class*="NoteHead"], use[href*="notehead" i]';
+    const svgBBox = svg.getBoundingClientRect();
+    const headsAll = Array.from(svg.querySelectorAll(selector));
+    const groupsByNote = new Map();
+    headsAll.forEach(el => {
+      const r = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+      if (!r || r.width <= 0 || r.height <= 0) return;
+      const left = r.left - svgBBox.left;
+      const right = r.right - svgBBox.left;
+      const top = r.top - svgBBox.top;
+      const bottom = r.bottom - svgBBox.top;
+      const stavenote = (typeof el.closest === 'function')
+        ? (el.closest('.vf-stavenote') || el.closest('[class*="StaveNote"]'))
+        : null;
+      const key = stavenote || el;
+      let g = groupsByNote.get(key);
+      if (!g){
+        g = { minX: left, maxX: right, top, bottom };
+        groupsByNote.set(key, g);
+      } else {
+        g.minX = Math.min(g.minX, left);
+        g.maxX = Math.max(g.maxX, right);
+        g.top = Math.min(g.top, top);
+        g.bottom = Math.max(g.bottom, bottom);
+      }
+    });
+    const baseGroups = Array.from(groupsByNote.values()).map(g => ({
+      x: (g.minX + g.maxX) / 2,
+      top: g.top,
+      bottom: g.bottom,
+      width: Math.max(2, g.maxX - g.minX)
+    }));
+    for (let mi=0; mi<state.measureRects.length; mi++){
+      const mr = state.measureRects[mi];
+      const prev = mi > 0 ? state.measureRects[mi - 1] : null;
+      const next = mi < state.measureRects.length - 1 ? state.measureRects[mi + 1] : null;
+      const leftBound = prev ? (prev.x + prev.width + mr.x) / 2 : (mr.x - 2);
+      const rightBound = next ? (mr.x + mr.width + next.x) / 2 : (mr.x + mr.width + 2);
       const padY = Math.max(8, Math.min(24, mr.height * 0.25));
-      const staves = [];
-      items.forEach(it => {
-        const cx = it.x;
-        const cy = (it.top + it.bottom) / 2;
+      const groups = [];
+      baseGroups.forEach(g=>{
+        const cx = g.x;
+        const cy = (g.top + g.bottom) / 2;
         if (cx >= (leftBound - 1) && cx <= (rightBound + 1) && cy >= (mr.y - padY) && cy <= (mr.y + mr.height + padY)){
-          staves.push(it);
+          groups.push({ x: cx, top: g.top, bottom: g.bottom, width: g.width });
         }
       });
-      staves.sort((a,b)=>a.x-b.x);
-      map.set(mi, staves);
+      groups.sort((a,b)=>a.x-b.x);
+      const merged = [];
+      const eps = 1.2;
+      groups.forEach(g => {
+        const last = merged[merged.length - 1];
+        if (last && Math.abs(g.x - last.x) <= eps){
+          last.x = (last.x + g.x) / 2;
+          last.top = Math.min(last.top, g.top);
+          last.bottom = Math.max(last.bottom, g.bottom);
+          last.width = Math.max(last.width, g.width || 0);
+        } else {
+          merged.push({ x: g.x, top: g.top, bottom: g.bottom, width: g.width });
+        }
+      });
+      map.set(mi, merged);
     }
     return map;
   }
@@ -2877,25 +2529,17 @@
     const secPerQuarter = 60 / tempo;
     const rawTimeline = parseTimelineFromXML();
     const mapped = mapEventsToPositions(rawTimeline);
-    const events = (mapped && mapped.events) ? mapped.events : [];
+    const events = (mapped && mapped.events) ? mapped.events.filter(ev => !ev.isRest) : [];
     return events.map(ev => {
-      const isRest = !!ev.isRest;
-      const top = (!isRest && isFinite(ev.y1)) ? ev.y1 : null;
-      const height = (!isRest && isFinite(ev.y2) && isFinite(ev.y1)) ? Math.max(2, ev.y2 - ev.y1) : null;
-      const width = (!isRest && isFinite(ev.width)) ? Math.max(4, ev.width) : null;
-      const durBeats = isFinite(ev.durBeats) ? Math.max(0, ev.durBeats) : 0;
-      const durSec = durBeats * secPerQuarter;
+      const top = isFinite(ev.y1) ? ev.y1 : null;
+      const height = isFinite(ev.y2) && isFinite(ev.y1) ? Math.max(2, ev.y2 - ev.y1) : null;
+      const width = isFinite(ev.width) ? Math.max(4, ev.width) : null;
       return {
         measureIndex: ev.measure,
-        absBeats: ev.absBeats,
         x: ev.x,
         top,
         height,
         width,
-        isRest,
-        midi: ev.midi,
-        durBeats,
-        durSec,
         timeSec: (ev.absBeats || 0) * secPerQuarter
       };
     }).sort((a,b)=> a.timeSec - b.timeSec);
@@ -2948,77 +2592,48 @@
   function startNoteCursor(bpm){
     if (state.noteTimerId) { clearTimeout(state.noteTimerId); state.noteTimerId = null; }
     if (state.beatTimerId) { clearInterval(state.beatTimerId); state.beatTimerId = null; }
-    if (state.cursorEl) state.cursorEl.style.display = 'none';
+    if (state.cursorEl) state.cursorEl.style.display = state.cursorEnabled ? 'block' : 'none';
     const events = Array.isArray(state.noteEvents) ? state.noteEvents : [];
-    const noteEvents = events.filter(ev => !ev.isRest);
-    const hasNote = noteEvents.length > 0;
-    if (!events.length || !hasNote){
-      if (state.cursorEl) state.cursorEl.style.display = 'none';
-      const totalSec = (state.measureRects.length || 0) * (state.measureDuration || 0);
-      const holdMs = Math.max(220, totalSec * 1000);
-      state.noteTimerId = setTimeout(() => {
-        if (state.measureRects.length > 0) applyClipForIndex(state.measureRects.length - 1);
-        completeChallengeCycle();
-      }, holdMs);
+    if (!events.length){
+      const tsInfo = getTimeSignatureInfo();
+      startBeatCursor(bpm, tsInfo.beats, tsInfo.den);
       return;
     }
-
-    if (!state.restTimeouts) state.restTimeouts = [];
-    state.restTimeouts.forEach(t => { try { clearTimeout(t); } catch(_) {} });
-    state.restTimeouts = [];
 
     const startTs = performance.now();
     let idx = 0;
     state.lastNoteMeasure = -1;
-    state.cursorNoteIndex = -1;
     if (state.judgeEvents && state.judgeEvents.length) {
       startJudgeTimeline(startTs);
     }
 
     function placeAtEvent(ev){
-      if (!state.cursorEl) return;
-      if (ev.isRest){
-        state.cursorEl.style.display = 'none';
-        return;
-      }
-      if (!state.cursorEnabled) return;
       const m = state.measureRects[ev.measureIndex];
-      if (!m) return;
-      state.cursorEl.style.display = 'block';
+      if (!m || !state.cursorEl) return;
       const fallback = getCursorPlacementForMeasure(m);
       const top = isFinite(ev.top) ? ev.top : fallback.top;
       const height = isFinite(ev.height) && ev.height > 0 ? ev.height : fallback.height;
       const width = (isFinite(ev.width) && ev.width > 0) ? ev.width : (state.cursorWidth || 12);
       positionCursorRect(ev.x - width / 2, top, width, height);
-      if (!state.judgeAligned && state.judgeStartMs && isFinite(ev.timeSec)) {
-        const expectedMs = state.judgeStartMs + ev.timeSec * 1000;
-        const deltaMs = performance.now() - expectedMs;
-        if (Math.abs(deltaMs) > 8) {
-          state.judgeStartMs += deltaMs;
-        }
-        state.judgeAligned = true;
-      }
     }
 
     function scheduleNext(){
-      if (idx >= noteEvents.length){
+      if (idx >= events.length){
         if (state.measureRects.length > 0) applyClipForIndex(state.measureRects.length - 1);
         completeChallengeCycle();
         return;
       }
-      const ev = noteEvents[idx];
+      const ev = events[idx];
       const delay = Math.max(0, ev.timeSec * 1000 - (performance.now() - startTs));
       state.noteTimerId = setTimeout(() => {
         if (!state.active) return;
-        const currentIndex = idx;
         if (ev.measureIndex > 0 && ev.measureIndex !== state.lastNoteMeasure){
           applyClipForIndex(ev.measureIndex - 1);
         }
-        placeAtEvent(ev);
-        state.cursorNoteIndex = currentIndex;
+        if (state.cursorEnabled) placeAtEvent(ev);
         state.lastNoteMeasure = ev.measureIndex;
         idx++;
-        if (idx >= noteEvents.length){
+        if (idx >= events.length){
           const totalSec = (state.measureRects.length || 0) * (state.measureDuration || 0);
           const remainSec = totalSec > 0 ? Math.max(0, totalSec - ev.timeSec) : 0;
           const holdMs = Math.max(220, remainSec * 1000);
@@ -3030,41 +2645,6 @@
         }
         scheduleNext();
       }, delay);
-    }
-
-    // Hide cursor during gaps between notes (rests)
-    if (state.cursorEl){
-      const eps = 1e-4;
-      for (let i=0; i<noteEvents.length; i++){
-        const current = noteEvents[i];
-        const next = noteEvents[i+1];
-        const end = current.timeSec + (current.durSec || 0);
-        const startGap = Math.max(0, end);
-        const endGap = next ? next.timeSec : null;
-        if (endGap != null && (endGap - startGap) > eps){
-          const hideDelay = Math.max(0, startGap * 1000 - (performance.now() - startTs));
-          const tid = setTimeout(() => {
-            if (!state.active || !state.cursorEl) return;
-            state.cursorEl.style.display = 'none';
-          }, hideDelay);
-          state.restTimeouts.push(tid);
-        } else if (endGap == null && (current.durSec || 0) > eps){
-          const hideDelay = Math.max(0, (current.timeSec + current.durSec) * 1000 - (performance.now() - startTs));
-          const tid = setTimeout(() => {
-            if (!state.active || !state.cursorEl) return;
-            state.cursorEl.style.display = 'none';
-          }, hideDelay);
-          state.restTimeouts.push(tid);
-        }
-      }
-      // If the first note starts after time 0, hide until it appears
-      if (noteEvents[0].timeSec > eps){
-        const tid = setTimeout(() => {
-          if (!state.active || !state.cursorEl) return;
-          state.cursorEl.style.display = 'none';
-        }, 0);
-        state.restTimeouts.push(tid);
-      }
     }
     scheduleNext();
   }
@@ -3197,8 +2777,8 @@
     }, 200);
 
     state.musicXML = null;
-    if (typeof window.generateIntervals === 'function') {
-      try { await window.generateIntervals(); } catch(_) {}
+    if (typeof window.generateChords === 'function') {
+      try { await window.generateChords(); } catch(_) {}
     }
     state.musicXML = getCurrentMelodyXML();
     if (!state.active || state.runId !== runId) return;
@@ -3219,8 +2799,8 @@
 
     if (!state.measureRects || !state.measureRects.length){
       state.musicXML = null;
-      if (typeof window.generateIntervals === 'function') {
-        try { await window.generateIntervals(); } catch(_) {}
+      if (typeof window.generateChords === 'function') {
+        try { await window.generateChords(); } catch(_) {}
       }
       state.musicXML = getCurrentMelodyXML();
       if (!state.active || state.runId !== runId) return;
@@ -3244,10 +2824,9 @@
     state.noteEvents = buildNoteTimeline(bpm);
     clearJudgementStyles();
     state.judgeWindowMs = Math.max(90, Math.min(220, (60 / Math.max(1, bpm)) * 0.35 * 1000));
-    state.judgeOctShift = null;
     const judgeWindows = computeJudgeWindows(bpm);
     state.judgeBeatDurationSec = judgeWindows.beatSec;
-    state.judgeEvents = buildJudgeTimeline(state.measureRects, bpm, state.noteEvents);
+    state.judgeEvents = buildJudgeTimeline(state.measureRects, bpm);
     const heights = state.measureRects.map(r => r.height).filter(h => isFinite(h) && h > 0);
     if (heights.length){
       const minH = Math.min(...heights);
@@ -3277,15 +2856,10 @@
     if (state.countdownTimerId) { clearInterval(state.countdownTimerId); state.countdownTimerId = null; }
     if (state.countInTimerId) { clearTimeout(state.countInTimerId); state.countInTimerId = null; }
     if (state.noteTimerId) { clearTimeout(state.noteTimerId); state.noteTimerId = null; }
-    if (state.restTimeouts && state.restTimeouts.length){
-      state.restTimeouts.forEach(t => { try { clearTimeout(t); } catch(_) {} });
-      state.restTimeouts = [];
-    }
     if (state.beatTimerId) { clearInterval(state.beatTimerId); state.beatTimerId = null; }
     if (state.metronomeTimerId) { clearInterval(state.metronomeTimerId); state.metronomeTimerId = null; }
     if (state.rafId) { cancelAnimationFrame(state.rafId); state.rafId = null; }
     stopJudgeTimeline();
-    state.judgeOctShift = null;
     state.judgeBeatDurationSec = 0;
     state.calibrationEnabled = false;
     state.calibrationOffsetSec = 0;
@@ -3308,7 +2882,7 @@
     }
     if (toggleEl && toggleEl.checked && state.autoRestart){
       const prep = Math.max(0, parseInt(($('challengePrepTime')?.value || '0'), 10));
-      const bpm = Math.max(40, Math.min(240, parseInt(($('challengeBPM')?.value || '80'), 10)));
+      const bpm = syncTempoAcrossInputs(getChallengeTempoValue());
       if (prep === 0 && state.lastBeatTimeMs){
         const tsInfo = getTimeSignatureInfo();
         const beatMs = (60/Math.max(1,bpm)) * (4/tsInfo.den) * 1000;
@@ -3380,6 +2954,18 @@
     updateModalModeToggleVisual();
   }
 
+  const challengeBpmEl = $('challengeBPM');
+  if (challengeBpmEl){
+    const onChallengeBpmChanged = () => {
+      if (isSyncingChallengeBpmInput) return;
+      const tempo = syncTempoAcrossInputs(challengeBpmEl.value);
+      challengeBpmEl.value = String(tempo);
+    };
+    challengeBpmEl.addEventListener('input', onChallengeBpmChanged);
+    challengeBpmEl.addEventListener('blur', onChallengeBpmChanged);
+  }
+  syncTempoAcrossInputs(getUnifiedTempoFromHeader());
+
   window.addEventListener('ic-midi-connection', (ev) => {
     const connected = !!(ev && ev.detail && ev.detail.connected);
     applyCalibrationAuto(connected);
@@ -3390,12 +2976,6 @@
     }
   } catch(_) {}
 
-  window.__icChallenge = {
-    isActive: () => !!(state.active && toggleEl && toggleEl.checked),
-    handleMidiNoteOn: (midi) => enqueueJudgeInput(midi),
-    clearJudgement: () => clearJudgementStyles()
-  };
-
   // expose APIs
   window.openChallengeModal = openChallengeModal;
   window.closeChallengeModal = closeChallengeModal;
@@ -3405,5 +2985,10 @@
   window.debugChallengeMeasures = debugShowMeasureRects;
   window._challengeState = state;
   window._applyClipForIndex = applyClipForIndex;
+  window.__icChallenge = {
+    isActive: () => !!(state.active && toggleEl && toggleEl.checked),
+    handleMidiNoteOn: (midi) => handleJudgeInput(midi),
+    clearJudgement: () => clearJudgementStyles()
+  };
 
 })();

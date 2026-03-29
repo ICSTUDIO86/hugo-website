@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="dark">
 <head>
-<script src="/js/url-language-force.js"></script>
-<script defer src="/js/current-year.js"></script>
 <script>
     (function() {
       var isFile = location.protocol === 'file:' || location.origin === 'null';
@@ -19,19 +17,13 @@
   </script>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
 
     <!-- Primary SEO Meta Tags -->
     <title>Jianpu Sight Reading Generator | Cognote - Professional Music Practice Tool</title>
     <meta name="description" content="Professional online sight reading tool for numbered notation (jianpu) practice. Generate random melodies with the same engine as the staff version, customize range, time signatures, rhythms, and keys. Render clean red-themed jianpu instantly. | 专业在线简谱视奏训练工具，复用旋律生成引擎，支持自定义音域、拍号、节奏、调号，红色主题的简谱渲染。">
     <meta name="keywords" content="jianpu, numbered notation, sight reading, melody generator, sight reading tool, music practice, 简谱, 简谱视奏, 视奏工具, 旋律生成器, 视奏训练, 乐谱生成, 音乐理论, 节奏练习, 听力训练, IC 视奏工具, Cognote">
     <meta name="author" content="Igor Chen - Cognote">
-    <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="theme-color" content="#ef4444">
     <link rel="canonical" href="https://icstudio.club/tools/jianpu-generator.html">
-    <link rel="alternate" hreflang="zh-CN" href="https://icstudio.club/tools/jianpu-generator.html">
-    <link rel="alternate" hreflang="en" href="https://icstudio.club/en/tools/jianpu-generator.html">
-    <link rel="alternate" hreflang="x-default" href="https://icstudio.club/tools/jianpu-generator.html">
     <link rel="icon" type="image/svg+xml" href="assets/icon/cognote.svg">
     <link rel="icon" type="image/png" href="assets/icon/cognote.png">
 
@@ -40,19 +32,18 @@
     <meta property="og:url" content="https://icstudio.club/tools/jianpu-generator.html">
     <meta property="og:title" content="Jianpu Sight Reading Generator | Cognote">
     <meta property="og:description" content="Professional online numbered-notation sight reading tool. Generate random melodies with customizable settings and render them as jianpu. Free 20 trials. | 专业简谱视奏训练工具，随机旋律生成，红色主题的简谱渲染。">
-    <meta property="og:image" content="https://icstudio.club/images/hero-jianpu-en.png">
+    <meta property="og:image" content="https://icstudio.club/images/ICLOGO.png">
     <meta property="og:image:alt" content="Cognote Jianpu Sight Reading Generator Interface">
     <meta property="og:site_name" content="Cognote">
-    <meta property="og:locale" content="zh_CN" />
-    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:locale:alternate" content="en_US">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@ICStudio86">
     <meta name="twitter:url" content="https://icstudio.club/tools/jianpu-generator.html">
     <meta name="twitter:title" content="Jianpu Sight Reading Generator | Cognote">
     <meta name="twitter:description" content="Professional numbered-notation sight reading tool for melody practice. Customizable range, rhythms, keys. Piano audio playback.">
-    <meta name="twitter:image" content="https://icstudio.club/images/hero-jianpu-en.png">
+    <meta name="twitter:image" content="https://icstudio.club/images/ICLOGO.png">
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -143,6 +134,25 @@
 
     <link rel="stylesheet" href="./IC 简谱视奏工具_files/apple-ui-styles.css">
     <link rel="stylesheet" href="assets/css/midi-input.css">
+    <style>
+      .function-btn {
+        justify-content: center;
+        text-align: center;
+      }
+      .function-btn #currentFunction {
+        flex: 1 1 auto;
+        text-align: center;
+      }
+      .function-menu .function-option {
+        justify-content: center;
+        text-align: center;
+      }
+      .function-menu .function-option span {
+        display: block;
+        width: 100%;
+        text-align: center;
+      }
+    </style>
     <script src="assets/js/sample-player.js?v=6"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function(){
@@ -161,11 +171,12 @@
         --secondary-blue: #333333;
         --accent-green: #111111;
         --accent-orange: #111111;
+        --jianpu-cursor-color: #e53935;
       }
       body.jianpu-theme .container { border-top: 8px solid rgba(183, 28, 28, 0.6); }
       body.jianpu-theme .header { background: rgba(17, 17, 17, 0.02); }
-      body.jianpu-theme .header .header-text h1,
-      body.jianpu-theme .header .header-text p { color: #1d1d1f; }
+      body.jianpu-theme .header .header-text h1 { color: #1d1d1f; }
+      body.jianpu-theme .header .header-text p { color: #86868b; }
       body.jianpu-theme .function-btn {
         background: #e53935;
         border-color: #e53935;
@@ -492,34 +503,29 @@
                 <div class="header-controls">
                     <div class="function-selector">
                         <button class="function-btn" id="functionBtn" onclick="toggleFunctionSelector()">
-                            🔢 <span id="currentFunction" data-i18n="app.jianpuMode">简谱视奏</span>
+                            <span id="currentFunction" data-i18n="app.jianpuMode">简谱视奏</span>
                         </button>
                         <div class="function-menu" id="functionMenu">
                             <div class="function-option" onclick="switchFunction('melody')">
-                                <span class="function-icon">🎵</span>
                                 <span data-i18n="app.melodyMode">旋律视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('jianpu')">
-                                <span class="function-icon">🔢</span>
                                 <span data-i18n="app.jianpuMode">简谱视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('interval')">
-                                <span class="function-icon">🎼</span>
                                 <span data-i18n="app.intervalMode">音程视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('chord')">
-                                <span class="function-icon">🎹</span>
                                 <span data-i18n="app.chordMode">和弦视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('rhythm')">
-                                <span class="function-icon">🥁</span>
                                 <span data-i18n="app.rhythmMode">节奏视奏</span>
                             </div>
                         </div>
                     </div>
                     <div class="settings-dropdown">
                         <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">
-                            ⚙️ <span data-i18n="settings.title">设置</span>
+                            <span data-i18n="settings.title">设置</span>
                         </button>
                     </div>
                 </div>
@@ -733,7 +739,7 @@
                 <strong>Cognote</strong> - 专业级视奏旋律生成器
             </p>
             <p style="margin: 8px 0 0 0; font-size: 13px; opacity: 0.8;">
-                Copyright © <span data-current-year>2026</span>. All rights reserved. Igor Chen - 
+                Copyright © 2026. All rights reserved. Igor Chen - 
                 <a href="https://icstudio.club/" target="_blank" style="color: var(--primary-blue); text-decoration: none;">icstudio.club</a>
             </p>
         </div>
@@ -1096,8 +1102,8 @@
                         <div class="frequency-item">
                             <label for="freq-16th" style="font-size: 0.9rem; color: #495057; margin-bottom: 5px;" data-i18n="rhythm.freq.sixteenth">十六分音符频率:</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <input type="range" id="freq-16th" min="0" max="100" value="6" style="flex: 1;">
-                                <span id="freq-16th-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">6%</span>
+                                <input type="range" id="freq-16th" min="0" max="100" value="20" style="flex: 1;">
+                                <span id="freq-16th-value" style="min-width: 40px; font-size: 0.9rem; font-weight: 600; color: #667eea;">20%</span>
                             </div>
                         </div>
                         <div class="frequency-item" id="freq-triplet-item">
@@ -1881,6 +1887,22 @@
             }
         }
 
+        function getToolParameterBootstrapPreferences(preferences) {
+            const nextPreferences = (preferences && typeof preferences === 'object')
+                ? { ...preferences }
+                : {};
+            const savedTheme = localStorage.getItem('preferredTheme');
+            const savedLanguage = localStorage.getItem('preferredLanguage');
+
+            if (savedTheme) {
+                nextPreferences.theme = savedTheme;
+            }
+            if (savedLanguage && translations[savedLanguage]) {
+                nextPreferences.language = savedLanguage;
+            }
+            return nextPreferences;
+        }
+
         function finalizeToolParameterApply() {
             const syncFnNames = [
                 'saveRhythmSettings',
@@ -2043,7 +2065,7 @@
             }
             const savedPayload = readSavedToolParameterPayload();
             if (savedPayload && savedPayload.controls) {
-                applyToolParameterPreferences(savedPayload.preferences);
+                applyToolParameterPreferences(getToolParameterBootstrapPreferences(savedPayload.preferences));
                 applyToolParameterSnapshot(savedPayload.controls);
                 finalizeToolParameterApply();
             }
@@ -2248,6 +2270,7 @@
             bars: 1,
             steps: []
         };
+        let metronomeBeatOnlyDuringPlayback = false;
 
         function normalizeMetronomeSubdivision(value) {
             const normalized = parseInt(value, 10);
@@ -2327,12 +2350,13 @@
             return { beats, den };
         }
 
-        function getMetronomePatternInfo(tempoOverride) {
+        function getMetronomePatternInfo(tempoOverride, beatOnly = false) {
             const tempo = Math.max(1, tempoOverride || metronomeTempo);
-            if (!metronomePattern.enabled) {
+            if (beatOnly || !metronomePattern.enabled) {
+                const tsInfo = getMetronomeTimeSignatureInfo();
                 return {
                     usePattern: false,
-                    stepDuration: 60.0 / tempo
+                    stepDuration: (60.0 / tempo) * (4 / tsInfo.den)
                 };
             }
 
@@ -2674,7 +2698,7 @@
                 if (!initializeMetronomeAudio()) return;
             }
 
-            const patternInfo = getMetronomePatternInfo(metronomeTempo);
+            const patternInfo = getMetronomePatternInfo(metronomeTempo, metronomeBeatOnlyDuringPlayback);
             const stepDuration = patternInfo.stepDuration; // 每步的秒数
             const lookahead = 0.1; // 提前 100ms 调度
             const scheduleAheadTime = 0.2; // 调度未来 200ms 的节拍
@@ -2700,7 +2724,7 @@
         }
 
         // 启动节拍器 - 使用精确 Web Audio API 调度
-        function startMetronome() {
+        function startMetronome(startAtTime = null, beatOffset = 0) {
             loadMetronomePatternSettings();
             const headerInput = document.getElementById('headerMetronomeBpm');
             const tempo = parseInt(headerInput ? headerInput.value : metronomeTempo) || 60;
@@ -2723,28 +2747,29 @@
 
             isMetronomeRunning = true;
 
-            // 🔧 关键修复：使用 AudioContext 时间 0 作为全局节拍网格的起点
-            // 这样所有音乐和节拍器都在同一个网格上
-            metronomeStartTime = 0; // 全局网格起点
-
-            const patternInfo = getMetronomePatternInfo(metronomeTempo);
-            const beatDuration = patternInfo.stepDuration;
+            const patternInfo = getMetronomePatternInfo(metronomeTempo, metronomeBeatOnlyDuringPlayback);
+            const stepDuration = patternInfo.stepDuration;
+            const stepMultiplier = patternInfo.usePattern ? Math.max(1, patternInfo.subdivision || 1) : 1;
             const now = metronomeAudioContext.currentTime;
+            const minLookahead = 0.02;
 
-            // 计算当前应该在第几拍（从时间 0 开始）
-            const currentBeatNumber = Math.floor(now / beatDuration);
-            const nextBeatNumber = currentBeatNumber + 1;
-            const nextBeatTime = nextBeatNumber * beatDuration;
-
-            // 确保下一拍至少在未来 50ms，否则跳过
-            const minLookahead = 0.05;
-            if (nextBeatTime < now + minLookahead) {
-                metronomeCurrentBeat = nextBeatNumber + 1;
+            if (typeof startAtTime === 'number' && isFinite(startAtTime)) {
+                const normalizedBeatOffset = Math.max(0, Number(beatOffset) || 0);
+                metronomeStartTime = startAtTime - (normalizedBeatOffset * stepMultiplier * stepDuration);
+                metronomeCurrentBeat = Math.max(0, Math.ceil(((now + minLookahead) - metronomeStartTime) / stepDuration));
+                console.log(`🎵 节拍器对齐播放起点: ${metronomeTempo} BPM, 当前=${now.toFixed(3)}s, 播放起点=${startAtTime.toFixed(3)}s, 拍位偏移=${normalizedBeatOffset.toFixed(3)}`);
             } else {
-                metronomeCurrentBeat = nextBeatNumber;
+                metronomeStartTime = 0;
+                const currentBeatNumber = Math.floor(now / stepDuration);
+                const nextBeatNumber = currentBeatNumber + 1;
+                const nextBeatTime = nextBeatNumber * stepDuration;
+                if (nextBeatTime < now + 0.05) {
+                    metronomeCurrentBeat = nextBeatNumber + 1;
+                } else {
+                    metronomeCurrentBeat = nextBeatNumber;
+                }
+                console.log(`🎵 节拍器对齐全局网格: ${metronomeTempo} BPM, 当前=${now.toFixed(3)}s, 从第${metronomeCurrentBeat}步开始 (时间=${(metronomeCurrentBeat * stepDuration).toFixed(3)}s)`);
             }
-
-            console.log(`🎵 节拍器对齐全局网格: ${metronomeTempo} BPM, 当前=${now.toFixed(3)}s, 从第${metronomeCurrentBeat}步开始 (时间=${(metronomeCurrentBeat * beatDuration).toFixed(3)}s)`);
 
             // 立即调度第一批节拍
             scheduleMetronomeBeat();
@@ -3043,6 +3068,7 @@
                 'controls.previous': '上一条',
                 'controls.next': '下一条',
                 'controls.play': '播放',
+                'controls.pause': '暂停',
                 'controls.stop': '停止',
                 'controls.tempo': '速度',
                 'controls.playbackNote': '播放速度跟随节拍器设置',
@@ -3249,6 +3275,7 @@
                 'controls.previous': '上一條',
                 'controls.next': '下一條',
                 'controls.play': '播放',
+                'controls.pause': '暫停',
                 'controls.stop': '停止',
                 'controls.tempo': '速度',
                 'controls.playbackNote': '播放速度跟隨節拍器設置',
@@ -3418,11 +3445,11 @@
             'en': {
                 'app.title': 'Cognote - Jianpu Sight-Reading Generator',
                 'app.subtitle': 'Professional Jianpu Rendering & Music Theory Tool',
-                'app.jianpuMode': 'Jianpu Sight-Reading',
-                'app.melodyMode': 'Melody Sight-Reading',
-                'app.intervalMode': 'Interval Sight-Reading',
-                'app.chordMode': 'Chord Sight-Reading',
-                'app.rhythmMode': 'Rhythm Sight-Reading',
+                'app.jianpuMode': 'Jianpu',
+                'app.melodyMode': 'Melody',
+                'app.intervalMode': 'Interval',
+                'app.chordMode': 'Chord',
+                'app.rhythmMode': 'Rhythm',
                 'controls.interval': 'Interval Range',
                 'controls.intervalSettings': 'Interval Settings',
                 'controls.measures': 'Measures',
@@ -3455,6 +3482,7 @@
                 'controls.previous': 'Previous',
                 'controls.next': 'Next',
                 'controls.play': 'Play',
+                'controls.pause': 'Pause',
                 'controls.stop': 'Stop',
                 'controls.tempo': 'Tempo',
                 'controls.playbackNote': 'Playback follows metronome tempo',
@@ -3697,6 +3725,9 @@
                     }
                 }
             });
+            if (typeof updatePlayButton === 'function') {
+                updatePlayButton();
+            }
         }
 
         // 页面加载时初始化语言
@@ -4060,6 +4091,7 @@
                         updatePlayButton();
                     }
                 }
+                clearMelodyPlaybackSelection({ resetTimeline: true });
 
                 // 清除空谱子提示信息
                 clearEmptyScoreMessage();
@@ -4110,6 +4142,7 @@
                         updatePlayButton();
                     }
                 }
+                clearMelodyPlaybackSelection({ resetTimeline: true });
                 return originalPreviousMelody.apply(this, args);
             };
         }
@@ -4142,6 +4175,7 @@
                         updatePlayButton();
                     }
                 }
+                clearMelodyPlaybackSelection({ resetTimeline: true });
                 return originalNextMelody.apply(this, args);
             };
         }
@@ -4156,8 +4190,12 @@
             const scoreContainer = document.getElementById('score');
             if (scoreContainer) {
                 scoreContainer.addEventListener('click', function(event) {
-                    console.log('🎵 用户点击乐谱容器，触发生成旋律');
-                    // 检查是否点击的是乐谱内容而不是控制按钮
+                    if (isMelodyPlaybackSelectableTarget(event.target) ||
+                        event.target.closest('svg') ||
+                        isPointInsideRenderedMelodyScore(event.clientX, event.clientY)) {
+                        return;
+                    }
+                    console.log('🎵 用户点击乐谱空白区域，触发生成旋律');
                     if (!event.target.closest('button') && !event.target.closest('.control')) {
                         generateMelody();
                     }
@@ -4166,6 +4204,7 @@
                 scoreContainer.style.cursor = 'pointer';
                 scoreContainer.title = '点击生成新旋律';
             }
+            initializeMelodyPlaybackCursorSystem();
         });
 
         // ====== 直接在HTML中定义的简单播放器 ======
@@ -4176,6 +4215,989 @@
         window.melodyMetronomeSyncTimeout = null; // 节拍器同步的 setTimeout ID
         window.melodyPlaybackRunId = 0;
         window.melodyPlaybackFinishTimer = null;
+        window.melodyMetronomeStopAfterPlayback = false;
+
+        function getMelodyPlaybackCursorState() {
+            if (!window.melodyPlaybackCursorState) {
+                window.melodyPlaybackCursorState = {
+                    timeline: [],
+                    cacheKey: '',
+                    selectedIndex: -1,
+                    manualSelectedIndex: -1,
+                    manualSelectedSourceIndex: -1,
+                    cursorEl: null,
+                    measureRects: [],
+                    measureNoteRanges: [],
+                    refreshTimer: null,
+                    observer: null,
+                    followTimers: []
+                };
+            }
+            return window.melodyPlaybackCursorState;
+        }
+
+        function getCurrentMelodyPlaybackData() {
+            if (typeof getCurrentMelodyData === 'function') {
+                const data = getCurrentMelodyData();
+                if (data) return data;
+            }
+            if (typeof melodyHistory !== 'undefined' && typeof currentHistoryIndex !== 'undefined' &&
+                melodyHistory && melodyHistory.length > 0 && currentHistoryIndex >= 0 &&
+                currentHistoryIndex < melodyHistory.length) {
+                return melodyHistory[currentHistoryIndex];
+            }
+            return null;
+        }
+
+        function getMelodyPlaybackCacheKey(melodyData) {
+            const historyKey = (typeof currentHistoryIndex !== 'undefined' && Number.isFinite(currentHistoryIndex))
+                ? currentHistoryIndex
+                : -1;
+            const seedKey = Number.isFinite(melodyData?.seed) ? melodyData.seed : 'noseed';
+            const xml = melodyData && typeof melodyData.musicXML === 'string' ? melodyData.musicXML : '';
+            let hash = 0;
+            for (let i = 0; i < xml.length; i += 1) {
+                hash = ((hash * 31) + xml.charCodeAt(i)) >>> 0;
+            }
+            return `${historyKey}:${seedKey}:${xml.length}:${hash}`;
+        }
+
+        function findMelodyPlaybackTimelineIndexBySourceIndex(sourceIndex, timeline = null) {
+            if (!Number.isFinite(sourceIndex) || sourceIndex < 0) return -1;
+            const list = Array.isArray(timeline) ? timeline : getMelodyPlaybackCursorState().timeline;
+            return list.findIndex((event) => event && event.sourceIndex === sourceIndex);
+        }
+
+        function getMelodyPlaybackPaintTarget(el) {
+            if (!el) return null;
+            return el.closest('g.vf-stavenote, g.vf-note, g.vf-rest, g.vf-gracenote, g.vf-gracenote-group, g.vf-ghost-note, g.vf-textnote') ||
+                el.closest('g') ||
+                el;
+        }
+
+        function getMelodyPlaybackGlyphTarget(el) {
+            if (!el || !el.closest) return getMelodyPlaybackPaintTarget(el);
+            const textTarget = el.closest('text');
+            if (textTarget) return textTarget;
+            return el.closest('.vf-notehead, .vf-rest, .vf-textnote, .vf-gracenote, .vf-ghost-note') ||
+                getMelodyPlaybackPaintTarget(el);
+        }
+
+        function isMelodyPlaybackSelectableTarget(target) {
+            if (!target || !target.closest) return false;
+            if (target.closest('text')) {
+                const text = (target.closest('text').textContent || '').trim();
+                if (/^[0-7]$/.test(text)) return true;
+            }
+            return !!target.closest('g.vf-stavenote, g.vf-note, g.vf-rest, g.vf-gracenote, g.vf-gracenote-group, g.vf-ghost-note, g.vf-textnote, .vf-notehead, .vf-rest, .vf-stem, .vf-flag, .vf-beam, .vf-accidental, .vf-dot');
+        }
+
+        function getMelodyScoreRelativePoint(clientX, clientY) {
+            const scoreElement = document.getElementById('score');
+            if (!scoreElement) return null;
+            const rect = scoreElement.getBoundingClientRect();
+            return {
+                x: clientX - rect.left + scoreElement.scrollLeft,
+                y: clientY - rect.top + scoreElement.scrollTop
+            };
+        }
+
+        function isPointInsideRenderedMelodyScore(clientX, clientY) {
+            const scoreElement = document.getElementById('score');
+            const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+            if (!scoreElement || !svg) return false;
+            const svgRect = svg.getBoundingClientRect();
+            return clientX >= svgRect.left &&
+                clientX <= svgRect.right &&
+                clientY >= svgRect.top &&
+                clientY <= svgRect.bottom;
+        }
+
+        function ensureMelodyPlaybackCursor() {
+            const cursorState = getMelodyPlaybackCursorState();
+            const scoreElement = document.getElementById('score');
+            if (!scoreElement) return null;
+            if (!cursorState.cursorEl || !cursorState.cursorEl.isConnected) {
+                const cursor = document.createElement('div');
+                cursor.id = 'melodyPlaybackCursor';
+                cursor.style.position = 'absolute';
+                cursor.style.top = '0';
+                cursor.style.width = '12px';
+                cursor.style.height = '100%';
+                cursor.style.left = '0';
+                cursor.style.background = 'rgba(229,57,53,0.25)';
+                cursor.style.border = '1px solid rgba(229,57,53,0.4)';
+                cursor.style.borderRadius = '4px';
+                cursor.style.boxShadow = '0 0 0 0 rgba(229,57,53,0.35)';
+                cursor.style.transition = 'box-shadow 0.12s ease';
+                cursor.style.pointerEvents = 'none';
+                cursor.style.display = 'none';
+                scoreElement.appendChild(cursor);
+                cursorState.cursorEl = cursor;
+            }
+            return cursorState.cursorEl;
+        }
+
+        function hideMelodyPlaybackCursor() {
+            const cursorState = getMelodyPlaybackCursorState();
+            if (cursorState.cursorEl) {
+                cursorState.cursorEl.style.display = 'none';
+            }
+        }
+
+        function clearMelodyPlaybackSelection(options = {}) {
+            const cursorState = getMelodyPlaybackCursorState();
+            stopMelodyPlaybackCursorFollow(false);
+            cursorState.selectedIndex = -1;
+            cursorState.manualSelectedIndex = -1;
+            cursorState.manualSelectedSourceIndex = -1;
+            if (options.resetTimeline) {
+                cursorState.timeline = [];
+                cursorState.cacheKey = '';
+                cursorState.measureRects = [];
+                cursorState.measureNoteRanges = [];
+            }
+            hideMelodyPlaybackCursor();
+        }
+
+        function getMelodyCursorPlacementForMeasure(measureRect, measureIndex) {
+            const cursorState = getMelodyPlaybackCursorState();
+            const baseHeight = Math.max(2, measureRect.height * 0.9);
+            const pad = Math.max(10, measureRect.height * 0.2);
+            let height = baseHeight + pad;
+            let top = measureRect.y + (measureRect.height - baseHeight) / 2 - pad / 2;
+            const range = Array.isArray(cursorState.measureNoteRanges) ? cursorState.measureNoteRanges[measureIndex] : null;
+            if (range && isFinite(range.min) && isFinite(range.max)) {
+                const minY = range.min - pad;
+                const maxY = range.max + pad;
+                const needed = Math.max(0, maxY - minY);
+                if (needed > height) height = needed;
+                top = minY - Math.max(0, (height - needed) / 2);
+            }
+            return { top, height };
+        }
+
+        function setMelodyPlaybackSelectionByIndex(index) {
+            const cursorState = getMelodyPlaybackCursorState();
+            const event = cursorState.timeline[index];
+            const measureRect = event && cursorState.measureRects[event.measureIndex];
+            const cursor = ensureMelodyPlaybackCursor();
+            if (!event || !measureRect || !cursor || !isFinite(event.x)) {
+                clearMelodyPlaybackSelection();
+                return false;
+            }
+            cursorState.selectedIndex = index;
+            const placement = getMelodyCursorPlacementForMeasure(measureRect, event.measureIndex);
+            const eventSpan = (isFinite(event.cursorLeft) && isFinite(event.cursorRight))
+                ? Math.max(8, event.cursorRight - event.cursorLeft)
+                : null;
+            const eventWidth = eventSpan ? Math.max(12, eventSpan) : 12;
+            const eventLeft = isFinite(event.cursorLeft)
+                ? (event.cursorLeft - Math.max(0, (eventWidth - eventSpan) / 2))
+                : (event.x - eventWidth / 2);
+            cursor.style.transform = `translateX(${eventLeft}px)`;
+            cursor.style.width = `${eventWidth}px`;
+            cursor.style.top = `${placement.top}px`;
+            cursor.style.height = `${placement.height}px`;
+            cursor.style.display = 'block';
+            cursor.style.boxShadow = '0 0 0 0 rgba(229,57,53,0.35)';
+            return true;
+        }
+
+        function setManualMelodyPlaybackSelectionByIndex(index) {
+            const cursorState = getMelodyPlaybackCursorState();
+            const event = cursorState.timeline[index];
+            cursorState.manualSelectedIndex = index;
+            cursorState.manualSelectedSourceIndex = Number.isFinite(event?.sourceIndex) ? event.sourceIndex : -1;
+            return setMelodyPlaybackSelectionByIndex(index);
+        }
+
+        function restoreManualMelodyPlaybackSelection() {
+            const cursorState = getMelodyPlaybackCursorState();
+            const sourceIndexMatch = findMelodyPlaybackTimelineIndexBySourceIndex(cursorState.manualSelectedSourceIndex);
+            if (sourceIndexMatch >= 0) {
+                cursorState.manualSelectedIndex = sourceIndexMatch;
+                return setMelodyPlaybackSelectionByIndex(sourceIndexMatch);
+            }
+            if (cursorState.manualSelectedIndex >= 0) {
+                return setMelodyPlaybackSelectionByIndex(cursorState.manualSelectedIndex);
+            }
+            hideMelodyPlaybackCursor();
+            cursorState.selectedIndex = -1;
+            return false;
+        }
+
+        function collectMelodyPlaybackCandidates(measureRects) {
+            const scoreElement = document.getElementById('score');
+            const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+            if (!scoreElement || !svg) return { byMeasure: [], all: [] };
+            const containerRect = scoreElement.getBoundingClientRect();
+            const selector = 'g.vf-stavenote, g.vf-note, g.vf-rest, g.vf-gracenote, g.vf-gracenote-group, g.vf-ghost-note, g.vf-textnote, .vf-notehead, .vf-rest, text';
+            const all = [];
+            const seen = new Set();
+            svg.querySelectorAll(selector).forEach((node) => {
+                const target = getMelodyPlaybackGlyphTarget(node);
+                if (!target || seen.has(target)) return;
+                if (target.tagName && target.tagName.toLowerCase() === 'text') {
+                    const text = (target.textContent || '').trim();
+                    if (!/^[0-7]$/.test(text)) return;
+                }
+                const rect = target.getBoundingClientRect ? target.getBoundingClientRect() : null;
+                if (!rect || (rect.width <= 0 && rect.height <= 0)) return;
+                seen.add(target);
+                all.push({
+                    el: target,
+                    cx: rect.left - containerRect.left + scoreElement.scrollLeft + rect.width / 2,
+                    cy: rect.top - containerRect.top + scoreElement.scrollTop + rect.height / 2,
+                    xLeft: rect.left - containerRect.left + scoreElement.scrollLeft,
+                    xRight: rect.left - containerRect.left + scoreElement.scrollLeft + rect.width
+                });
+            });
+            const byMeasure = measureRects.map(() => []);
+            all.forEach((candidate) => {
+                for (let i = 0; i < measureRects.length; i += 1) {
+                    const measureRect = measureRects[i];
+                    const inX = candidate.cx >= (measureRect.x - 8) && candidate.cx <= (measureRect.x + measureRect.width + 8);
+                    const inY = candidate.cy >= (measureRect.y - measureRect.height) && candidate.cy <= (measureRect.y + measureRect.height * 2);
+                    if (inX && inY) {
+                        byMeasure[i].push(candidate);
+                        break;
+                    }
+                }
+            });
+            return { byMeasure, all };
+        }
+
+        function getMelodyTimeUnitsPerMeasure(melodyData) {
+            const timeSignature = getTimeSignature(melodyData);
+            const numerator = Math.max(1, parseInt(timeSignature?.numerator, 10) || 4);
+            const denominator = Math.max(1, parseInt(timeSignature?.denominator, 10) || 4);
+            return numerator * (4 / denominator);
+        }
+
+        function collectJianpuPlaybackMeasureRects() {
+            const scoreElement = document.getElementById('score');
+            const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+            if (!scoreElement || !svg) return [];
+            const containerRect = scoreElement.getBoundingClientRect();
+            const verticals = [];
+
+            svg.querySelectorAll('line').forEach((line) => {
+                const rect = line.getBoundingClientRect ? line.getBoundingClientRect() : null;
+                if (!rect || rect.height <= 18 || rect.width > 8) return;
+                verticals.push({
+                    x: rect.left - containerRect.left + scoreElement.scrollLeft + rect.width / 2,
+                    top: rect.top - containerRect.top + scoreElement.scrollTop,
+                    bottom: rect.bottom - containerRect.top + scoreElement.scrollTop,
+                    height: rect.height
+                });
+            });
+
+            if (verticals.length < 2) return [];
+
+            verticals.sort((a, b) => {
+                const dy = (a.top + a.bottom) * 0.5 - (b.top + b.bottom) * 0.5;
+                if (Math.abs(dy) > 12) return dy;
+                return a.x - b.x;
+            });
+
+            const systems = [];
+            verticals.forEach((line) => {
+                const centerY = (line.top + line.bottom) * 0.5;
+                const system = systems.find((item) => Math.abs(item.centerY - centerY) <= 18);
+                if (system) {
+                    system.lines.push(line);
+                    system.centerY = (system.centerY * system.count + centerY) / (system.count + 1);
+                    system.count += 1;
+                } else {
+                    systems.push({
+                        lines: [line],
+                        centerY,
+                        count: 1
+                    });
+                }
+            });
+
+            const measureRects = [];
+            systems
+                .sort((a, b) => a.centerY - b.centerY)
+                .forEach((system) => {
+                    const xs = [];
+                    let top = Infinity;
+                    let bottom = -Infinity;
+                    system.lines
+                        .sort((a, b) => a.x - b.x)
+                        .forEach((line) => {
+                            top = Math.min(top, line.top);
+                            bottom = Math.max(bottom, line.bottom);
+                            const lastX = xs[xs.length - 1];
+                            if (lastX == null || Math.abs(line.x - lastX) > 6) {
+                                xs.push(line.x);
+                            }
+                        });
+
+                    if (xs.length < 2 || !isFinite(top) || !isFinite(bottom)) return;
+                    for (let i = 0; i < xs.length - 1; i += 1) {
+                        const width = xs[i + 1] - xs[i];
+                        if (width <= 12) continue;
+                        measureRects.push({
+                            x: xs[i],
+                            y: top,
+                            width,
+                            height: Math.max(24, bottom - top)
+                        });
+                    }
+                });
+
+            return measureRects;
+        }
+
+        function collectJianpuPlaybackGlyphs(measureRects) {
+            const scoreElement = document.getElementById('score');
+            const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+            if (!scoreElement || !svg) {
+                return { glyphs: [], noteRanges: measureRects.map(() => null) };
+            }
+
+            const containerRect = scoreElement.getBoundingClientRect();
+            const noteRanges = measureRects.map(() => ({ min: Infinity, max: -Infinity }));
+            const glyphs = Array.from(svg.querySelectorAll('text'))
+                .map((el) => {
+                    const text = (el.textContent || '').trim();
+                    if (!/^[0-7]$/.test(text)) return null;
+                    const rect = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+                    if (!rect || rect.width <= 0 || rect.height <= 0) return null;
+                    const cx = rect.left - containerRect.left + scoreElement.scrollLeft + rect.width / 2;
+                    const cy = rect.top - containerRect.top + scoreElement.scrollTop + rect.height / 2;
+                    let measureIndex = -1;
+                    for (let i = 0; i < measureRects.length; i += 1) {
+                        const measureRect = measureRects[i];
+                        if (cx >= measureRect.x - 8 &&
+                            cx <= measureRect.x + measureRect.width + 8 &&
+                            cy >= measureRect.y - 24 &&
+                            cy <= measureRect.y + measureRect.height + 24) {
+                            measureIndex = i;
+                            if (noteRanges[i]) {
+                                noteRanges[i].min = Math.min(noteRanges[i].min, rect.top - containerRect.top + scoreElement.scrollTop);
+                                noteRanges[i].max = Math.max(noteRanges[i].max, rect.bottom - containerRect.top + scoreElement.scrollTop);
+                            }
+                            break;
+                        }
+                    }
+                    return {
+                        el,
+                        text,
+                        cx,
+                        cy,
+                        xLeft: rect.left - containerRect.left + scoreElement.scrollLeft,
+                        xRight: rect.right - containerRect.left + scoreElement.scrollLeft,
+                        top: rect.top - containerRect.top + scoreElement.scrollTop,
+                        bottom: rect.bottom - containerRect.top + scoreElement.scrollTop,
+                        measureIndex
+                    };
+                })
+                .filter(Boolean)
+                .sort((a, b) => {
+                    if (a.measureIndex >= 0 && b.measureIndex >= 0 && a.measureIndex !== b.measureIndex) {
+                        return a.measureIndex - b.measureIndex;
+                    }
+                    if (a.measureIndex >= 0 && b.measureIndex < 0) return -1;
+                    if (a.measureIndex < 0 && b.measureIndex >= 0) return 1;
+                    const dy = a.cy - b.cy;
+                    if (Math.abs(dy) > 28) return dy;
+                    return a.cx - b.cx;
+                });
+
+            return {
+                glyphs,
+                noteRanges: noteRanges.map((range) => (isFinite(range.min) && isFinite(range.max) ? range : null))
+            };
+        }
+
+        function collectRenderedJianpuPlaybackEvents(measureRects) {
+            const scoreElement = document.getElementById('score');
+            const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+            if (!scoreElement || !svg) {
+                return { events: [], noteRanges: measureRects.map(() => null) };
+            }
+
+            const containerRect = scoreElement.getBoundingClientRect();
+            const noteRanges = measureRects.map(() => ({ min: Infinity, max: -Infinity }));
+            const groups = Array.from(svg.querySelectorAll('g[sn-tag^="note-"]'));
+            const events = groups
+                .map((group) => {
+                    const groupText = (group.textContent || '').trim();
+                    if (!groupText || groupText === '-') return null;
+
+                    const digitTexts = Array.from(group.querySelectorAll('text'))
+                        .filter((el) => /^[0-7]$/.test((el.textContent || '').trim()));
+                    const primaryText = digitTexts
+                        .map((el) => {
+                            const rect = el.getBoundingClientRect ? el.getBoundingClientRect() : null;
+                            const fontSize = parseFloat(el.getAttribute('font-size') || '0') || 0;
+                            return { el, rect, fontSize };
+                        })
+                        .filter((item) => item.rect && item.rect.width > 0 && item.rect.height > 0)
+                        .sort((a, b) => {
+                            if (b.fontSize !== a.fontSize) return b.fontSize - a.fontSize;
+                            return (b.rect.width * b.rect.height) - (a.rect.width * a.rect.height);
+                        })[0] || null;
+
+                    const rect = primaryText?.rect || (group.getBoundingClientRect ? group.getBoundingClientRect() : null);
+                    if (!rect || rect.width <= 0 || rect.height <= 0) return null;
+
+                    const measureGroup = group.closest('g[sn-tag^="measure-"]');
+                    const measureTag = measureGroup ? measureGroup.getAttribute('sn-tag') || '' : '';
+                    const parsedMeasureIndex = parseInt((measureTag.match(/measure-(\d+)/) || [])[1], 10);
+                    const cx = rect.left - containerRect.left + scoreElement.scrollLeft + rect.width / 2;
+                    const cy = rect.top - containerRect.top + scoreElement.scrollTop + rect.height / 2;
+
+                    let measureIndex = Number.isInteger(parsedMeasureIndex) ? parsedMeasureIndex : -1;
+                    if (!(measureIndex >= 0 && measureIndex < measureRects.length)) {
+                        measureIndex = measureRects.findIndex((measureRect) =>
+                            cx >= measureRect.x - 8 &&
+                            cx <= measureRect.x + measureRect.width + 8 &&
+                            cy >= measureRect.y - 24 &&
+                            cy <= measureRect.y + measureRect.height + 24
+                        );
+                    }
+
+                    if (measureIndex >= 0 && noteRanges[measureIndex] && primaryText) {
+                        noteRanges[measureIndex].min = Math.min(noteRanges[measureIndex].min, rect.top - containerRect.top + scoreElement.scrollTop);
+                        noteRanges[measureIndex].max = Math.max(noteRanges[measureIndex].max, rect.bottom - containerRect.top + scoreElement.scrollTop);
+                    }
+
+                    return {
+                        x: cx,
+                        measureIndex: measureIndex >= 0 ? measureIndex : null,
+                        cursorLeft: rect.left - containerRect.left + scoreElement.scrollLeft,
+                        cursorRight: rect.right - containerRect.left + scoreElement.scrollLeft,
+                        elements: [primaryText?.el || group].filter(Boolean),
+                        renderedType: (primaryText?.el?.textContent || '').trim() === '0' ? 'rest' : 'note'
+                    };
+                })
+                .filter(Boolean);
+
+            return {
+                events,
+                noteRanges: noteRanges.map((range) => (isFinite(range.min) && isFinite(range.max) ? range : null))
+            };
+        }
+
+        function pickClosestMelodyPlaybackCandidate(list, x, y, used) {
+            if (!list || !list.length) return null;
+            let best = null;
+            let bestDist = Infinity;
+            for (const candidate of list) {
+                if (used && used.has(candidate.el)) continue;
+                const dist = Math.abs(candidate.cx - x) + Math.abs(candidate.cy - y);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    best = candidate;
+                }
+            }
+            if (best && bestDist <= 36) {
+                if (used) used.add(best.el);
+                return best;
+            }
+            return null;
+        }
+
+        function buildGraphicPlaybackEvents(measureRects) {
+            try {
+                const challengeApi = window.__icChallenge;
+                if (!challengeApi || typeof challengeApi.getUnitScale !== 'function' || typeof challengeApi.toScorePx !== 'function') {
+                    return { events: [], noteRanges: measureRects.map(() => null) };
+                }
+                if (typeof osmd === 'undefined' || !osmd || !osmd.GraphicSheet || !Array.isArray(osmd.GraphicSheet.MeasureList)) {
+                    return { events: [], noteRanges: measureRects.map(() => null) };
+                }
+                const scale = challengeApi.getUnitScale();
+                if (!scale) return { events: [], noteRanges: measureRects.map(() => null) };
+                const sheet = osmd.sheet || osmd.MusicSheet || null;
+                const sourceMeasures = sheet && Array.isArray(sheet.sourceMeasures) ? sheet.sourceMeasures : null;
+                if (!sourceMeasures || !sourceMeasures.length) return { events: [], noteRanges: measureRects.map(() => null) };
+
+                const noteRanges = measureRects.map(() => ({ min: Infinity, max: -Infinity }));
+                const tiedNoteIds = new Set();
+                try {
+                    sourceMeasures.forEach((sourceMeasure) => {
+                        const containers = sourceMeasure.VerticalSourceStaffEntryContainers || sourceMeasure.verticalSourceStaffEntryContainers || [];
+                        containers.forEach((container) => {
+                            const staffEntries = container?.StaffEntries || container?.staffEntries || [];
+                            staffEntries.forEach((staffEntry) => {
+                                const voiceEntries = staffEntry?.VoiceEntries || staffEntry?.voiceEntries || [];
+                                voiceEntries.forEach((voiceEntry) => {
+                                    const notes = voiceEntry?.Notes || voiceEntry?.notes || [];
+                                    notes.forEach((note) => {
+                                        if (note?.tie && Array.isArray(note.tie.notes)) {
+                                            note.tie.notes.slice(1).forEach((tiedNote) => {
+                                                const noteId = tiedNote?.NoteToGraphicalNoteObjectId;
+                                                if (typeof noteId === 'number') tiedNoteIds.add(noteId);
+                                            });
+                                        }
+                                    });
+                                });
+                            });
+                        });
+                    });
+                } catch (error) {
+                    console.warn('⚠️ 播放光标无法完整收集连线信息:', error);
+                }
+
+                const candidates = collectMelodyPlaybackCandidates(measureRects);
+                const usedCandidates = new Set();
+                const events = [];
+
+                for (let i = 0; i < measureRects.length; i += 1) {
+                    const measureRect = measureRects[i];
+                    const graphicMeasure = osmd.GraphicSheet.MeasureList[i] && osmd.GraphicSheet.MeasureList[i][0];
+                    const absTimestamp = sourceMeasures[i]?.absoluteTimestamp || null;
+                    const baseTimestamp = absTimestamp ? (absTimestamp.realValue ?? absTimestamp.RealValue ?? absTimestamp.RealVal) : null;
+                    if (!graphicMeasure || typeof baseTimestamp !== 'number') continue;
+                    const staffEntries = graphicMeasure.staffEntries || [];
+                    staffEntries.forEach((staffEntry) => {
+                        const relStamp = staffEntry.relInMeasureTimestamp || null;
+                        const relTimestamp = relStamp ? (relStamp.realValue ?? relStamp.RealValue ?? relStamp.RealVal) : null;
+                        if (typeof relTimestamp !== 'number') return;
+
+                        let hasPlayableNote = false;
+                        let hasRest = false;
+                        const centers = [];
+                        const yValues = [];
+                        const voiceEntries = staffEntry?.graphicalVoiceEntries || staffEntry?.GraphicalVoiceEntries || [];
+                        voiceEntries.forEach((voiceEntry) => {
+                            const notes = voiceEntry?.notes || voiceEntry?.Notes || [];
+                            notes.forEach((note) => {
+                                const sourceNote = note?.sourceNote;
+                                const boundingBox = note?.boundingBox;
+                                let px = null;
+                                let py = null;
+                                if (boundingBox && boundingBox.absolutePosition && boundingBox.size) {
+                                    const xSvg = (boundingBox.absolutePosition.x + boundingBox.size.width * 0.5) * scale;
+                                    const ySvg = (boundingBox.absolutePosition.y + boundingBox.size.height * 0.5) * scale;
+                                    px = challengeApi.toScorePx(xSvg, 0).x;
+                                    py = challengeApi.toScorePx(0, ySvg).y;
+                                }
+                                if (sourceNote && sourceNote.isRestFlag) {
+                                    hasRest = true;
+                                    if (isFinite(px)) centers.push(px);
+                                    if (isFinite(py)) yValues.push(py);
+                                    return;
+                                }
+                                const noteId = sourceNote?.NoteToGraphicalNoteObjectId;
+                                if (typeof noteId === 'number' && tiedNoteIds.has(noteId)) return;
+                                hasPlayableNote = true;
+                                if (isFinite(px)) centers.push(px);
+                                if (isFinite(py)) {
+                                    yValues.push(py);
+                                    if (py < noteRanges[i].min) noteRanges[i].min = py;
+                                    if (py > noteRanges[i].max) noteRanges[i].max = py;
+                                }
+                            });
+                        });
+
+                        if (!hasPlayableNote && !hasRest) return;
+
+                        let x = centers.length ? centers.reduce((sum, value) => sum + value, 0) / centers.length : NaN;
+                        let y = yValues.length ? yValues.reduce((sum, value) => sum + value, 0) / yValues.length : (measureRect.y + measureRect.height / 2);
+                        if (!isFinite(x)) {
+                            const boundingBox = staffEntry.boundingBox;
+                            if (boundingBox && boundingBox.absolutePosition && boundingBox.size) {
+                                const xSvg = (boundingBox.absolutePosition.x + boundingBox.size.width * 0.5) * scale;
+                                const ySvg = (boundingBox.absolutePosition.y + boundingBox.size.height * 0.5) * scale;
+                                x = challengeApi.toScorePx(xSvg, 0).x;
+                                y = challengeApi.toScorePx(0, ySvg).y;
+                            }
+                        }
+                        if (!isFinite(x)) return;
+
+                        const candidatePool = candidates.byMeasure[i] && candidates.byMeasure[i].length
+                            ? candidates.byMeasure[i]
+                            : candidates.all;
+                        const matchedCandidate = hasPlayableNote
+                            ? pickClosestMelodyPlaybackCandidate(candidatePool, x, y, usedCandidates)
+                            : null;
+                        events.push({
+                            timeQN: (baseTimestamp + relTimestamp) * 4,
+                            measureIndex: i,
+                            x: Math.max(measureRect.x + 2, Math.min(measureRect.x + measureRect.width - 2, x)),
+                            cursorLeft: hasPlayableNote && matchedCandidate && isFinite(matchedCandidate.xLeft) ? matchedCandidate.xLeft : null,
+                            cursorRight: hasPlayableNote && matchedCandidate && isFinite(matchedCandidate.xRight) ? matchedCandidate.xRight : null,
+                            type: hasPlayableNote ? 'note' : 'rest',
+                            elements: hasPlayableNote && matchedCandidate ? [matchedCandidate.el] : []
+                        });
+                    });
+                }
+
+                events.sort((a, b) => a.timeQN === b.timeQN ? a.x - b.x : a.timeQN - b.timeQN);
+                const merged = [];
+                const eps = 1e-3;
+                events.forEach((event) => {
+                    const last = merged[merged.length - 1];
+                    if (last && Math.abs(event.timeQN - last.timeQN) <= eps) {
+                        last.x = Math.min(last.x, event.x);
+                        if (isFinite(event.cursorLeft)) {
+                            last.cursorLeft = isFinite(last.cursorLeft) ? Math.min(last.cursorLeft, event.cursorLeft) : event.cursorLeft;
+                        }
+                        if (isFinite(event.cursorRight)) {
+                            last.cursorRight = isFinite(last.cursorRight) ? Math.max(last.cursorRight, event.cursorRight) : event.cursorRight;
+                        }
+                        last.type = last.type === 'note' || event.type === 'note' ? 'note' : 'rest';
+                        event.elements.forEach((element) => {
+                            if (!last.elements.includes(element)) last.elements.push(element);
+                        });
+                    } else {
+                        merged.push({
+                            ...event,
+                            elements: Array.isArray(event.elements) ? [...event.elements] : []
+                        });
+                    }
+                });
+
+                return {
+                    events: merged,
+                    noteRanges: noteRanges.map((range) => (isFinite(range.min) && isFinite(range.max) ? range : null))
+                };
+            } catch (error) {
+                console.warn('⚠️ 构建谱面播放时间线失败:', error);
+                return { events: [], noteRanges: measureRects.map(() => null) };
+            }
+        }
+
+        function buildMelodyPlaybackTimeline(melodyData) {
+            let measureRects = typeof window.getOSMDMeasureRects === 'function'
+                ? (window.getOSMDMeasureRects() || [])
+                : [];
+            if (!measureRects.length) {
+                measureRects = collectJianpuPlaybackMeasureRects();
+            }
+            const graphicResult = buildGraphicPlaybackEvents(measureRects);
+            const graphicEvents = Array.isArray(graphicResult.events) ? graphicResult.events : [];
+            let noteRanges = Array.isArray(graphicResult.noteRanges) ? graphicResult.noteRanges : [];
+            const processedNotes = processNotesForPlayback(extractNotesFromMelodyData(melodyData));
+            const rawEvents = [];
+            let currentQN = 0;
+
+            processedNotes.forEach((item, sourceIndex) => {
+                const beats = item.beats || calculateBeatsFromDuration(item.duration);
+                if (item.type === 'rest') {
+                    rawEvents.push({
+                        type: 'rest',
+                        duration: item.duration,
+                        beats,
+                        startQN: currentQN,
+                        sourceIndex
+                    });
+                } else if (item.type === 'note' && !item.isTiedContinuation) {
+                    rawEvents.push({
+                        type: 'note',
+                        duration: item.duration,
+                        beats,
+                        startQN: currentQN,
+                        midi: item.midi,
+                        graceNote: item.graceNote || null,
+                        sourceIndex
+                    });
+                }
+                currentQN += beats;
+            });
+
+            const renderedResult = collectRenderedJianpuPlaybackEvents(measureRects);
+            const renderedEvents = Array.isArray(renderedResult.events) ? renderedResult.events : [];
+            if (renderedEvents.length >= rawEvents.length) {
+                noteRanges = Array.isArray(renderedResult.noteRanges) ? renderedResult.noteRanges : noteRanges;
+                return {
+                    timeline: rawEvents.map((event, index) => {
+                        const rendered = renderedEvents[index] || null;
+                        return {
+                            ...event,
+                            index,
+                            x: rendered && isFinite(rendered.x) ? rendered.x : null,
+                            measureIndex: rendered && Number.isInteger(rendered.measureIndex) ? rendered.measureIndex : null,
+                            cursorLeft: rendered && isFinite(rendered.cursorLeft) ? rendered.cursorLeft : null,
+                            cursorRight: rendered && isFinite(rendered.cursorRight) ? rendered.cursorRight : null,
+                            elements: rendered && Array.isArray(rendered.elements) ? rendered.elements : []
+                        };
+                    }),
+                    measureRects,
+                    measureNoteRanges: noteRanges
+                };
+            }
+
+            if (!graphicEvents.length) {
+                const jianpuGlyphResult = collectJianpuPlaybackGlyphs(measureRects);
+                const glyphs = Array.isArray(jianpuGlyphResult.glyphs) ? jianpuGlyphResult.glyphs : [];
+                noteRanges = Array.isArray(jianpuGlyphResult.noteRanges) ? jianpuGlyphResult.noteRanges : noteRanges;
+                const timeUnitsPerMeasure = Math.max(0.25, getMelodyTimeUnitsPerMeasure(melodyData));
+                let glyphIndex = 0;
+                return {
+                    timeline: rawEvents.map((event, index) => {
+                        const glyph = event.type === 'note' ? (glyphs[glyphIndex] || null) : null;
+                        if (glyph && event.type === 'note') glyphIndex += 1;
+                        const fallbackMeasureIndex = Math.max(0, Math.floor(event.startQN / timeUnitsPerMeasure));
+                        return {
+                            ...event,
+                            index,
+                            x: glyph ? glyph.cx : null,
+                            measureIndex: glyph && glyph.measureIndex >= 0 ? glyph.measureIndex : (measureRects[fallbackMeasureIndex] ? fallbackMeasureIndex : null),
+                            cursorLeft: glyph ? glyph.xLeft : null,
+                            cursorRight: glyph ? glyph.xRight : null,
+                            elements: glyph ? [glyph.el] : []
+                        };
+                    }),
+                    measureRects,
+                    measureNoteRanges: noteRanges
+                };
+            }
+
+            let graphicIndex = 0;
+            const timeline = rawEvents.map((event, index) => {
+                if (event.type !== 'note') {
+                    const fallbackMeasureIndex = Math.max(0, Math.floor(event.startQN / Math.max(0.25, getMelodyTimeUnitsPerMeasure(melodyData))));
+                    return {
+                        ...event,
+                        index,
+                        x: null,
+                        measureIndex: measureRects[fallbackMeasureIndex] ? fallbackMeasureIndex : null,
+                        cursorLeft: null,
+                        cursorRight: null,
+                        elements: []
+                    };
+                }
+                let matched = null;
+                let matchedIndex = -1;
+                let bestScore = Infinity;
+                const start = Math.max(0, graphicIndex - 1);
+                const end = Math.min(graphicEvents.length - 1, graphicIndex + 6);
+                for (let i = start; i <= end; i += 1) {
+                    const candidate = graphicEvents[i];
+                    if (!candidate) continue;
+                    const diff = Math.abs(candidate.timeQN - event.startQN);
+                    if (diff > 0.18) continue;
+                    const typePenalty = candidate.type === event.type ? 0 : 0.025;
+                    const score = diff + typePenalty + Math.abs(i - graphicIndex) * 0.002;
+                    if (score < bestScore) {
+                        bestScore = score;
+                        matched = candidate;
+                        matchedIndex = i;
+                    }
+                }
+                if (matchedIndex >= 0) {
+                    graphicIndex = matchedIndex + 1;
+                }
+                return {
+                    ...event,
+                    index,
+                    x: matched && isFinite(matched.x) ? matched.x : null,
+                    measureIndex: matched && Number.isInteger(matched.measureIndex) ? matched.measureIndex : null,
+                    cursorLeft: matched && isFinite(matched.cursorLeft) ? matched.cursorLeft : null,
+                    cursorRight: matched && isFinite(matched.cursorRight) ? matched.cursorRight : null,
+                    elements: matched && Array.isArray(matched.elements) ? matched.elements : []
+                };
+            });
+
+            return {
+                timeline,
+                measureRects,
+                measureNoteRanges: noteRanges
+            };
+        }
+
+        function refreshMelodyPlaybackTimeline(options = {}) {
+            const cursorState = getMelodyPlaybackCursorState();
+            const melodyData = getCurrentMelodyPlaybackData();
+            if (!melodyData) {
+                clearMelodyPlaybackSelection({ resetTimeline: true });
+                return [];
+            }
+            const cacheKey = getMelodyPlaybackCacheKey(melodyData);
+            if (!options.force && cursorState.cacheKey === cacheKey && cursorState.timeline.length) {
+                return cursorState.timeline;
+            }
+            const built = buildMelodyPlaybackTimeline(melodyData);
+            cursorState.timeline = built.timeline;
+            cursorState.cacheKey = cacheKey;
+            cursorState.measureRects = built.measureRects;
+            cursorState.measureNoteRanges = built.measureNoteRanges;
+            if (cursorState.manualSelectedSourceIndex >= 0) {
+                if (!restoreManualMelodyPlaybackSelection()) {
+                    clearMelodyPlaybackSelection();
+                }
+            } else if (cursorState.selectedIndex >= 0) {
+                if (!setMelodyPlaybackSelectionByIndex(cursorState.selectedIndex)) {
+                    clearMelodyPlaybackSelection();
+                }
+            }
+            return cursorState.timeline;
+        }
+
+        function queueMelodyPlaybackRefresh(delayMs = 180) {
+            const cursorState = getMelodyPlaybackCursorState();
+            if (cursorState.refreshTimer) {
+                clearTimeout(cursorState.refreshTimer);
+            }
+            cursorState.refreshTimer = setTimeout(() => {
+                cursorState.refreshTimer = null;
+                refreshMelodyPlaybackTimeline({ force: true });
+            }, delayMs);
+        }
+
+        function stopMelodyPlaybackCursorFollow(restoreSelection = true) {
+            const cursorState = getMelodyPlaybackCursorState();
+            if (Array.isArray(cursorState.followTimers) && cursorState.followTimers.length) {
+                cursorState.followTimers.forEach((timerId) => clearTimeout(timerId));
+            }
+            cursorState.followTimers = [];
+            if (restoreSelection) {
+                restoreManualMelodyPlaybackSelection();
+            }
+        }
+
+        function getMelodyPlaybackCursorDelayMs(audioCtx, scheduledTime) {
+            if (!audioCtx || !Number.isFinite(scheduledTime)) return 0;
+            const latency = Math.max(audioCtx.outputLatency || 0, audioCtx.baseLatency || 0, 0.04);
+            return Math.max(0, ((scheduledTime + latency) - audioCtx.currentTime) * 1000);
+        }
+
+        function startMelodyPlaybackCursorFollow(playbackNotes, startTime) {
+            const cursorState = getMelodyPlaybackCursorState();
+            const timeline = refreshMelodyPlaybackTimeline({ force: true });
+            if (!timeline.length || !Array.isArray(playbackNotes) || !playbackNotes.length || !window.melodyAudioCtx) {
+                return;
+            }
+            stopMelodyPlaybackCursorFollow(false);
+
+            const tempo = getPlaybackTempoFromMetronome();
+
+            const firstPlayableEvent = playbackNotes.find((event) => event && event.type === 'note');
+            if (firstPlayableEvent) {
+                const firstTimelineIndex = findMelodyPlaybackTimelineIndexBySourceIndex(firstPlayableEvent.sourceIndex, timeline);
+                if (firstTimelineIndex >= 0) {
+                    setMelodyPlaybackSelectionByIndex(firstTimelineIndex);
+                }
+            }
+
+            let currentOffset = 0;
+            playbackNotes.forEach((event) => {
+                if (!event || event.type !== 'note') {
+                    currentOffset += durationToSeconds(event?.duration || 'quarter', tempo);
+                    return;
+                }
+                const timelineIndex = findMelodyPlaybackTimelineIndexBySourceIndex(event.sourceIndex, timeline);
+                const scheduledTime = startTime + currentOffset;
+                const delayMs = getMelodyPlaybackCursorDelayMs(window.melodyAudioCtx, scheduledTime);
+                const timerId = setTimeout(() => {
+                    if (!window.isPlayingMelody) return;
+                    if (timelineIndex >= 0) {
+                        setMelodyPlaybackSelectionByIndex(timelineIndex);
+                    }
+                }, delayMs);
+                cursorState.followTimers.push(timerId);
+                currentOffset += durationToSeconds(event.duration || 'quarter', tempo);
+            });
+        }
+
+        function findMelodyPlaybackEventByTarget(target, timeline) {
+            const normalizedTarget = getMelodyPlaybackGlyphTarget(target) || getMelodyPlaybackPaintTarget(target);
+            if (!normalizedTarget) return null;
+            for (let i = 0; i < timeline.length; i += 1) {
+                const event = timeline[i];
+                if (!Array.isArray(event.elements) || !event.elements.length) continue;
+                const matched = event.elements.some((element) => {
+                    if (!element) return false;
+                    return element === normalizedTarget ||
+                        element.contains?.(normalizedTarget) ||
+                        normalizedTarget.contains?.(element);
+                });
+                if (matched) return { event, index: i };
+            }
+            return null;
+        }
+
+        function applyGlyphBoundsToMelodyPlaybackEvent(event, target) {
+            const glyphTarget = getMelodyPlaybackGlyphTarget(target);
+            const scoreElement = document.getElementById('score');
+            if (!event || !glyphTarget || !scoreElement || !glyphTarget.getBoundingClientRect) return;
+            const rect = glyphTarget.getBoundingClientRect();
+            if (!rect || rect.width <= 0) return;
+            const scoreRect = scoreElement.getBoundingClientRect();
+            event.cursorLeft = rect.left - scoreRect.left + scoreElement.scrollLeft;
+            event.cursorRight = rect.right - scoreRect.left + scoreElement.scrollLeft;
+        }
+
+        function findNearestMelodyPlaybackEvent(point, timeline, measureRects) {
+            if (!point || !timeline.length) return null;
+            let measureIndex = -1;
+            for (let i = 0; i < measureRects.length; i += 1) {
+                const measureRect = measureRects[i];
+                if (point.x >= measureRect.x && point.x <= measureRect.x + measureRect.width &&
+                    point.y >= measureRect.y - 24 && point.y <= measureRect.y + measureRect.height + 24) {
+                    measureIndex = i;
+                    break;
+                }
+            }
+
+            const candidates = measureIndex >= 0
+                ? timeline.filter((event) => event.measureIndex === measureIndex && isFinite(event.x))
+                : timeline.filter((event) => isFinite(event.x));
+            if (!candidates.length) return null;
+
+            let best = null;
+            let bestDistance = Infinity;
+            candidates.forEach((event) => {
+                const measureRect = measureIndex >= 0 ? measureRects[event.measureIndex] : null;
+                const eventY = measureRect ? (measureRect.y + measureRect.height / 2) : point.y;
+                const distance = Math.abs(event.x - point.x) + Math.abs(eventY - point.y) * 0.15;
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    best = event;
+                }
+            });
+
+            return best ? { event: best, index: best.index } : null;
+        }
+
+        function initializeMelodyPlaybackCursorSystem() {
+            const scoreContainer = document.getElementById('score');
+            const cursorState = getMelodyPlaybackCursorState();
+            if (!scoreContainer) return;
+
+            if (scoreContainer.dataset.playbackCursorBound !== 'true') {
+                scoreContainer.dataset.playbackCursorBound = 'true';
+                scoreContainer.addEventListener('click', (event) => {
+                    if (window.__icChallenge && typeof window.__icChallenge.isActive === 'function' && window.__icChallenge.isActive()) {
+                        return;
+                    }
+                    const clickedSelectableTarget = isMelodyPlaybackSelectableTarget(event.target);
+                    if (!clickedSelectableTarget && !isPointInsideRenderedMelodyScore(event.clientX, event.clientY)) {
+                        return;
+                    }
+                    const timeline = refreshMelodyPlaybackTimeline({ force: true });
+                    if (!timeline.length) return;
+                    const directMatch = clickedSelectableTarget
+                        ? findMelodyPlaybackEventByTarget(event.target, timeline)
+                        : null;
+                    const point = getMelodyScoreRelativePoint(event.clientX, event.clientY);
+                    const fallbackMatch = findNearestMelodyPlaybackEvent(point, timeline, cursorState.measureRects);
+                    const resolved = directMatch || fallbackMatch;
+                    if (!resolved) return;
+                    if (directMatch && directMatch.event) {
+                        applyGlyphBoundsToMelodyPlaybackEvent(directMatch.event, event.target);
+                    }
+                    setManualMelodyPlaybackSelectionByIndex(resolved.index);
+                });
+            }
+
+            if (!cursorState.observer) {
+                cursorState.observer = new MutationObserver(() => {
+                    queueMelodyPlaybackRefresh(220);
+                });
+                cursorState.observer.observe(scoreContainer, { childList: true, subtree: true });
+            }
+
+            queueMelodyPlaybackRefresh(260);
+        }
 
         function directPlayTest() {
             console.log('🎵 直接播放被调用');
@@ -4195,6 +5217,8 @@
                     clearTimeout(window.melodyPlaybackFinishTimer);
                     window.melodyPlaybackFinishTimer = null;
                 }
+                stopManagedMelodyPlaybackMetronome();
+                clearMelodyPlaybackCountInUi();
 
                 // 停止所有调度的播放
                 if (window.melodyScheduledSounds) {
@@ -4219,6 +5243,7 @@
                     });
                     window.melodyScheduledSounds = [];
                 }
+                stopMelodyPlaybackCursorFollow(true);
                 updatePlayButton();
                 console.log('⏹️ 停止钢琴播放');
                 return;
@@ -4254,6 +5279,7 @@
             } catch (error) {
                 console.error('❌ 播放错误:', error);
                 window.isPlayingMelody = false;
+                clearMelodyPlaybackCountInUi();
                 updatePlayButton();
                 alert('播放出错: ' + error.message);
             }
@@ -4281,22 +5307,139 @@
             return Math.max(1, parseInt(ts?.numerator, 10) || 4);
         }
 
+        function shouldUseMelodyPlaybackCountIn(startTimelineEvent) {
+            if (!startTimelineEvent) return true;
+            const startQN = Number(startTimelineEvent.startQN);
+            const sourceIndex = Number(startTimelineEvent.sourceIndex);
+            return (!Number.isFinite(startQN) || startQN <= 1e-3) &&
+                (!Number.isFinite(sourceIndex) || sourceIndex <= 0);
+        }
+
+        function getMelodyPlaybackLeadInBeats(melodyData, timelineEvent) {
+            if (!timelineEvent || !Number.isFinite(timelineEvent.startQN)) {
+                return 0;
+            }
+            const ts = getTimeSignature(melodyData);
+            const numerator = Math.max(1, parseInt(ts?.numerator, 10) || 4);
+            const denominator = Math.max(1, parseInt(ts?.denominator, 10) || 4);
+            const quarterUnitsPerBeat = 4 / denominator;
+            const measureUnits = numerator * quarterUnitsPerBeat;
+            if (!(measureUnits > 0) || !(quarterUnitsPerBeat > 0)) {
+                return 0;
+            }
+            const positionInMeasure = ((timelineEvent.startQN % measureUnits) + measureUnits) % measureUnits;
+            return Math.max(0, positionInMeasure / quarterUnitsPerBeat);
+        }
+
+        function ensureMelodyPlaybackMetronomeRunning(startAtTime = null, beatOffset = 0) {
+            const wasRunning = typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning;
+            window.melodyMetronomeStopAfterPlayback = !wasRunning;
+            metronomeBeatOnlyDuringPlayback = true;
+            const started = startPageMetronome(startAtTime, beatOffset, true);
+            if (!started) {
+                metronomeBeatOnlyDuringPlayback = false;
+                window.melodyMetronomeStopAfterPlayback = false;
+            }
+        }
+
+        function stopManagedMelodyPlaybackMetronome() {
+            if (window.melodyMetronomeSyncTimeout) {
+                clearTimeout(window.melodyMetronomeSyncTimeout);
+                window.melodyMetronomeSyncTimeout = null;
+            }
+            if (window.melodyMetronomeStopAfterPlayback) {
+                stopPageMetronome();
+            }
+            metronomeBeatOnlyDuringPlayback = false;
+            window.melodyMetronomeStopAfterPlayback = false;
+        }
+
+        function clearMelodyPlaybackCountInUi() {
+            if (Array.isArray(window.melodyPlaybackCountInUiTimers) && window.melodyPlaybackCountInUiTimers.length) {
+                window.melodyPlaybackCountInUiTimers.forEach((timerId) => clearTimeout(timerId));
+            }
+            window.melodyPlaybackCountInUiTimers = [];
+            const label = document.getElementById('playbackCountInLabel');
+            if (label && label.parentNode) {
+                label.parentNode.removeChild(label);
+            }
+        }
+
+        function ensureMelodyPlaybackCountInLabel() {
+            const score = document.getElementById('score');
+            if (!score) return null;
+            let label = document.getElementById('playbackCountInLabel');
+            if (!label) {
+                label = document.createElement('div');
+                label.id = 'playbackCountInLabel';
+                label.style.position = 'absolute';
+                label.style.top = '8px';
+                label.style.left = '50%';
+                label.style.transform = 'translateX(-50%)';
+                label.style.fontSize = '18px';
+                label.style.fontWeight = '700';
+                label.style.color = 'var(--text-color)';
+                label.style.background = 'rgba(0,0,0,0.05)';
+                label.style.padding = '4px 10px';
+                label.style.borderRadius = '999px';
+                label.style.backdropFilter = 'blur(2px)';
+                label.style.pointerEvents = 'none';
+                label.style.display = 'none';
+                label.style.zIndex = '5';
+                score.appendChild(label);
+            }
+            return label;
+        }
+
+        function showMelodyPlaybackCountInValue(value, isStrong) {
+            const label = ensureMelodyPlaybackCountInLabel();
+            if (!label) return;
+            label.textContent = String(value);
+            label.style.display = 'inline-flex';
+            if (isStrong) {
+                label.style.color = 'var(--jianpu-cursor-color, #e53935)';
+                label.style.opacity = '1';
+            } else {
+                label.style.color = 'var(--text-color)';
+                label.style.opacity = '0.75';
+            }
+        }
+
+        function isMelodyPlaybackCountInStrongBeat(beatIndex, timeSignature) {
+            const numerator = Math.max(1, parseInt(timeSignature?.numerator, 10) || 4);
+            const denominator = Math.max(1, parseInt(timeSignature?.denominator, 10) || 4);
+            if (denominator === 8 && numerator === 6) {
+                return beatIndex === 0 || beatIndex === 3;
+            }
+            return beatIndex === 0;
+        }
+
+        function scheduleMelodyPlaybackCountInUi(startTime, countInBeats, beatDuration, melodyData) {
+            clearMelodyPlaybackCountInUi();
+            const ctx = window.melodyAudioCtx;
+            if (!ctx) return;
+            const timeSignature = getTimeSignature(melodyData);
+            window.melodyPlaybackCountInUiTimers = [];
+            for (let beat = 0; beat < countInBeats; beat += 1) {
+                const beatTime = startTime + beat * beatDuration;
+                const delayMs = Math.max(0, (beatTime - ctx.currentTime) * 1000);
+                const isStrong = isMelodyPlaybackCountInStrongBeat(beat, timeSignature);
+                const timerId = setTimeout(() => {
+                    showMelodyPlaybackCountInValue(beat + 1, isStrong);
+                }, delayMs);
+                window.melodyPlaybackCountInUiTimers.push(timerId);
+            }
+            const hideDelayMs = Math.max(0, ((startTime + countInBeats * beatDuration) - ctx.currentTime) * 1000);
+            window.melodyPlaybackCountInUiTimers.push(setTimeout(() => {
+                clearMelodyPlaybackCountInUi();
+            }, hideDelayMs));
+        }
+
         function startMelodyPlayback() {
             console.log('🎵 开始旋律播放');
 
             // 获取当前旋律数据
-            let melodyData = null;
-            if (typeof getCurrentMelodyData === 'function') {
-                melodyData = getCurrentMelodyData();
-            } else {
-                // 如果函数不存在，尝试从全局变量获取
-                if (typeof melodyHistory !== 'undefined' && typeof currentHistoryIndex !== 'undefined' &&
-                    melodyHistory && melodyHistory.length > 0 && currentHistoryIndex >= 0 &&
-                    currentHistoryIndex < melodyHistory.length) {
-                    melodyData = melodyHistory[currentHistoryIndex];
-                    console.log('📋 从全局变量获取旋律数据:', melodyData);
-                }
-            }
+            const melodyData = getCurrentMelodyPlaybackData();
 
             if (!melodyData) {
                 console.log('⚠️ 没有旋律数据，播放测试音符');
@@ -4309,32 +5452,37 @@
                 return;
             }
 
-            // 检查是否为隐藏模式
-            const isHiddenMode = checkIfMelodyHidden();
-
-            if (isHiddenMode) {
-                console.log('🎼 隐藏模式激活，启动count-in + 节拍器');
-                playCountInThenMelody(melodyData);
-            } else {
-                const tempo = getPlaybackTempoFromMetronome();
-                const beatDuration = getBeatDurationByTimeSignature(tempo, melodyData);
-                const now = window.melodyAudioCtx.currentTime;
-                let startTime;
-
-                if (typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning) {
-                    const minLookahead = 0.05;
-                    const countInBeats = getCountInBeatsFromTimeSignature(melodyData);
-                    const firstBeatTime = Math.ceil((now + minLookahead) / beatDuration) * beatDuration;
-                    startTime = firstBeatTime + (countInBeats * beatDuration);
-                    console.log(`🎵 节拍器开启 - 先count-in ${countInBeats}拍，再开始旋律: BPM=${tempo}, 当前=${now.toFixed(3)}s, 开始=${startTime.toFixed(3)}s`);
-                } else {
-                    // 🚀 节拍器关闭 - 立即播放，响应迅速
-                    startTime = now + 0.1;
-                    console.log(`🚀 节拍器未开启 - 立即播放: BPM=${tempo}, 当前=${now.toFixed(3)}s, 播放=${startTime.toFixed(3)}s`);
-                }
-
-                playFullMelody(melodyData, startTime);
+            const cursorState = getMelodyPlaybackCursorState();
+            const timeline = refreshMelodyPlaybackTimeline({ force: true });
+            let startEventIndex = 0;
+            let startTimelineEvent = null;
+            const manualTimelineIndex = findMelodyPlaybackTimelineIndexBySourceIndex(cursorState.manualSelectedSourceIndex, timeline);
+            if (manualTimelineIndex >= 0) {
+                cursorState.manualSelectedIndex = manualTimelineIndex;
             }
+            if (cursorState.manualSelectedIndex >= 0 &&
+                timeline[cursorState.manualSelectedIndex] &&
+                timeline[cursorState.manualSelectedIndex].measureIndex != null) {
+                startTimelineEvent = timeline[cursorState.manualSelectedIndex];
+                startEventIndex = startTimelineEvent.sourceIndex ?? 0;
+                console.log(`🎯 从光标位置开始播放: 事件 ${cursorState.manualSelectedIndex + 1}`);
+            }
+            const tempo = getPlaybackTempoFromMetronome();
+            const now = window.melodyAudioCtx.currentTime;
+            const startTime = now + 0.08;
+            const useCountIn = shouldUseMelodyPlaybackCountIn(startTimelineEvent);
+
+            if (useCountIn) {
+                console.log(`🎵 从头播放：先 count-in，再起播。BPM=${tempo}, 当前=${now.toFixed(3)}s, count-in开始=${startTime.toFixed(3)}s`);
+                scheduleMelodyCountInAndPlayback(melodyData, startTime, 0);
+                return;
+            }
+
+            clearMelodyPlaybackCountInUi();
+            const playbackLeadInBeats = getMelodyPlaybackLeadInBeats(melodyData, startTimelineEvent);
+            ensureMelodyPlaybackMetronomeRunning(startTime, playbackLeadInBeats);
+            console.log(`🎵 中途起播：跳过 count-in，直接播放。BPM=${tempo}, 当前=${now.toFixed(3)}s, 开始=${startTime.toFixed(3)}s`);
+            playFullMelody(melodyData, startTime, startEventIndex);
         }
 
         // 检查旋律是否隐藏
@@ -4396,10 +5544,11 @@
         function updatePlayButton() {
             const playBtn = document.getElementById('playMelodyBtn');
             if (playBtn) {
+                const currentTranslations = translations[currentLanguage] || translations['zh-CN'];
                 if (window.isPlayingMelody) {
-                    playBtn.innerHTML = '暂停';
+                    playBtn.textContent = currentTranslations['controls.pause'] || 'Pause';
                 } else {
-                    playBtn.innerHTML = '播放';
+                    playBtn.textContent = currentTranslations['controls.play'] || 'Play';
                 }
                 console.log('🔄 按钮状态已更新:', window.isPlayingMelody ? '播放中' : '已停止');
             }
@@ -4921,7 +6070,7 @@
         }
 
         // 播放完整旋律（纯旋律，不带节拍器）
-        function playFullMelody(melodyData, customStartTime = null) {
+        function playFullMelody(melodyData, customStartTime = null, startEventIndex = 0) {
             console.log('🎶 开始旋律播放');
 
             // 只在首次调用时设置播放状态，count-in调用时已经设置过了
@@ -4932,10 +6081,7 @@
             }
 
             // 获取节拍器速度
-            let tempo = 60;
-            if (typeof getCurrentTempo === 'function') {
-                tempo = getCurrentTempo();
-            }
+            const tempo = getPlaybackTempoFromMetronome();
             console.log('🕰️ 播放速度:', tempo, 'BPM');
 
             // 解析音符数据
@@ -4950,16 +6096,32 @@
             console.log(`🎵 找到 ${notes.length} 个音符，开始安排播放`);
 
             // 处理连线音符和休止符
-            const processedNotes = processNotesForPlayback(notes);
-            console.log(`🎵 处理后的音符: ${processedNotes.length}个事件`);
+            const processedNotes = processNotesForPlayback(notes).map((item, sourceIndex) => ({
+                ...item,
+                sourceIndex
+            }));
+            const safeStartIndex = Math.max(0, Math.min(processedNotes.length - 1, startEventIndex || 0));
+            const playbackNotes = processedNotes.slice(safeStartIndex);
+            console.log(`🎵 处理后的音符: ${processedNotes.length}个事件，从第 ${safeStartIndex + 1} 个事件开始播放`);
+
+            if (!playbackNotes.length) {
+                console.log('⚠️ 光标位置后没有可播放事件');
+                window.isPlayingMelody = false;
+                stopManagedMelodyPlaybackMetronome();
+                updatePlayButton();
+                window.melodyScheduledSounds = [];
+                restoreManualMelodyPlaybackSelection();
+                return;
+            }
 
             // 计算总时长并安排播放
             const startTime = customStartTime || window.melodyAudioCtx.currentTime;
             let totalDuration = 0;
             let currentTime = 0;
+            startMelodyPlaybackCursorFollow(playbackNotes, startTime);
 
             // 安排音符播放
-            processedNotes.forEach((event, index) => {
+            playbackNotes.forEach((event, index) => {
                 const eventStartTime = startTime + currentTime;
                 const eventDuration = durationToSeconds(event.duration || 'quarter', tempo);
 
@@ -4982,15 +6144,18 @@
             if (window.melodyPlaybackFinishTimer) {
                 clearTimeout(window.melodyPlaybackFinishTimer);
             }
+            const finishDelayMs = Math.max(0, ((startTime - window.melodyAudioCtx.currentTime) * 1000));
             window.melodyPlaybackFinishTimer = setTimeout(() => {
                 if (window.isPlayingMelody && currentRunId === window.melodyPlaybackRunId) {
                     window.isPlayingMelody = false;
+                    stopManagedMelodyPlaybackMetronome();
                     updatePlayButton();
                     window.melodyScheduledSounds = [];
+                    stopMelodyPlaybackCursorFollow(true);
                     console.log('✅ 旋律播放完成');
                 }
                 window.melodyPlaybackFinishTimer = null;
-            }, (totalDuration + 0.5) * 1000);
+            }, Math.ceil(finishDelayMs + (totalDuration + 0.5) * 1000));
 
             console.log(`🎼 播放安排完成: ${totalDuration.toFixed(2)}秒`);
         }
@@ -5203,68 +6368,56 @@
         }
 
         // 启动页面上的节拍器
-        function startPageMetronome() {
-            // 查找页面上的节拍器按钮并启动
-            const metronomeBtn = document.querySelector('#headerMetronomePlay, .metronome-play-btn');
-            if (metronomeBtn && !metronomeBtn.classList.contains('playing')) {
-                console.log('🎼 启动页面节拍器');
-                metronomeBtn.click();
-                return true;
+        function startPageMetronome(startAtTime = null, beatOffset = 0, forceRestart = false) {
+            if (typeof startMetronome !== 'function') return false;
+            const wasRunning = typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning;
+            if (wasRunning && forceRestart) {
+                stopMetronome();
             }
-            return false;
+            if (!(typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning)) {
+                console.log('🎼 启动页面节拍器');
+                startMetronome(startAtTime, beatOffset);
+            }
+            return typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning;
         }
 
         // 停止页面上的节拍器
         function stopPageMetronome() {
-            const metronomeBtn = document.querySelector('#headerMetronomePlay, .metronome-play-btn');
-            if (metronomeBtn && metronomeBtn.classList.contains('playing')) {
+            if (typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning) {
                 console.log('⏹️ 停止页面节拍器');
-                metronomeBtn.click();
+                stopMetronome();
                 return true;
             }
             return false;
         }
 
         // Count-in然后播放旋律（隐藏模式专用）
-        function playCountInThenMelody(melodyData) {
-            console.log('🎼 隐藏模式：开始count-in（仅count-in，不启动页面节拍器）');
-
-            window.isPlayingMelody = true;
-            updatePlayButton();
-            window.melodyScheduledSounds = [];
-
-            // 获取节拍器速度和拍号
-            let tempo = 60;
-            if (typeof getCurrentTempo === 'function') {
-                tempo = getCurrentTempo();
+        function scheduleMelodyCountInAndPlayback(melodyData, startTime, startEventIndex = 0) {
+            console.log('🎼 从头播放：先执行 count-in，再开始旋律播放');
+            const tempo = getPlaybackTempoFromMetronome();
+            if (!Array.isArray(window.melodyScheduledSounds)) {
+                window.melodyScheduledSounds = [];
             }
 
-            // 获取拍号信息
             const timeSignature = getTimeSignature(melodyData);
-            const countInBeats = timeSignature.numerator; // 使用拍号分子作为count-in次数
+            const countInBeats = timeSignature.numerator;
 
             console.log(`🎼 Count-in设置: ${tempo} BPM, 拍号 ${timeSignature.numerator}/${timeSignature.denominator}, count-in ${countInBeats}下`);
 
-            const beatDuration = 60 / tempo; // 每拍的秒数
-            const now = window.melodyAudioCtx.currentTime;
+            const beatDuration = getBeatDurationByTimeSignature(tempo, melodyData);
+            scheduleMelodyPlaybackCountInUi(startTime, countInBeats, beatDuration, melodyData);
 
-            // 注释掉启动页面节拍器的代码
-            // startPageMetronome();
-
-            // 播放count-in（根据拍号分子决定次数）
             for (let beat = 0; beat < countInBeats; beat++) {
-                const beatTime = now + beat * beatDuration;
+                const beatTime = startTime + beat * beatDuration;
                 const isDownbeat = beat === 0;
                 playMetronomeClick(beatTime, isDownbeat);
             }
 
-            // count-in完成后的处理
-            const countInEndTime = now + countInBeats * beatDuration;
+            const countInEndTime = startTime + countInBeats * beatDuration;
             console.log(`🎵 Count-in将在${countInEndTime.toFixed(3)}s结束，然后精确开始旋律播放`);
 
-            // 🔧 关键修复：不使用setTimeout，立即调用播放函数，传入count-in结束的精确时间
-            // Web Audio API 会精确地在count-in结束时开始播放旋律
-            playFullMelody(melodyData, countInEndTime);
+            ensureMelodyPlaybackMetronomeRunning(countInEndTime, 0);
+            playFullMelody(melodyData, countInEndTime, startEventIndex);
         }
 
         // 🎹 临时样本生成器 - 测试用
@@ -5791,8 +6944,8 @@
                 cursor.style.width = '2px';
                 cursor.style.height = '100%';
                 cursor.style.left = '0';
-                cursor.style.background = 'var(--primary-blue, #007aff)';
-                cursor.style.boxShadow = '0 0 0 0 rgba(0,122,255,0.6)';
+                cursor.style.background = 'var(--jianpu-cursor-color, #e53935)';
+                cursor.style.boxShadow = '0 0 0 0 rgba(229,57,53,0.6)';
                 cursor.style.transition = 'box-shadow 0.12s ease';
                 overlay.appendChild(cursor);
 
@@ -6584,15 +7737,15 @@ function collectMeasureRectsByGlobalEqualSplit(){
                             state.cursorEl.style.height = `${height}px`;
                         }
                         if (strongBeat(n)){
-                            state.cursorEl.style.boxShadow = '0 0 0 8px rgba(0,122,255,0.20)';
-                            label.style.color = 'var(--primary-blue, #007aff)';
+                            state.cursorEl.style.boxShadow = '0 0 0 8px rgba(229,57,53,0.20)';
+                            label.style.color = 'var(--jianpu-cursor-color, #e53935)';
                             label.style.opacity = '1';
                         } else {
-                            state.cursorEl.style.boxShadow = '0 0 0 4px rgba(0,122,255,0.10)';
+                            state.cursorEl.style.boxShadow = '0 0 0 4px rgba(229,57,53,0.10)';
                             label.style.color = 'var(--text-color)';
                             label.style.opacity = '0.75';
                         }
-                        setTimeout(()=>{ if(state.cursorEl) state.cursorEl.style.boxShadow = '0 0 0 0 rgba(0,122,255,0)'; }, Math.min(220, beatSec*800));
+                        setTimeout(()=>{ if(state.cursorEl) state.cursorEl.style.boxShadow = '0 0 0 0 rgba(229,57,53,0)'; }, Math.min(220, beatSec*800));
                     }
 
                     if (i >= beats){

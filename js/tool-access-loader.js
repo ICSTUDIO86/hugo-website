@@ -17,6 +17,7 @@
   const REFUND_RESET_KEY = 'ic-refund-reset';
   const REFUND_RESET_HANDLED_KEY = 'ic-refund-reset-handled';
   const ACCESS_RESET_KEYS = [
+    'ic-bundle-license-v1',
     'ic-single-product-access',
     'ic_single_product_access',
     'ic_full_version',

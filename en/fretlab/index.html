@@ -226,6 +226,139 @@
         text-decoration: none;
       }
 
+      .fretlab-buy-mode-toggle-wrap {
+        margin-top: 14px;
+        padding: 0;
+      }
+
+      .fretlab-buy-mode-toggle {
+        display: inline-flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 6px;
+        border-radius: 20px;
+        background: linear-gradient(180deg, rgba(255, 251, 235, 0.95), rgba(255, 248, 230, 0.98));
+        border: 2px dashed rgba(120, 53, 15, 0.24);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+      }
+
+      .fretlab-buy-mode-toggle-btn {
+        min-height: 42px;
+        padding: 0 16px;
+        border: 1.5px dashed transparent;
+        border-radius: 14px;
+        background: transparent;
+        color: #7c2d12;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        transform: rotate(-0.4deg);
+      }
+
+      .fretlab-buy-mode-toggle-btn.is-active {
+        background: rgba(255, 255, 255, 0.96);
+        color: #111827;
+        border-color: rgba(180, 83, 9, 0.28);
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+        transform: rotate(0.35deg);
+      }
+
+      #fretlab-buy-mode-host,
+      #fretlab-buy-mode-shared {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      #fretlab-buy-mode-shared {
+        margin-top: 16px;
+      }
+
+      .fretlab-bundle-offer-wrap {
+        padding: 1.15rem;
+        transform: none;
+      }
+
+      .fretlab-bundle-offer-outline {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .fretlab-bundle-offer-card {
+        position: relative;
+        z-index: 1;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+      }
+
+      .fretlab-bundle-offer-top {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 14px;
+      }
+
+      .fretlab-bundle-offer-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid hsl(0 0% 7% / 0.14);
+        background: hsl(var(--card) / 0.86);
+        color: hsl(var(--muted-foreground));
+      }
+
+      .fretlab-bundle-offer-title {
+        margin: 0 0 14px;
+        color: #0f172a;
+        line-height: 1.35;
+        text-align: center;
+      }
+
+      .fretlab-bundle-offer-price {
+        min-width: 108px;
+        text-align: right;
+        color: hsl(var(--foreground));
+        font-size: clamp(2rem, 4vw, 2.6rem);
+        line-height: 1;
+      }
+
+      .fretlab-bundle-offer-copy {
+        margin: 12px 0 0;
+        color: hsl(var(--muted-foreground));
+        line-height: 1.72;
+      }
+
+      .fretlab-bundle-offer-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .fretlab-bundle-offer-pay {
+        min-height: 50px;
+      }
+
+      .fretlab-bundle-offer-gumroad {
+        margin-top: 14px;
+      }
+
+      .fretlab-bundle-offer-note {
+        margin: 12px 0 0;
+        color: hsl(var(--muted-foreground));
+        line-height: 1.65;
+      }
+
       .fretlab-promo-campaign-wrap {
         padding: 0;
         transform: none;
@@ -306,6 +439,27 @@
 
         .fretlab-promo-campaign-trigger {
           margin-left: 0;
+        }
+
+        .fretlab-bundle-offer-top {
+          flex-direction: column;
+        }
+
+        .fretlab-buy-mode-toggle {
+          justify-content: stretch;
+        }
+
+        .fretlab-buy-mode-toggle-btn {
+          width: 100%;
+        }
+
+        .fretlab-bundle-offer-price {
+          min-width: 0;
+          text-align: left;
+        }
+
+        .fretlab-bundle-offer-buttons {
+          grid-template-columns: 1fr;
         }
       }
 
@@ -513,8 +667,9 @@
 
   <body>
     <div id="root"></div>
-    <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.4"></script>
+    <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.5"></script>
     <script defer src="/fretlab/js/fretlab-payment.js?v=1.1.15"></script>
+    <script defer src="/js/bundle-payment.js?v=1.0.0"></script>
     <script>
       (function () {
         var TITLE_SCALE = 0.92;
@@ -569,7 +724,7 @@
         var SITE_FOOTER_RENDER_KEY = 'site-footer-v3';
         var UPDATE_LOG_CONTENT = {
           zh: {
-            banner: '最后一次版本更新时间：2026年03月24日',
+            banner: '最后一次版本更新时间：2026年03月25日',
             button: '了解详情',
             modalTitle: '更新日志',
             close: '关闭',
@@ -577,15 +732,26 @@
             sectionHistory: '历史更新记录',
             historyButton: '了解详情',
             historyNote: '暂无更早历史记录。',
-            currentVersion: 'v1.0.4（2026年03月24日）',
+            currentVersion: 'v1.0.5（2026年03月25日）',
             currentItems: [
-              '新增自定义指板：可设置任意弦数、每根弦定音与统一/逐段弦间音程。',
-              '预制指型拖到自定义调弦后会自动换算品位与音名，不再按标准吉他硬搬。',
-              '高弦数自定义指板会自动扩展容器高度，并保持正常弦距与弹窗滚动。',
-              '指板支持点击预听、双击设根音、三态旋转与 Start / End Fret 视窗控制。',
-              '手机、平板与桌面顶部布局进一步统一，官网工具页保留稳定交互。'
+              '修正自定义指板拖拽指型时的音名与落点映射，优先保证音名正确。',
+              '自定义调弦下保留原始弦位，不再把预制指型按标准吉他 1:1 硬搬。',
+              '音名显示改为按自定义指板实际落点输出，减少理论拼写造成的错位。',
+              '官网工具页已同步这一轮自定义指板拖拽修正。',
+              '安装包版本同步更新，供官网与后端下载链路使用。'
             ],
             historyItems: [
+              {
+                version: 'v1.0.4',
+                detailTitle: 'v1.0.4（2026年03月24日）',
+                detailItems: [
+                  '新增自定义指板：可设置任意弦数、每根弦定音与统一/逐段弦间音程。',
+                  '预制指型拖到自定义调弦后会自动换算品位与音名，不再按标准吉他硬搬。',
+                  '高弦数自定义指板会自动扩展容器高度，并保持正常弦距与弹窗滚动。',
+                  '指板支持点击预听、双击设根音、三态旋转与 Start / End Fret 视窗控制。',
+                  '手机、平板与桌面顶部布局进一步统一，官网工具页保留稳定交互。'
+                ]
+              },
               {
                 version: 'v1.0.3',
                 detailTitle: 'v1.0.3（2026年03月16日）',
@@ -622,7 +788,7 @@
             ],
           },
           en: {
-            banner: 'Last version update: March 24, 2026',
+            banner: 'Last version update: March 25, 2026',
             button: 'View details',
             modalTitle: 'Update Log',
             close: 'Close',
@@ -630,15 +796,26 @@
             sectionHistory: 'History',
             historyButton: 'View details',
             historyNote: 'No earlier history is available.',
-            currentVersion: 'v1.0.4 (March 24, 2026)',
+            currentVersion: 'v1.0.5 (March 25, 2026)',
             currentItems: [
-              'Added Custom Fretboard with arbitrary string counts, per-string tuning, and interval presets.',
-              'Preset shapes now retune themselves on custom tuning instead of being copied from standard guitar 1:1.',
-              'High-string-count boards now expand the container height automatically while keeping normal string spacing and modal scrolling.',
-              'The board now supports click-to-preview audio, double-click root notes, three-state rotation, and Start / End Fret window control.',
-              'Header layout is further unified across phone, tablet, and desktop while keeping the website tool interaction stable.'
+              'Fixed note-name and drop-position mapping when dragging preset shapes onto a custom fretboard.',
+              'Custom tuning now keeps each note on its original string instead of copying preset shapes from standard guitar 1:1.',
+              'Displayed note names now follow the actual dropped pitch on the custom fretboard.',
+              'The website tool page has been synced with this custom-fretboard drag-and-drop fix.',
+              'Installer packages were refreshed for the website and backend download flow.'
             ],
             historyItems: [
+              {
+                version: 'v1.0.4',
+                detailTitle: 'v1.0.4 (March 24, 2026)',
+                detailItems: [
+                  'Added Custom Fretboard with arbitrary string counts, per-string tuning, and interval presets.',
+                  'Preset shapes now retune themselves on custom tuning instead of being copied from standard guitar 1:1.',
+                  'High-string-count boards now expand the container height automatically while keeping normal string spacing and modal scrolling.',
+                  'The board now supports click-to-preview audio, double-click root notes, three-state rotation, and Start / End Fret window control.',
+                  'Header layout is further unified across phone, tablet, and desktop while keeping the website tool interaction stable.'
+                ]
+              },
               {
                 version: 'v1.0.3',
                 detailTitle: 'v1.0.3 (March 16, 2026)',
@@ -676,6 +853,18 @@
           }
         };
         var ESCAPE_HANDLER_ATTACHED = false;
+        var HEADER_NAV_LABELS = {
+          zh: {
+            features: '功能',
+            buy: '购买',
+            faq: 'FAQ'
+          },
+          en: {
+            features: 'Features',
+            buy: 'Buy',
+            faq: 'FAQ'
+          }
+        };
 
         function getLang() {
           var lang = (document.documentElement.lang || '').toLowerCase();
@@ -797,10 +986,16 @@
             nav.className = 'fretlab-header-nav';
           }
 
-          nav.innerHTML = ''
-            + '<a href="#features" data-scroll-target="features">Features</a>'
-            + '<a href="#buy" data-scroll-target="buy">Buy</a>'
-            + '<a href="#faq" data-scroll-target="faq">FAQ</a>';
+          var lang = getLang();
+          var navText = HEADER_NAV_LABELS[lang] || HEADER_NAV_LABELS.en;
+          var renderKey = [lang, navText.features, navText.buy, navText.faq].join('|');
+          if (nav.dataset.renderKey !== renderKey) {
+            nav.innerHTML = ''
+              + '<a href="#features" data-scroll-target="features">' + navText.features + '</a>'
+              + '<a href="#buy" data-scroll-target="buy">' + navText.buy + '</a>'
+              + '<a href="#faq" data-scroll-target="faq">' + navText.faq + '</a>';
+            nav.dataset.renderKey = renderKey;
+          }
 
           Array.prototype.forEach.call(nav.querySelectorAll('a[data-scroll-target]'), function (link) {
             if (link.dataset.scrollBound === '1') return;
@@ -959,60 +1154,80 @@
           return lang === 'en' ? 'Pay with Gumroad' : 'Gumroad 支付';
         }
 
-        var PROMO_CAMPAIGN_CONTENT = {
+        function getBundleGumroadUrl() {
+          return 'https://icstudio3.gumroad.com/';
+        }
+
+        var BUNDLE_OFFER_CONTENT = {
           zh: {
-            title: '如果你在 2026 年 3 月 14 日到 4 月 14 日之间购买了 Cognote 完整版，这个访问码也可以直接解锁 FretLab 完整版。',
-            button: '了解详情',
-            modalTitle: '活动详情',
-            sections: [
-              {
-                heading: '活动内容',
-                paragraph: '在北京时间 2026 年 3 月 14 日 00:00:00 到 2026 年 4 月 14 日 23:59:59 之间购买 Cognote 完整版的用户，也会获得 FretLab 完整版授权。'
-              },
-              {
-                heading: '适用范围',
-                items: [
-                  '本次活动只适用于 Cognote 完整版订单，不适用于单件购买。',
-                  '在本页输入活动期间购买的 Cognote 完整版访问码，即可验证通过。',
-                  '赠送内容为 FretLab 完整版，无需额外购买。'
-                ]
-              },
-              {
-                heading: '补充说明',
-                items: [
-                  '如果对应的 Cognote 订单后续退款，赠送的 FretLab 权限也会一并失效。',
-                  '如果你确认自己在活动期内购买了 Cognote 完整版，但仍无法解锁 FretLab，可以<a href="/contact/" class="underline underline-offset-2">联系我</a>协助核对订单。'
-                ]
-              }
-            ],
+            badge: 'Cognote + FretLab',
+            title: '一次解锁 Cognote 与 FretLab',
+            price: '¥168',
+            description: '如果你准备同时把读谱训练和吉他指板训练一起拿下，这个套装会更直接。后续只需要一个 Bundle 访问码，就可以验证两边的完整工具。',
+            alipay: '支付宝支付',
+            wechat: '微信支付',
+            note: '这个套装会使用独立的 Bundle 订单和访问码系统，不会和现有单买订单混在一起。'
           },
           en: {
-            title: 'If you bought the Cognote full version between March 14, 2026 and April 14, 2026, that same access code can also unlock the full version of FretLab.',
-            button: 'Read details',
-            modalTitle: 'Offer details',
-            sections: [
-              {
-                heading: 'What this offer includes',
-                paragraph: 'If you bought the Cognote full version between March 14, 2026 00:00:00 and April 14, 2026 23:59:59, Beijing time, that same access code can also unlock the full version of FretLab.'
-              },
-              {
-                heading: 'Eligibility',
-                items: [
-                  'This offer applies only to Cognote full-version orders, not single-product purchases.',
-                  'Enter the qualifying Cognote full-version access code on this page and FretLab should verify successfully.',
-                  'The included bonus is full FretLab access at no extra cost.'
-                ]
-              },
-              {
-                heading: 'Notes',
-                items: [
-                  'If the qualifying Cognote order is refunded later, the gifted FretLab access will also be revoked.',
-                  'If you bought Cognote during the offer period but FretLab is still not unlocked, <a href="/contact/" class="underline underline-offset-2">contact me</a> and I can help verify the order.'
-                ]
-              }
-            ],
+            badge: 'Cognote + FretLab',
+            title: 'Unlock Cognote and FretLab at once',
+            price: '¥168',
+            description: 'If you want reading practice and fretboard training together, the bundle is the more direct setup. Later, one dedicated bundle access code will unlock both full tools.',
+            alipay: 'Alipay',
+            wechat: 'WeChat Pay',
+            note: 'This bundle will use its own order and access-code system, separate from the existing standalone purchases.'
           }
         };
+
+        var BUY_MODE_CONTENT = {
+          zh: {
+            standalone: 'FretLab 单买',
+            bundle: '套装 Bundle',
+            priceModes: {
+              standalone: {
+                amount: '¥48',
+                label: '一次购买'
+              },
+              bundle: {
+                amount: '¥168',
+                label: '一次购买'
+              }
+            }
+          },
+          en: {
+            standalone: 'FretLab Only',
+            bundle: 'Bundle',
+            priceModes: {
+              standalone: {
+                amount: '¥48',
+                label: 'one-time purchase'
+              },
+              bundle: {
+                amount: '¥168',
+                label: 'one-time purchase'
+              }
+            }
+          }
+        };
+
+        function findBuyHeadlinePriceNode(buySection) {
+          var exactNode = buySection.querySelector('div.font-sketch.text-4xl.md\\:text-5xl.text-foreground.text-center');
+          if (exactNode && exactNode.querySelector('span.font-hand.text-lg.text-muted-foreground')) {
+            return exactNode;
+          }
+
+          var candidates = Array.prototype.slice.call(buySection.querySelectorAll('div.font-sketch, div[class*="font-sketch"]'));
+          for (var i = 0; i < candidates.length; i += 1) {
+            var node = candidates[i];
+            if (node.querySelector('button, input, textarea, select')) continue;
+            var label = node.querySelector ? node.querySelector('span.font-hand.text-lg.text-muted-foreground') : null;
+            if (!label) continue;
+            if (/¥\d+/.test((node.textContent || '').replace(/\s+/g, ' '))) {
+              return node;
+            }
+          }
+          return null;
+        }
 
         function ensureGumroadPayButton() {
           var buySection = document.getElementById('buy');
@@ -1043,6 +1258,260 @@
           }
         }
 
+        function ensureBundleOfferBlock() {
+          var buySection = document.getElementById('buy');
+          if (!buySection) return;
+
+          var accessInput = buySection.querySelector('#access-code-input');
+          var payButton = buySection.querySelector('#fretlab-buy-alipay') || buySection.querySelector('#fretlab-buy-wechat');
+          var standaloneCard = null;
+          if (payButton && payButton.closest) {
+            standaloneCard = payButton.closest('div.relative.w-full');
+          }
+          if (!standaloneCard && accessInput && accessInput.closest) {
+            standaloneCard = accessInput.closest('div.relative.w-full');
+          }
+          if (!standaloneCard || !standaloneCard.parentNode) return;
+
+          function findTrialFullBlock(scope) {
+            if (!scope) return null;
+            var grids = scope.querySelectorAll('div.grid.grid-cols-1.md\\:grid-cols-2.gap-3');
+            for (var i = 0; i < grids.length; i++) {
+              var text = (grids[i].textContent || '').replace(/\s+/g, ' ');
+              var hasTrial = text.indexOf('试用版') !== -1 || text.indexOf('免费版') !== -1 || text.indexOf('Trial') !== -1 || text.indexOf('Free Version') !== -1;
+              var hasFull = text.indexOf('完整版') !== -1 || text.indexOf('Full Version') !== -1;
+              if (hasTrial && hasFull) return grids[i];
+            }
+            return null;
+          }
+
+          function findPreviewContainer(scope) {
+            if (!scope) return null;
+            var previewLink = scope.querySelector('a[href="/fretlab-tool/"],a[href="/fretlab-tool"],a[href="/en/fretlab-tool/"],a[href="/en/fretlab-tool"]');
+            if (!previewLink) return null;
+            var previewRow = previewLink.closest('div.flex.gap-3.flex-wrap.justify-center.mt-1');
+            if (previewRow && scope.contains(previewRow)) return previewRow;
+            var node = previewLink;
+            while (node && node.parentNode && node.parentNode !== scope) {
+              node = node.parentNode;
+            }
+            return node && node.parentNode === scope ? node : null;
+          }
+
+          var lang = getLang();
+          var text = BUNDLE_OFFER_CONTENT[lang] || BUNDLE_OFFER_CONTENT.zh;
+          var block = document.getElementById('fretlab-bundle-offer-block');
+          if (!block) {
+            block = document.createElement('div');
+            block.id = 'fretlab-bundle-offer-block';
+            block.className = 'relative w-full fretlab-bundle-offer-wrap';
+            block.innerHTML = ''
+              + '<svg class="fretlab-bundle-offer-outline" aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 442 250">'
+              + '  <g>'
+              + '    <path d="M1.842 2.417 C89.275 0.412, 179.638 1.128, 438.761 2.681 M2.537 3.128 C134.904 0.952, 267.221 0.673, 440.228 1.874 M440.472 1.137 C441.996 73.185, 440.726 144.992, 440.983 247.291 M439.524 2.864 C441.716 98.764, 441.231 195.198, 438.766 248.145 M440.177 248.431 C318.753 249.916, 194.164 249.688, 2.341 247.933 M439.085 246.828 C324.284 250.077, 208.795 250.613, 1.927 247.551 M2.467 248.432 C0.224 166.908, 0.969 86.873, 2.914 1.958 M1.023 246.995 C2.901 161.255, 1.865 74.232, 1.701 2.624" stroke="hsl(0 0% 7% / 0.14)" stroke-width="1.2" fill="none"></path>'
+              + '  </g>'
+              + '</svg>'
+              + '<div class="fretlab-bundle-offer-card"'
+              + ' data-bundle-offer'
+              + ' data-bundle-theme="fretlab"'
+              + ' data-bundle-name-zh="IC Studio 套装（Cognote + FretLab）"'
+              + ' data-bundle-name-en="IC Studio Bundle (Cognote + FretLab)">'
+              + '  <div class="fretlab-bundle-offer-top">'
+              + '    <div>'
+              + '      <span id="fretlab-bundle-offer-badge" class="fretlab-bundle-offer-badge font-hand"></span>'
+              + '    </div>'
+              + '  </div>'
+              + '  <h3 id="fretlab-bundle-offer-title" class="fretlab-bundle-offer-title font-sketch text-2xl"></h3>'
+              + '  <div class="fretlab-bundle-offer-buttons">'
+              + '    <button type="button" class="fretlab-bundle-offer-pay font-hand rounded-xl border border-border bg-card px-4 py-3 text-lg hover:bg-zinc-100" data-bundle-pay-trigger="alipay" id="fretlab-bundle-offer-alipay"></button>'
+              + '    <button type="button" class="fretlab-bundle-offer-pay font-hand rounded-xl border border-border bg-card px-4 py-3 text-lg hover:bg-zinc-100" data-bundle-pay-trigger="wechat" id="fretlab-bundle-offer-wechat"></button>'
+              + '  </div>'
+              + '  <a id="fretlab-bundle-offer-gumroad" class="fretlab-gumroad-pay-btn fretlab-bundle-offer-gumroad font-hand rounded-xl border border-border bg-card px-4 py-3 text-lg hover:bg-zinc-100" target="_blank" rel="noreferrer"></a>'
+              + '</div>';
+          }
+
+          if (block.parentNode !== standaloneCard.parentNode || block.previousElementSibling !== standaloneCard) {
+            if (standaloneCard.nextSibling) {
+              standaloneCard.parentNode.insertBefore(block, standaloneCard.nextSibling);
+            } else {
+              standaloneCard.parentNode.appendChild(block);
+            }
+          }
+
+          var offerRoot = block.querySelector('[data-bundle-offer]');
+          if (offerRoot) {
+            offerRoot.setAttribute('data-bundle-lang', lang);
+          }
+
+          var badgeNode = document.getElementById('fretlab-bundle-offer-badge');
+          var titleNode = document.getElementById('fretlab-bundle-offer-title');
+          var alipayNode = document.getElementById('fretlab-bundle-offer-alipay');
+          var wechatNode = document.getElementById('fretlab-bundle-offer-wechat');
+          var gumroadNode = document.getElementById('fretlab-bundle-offer-gumroad');
+
+          if (badgeNode) badgeNode.textContent = text.badge;
+          if (titleNode) titleNode.innerHTML = text.title;
+          if (alipayNode) alipayNode.textContent = text.alipay;
+          if (wechatNode) wechatNode.textContent = text.wechat;
+          if (gumroadNode) {
+            gumroadNode.textContent = getGumroadButtonText(lang);
+            gumroadNode.href = getBundleGumroadUrl();
+          }
+        }
+
+        function ensureBuyModeToggle() {
+          var buySection = document.getElementById('buy');
+          if (!buySection) return;
+
+          var accessInput = buySection.querySelector('#access-code-input');
+          var payButton = buySection.querySelector('#fretlab-buy-alipay') || buySection.querySelector('#fretlab-buy-wechat');
+          var bundleBlock = document.getElementById('fretlab-bundle-offer-block');
+          var headlinePriceNode = findBuyHeadlinePriceNode(buySection);
+          var supportNode = Array.prototype.find.call(
+            buySection.querySelectorAll('p.font-hand, p[class*="font-hand"]'),
+            function (node) {
+              var text = (node.textContent || '').replace(/\s+/g, ' ').trim();
+              return text.indexOf('支持 Web 与桌面端') !== -1 || text.indexOf('Supports Web and desktop') !== -1;
+            }
+          );
+          var accessSection = accessInput && accessInput.closest
+            ? accessInput.closest('div.rounded-xl.border.border-border\\/70.bg-background\\/50.p-3') || accessInput.closest('div.rounded-xl')
+            : null;
+          var standaloneCard = null;
+          if (payButton && payButton.closest) {
+            standaloneCard = payButton.closest('div.relative.w-full');
+          }
+          if (!standaloneCard && accessInput && accessInput.closest) {
+            standaloneCard = accessInput.closest('div.relative.w-full');
+          }
+          if (!standaloneCard || !bundleBlock || !standaloneCard.parentNode || !accessSection) return;
+
+          var hostParent = standaloneCard.parentNode;
+          var modeHost = document.getElementById('fretlab-buy-mode-host');
+          if (!modeHost) {
+            modeHost = document.createElement('div');
+            modeHost.id = 'fretlab-buy-mode-host';
+          }
+
+          var toggleWrap = document.getElementById('fretlab-buy-mode-toggle-wrap');
+          if (!toggleWrap) {
+            toggleWrap = document.createElement('div');
+            toggleWrap.id = 'fretlab-buy-mode-toggle-wrap';
+            toggleWrap.className = 'fretlab-buy-mode-toggle-wrap';
+            toggleWrap.innerHTML = ''
+              + '<div class="fretlab-buy-mode-toggle">'
+              + '  <button type="button" id="fretlab-buy-mode-standalone" class="fretlab-buy-mode-toggle-btn font-hand" data-buy-mode-toggle="standalone"></button>'
+              + '  <button type="button" id="fretlab-buy-mode-bundle" class="fretlab-buy-mode-toggle-btn font-hand" data-buy-mode-toggle="bundle"></button>'
+              + '</div>';
+          }
+
+          if (modeHost.parentNode !== hostParent || modeHost.nextElementSibling !== standaloneCard) {
+            hostParent.insertBefore(modeHost, standaloneCard);
+          }
+
+          if (toggleWrap.parentNode !== modeHost) {
+            modeHost.appendChild(toggleWrap);
+          }
+
+          var infoHost = document.getElementById('fretlab-buy-mode-info');
+          if (!infoHost) {
+            infoHost = document.createElement('div');
+            infoHost.id = 'fretlab-buy-mode-info';
+            infoHost.className = 'flex flex-col items-center text-center gap-2 py-4';
+          }
+          if (infoHost.parentNode !== modeHost) {
+            modeHost.appendChild(infoHost);
+          }
+
+          if (supportNode && supportNode.parentNode !== infoHost) {
+            infoHost.appendChild(supportNode);
+          }
+          if (headlinePriceNode && headlinePriceNode.parentNode !== infoHost) {
+            infoHost.appendChild(headlinePriceNode);
+          }
+
+          var accessMarker = document.getElementById('fretlab-access-section-marker');
+          if (!accessMarker) {
+            accessMarker = document.createElement('div');
+            accessMarker.id = 'fretlab-access-section-marker';
+            accessMarker.hidden = true;
+          }
+          if (!accessMarker.parentNode) {
+            accessSection.parentNode.insertBefore(accessMarker, accessSection);
+          }
+
+          var bundleCard = bundleBlock.querySelector('.fretlab-bundle-offer-card');
+          var standaloneContent = standaloneCard.querySelector(':scope > div.relative.z-10')
+            || standaloneCard.querySelector('div.relative.z-10')
+            || standaloneCard;
+          var sharedHost = document.getElementById('fretlab-buy-mode-shared');
+          if (!sharedHost) {
+            sharedHost = document.createElement('div');
+            sharedHost.id = 'fretlab-buy-mode-shared';
+          }
+          if (bundleCard && sharedHost.parentNode !== bundleCard) {
+            bundleCard.appendChild(sharedHost);
+          }
+
+          var lang = getLang();
+          var text = BUY_MODE_CONTENT[lang] || BUY_MODE_CONTENT.zh;
+          var standaloneButton = document.getElementById('fretlab-buy-mode-standalone');
+          var bundleButton = document.getElementById('fretlab-buy-mode-bundle');
+          if (standaloneButton) standaloneButton.textContent = text.standalone;
+          if (bundleButton) bundleButton.textContent = text.bundle;
+
+          function applyMode(mode) {
+            var normalized = mode === 'bundle' ? 'bundle' : 'standalone';
+            modeHost.dataset.activeMode = normalized;
+            if (normalized === 'bundle') {
+              var bundleTop = bundleCard ? bundleCard.querySelector('.fretlab-bundle-offer-top') : null;
+              if (bundleCard && infoHost.parentNode !== bundleCard) {
+                if (bundleTop && bundleTop.nextSibling) {
+                  bundleCard.insertBefore(infoHost, bundleTop.nextSibling);
+                } else {
+                  bundleCard.appendChild(infoHost);
+                }
+              }
+              if (sharedHost && accessSection.parentNode !== sharedHost) {
+                sharedHost.appendChild(accessSection);
+              }
+              standaloneCard.hidden = true;
+              bundleBlock.hidden = false;
+            } else {
+              if (standaloneContent && infoHost.parentNode !== standaloneContent) {
+                standaloneContent.insertBefore(infoHost, standaloneContent.firstChild);
+              }
+              if (accessMarker.parentNode && accessSection.parentNode !== accessMarker.parentNode) {
+                if (accessMarker.nextSibling) {
+                  accessMarker.parentNode.insertBefore(accessSection, accessMarker.nextSibling);
+                } else {
+                  accessMarker.parentNode.appendChild(accessSection);
+                }
+              }
+              standaloneCard.hidden = false;
+              bundleBlock.hidden = true;
+            }
+            if (standaloneButton) standaloneButton.classList.toggle('is-active', normalized === 'standalone');
+            if (bundleButton) bundleButton.classList.toggle('is-active', normalized === 'bundle');
+            var priceCopy = text.priceModes && text.priceModes[normalized];
+            if (headlinePriceNode && priceCopy) {
+              headlinePriceNode.innerHTML = priceCopy.amount + ' <span class="font-hand text-lg text-muted-foreground">' + priceCopy.label + '</span>';
+            }
+          }
+
+          var currentMode = modeHost.dataset.activeMode || 'standalone';
+          applyMode(currentMode);
+
+          if (toggleWrap.dataset.bound !== '1') {
+            toggleWrap.addEventListener('click', function (event) {
+              var button = event.target && event.target.closest ? event.target.closest('[data-buy-mode-toggle]') : null;
+              if (!button) return;
+              applyMode(button.getAttribute('data-buy-mode-toggle'));
+            });
+            toggleWrap.dataset.bound = '1';
+          }
+        }
+
         function ensureSmoothBuyScroll() {
           if (document.documentElement.dataset.fretlabSmoothBuyBound === '1') return;
 
@@ -1067,6 +1536,47 @@
           }, true);
 
           document.documentElement.dataset.fretlabSmoothBuyBound = '1';
+        }
+
+        function bindEarlyHeaderNavScrollCapture() {
+          if (document.documentElement.dataset.fretlabHeaderNavCaptureBound === '1') return;
+
+          var lastTargetId = '';
+          var lastTriggeredAt = 0;
+
+          function handleHeaderNavPress(event) {
+            var node = event.target;
+            var link = node && node.closest ? node.closest('#fretlab-header-nav a[data-scroll-target]') : null;
+            if (!link) return;
+
+            var targetId = link.getAttribute('data-scroll-target');
+            if (!targetId) return;
+
+            var now = Date.now();
+            if (lastTargetId === targetId && now - lastTriggeredAt < 400) {
+              event.preventDefault();
+              event.stopPropagation();
+              if (typeof event.stopImmediatePropagation === 'function') {
+                event.stopImmediatePropagation();
+              }
+              return;
+            }
+
+            lastTargetId = targetId;
+            lastTriggeredAt = now;
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof event.stopImmediatePropagation === 'function') {
+              event.stopImmediatePropagation();
+            }
+            scrollToFretlabSection(targetId);
+          }
+
+          ['pointerdown', 'mousedown', 'touchstart', 'click'].forEach(function (eventName) {
+            document.addEventListener(eventName, handleHeaderNavPress, true);
+          });
+
+          document.documentElement.dataset.fretlabHeaderNavCaptureBound = '1';
         }
 
         function ensureUpdateLogBlock() {
@@ -1129,21 +1639,6 @@
 
           var lang = getLang();
           var text = UPDATE_LOG_CONTENT[lang] || UPDATE_LOG_CONTENT.zh;
-          var promo = PROMO_CAMPAIGN_CONTENT[lang] || PROMO_CAMPAIGN_CONTENT.zh;
-
-          var promoBlock = document.getElementById('fretlab-promo-campaign-block');
-          if (!promoBlock) {
-            promoBlock = document.createElement('div');
-            promoBlock.id = 'fretlab-promo-campaign-block';
-            promoBlock.className = 'relative w-full fretlab-promo-campaign-wrap';
-            promoBlock.innerHTML = ''
-              + '<div class="fretlab-promo-campaign-card">'
-              + '  <div class="fretlab-promo-campaign-copy">'
-              + '    <p id="fretlab-promo-campaign-title" class="fretlab-promo-campaign-title font-hand text-base"></p>'
-              + '  </div>'
-              + '  <button id="fretlab-promo-campaign-open" type="button" class="fretlab-promo-campaign-trigger font-hand text-sm"></button>'
-              + '</div>';
-          }
 
           var block = document.getElementById('fretlab-update-log-block');
           if (!block) {
@@ -1164,21 +1659,17 @@
           var trialFullBlock = findTrialFullBlock(contentRoot);
           var previewContainer = findPreviewContainer(contentRoot);
           var paymentButtonRow = payButton && payButton.parentNode ? payButton.parentNode : null;
+          var gumroadButton = document.getElementById('fretlab-buy-gumroad');
           var accessSection = accessInput && accessInput.closest ? accessInput.closest('div.rounded-xl') : null;
 
-          if (paymentButtonRow && accessSection && paymentButtonRow.parentNode === accessSection.parentNode) {
-            if (promoBlock.parentNode !== paymentButtonRow.parentNode || promoBlock.nextElementSibling !== accessSection) {
-              paymentButtonRow.insertAdjacentElement('afterend', promoBlock);
-            }
-          } else if (previewContainer && previewContainer.parentNode) {
-            var promoParentNode = previewContainer.parentNode;
-            if (promoBlock.parentNode !== promoParentNode || promoBlock.nextElementSibling !== previewContainer) {
-              promoParentNode.insertBefore(promoBlock, previewContainer);
-            }
-          } else if (trialFullBlock && trialFullBlock.parentNode) {
-            if (promoBlock.parentNode !== trialFullBlock.parentNode || promoBlock.previousElementSibling !== trialFullBlock) {
-              trialFullBlock.insertAdjacentElement('afterend', promoBlock);
-            }
+          var promoBlock = document.getElementById('fretlab-promo-campaign-block');
+          if (promoBlock && promoBlock.parentNode) {
+            promoBlock.parentNode.removeChild(promoBlock);
+          }
+
+          var promoModal = document.getElementById('fretlab-promo-campaign-modal');
+          if (promoModal && promoModal.parentNode) {
+            promoModal.parentNode.removeChild(promoModal);
           }
 
           // Preferred position:
@@ -1194,26 +1685,6 @@
             }
           } else {
             return;
-          }
-
-          var promoTitleNode = document.getElementById('fretlab-promo-campaign-title');
-          var promoOpenNode = document.getElementById('fretlab-promo-campaign-open');
-          if (promoTitleNode) promoTitleNode.textContent = promo.title;
-          if (promoOpenNode) promoOpenNode.textContent = promo.button;
-
-          var promoModal = document.getElementById('fretlab-promo-campaign-modal');
-          if (!promoModal) {
-            promoModal = document.createElement('dialog');
-            promoModal.id = 'fretlab-promo-campaign-modal';
-            promoModal.className = 'fretlab-update-log-modal';
-            promoModal.setAttribute('aria-hidden', 'true');
-            document.body.appendChild(promoModal);
-          }
-
-          var promoModalRenderKey = getPromoCampaignRenderKey(lang, promo);
-          if (promoModal.dataset.renderKey !== promoModalRenderKey) {
-            promoModal.innerHTML = buildPromoCampaignModalHtml(promo);
-            promoModal.dataset.renderKey = promoModalRenderKey;
           }
 
           var bannerNode = document.getElementById('fretlab-update-log-banner');
@@ -1261,32 +1732,6 @@
               modal.showModal();
             } else {
               modal.classList.add('is-open');
-            }
-          }
-
-          function finalizePromoModalClose() {
-            promoModal.classList.remove('is-open');
-            promoModal.setAttribute('aria-hidden', 'true');
-            document.body.style.overflow = promoModal.dataset.bodyOverflow || '';
-            promoModal.dataset.bodyOverflow = '';
-          }
-
-          function closePromoModal() {
-            if (typeof promoModal.close === 'function' && promoModal.open) {
-              promoModal.close();
-              return;
-            }
-            finalizePromoModalClose();
-          }
-
-          function openPromoModal() {
-            promoModal.dataset.bodyOverflow = document.body.style.overflow || '';
-            document.body.style.overflow = 'hidden';
-            promoModal.setAttribute('aria-hidden', 'false');
-            if (typeof promoModal.showModal === 'function' && !promoModal.open) {
-              promoModal.showModal();
-            } else {
-              promoModal.classList.add('is-open');
             }
           }
 
@@ -1360,18 +1805,9 @@
             bindPressAction(openNode, openModal);
           }
 
-          if (promoOpenNode) {
-            bindPressAction(promoOpenNode, openPromoModal);
-          }
-
           var closeButton = document.getElementById('fretlab-update-log-close');
           if (closeButton) {
             bindPressAction(closeButton, closeModal);
-          }
-
-          var promoCloseButton = document.getElementById('fretlab-promo-campaign-close');
-          if (promoCloseButton) {
-            bindPressAction(promoCloseButton, closePromoModal);
           }
 
           var historyToggleNodes = modal.querySelectorAll('.fretlab-history-toggle');
@@ -1407,22 +1843,9 @@
             if (event.target === modal) closeModal();
           };
 
-          promoModal.onclose = function () {
-            finalizePromoModalClose();
-          };
-
-          promoModal.onclick = function (event) {
-            if (event.target === promoModal) closePromoModal();
-          };
-
           if (!ESCAPE_HANDLER_ATTACHED) {
             document.addEventListener('keydown', function (event) {
               var modalNode = document.getElementById('fretlab-update-log-modal');
-              var promoModalNode = document.getElementById('fretlab-promo-campaign-modal');
-              if (event.key === 'Escape' && promoModalNode && promoModalNode.classList.contains('is-open')) {
-                closePromoModal();
-                return;
-              }
               if (!modalNode || !modalNode.classList.contains('is-open')) return;
               if (event.key === 'Escape') {
                 closeModal();
@@ -1432,7 +1855,24 @@
           }
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
+        function ensureBuyPreviewRemoved() {
+          var buySection = document.getElementById('buy');
+          if (!buySection) return;
+
+          var previewLink = buySection.querySelector('a[href="/fretlab-tool/"],a[href="/fretlab-tool"],a[href="/en/fretlab-tool/"],a[href="/en/fretlab-tool"]');
+          if (!previewLink) return;
+
+          var previewRow = previewLink.closest('div.flex.gap-3.flex-wrap.justify-center.mt-1');
+          if (previewRow && previewRow.parentNode) {
+            previewRow.parentNode.removeChild(previewRow);
+          }
+        }
+
+        var runtimeEnhancersStarted = false;
+        function startRuntimeEnhancers() {
+          if (runtimeEnhancersStarted) return;
+          runtimeEnhancersStarted = true;
+
           var tick = null;
           function scheduleEnsure() {
             if (tick) cancelAnimationFrame(tick);
@@ -1443,7 +1883,10 @@
               ensureSmoothBuyScroll();
               ensureGumroadPayButton();
               ensureStandardFooter();
+              ensureBundleOfferBlock();
+              ensureBuyModeToggle();
               ensureUpdateLogBlock();
+              ensureBuyPreviewRemoved();
             });
           }
 
@@ -1469,7 +1912,15 @@
             attributes: true,
             attributeFilter: ['lang']
           });
-        });
+        }
+
+        bindEarlyHeaderNavScrollCapture();
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', startRuntimeEnhancers, { once: true });
+        } else {
+          startRuntimeEnhancers();
+        }
       })();
     </script>
   </body>

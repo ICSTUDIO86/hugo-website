@@ -3669,6 +3669,8 @@
           const side = Math.max(2, Math.max(head.width, head.height));
           sortedEvents[i].x = head.x;
           sortedEvents[i].cursorSize = side;
+          sortedEvents[i].cursorLeft = head.left;
+          sortedEvents[i].cursorRight = head.left + head.width;
           sortedEvents[i].top = head.y - (side / 2);
           sortedEvents[i].height = side;
         }
@@ -3681,6 +3683,8 @@
           const side = Math.max(2, Math.max(head.width, head.height));
           sortedEvents[i].x = head.x;
           sortedEvents[i].cursorSize = side;
+          sortedEvents[i].cursorLeft = head.x - head.width / 2;
+          sortedEvents[i].cursorRight = head.x + head.width / 2;
           sortedEvents[i].top = head.y - (side / 2);
           sortedEvents[i].height = side;
         }
@@ -3762,6 +3766,8 @@
               const side = Math.max(2, Math.max(head.width, head.height));
               ev.x = head.x;
               ev.cursorSize = side;
+              ev.cursorLeft = head.left;
+              ev.cursorRight = head.left + head.width;
               ev.top = head.y - (side / 2);
               ev.height = side;
             }
@@ -3773,6 +3779,8 @@
             const side = Math.max(2, Math.max(head.width, head.height));
             ev.x = head.x;
             ev.cursorSize = side;
+            ev.cursorLeft = head.left;
+            ev.cursorRight = head.left + head.width;
             ev.top = head.y - (side / 2);
             ev.height = side;
           }
@@ -3814,6 +3822,8 @@
             const side = Math.max(2, Math.max(bestHead.width, bestHead.height));
             ev.x = bestHead.x;
             ev.cursorSize = side;
+            ev.cursorLeft = bestHead.left;
+            ev.cursorRight = bestHead.left + bestHead.width;
             ev.top = bestHead.y - (side / 2);
             ev.height = side;
           }
@@ -4008,6 +4018,8 @@
         top,
         height,
         size,
+        cursorLeft: isFinite(ev.cursorLeft) ? ev.cursorLeft : null,
+        cursorRight: isFinite(ev.cursorRight) ? ev.cursorRight : null,
         timeSec: (ev.absBeats || 0) * secPerQuarter
       };
     }).sort((a,b)=> a.timeSec - b.timeSec);
@@ -4082,7 +4094,11 @@
       const fallback = getCursorPlacementForMeasure(m);
       const size = isFinite(ev.size) && ev.size > 0 ? ev.size : (state.cursorWidth || Math.min(fallback.height, 16));
       const top = isFinite(ev.top) ? ev.top : (fallback.top + (fallback.height - size) / 2);
-      positionCursorRect(ev.x - size / 2, top, size, size);
+      const width = (isFinite(ev.cursorLeft) && isFinite(ev.cursorRight))
+        ? Math.max(2, ev.cursorRight - ev.cursorLeft)
+        : size;
+      const left = isFinite(ev.cursorLeft) ? ev.cursorLeft : (ev.x - width / 2);
+      positionCursorRect(left, top, width, size);
     }
 
     function scheduleNext(){
@@ -4236,9 +4252,13 @@
           xPos = m.startX + (m.endX - m.startX) * frac;
         }
         const size = isFinite(ev.cursorSize) && ev.cursorSize > 0 ? ev.cursorSize : (state.cursorWidth || Math.min(m.height, 16));
+        const width = (isFinite(ev.cursorLeft) && isFinite(ev.cursorRight))
+          ? Math.max(2, ev.cursorRight - ev.cursorLeft)
+          : size;
+        const left = isFinite(ev.cursorLeft) ? ev.cursorLeft : (xPos - width / 2);
         const top = isFinite(ev.top) ? ev.top : (m.top + (m.height - size) / 2);
         const durSec = isFinite(ev.durBeats) && ev.durBeats > 0 ? toSec(ev.durBeats) : 0;
-        noteEvents.push({ time: startSec, end: startSec + durSec, x: xPos, top, size, measure: ev.measure });
+        noteEvents.push({ time: startSec, end: startSec + durSec, x: xPos, left, top, size, width, measure: ev.measure });
       }
     }
     noteEvents.sort((a,b)=> (a.time - b.time) || ((a.x || 0) - (b.x || 0)));
@@ -4273,7 +4293,7 @@
           lastMaskedMeasure = ev.measure;
         }
         if (state.cursorEl.style.display !== 'block') state.cursorEl.style.display = 'block';
-        positionCursorRect(ev.x - ev.size / 2, ev.top, ev.size, ev.size);
+        positionCursorRect(isFinite(ev.left) ? ev.left : (ev.x - ev.width / 2), ev.top, ev.width, ev.size);
         try { state.overlayEl.appendChild(state.cursorEl); } catch(_){}
       }, delay);
       timeouts.push(tid);

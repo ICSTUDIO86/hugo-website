@@ -78,7 +78,20 @@
     }
   };
 
+  const DEFAULT_BUNDLE_API = {
+    verifyCode: 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/verifyBundleAccessCode',
+    lookupOrder: 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findBundleAccessCodeByOrderNo',
+    refundByAccessCode: 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/refundBundleByAccessCode'
+  };
+  const COGNOTE_DOWNLOADS = {
+    windows_x64: 'https://636c-cloud1-4g1r5ho01a0cfd85-1377702774.tcb.qcloud.la/downloads/Cognote-1.0.0-win-x64-setup.exe',
+    mac_arm64: 'https://636c-cloud1-4g1r5ho01a0cfd85-1377702774.tcb.qcloud.la/downloads/Cognote-1.0.0-mac-arm64.dmg',
+    mac_x64: 'https://636c-cloud1-4g1r5ho01a0cfd85-1377702774.tcb.qcloud.la/downloads/Cognote-1.0.0-mac-x64.dmg',
+    linux_amd64: 'https://636c-cloud1-4g1r5ho01a0cfd85-1377702774.tcb.qcloud.la/downloads/Cognote-1.0.0-linux-amd64.deb'
+  };
+
   const FRETLAB_TOOL_IDS = new Set(['fretlab', 'freaklab']);
+  const BUNDLE_TOOL_ID = 'bundle';
   const STATE = {
     polling: null,
     creatingPayment: false,
@@ -110,6 +123,7 @@
       paymentOrderTip: '• 支付订单号：支付宝/微信账单中的 20-32 位数字订单号',
       cancel: '取消',
       featurePay: '支付',
+      createOrderLoading: '正在创建支付订单...',
       paymentConsentText: '我已阅读并同意',
       paymentTermsLink: '《用户协议》',
       paymentPrivacyLink: '《隐私政策》',
@@ -140,6 +154,9 @@
       downloadSectionTitle: '下载安装包',
       downloadClickHint: '点击下方平台按钮即可下载',
       downloadSectionTip: '下载完成后，输入上面的访问码即可解锁桌面版。',
+      bundleDownloadSectionTip: '选择 Cognote 或 FretLab，即可查看对应的桌面版安装包。',
+      bundleDownloadToolCognote: 'Cognote',
+      bundleDownloadToolFretlab: 'FretLab',
       downloadWindows: 'Windows 安装版',
       downloadMacArm: 'macOS Apple Silicon',
       downloadMacIntel: 'macOS Intel',
@@ -148,6 +165,9 @@
       downloadNotReady: '未配置',
       downloadUnavailable: '该平台安装包暂未配置',
       downloadStarted: '已开始下载，请查看浏览器下载列表',
+      bundleExtraDownloadTitle: '套装额外下载',
+      bundleExtraDownloadTip: '这次解锁的是 Cognote + FretLab。除了 FretLab，你也可以直接下载 Cognote 桌面版。',
+      downloadCognoteDesktop: '下载 Cognote 桌面版',
       refundDialogTitle: '申请退款',
       refundCodeLabel: '访问码 *',
       refundInputPlaceholder: '输入访问码（6-30位大写字母或数字）',
@@ -187,6 +207,7 @@
       paymentOrderTip: '• Payment order number: 20-32 digits in Alipay/WeChat bill',
       cancel: 'Cancel',
       featurePay: 'payment',
+      createOrderLoading: 'Creating payment order...',
       paymentConsentText: 'I have read and agree to the',
       paymentTermsLink: 'User Agreement',
       paymentPrivacyLink: 'Privacy Policy',
@@ -217,6 +238,9 @@
       downloadSectionTitle: 'Download Installers',
       downloadClickHint: 'Click a platform button below to download',
       downloadSectionTip: 'After download, use the access code above to unlock the desktop version.',
+      bundleDownloadSectionTip: 'Choose Cognote or FretLab above to view the desktop installers for each tool.',
+      bundleDownloadToolCognote: 'Cognote',
+      bundleDownloadToolFretlab: 'FretLab',
       downloadWindows: 'Windows Installer',
       downloadMacArm: 'macOS Apple Silicon',
       downloadMacIntel: 'macOS Intel',
@@ -225,6 +249,9 @@
       downloadNotReady: 'Not configured',
       downloadUnavailable: 'Installer for this platform is not configured yet',
       downloadStarted: 'Download started. Check your browser downloads',
+      bundleExtraDownloadTitle: 'Bundle extra download',
+      bundleExtraDownloadTip: 'This bundle unlocks both Cognote and FretLab. Besides FretLab, you can also download the Cognote desktop build here.',
+      downloadCognoteDesktop: 'Download Cognote desktop',
       refundDialogTitle: 'Request refund',
       refundCodeLabel: 'Access code *',
       refundInputPlaceholder: 'Enter access code (6-30 uppercase letters or numbers)',
@@ -400,6 +427,97 @@
     return Boolean(access && access.code);
   }
 
+  function isBundleAccessCode(accessCode) {
+    return /^BDL[A-Z0-9]{3,27}$/i.test(String(accessCode || '').trim());
+  }
+
+  function isBundleOrderNumber(orderNumber) {
+    return /^IBD\d{10,24}$/i.test(String(orderNumber || '').trim());
+  }
+
+  function shouldFallbackToBundleLookup(result) {
+    if (!result || result.success) return false;
+    return result.code === 'ORDER_NOT_FOUND' || /未找到|not found/i.test(result.error || result.message || '');
+  }
+
+  function getBundleEndpoint(name) {
+    const runtimeBundleApi = window.IC_BUNDLE_PAYMENT_CONFIG && window.IC_BUNDLE_PAYMENT_CONFIG.api
+      ? window.IC_BUNDLE_PAYMENT_CONFIG.api
+      : null;
+    const raw = runtimeBundleApi && runtimeBundleApi[name]
+      ? runtimeBundleApi[name]
+      : DEFAULT_BUNDLE_API[name];
+    return String(raw || '').trim();
+  }
+
+  function persistBundleAccess(accessCode, payload) {
+    if (window.BundlePayment && typeof window.BundlePayment.persistBundleAccess === 'function') {
+      window.BundlePayment.persistBundleAccess(accessCode, payload || {});
+      return;
+    }
+
+    const safeCode = String(accessCode || '').trim().toUpperCase();
+    if (!safeCode) return;
+
+    localStorage.setItem('ic-bundle-license-v1', JSON.stringify({
+      version: 1,
+      toolId: BUNDLE_TOOL_ID,
+      code: safeCode,
+      verifiedAt: Date.now(),
+      order: payload && payload.order ? payload.order : null,
+      unlockTools: ['cognote', 'fretlab']
+    }));
+
+    try {
+      const now = Date.now();
+      localStorage.setItem('ic_full_version', 'true');
+      localStorage.setItem('ic_verified_from_access_page', 'true');
+      localStorage.setItem('ic_verified_timestamp', String(now));
+      localStorage.setItem('ic-studio-payment-state', JSON.stringify({
+        hasPaid: true,
+        accessCode: safeCode,
+        paidAt: new Date(now).toISOString(),
+        orderInfo: payload && payload.order ? payload.order : null,
+        version: 'bundle-1'
+      }));
+      localStorage.setItem('ic-premium-access', JSON.stringify({
+        code: safeCode,
+        activatedAt: now,
+        deviceId: 'bundle',
+        features: ['sight-reading-tool', 'fretlab-tool'],
+        version: 'bundle-1',
+        serverVerified: true,
+        productName: (payload && payload.product_name) || 'IC Studio Bundle',
+        amount: (payload && payload.amount) || '168.00',
+        orderInfo: payload && payload.order ? payload.order : null
+      }));
+    } catch (_) {
+      // ignore
+    }
+
+    storeAccess(safeCode, payload && payload.order ? payload.order : null);
+  }
+
+  function clearBundleAccess() {
+    if (window.BundlePayment && typeof window.BundlePayment.clearBundleAccess === 'function') {
+      window.BundlePayment.clearBundleAccess();
+      return;
+    }
+
+    try {
+      localStorage.removeItem('ic_full_version');
+      localStorage.removeItem('ic_verified_from_access_page');
+      localStorage.removeItem('ic_verified_timestamp');
+      localStorage.removeItem('ic-studio-payment-state');
+      localStorage.removeItem('ic-premium-access');
+      localStorage.removeItem('ic-bundle-license-v1');
+      localStorage.removeItem(CONFIG.storageKey);
+      localStorage.removeItem(CONFIG.legacyCodeKey);
+    } catch (_) {
+      // ignore
+    }
+  }
+
   function setVerifyMessage(html) {
     const result = byId('verify-result');
     if (!result) return;
@@ -412,7 +530,7 @@
 
   function isCurrentToolCode(toolId) {
     const normalized = normalizeToolId(toolId);
-    return FRETLAB_TOOL_IDS.has(normalized) || normalized.indexOf('fret') >= 0;
+    return normalized === BUNDLE_TOOL_ID || FRETLAB_TOOL_IDS.has(normalized) || normalized.indexOf('fret') >= 0;
   }
 
   function getEndpoint(name) {
@@ -476,14 +594,57 @@
     return label;
   }
 
-  function renderDownloadButtonsHtml() {
+  function getRecommendedPlatformKey() {
+    const ua = navigator.userAgent || '';
+    const platform = navigator.platform || '';
+    const source = (ua + ' ' + platform).toLowerCase();
+
+    if (source.includes('win')) return 'windows_x64';
+    if (source.includes('mac')) {
+      if (source.includes('arm') || source.includes('apple') || source.includes('m1') || source.includes('m2') || source.includes('m3') || source.includes('m4')) {
+        return 'mac_arm64';
+      }
+      return 'mac_x64';
+    }
+    if (source.includes('linux')) return 'linux_amd64';
+    return '';
+  }
+
+  function getRecommendedCognoteDownloadUrl() {
+    const platformKey = getRecommendedPlatformKey();
+    return String(COGNOTE_DOWNLOADS[platformKey] || '').trim();
+  }
+
+  function getToolDownloads(tool) {
+    if (tool === 'cognote') {
+      return { ...COGNOTE_DOWNLOADS };
+    }
+
+    return CONFIG.downloads || {};
+  }
+
+  function triggerDirectDownload(url) {
+    if (!url) return false;
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return true;
+  }
+
+  function renderDownloadButtonsHtml(tool) {
+    const downloads = getToolDownloads(tool || 'fretlab');
     return getDownloadPlatforms().map(function(item) {
-      const url = String((CONFIG.downloads && CONFIG.downloads[item.key]) || '').trim();
+      const url = String((downloads && downloads[item.key]) || '').trim();
       const enabled = Boolean(url);
       const buttonLabel = withDownloadSize(item.key, item.icon + ' ' + item.label);
       return ''
         + '<button type="button" class="fretlab-download-btn" data-platform="' + item.key + '" data-url="' + escapeHtml(url) + '"'
-        + ' style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;padding:10px 12px;border-radius:10px;font-family:' + HAND_FONT + ';font-size:14px;line-height:1.35;'
+        + ' style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;margin:0;padding:10px 12px;border-radius:10px;font-family:' + HAND_FONT + ';font-size:14px;line-height:1.35;'
         + (enabled
             ? 'border:2px solid rgba(17,24,39,.85);background:#fff;color:#111827;cursor:pointer;box-shadow:0 2px 0 rgba(17,24,39,.18);'
             : 'border:1px dashed rgba(148,163,184,.45);background:#f8fafc;color:#94a3b8;cursor:not-allowed;')
@@ -502,6 +663,17 @@
         + '</span>'
         + '</button>';
     }).join('');
+  }
+
+  function renderBundleDownloadSectionHtml() {
+    return ''
+      + '<div style="font-size:21px;line-height:1.15;color:#92400e;margin-bottom:8px;text-align:center;">' + i18n('downloadSectionTitle') + '</div>'
+      + '<div data-fretlab-download-switcher data-active-tool="fretlab" style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px;">'
+      + '  <button type="button" data-fretlab-download-tool="cognote" style="display:inline-flex;align-items:center;justify-content:center;min-width:118px;height:40px;padding:0 16px;border-radius:999px;border:2px dashed rgba(17,24,39,.28);background:#fff;color:#374151;font:700 14px/1 ' + HAND_FONT + ';cursor:pointer;transition:all .18s ease;">' + i18n('bundleDownloadToolCognote') + '</button>'
+      + '  <button type="button" data-fretlab-download-tool="fretlab" style="display:inline-flex;align-items:center;justify-content:center;min-width:118px;height:40px;padding:0 16px;border-radius:999px;border:2px dashed rgba(17,24,39,.85);background:#fbbf24;color:#111827;font:700 14px/1 ' + HAND_FONT + ';cursor:pointer;transition:all .18s ease;">' + i18n('bundleDownloadToolFretlab') + '</button>'
+      + '</div>'
+      + '<div data-fretlab-download-panel="fretlab" style="display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px;">' + renderDownloadButtonsHtml('fretlab') + '</div>'
+      + '<div data-fretlab-download-panel="cognote" style="display:none;grid-template-columns:1fr;gap:12px;margin-top:12px;">' + renderDownloadButtonsHtml('cognote') + '</div>';
   }
 
   function setButtonLoading(button, loading) {
@@ -526,6 +698,53 @@
     const id = method === 'wechat' ? 'fretlab-buy-wechat' : 'fretlab-buy-alipay';
     const button = byId(id);
     setButtonLoading(button, loading);
+  }
+
+  function showPaymentLoading(message) {
+    hidePaymentLoading();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'fretlab-payment-loading';
+    overlay.style.cssText = [
+      'position:fixed',
+      'inset:0',
+      'display:flex',
+      'align-items:center',
+      'justify-content:center',
+      'background:rgba(17,24,39,.52)',
+      'z-index:10030',
+      'padding:20px'
+    ].join(';');
+
+    const card = document.createElement('div');
+    card.style.cssText = [
+      'width:min(92vw,320px)',
+      'background:#fff',
+      'border:1px solid rgba(37,99,235,.14)',
+      'border-radius:18px',
+      'padding:24px 22px',
+      'text-align:center',
+      'box-shadow:0 20px 44px rgba(15,23,42,.18)'
+    ].join(';');
+
+    card.innerHTML = ''
+      + '<div style="width:42px;height:42px;margin:0 auto 14px;border:3px solid rgba(148,163,184,.25);border-top-color:#2563eb;border-radius:999px;animation:fretlab-pay-spin 1s linear infinite;"></div>'
+      + '<div style="font:600 16px/1.4 Inter, sans-serif;color:#0f172a;">' + escapeHtml(message) + '</div>';
+
+    if (!byId('fretlab-payment-loading-style')) {
+      const style = document.createElement('style');
+      style.id = 'fretlab-payment-loading-style';
+      style.textContent = '@keyframes fretlab-pay-spin{to{transform:rotate(360deg)}}';
+      document.head.appendChild(style);
+    }
+
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+  }
+
+  function hidePaymentLoading() {
+    const overlay = byId('fretlab-payment-loading');
+    if (overlay) overlay.remove();
   }
 
   function showPaymentUnavailable(message) {
@@ -763,6 +982,7 @@
     );
 
     const popup = document.createElement('div');
+    const showBundleExtras = isBundleAccessCode(accessCode);
     popup.id = 'fretlab-success-popup';
     popup.innerHTML = ''
       + '<div style="position:fixed;inset:0;background:rgba(26,26,26,.66);backdrop-filter:blur(2px);z-index:10060;display:flex;align-items:center;justify-content:center;padding:20px;">'
@@ -772,7 +992,6 @@
       + '        <div style="width:48px;height:48px;border-radius:999px;border:2px dashed rgba(22,163,74,.6);background:#dcfce7;color:#166534;display:inline-flex;align-items:center;justify-content:center;font-size:26px;line-height:1;">✓</div>'
       + '        <h3 style="margin:0;font-size:28px;line-height:1.2;color:#111827;font-family:' + HAND_FONT + ';">' + i18n('successTitle') + '</h3>'
       + '      </div>'
-      + '      <p style="margin:8px 0 0;color:#4b5563;font-size:16px;">' + i18n('successDesc') + '</p>'
       + '    </div>'
       + '    <div style="margin-top:16px;padding:14px;background:#fff;border:1px dashed rgba(17,24,39,.24);border-radius:12px;">'
       + '      <div style="display:flex;align-items:center;gap:10px;width:100%;">'
@@ -784,8 +1003,10 @@
       + '        <button type="button" id="fretlab-copy-order" style="border:1px solid rgba(17,24,39,.5);background:#f9fafb;color:#111827;border-radius:8px;padding:8px 12px;cursor:pointer;font-family:' + HAND_FONT + ';">' + i18n('copyShort') + '</button>'
       + '      </div>'
       + '      <div style="margin-top:12px;padding:12px;background:#fffbeb;border:1px dashed rgba(217,119,6,.38);border-radius:10px;">'
-      + '        <div style="font-size:21px;line-height:1.15;color:#92400e;margin-bottom:8px;text-align:center;">' + i18n('downloadSectionTitle') + '</div>'
-      + '        <div style="display:grid;grid-template-columns:1fr;gap:8px;">' + renderDownloadButtonsHtml() + '</div>'
+      + (showBundleExtras
+          ? renderBundleDownloadSectionHtml()
+          : '<div style="font-size:21px;line-height:1.15;color:#92400e;margin-bottom:8px;text-align:center;">' + i18n('downloadSectionTitle') + '</div>'
+            + '<div style="display:grid;grid-template-columns:1fr;gap:12px;margin-top:4px;">' + renderDownloadButtonsHtml() + '</div>')
       + '      </div>'
       + '    </div>'
       + '    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">'
@@ -856,6 +1077,32 @@
         showToast(i18n('downloadStarted'), 'success');
       });
     });
+
+    const downloadSwitcher = popup.querySelector('[data-fretlab-download-switcher]');
+    if (downloadSwitcher) {
+      const switchButtons = Array.prototype.slice.call(popup.querySelectorAll('[data-fretlab-download-tool]'));
+      const panels = Array.prototype.slice.call(popup.querySelectorAll('[data-fretlab-download-panel]'));
+      const syncDownloadPanels = function(activeTool) {
+        panels.forEach(function(panel) {
+          panel.style.display = panel.getAttribute('data-fretlab-download-panel') === activeTool ? 'grid' : 'none';
+        });
+        switchButtons.forEach(function(button) {
+          const isActive = button.getAttribute('data-fretlab-download-tool') === activeTool;
+          button.style.background = isActive ? '#fbbf24' : '#fff';
+          button.style.color = '#111827';
+          button.style.borderColor = isActive ? 'rgba(17,24,39,.85)' : 'rgba(17,24,39,.28)';
+        });
+        downloadSwitcher.dataset.activeTool = activeTool;
+      };
+
+      downloadSwitcher.addEventListener('click', function(event) {
+        const button = event.target && event.target.closest ? event.target.closest('[data-fretlab-download-tool]') : null;
+        if (!button) return;
+        syncDownloadPanels(button.getAttribute('data-fretlab-download-tool') || 'fretlab');
+      });
+
+      syncDownloadPanels(downloadSwitcher.dataset.activeTool || 'fretlab');
+    }
   }
 
   async function startPayment(method) {
@@ -863,6 +1110,7 @@
     if (CONFIG.mockPaymentSuccess) {
       STATE.creatingPayment = true;
       setPaymentButtonLoading(method, true);
+      showPaymentLoading(i18n('createOrderLoading'));
       try {
         await new Promise(function(resolve) { setTimeout(resolve, 480); });
         const outTradeNo = generateMockOrderNo();
@@ -878,10 +1126,12 @@
           }
         };
         storeAccess(accessCode, orderInfo);
+        hidePaymentLoading();
         setVerifyMessage('<span style="color:#16a34a;">✅ ' + i18n('mockVerifyReady') + '</span>');
         showSuccessPopup(accessCode, orderInfo);
         showToast(i18n('mockPayToast'), 'success');
       } finally {
+        hidePaymentLoading();
         STATE.creatingPayment = false;
         setPaymentButtonLoading(method, false);
       }
@@ -894,6 +1144,7 @@
     const payType = method === 'wechat' ? 'wxpay' : 'alipay';
     STATE.creatingPayment = true;
     setPaymentButtonLoading(method, true);
+    showPaymentLoading(i18n('createOrderLoading'));
 
     try {
       const response = await fetch(endpoint, {
@@ -921,10 +1172,13 @@
         throw new Error(backendMessage);
       }
 
+      hidePaymentLoading();
       renderPaymentModal(result, payType);
     } catch (error) {
+      hidePaymentLoading();
       showPaymentUnavailable(error.message || '创建支付失败，请稍后重试');
     } finally {
+      hidePaymentLoading();
       STATE.creatingPayment = false;
       setPaymentButtonLoading(method, false);
     }
@@ -1000,9 +1254,6 @@
   }
 
   async function verifyAccessCode() {
-    const endpoint = ensureEndpoint('verifyCode', '访问码验证');
-    if (!endpoint) return;
-
     const input = byId('access-code-input');
     const button = byId('verify-btn');
     if (!input || !button) return;
@@ -1017,6 +1268,14 @@
     setVerifyMessage('<span style="color:#2563eb;">🔄 ' + i18n('verifyChecking') + '</span>');
 
     try {
+      const useBundle = isBundleAccessCode(code);
+      const endpoint = useBundle
+        ? getBundleEndpoint('verifyCode')
+        : ensureEndpoint('verifyCode', '访问码验证');
+      if (!endpoint) {
+        throw new Error(i18n('verifyFailed'));
+      }
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1031,7 +1290,16 @@
           amount: result.amount || null,
           order_info: result.order_info || null
         };
-        storeAccess(code, orderInfo);
+        if (useBundle) {
+          persistBundleAccess(code, {
+            verifiedAt: Date.now(),
+            product_name: result.product_name || 'IC Studio Bundle',
+            amount: result.amount || null,
+            order: orderInfo
+          });
+        } else {
+          storeAccess(code, orderInfo);
+        }
         setVerifyMessage('<span style="color:#16a34a;">✅ ' + i18n('verifySuccess') + '</span>');
         showSuccessPopup(code, orderInfo);
       } else {
@@ -1050,9 +1318,6 @@
   }
 
   async function performOrderLookup() {
-    const endpoint = ensureEndpoint('lookupOrder', i18n('featureOrderLookup'));
-    if (!endpoint) return;
-
     const input = byId('fretlab-order-lookup-input');
     const resultDiv = byId('fretlab-order-lookup-result');
     if (!input || !resultDiv) return;
@@ -1063,7 +1328,7 @@
       return;
     }
 
-    const isMerchantOrder = /^(IFL|IC|ICS)\d{10,24}$/i.test(orderNumber) || /^ICMOCK\d{10,24}$/i.test(orderNumber);
+    const isMerchantOrder = /^(IFL|IC|ICS)\d{10,24}$/i.test(orderNumber) || /^ICMOCK\d{10,24}$/i.test(orderNumber) || isBundleOrderNumber(orderNumber);
     const isTradeNo = /^\d{20,32}$/.test(orderNumber);
     if (!isMerchantOrder && !isTradeNo) {
       resultDiv.innerHTML = '<div style="padding:8px 10px;border-radius:10px;background:#fef2f2;border:1px dashed #fca5a5;color:#b91c1c;">' + i18n('lookupInvalidOrder') + '</div>';
@@ -1073,16 +1338,54 @@
     resultDiv.innerHTML = '<div style="padding:8px 10px;border-radius:10px;background:#eff6ff;border:1px dashed #93c5fd;color:#1d4ed8;">' + i18n('lookupLoading') + '</div>';
 
     try {
+      const useBundle = isBundleOrderNumber(orderNumber);
       const body = isMerchantOrder
-        ? { order_no: orderNumber, tool_id: CONFIG.toolId }
-        : { zpay_trade_no: orderNumber, tool_id: CONFIG.toolId };
+        ? { order_no: orderNumber, tool_id: useBundle ? BUNDLE_TOOL_ID : CONFIG.toolId }
+        : { zpay_trade_no: orderNumber, tool_id: useBundle ? BUNDLE_TOOL_ID : CONFIG.toolId };
 
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      const result = await parseResponse(response);
+      let result;
+      let response;
+
+      if (useBundle) {
+        const endpoint = getBundleEndpoint('lookupOrder');
+        if (!endpoint) {
+          throw new Error(i18n('lookupNotFound'));
+        }
+        response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        result = await parseResponse(response);
+      } else {
+        const endpoint = ensureEndpoint('lookupOrder', i18n('featureOrderLookup'));
+        if (!endpoint) {
+          throw new Error(i18n('lookupNotFound'));
+        }
+        response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        result = await parseResponse(response);
+
+        if ((!response.ok || !result.success) && shouldFallbackToBundleLookup(result)) {
+          const bundleEndpoint = getBundleEndpoint('lookupOrder');
+          if (bundleEndpoint) {
+            const bundleResponse = await fetch(bundleEndpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ...body,
+                tool_id: BUNDLE_TOOL_ID
+              })
+            });
+            const bundleResult = await parseResponse(bundleResponse);
+            response = bundleResponse;
+            result = bundleResult;
+          }
+        }
+      }
 
       if (response.ok && result && result.success && result.result && result.result.access_code) {
         const accessCode = String(result.result.access_code).toUpperCase();
@@ -1171,9 +1474,6 @@
   }
 
   async function submitRefund() {
-    const endpoint = ensureEndpoint('refundByAccessCode', i18n('featureRefund'));
-    if (!endpoint) return;
-
     const input = byId('fretlab-refund-input');
     const resultDiv = byId('fretlab-refund-result');
     const submitBtn = byId('fretlab-refund-submit');
@@ -1189,17 +1489,28 @@
     resultDiv.innerHTML = '<div style="padding:8px 10px;border-radius:10px;background:#eff6ff;border:1px dashed #93c5fd;color:#1d4ed8;">' + i18n('refundSubmitting') + '</div>';
 
     try {
+      const useBundle = isBundleAccessCode(accessCode);
+      const endpoint = useBundle
+        ? getBundleEndpoint('refundByAccessCode')
+        : ensureEndpoint('refundByAccessCode', i18n('featureRefund'));
+      if (!endpoint) {
+        throw new Error(i18n('refundFailed'));
+      }
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           access_code: accessCode,
-          tool_id: CONFIG.toolId
+          tool_id: useBundle ? BUNDLE_TOOL_ID : CONFIG.toolId
         })
       });
       const result = await parseResponse(response);
 
       if (response.ok && result && (result.success || result.ok)) {
+        if (useBundle) {
+          clearBundleAccess();
+        }
         resultDiv.innerHTML = '<div style="padding:8px 10px;border-radius:10px;background:#f0fdf4;border:1px dashed #86efac;color:#166534;">' + i18n('refundAccepted') + '</div>';
         showToast(i18n('refundSubmittedToast'), 'success');
       } else {

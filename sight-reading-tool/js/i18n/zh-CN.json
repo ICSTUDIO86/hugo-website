@@ -21,6 +21,15 @@
     "pill": "Cognote"
   },
 
+  "header": {
+    "nav": {
+      "features": "功能",
+      "reviews": "评价",
+      "buy": "购买",
+      "faq": "FAQ"
+    }
+  },
+
   "products": {
     "title": "五大核心工具",
     "subtitle": "针对不同训练需求，提供专业的视奏练习方案",

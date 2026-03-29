@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="light">
 <head>
-<script src="/js/url-language-force.js"></script>
-<script defer src="/js/current-year.js"></script>
 <script>
     (function() {
       var isFile = location.protocol === 'file:' || location.origin === 'null';
@@ -19,19 +17,13 @@
   </script>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
 
     <!-- Primary SEO Meta Tags -->
     <title>Interval Training Tool | Cognote - Ear Training & Pitch Recognition</title>
     <meta name="description" content="Professional interval training and ear training tool online. Practice interval recognition with customizable range, harmonic/melodic intervals, all interval types (m2-M13). Features real-time piano audio playback, standard music notation. Free 20 trials. Perfect for musicians developing relative pitch, ear training, and sight reading intervals. | 专业音程训练与听力训练工具，支持自定义音域、和声/旋律音程、所有音程类型（小二度-大十三度），实时钢琴音频。">
     <meta name="keywords" content="interval training, ear training, interval recognition, pitch training, music ear training, interval exercises, harmonic intervals, melodic intervals, relative pitch, perfect pitch training, music theory intervals, sight reading intervals, interval identification, aural training, music theory tool, free ear training, online interval trainer, interval practice, 音程训练, 听力训练, 音程识别, 相对音感, 音程练习, 和声音程, 旋律音程, IC 视奏工具, Cognote">
     <meta name="author" content="Igor Chen - Cognote">
-    <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="theme-color" content="#22c55e">
     <link rel="canonical" href="https://icstudio.club/tools/interval-generator.html">
-    <link rel="alternate" hreflang="zh-CN" href="https://icstudio.club/tools/interval-generator.html">
-    <link rel="alternate" hreflang="en" href="https://icstudio.club/en/tools/interval-generator.html">
-    <link rel="alternate" hreflang="x-default" href="https://icstudio.club/tools/interval-generator.html">
     <link rel="icon" type="image/svg+xml" href="assets/icon/cognote.svg">
     <link rel="icon" type="image/png" href="assets/icon/cognote.png">
 
@@ -40,19 +32,18 @@
     <meta property="og:url" content="https://icstudio.club/tools/interval-generator.html">
     <meta property="og:title" content="Interval Training Tool | Cognote">
     <meta property="og:description" content="Professional interval training & ear training tool. Practice interval recognition with customizable settings. Piano audio playback, standard notation. Free 20 trials. | 专业音程与听力训练工具，自定义设置，实时音频。">
-    <meta property="og:image" content="https://icstudio.club/images/hero-interval-en.png">
+    <meta property="og:image" content="https://icstudio.club/images/ICLOGO.png">
     <meta property="og:image:alt" content="Cognote Interval Training Tool Interface">
     <meta property="og:site_name" content="Cognote">
-    <meta property="og:locale" content="zh_CN" />
-    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:locale:alternate" content="en_US">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@ICStudio86">
     <meta name="twitter:url" content="https://icstudio.club/tools/interval-generator.html">
     <meta name="twitter:title" content="Interval Training & Ear Training Tool | Cognote">
     <meta name="twitter:description" content="Professional interval training tool. Practice interval recognition with customizable settings. Piano audio. Free 20 trials.">
-    <meta name="twitter:image" content="https://icstudio.club/images/hero-interval-en.png">
+    <meta name="twitter:image" content="https://icstudio.club/images/ICLOGO.png">
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -137,6 +128,25 @@
     
     <link rel="stylesheet" href="./IC 音程视奏工具_files/apple-ui-styles-green.css">
     <link rel="stylesheet" href="assets/css/midi-input.css">
+    <style>
+      .function-btn {
+        justify-content: center;
+        text-align: center;
+      }
+      .function-btn #currentFunction {
+        flex: 1 1 auto;
+        text-align: center;
+      }
+      .function-menu .function-option {
+        justify-content: center;
+        text-align: center;
+      }
+      .function-menu .function-option span {
+        display: block;
+        width: 100%;
+        text-align: center;
+      }
+    </style>
     <script src="assets/js/sample-player.js?v=6"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function(){
@@ -160,34 +170,29 @@
                 <div class="header-controls">
                     <div class="function-selector">
                         <button class="function-btn" id="functionBtn" onclick="toggleFunctionSelector()">
-                            🎼 <span id="currentFunction" data-i18n="app.intervalMode">音程视奏</span>
+                            <span id="currentFunction" data-i18n="app.intervalMode">音程视奏</span>
                         </button>
                         <div class="function-menu" id="functionMenu">
                             <div class="function-option" onclick="switchFunction('melody')">
-                                <span class="function-icon">🎵</span>
                                 <span data-i18n="app.melodyMode">旋律视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('jianpu')">
-                                <span class="function-icon">🔢</span>
                                 <span data-i18n="app.jianpuMode">简谱视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('interval')">
-                                <span class="function-icon">🎼</span>
                                 <span data-i18n="app.intervalMode">音程视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('chord')">
-                                <span class="function-icon">🎹</span>
                                 <span data-i18n="app.chordMode">和弦视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('rhythm')">
-                                <span class="function-icon">🥁</span>
                                 <span data-i18n="app.rhythmMode">节奏视奏</span>
                             </div>
                         </div>
                     </div>
                     <div class="settings-dropdown">
                         <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">
-                            ⚙️ <span data-i18n="settings.title">设置</span>
+                            <span data-i18n="settings.title">设置</span>
                         </button>
                     </div>
                 </div>
@@ -382,7 +387,7 @@
                 <strong>Cognote</strong> - 专业级音程视奏生成器
             </p>
             <p style="margin: 8px 0 0 0; font-size: 13px; opacity: 0.8;">
-                Copyright © <span data-current-year>2026</span>. All rights reserved. Igor Chen - 
+                Copyright © 2026. All rights reserved. Igor Chen - 
                 <a href="https://icstudio.club/" target="_blank" style="color: var(--primary-green); text-decoration: none;">icstudio.club</a>
             </p>
         </div>
@@ -1509,6 +1514,22 @@
             }
         }
 
+        function getToolParameterBootstrapPreferences(preferences) {
+            const nextPreferences = (preferences && typeof preferences === 'object')
+                ? { ...preferences }
+                : {};
+            const savedTheme = localStorage.getItem('preferredTheme');
+            const savedLanguage = localStorage.getItem('preferredLanguage');
+
+            if (savedTheme) {
+                nextPreferences.theme = savedTheme;
+            }
+            if (savedLanguage && translations[savedLanguage]) {
+                nextPreferences.language = savedLanguage;
+            }
+            return nextPreferences;
+        }
+
         function finalizeToolParameterApply() {
             const syncFnNames = [
                 'saveMeasureSettings',
@@ -1673,7 +1694,7 @@
             }
             const savedPayload = readSavedToolParameterPayload();
             if (savedPayload && savedPayload.controls) {
-                applyToolParameterPreferences(savedPayload.preferences);
+                applyToolParameterPreferences(getToolParameterBootstrapPreferences(savedPayload.preferences));
                 applyToolParameterSnapshot(savedPayload.controls);
                 finalizeToolParameterApply();
             }
@@ -1879,6 +1900,7 @@
             bars: 1,
             steps: []
         };
+        let metronomeBeatOnlyDuringPlayback = false;
 
         function normalizeMetronomeSubdivision(value) {
             const normalized = parseInt(value, 10);
@@ -1958,12 +1980,13 @@
             return { beats, den };
         }
 
-        function getMetronomePatternInfo(tempoOverride) {
+        function getMetronomePatternInfo(tempoOverride, beatOnly = false) {
             const tempo = Math.max(1, tempoOverride || metronomeTempo);
-            if (!metronomePattern.enabled) {
+            if (beatOnly || !metronomePattern.enabled) {
+                const tsInfo = getMetronomeTimeSignatureInfo();
                 return {
                     usePattern: false,
-                    stepDuration: 60.0 / tempo
+                    stepDuration: (60.0 / tempo) * (4 / tsInfo.den)
                 };
             }
 
@@ -2175,11 +2198,21 @@
             try {
                 // 恢复音频上下文（用户交互后）
                 if (metronomeAudioContext.state === 'suspended') {
-                    metronomeAudioContext.resume();
+                    const resumeTime = (typeof time === 'number' && isFinite(time))
+                        ? Math.max(time, metronomeAudioContext.currentTime + 0.02)
+                        : undefined;
+                    metronomeAudioContext.resume().then(() => {
+                        playMetronomeSound(resumeTime);
+                    }).catch((error) => {
+                        console.error('❌ 节拍器音频上下文恢复失败:', error);
+                    });
+                    return;
                 }
 
                 // 🔧 使用传入的精确时间，如果没有则使用当前时间
-                const scheduleTime = time !== undefined ? time : metronomeAudioContext.currentTime;
+                const scheduleTime = (typeof time === 'number' && isFinite(time))
+                    ? Math.max(time, metronomeAudioContext.currentTime + 0.02)
+                    : metronomeAudioContext.currentTime;
 
                 const oscillator = metronomeAudioContext.createOscillator();
                 const gainNode = metronomeAudioContext.createGain();
@@ -2258,7 +2291,7 @@
                 if (!initializeMetronomeAudio()) return;
             }
 
-            const patternInfo = getMetronomePatternInfo(metronomeTempo);
+            const patternInfo = getMetronomePatternInfo(metronomeTempo, metronomeBeatOnlyDuringPlayback);
             const stepDuration = patternInfo.usePattern ? patternInfo.stepDuration : (60.0 / metronomeTempo);
             const scheduleAheadTime = 0.2; // 调度未来 200ms 的节拍
 
@@ -2282,7 +2315,7 @@
         }
 
         // 启动节拍器 - 使用精确 Web Audio API 调度
-        function startMetronome() {
+        function startMetronome(startAtTime = null, beatOffset = 0) {
             loadMetronomePatternSettings();
             const headerInput = document.getElementById('headerMetronomeBpm');
             const tempo = parseInt(headerInput ? headerInput.value : metronomeTempo) || 60;
@@ -2305,27 +2338,29 @@
 
             isMetronomeRunning = true;
 
-            // 🔧 关键修复：使用 AudioContext 时间 0 作为全局节拍网格的起点
-            metronomeStartTime = 0; // 全局网格起点
-
-            const patternInfo = getMetronomePatternInfo(metronomeTempo);
-            const beatDuration = patternInfo.usePattern ? patternInfo.stepDuration : (60.0 / metronomeTempo);
+            const patternInfo = getMetronomePatternInfo(metronomeTempo, metronomeBeatOnlyDuringPlayback);
+            const stepDuration = patternInfo.usePattern ? patternInfo.stepDuration : (60.0 / metronomeTempo);
+            const stepMultiplier = patternInfo.usePattern ? Math.max(1, patternInfo.subdivision || 1) : 1;
             const now = metronomeAudioContext.currentTime;
+            const minLookahead = 0.02;
 
-            // 计算当前应该在第几拍（从时间 0 开始）
-            const currentBeatNumber = Math.floor(now / beatDuration);
-            const nextBeatNumber = currentBeatNumber + 1;
-            const nextBeatTime = nextBeatNumber * beatDuration;
-
-            // 确保下一拍至少在未来 50ms，否则跳过
-            const minLookahead = 0.05;
-            if (nextBeatTime < now + minLookahead) {
-                metronomeCurrentBeat = nextBeatNumber + 1;
+            if (typeof startAtTime === 'number' && isFinite(startAtTime)) {
+                const normalizedBeatOffset = Math.max(0, Number(beatOffset) || 0);
+                metronomeStartTime = startAtTime - (normalizedBeatOffset * stepMultiplier * stepDuration);
+                metronomeCurrentBeat = Math.max(0, Math.ceil(((now + minLookahead) - metronomeStartTime) / stepDuration));
+                console.log(`🎵 节拍器对齐播放起点: ${metronomeTempo} BPM, 当前=${now.toFixed(3)}s, 播放起点=${startAtTime.toFixed(3)}s, 拍位偏移=${normalizedBeatOffset.toFixed(3)}`);
             } else {
-                metronomeCurrentBeat = nextBeatNumber;
+                metronomeStartTime = 0;
+                const currentBeatNumber = Math.floor(now / stepDuration);
+                const nextBeatNumber = currentBeatNumber + 1;
+                const nextBeatTime = nextBeatNumber * stepDuration;
+                if (nextBeatTime < now + 0.05) {
+                    metronomeCurrentBeat = nextBeatNumber + 1;
+                } else {
+                    metronomeCurrentBeat = nextBeatNumber;
+                }
+                console.log(`🎵 节拍器对齐全局网格: ${metronomeTempo} BPM, 当前=${now.toFixed(3)}s, 从第${metronomeCurrentBeat}拍开始 (时间=${(metronomeCurrentBeat * stepDuration).toFixed(3)}s)`);
             }
-
-            console.log(`🎵 节拍器对齐全局网格: ${metronomeTempo} BPM, 当前=${now.toFixed(3)}s, 从第${metronomeCurrentBeat}拍开始 (时间=${(metronomeCurrentBeat * beatDuration).toFixed(3)}s)`);
 
             // 立即调度第一批节拍
             scheduleMetronomeBeat();
@@ -2892,6 +2927,7 @@
                 'controls.practiceAdd': '+',
                 'controls.practiceReset': '-',
                 'controls.play': '播放',
+                'controls.pause': '暂停',
                 'score.emptyInterval': '点击生成音程开始练习',
                 'settings.title': '设置',
                 'settings.theme': '主题',
@@ -3076,6 +3112,7 @@
                 'controls.practiceAdd': '+',
                 'controls.practiceReset': '-',
                 'controls.play': '播放',
+                'controls.pause': '暫停',
                 'score.emptyInterval': '點擊生成音程開始練習',
                 'settings.title': '設置',
                 'settings.theme': '主題',
@@ -3213,11 +3250,11 @@
             'en': {
                 'app.title': 'Cognote - Interval Sight-Reading Generator',
                 'app.subtitle': 'Professional Music Score Rendering & Music Theory Tool',
-                'app.melodyMode': 'Melody Sight-Reading',
-                'app.intervalMode': 'Interval Sight-Reading',
-                'app.jianpuMode': 'Jianpu Sight-Reading',
-                'app.chordMode': 'Chord Sight-Reading',
-                'app.rhythmMode': 'Rhythm Sight-Reading',
+                'app.melodyMode': 'Melody',
+                'app.intervalMode': 'Interval',
+                'app.jianpuMode': 'Jianpu',
+                'app.chordMode': 'Chord',
+                'app.rhythmMode': 'Rhythm',
                 'controls.intervalType': 'Interval Type',
                 'controls.intervalTypeSettings': 'Interval Type Settings',
                 'controls.measures': 'Measures',
@@ -3260,6 +3297,7 @@
                 'controls.practiceAdd': '+',
                 'controls.practiceReset': '-',
                 'controls.play': 'Play',
+                'controls.pause': 'Pause',
                 'score.emptyInterval': 'Click Generate Intervals to Start Practice',
                 'settings.title': 'Settings',
                 'settings.theme': 'Theme',
@@ -3472,6 +3510,9 @@
                     }
                 }
             });
+            if (typeof updatePlayButton === 'function') {
+                updatePlayButton();
+            }
         }
 
         // 页面加载时初始化语言
@@ -4137,6 +4178,7 @@
             if (window.isPlayingInterval) {
                 directPlayTest(); // 调用播放函数来切换状态（停止播放）
             }
+            clearIntervalPlaybackSelection({ resetTimeline: true });
 
             try {
                 // 🔧 首先尝试延迟初始化（备用机制）
@@ -4310,6 +4352,7 @@
 
                     // 使用V4.0渲染器渲染音程进行
                     await window.intervalRenderer.renderIntervalProgression(intervalProgression);
+                    queueIntervalPlaybackRefresh(260);
                 } else {
                     console.log('❌ V4.0渲染器不可用');
                     throw new Error('V4.0渲染器不可用');
@@ -4329,6 +4372,7 @@
 
                 // 🎵 更新播放数据
                 window.currentIntervalProgression = historyItem.progression;
+                clearIntervalPlaybackSelection({ resetTimeline: true });
 
                 // 渲染历史中的音程进行
                 renderIntervalProgression(historyItem.progression);
@@ -4349,6 +4393,7 @@
 
                 // 🎵 更新播放数据
                 window.currentIntervalProgression = historyItem.progression;
+                clearIntervalPlaybackSelection({ resetTimeline: true });
 
                 // 渲染历史中的音程进行
                 renderIntervalProgression(historyItem.progression);
@@ -5388,10 +5433,7 @@
                         window.intervalScheduledSounds = [];
                     }
                     // 更新播放按钮状态
-                    const playBtn = document.getElementById('playIntervalBtn');
-                    if (playBtn) {
-                        playBtn.innerHTML = '播放';
-                    }
+                    updatePlayButton();
                 }
 
                 // 清除空谱子提示信息
@@ -5427,11 +5469,9 @@
                         });
                         window.intervalScheduledSounds = [];
                     }
-                    const playBtn = document.getElementById('playIntervalBtn');
-                    if (playBtn) {
-                        playBtn.innerHTML = '播放';
-                    }
+                    updatePlayButton();
                 }
+                clearIntervalPlaybackSelection({ resetTimeline: true });
                 return originalPreviousInterval.apply(this, args);
             };
         }
@@ -5459,11 +5499,9 @@
                         });
                         window.intervalScheduledSounds = [];
                     }
-                    const playBtn = document.getElementById('playIntervalBtn');
-                    if (playBtn) {
-                        playBtn.innerHTML = '播放';
-                    }
+                    updatePlayButton();
                 }
+                clearIntervalPlaybackSelection({ resetTimeline: true });
                 return originalNextInterval.apply(this, args);
             };
         }
@@ -5479,6 +5517,14 @@
             if (scoreContainer) {
                 // 添加点击事件监听器
                 scoreContainer.addEventListener('click', function(event) {
+                    if (isIntervalPlaybackSelectableTarget(event.target) ||
+                        event.target.closest('#score svg') ||
+                        isPointInsideRenderedIntervalScore(event.clientX, event.clientY)) {
+                        return;
+                    }
+                    if (event.target.closest('button') || event.target.closest('a') || event.target.closest('.control')) {
+                        return;
+                    }
                     // 确保 generateIntervals 函数存在
                     if (typeof generateIntervals === 'function') {
                         generateIntervals();
@@ -5494,6 +5540,7 @@
             } else {
                 console.warn('未找到 .score-container 元素');
             }
+            initializeIntervalPlaybackCursorSystem();
         });
 
         // ======================================
@@ -5573,6 +5620,454 @@
         window.intervalMetronomeSyncTimeout = null; // 节拍器同步的 setTimeout ID
         window.intervalPlaybackRunId = 0;
         window.intervalPlaybackFinishTimer = null;
+        window.intervalMetronomeStopAfterPlayback = false;
+
+        function getIntervalPlaybackCursorState() {
+            if (!window.intervalPlaybackCursorState) {
+                window.intervalPlaybackCursorState = {
+                    timeline: [],
+                    cacheKey: '',
+                    selectedIndex: -1,
+                    cursorEl: null,
+                    measureRects: [],
+                    measureNoteRanges: [],
+                    followTimers: [],
+                    refreshTimer: null,
+                    observer: null
+                };
+            }
+            return window.intervalPlaybackCursorState;
+        }
+
+        function getCurrentIntervalPlaybackData() {
+            return window.currentIntervalProgression || null;
+        }
+
+        function getIntervalPlaybackCacheKey(progression) {
+            if (!progression || !Array.isArray(progression.measures)) return 'empty';
+            return `${progression.timestamp || 0}:${progression.measures.length}:${JSON.stringify(progression.timeSignature || {})}`;
+        }
+
+        function getIntervalPlaybackPaintTarget(el) {
+            if (!el) return null;
+            return el.closest('g.vf-stavenote, g.vf-note, g.vf-rest, g.vf-gracenote, g.vf-gracenote-group, g.vf-ghost-note, g.vf-textnote') ||
+                el.closest('g') ||
+                el;
+        }
+
+        function getIntervalPlaybackGlyphTarget(el) {
+            if (!el || !el.closest) return getIntervalPlaybackPaintTarget(el);
+            return el.closest('.vf-notehead, .vf-rest, .vf-textnote, .vf-gracenote, .vf-ghost-note') ||
+                getIntervalPlaybackPaintTarget(el);
+        }
+
+        function isIntervalPlaybackSelectableTarget(target) {
+            if (!target || !target.closest) return false;
+            return !!target.closest('g.vf-stavenote, g.vf-note, g.vf-rest, g.vf-gracenote, g.vf-gracenote-group, g.vf-ghost-note, g.vf-textnote, .vf-notehead, .vf-rest, .vf-stem, .vf-flag, .vf-beam, .vf-accidental, .vf-dot');
+        }
+
+        function getIntervalScoreRelativePoint(clientX, clientY) {
+            const scoreElement = document.getElementById('score');
+            if (!scoreElement) return null;
+            const rect = scoreElement.getBoundingClientRect();
+            return {
+                x: clientX - rect.left + scoreElement.scrollLeft,
+                y: clientY - rect.top + scoreElement.scrollTop
+            };
+        }
+
+        function isPointInsideRenderedIntervalScore(clientX, clientY) {
+            const scoreElement = document.getElementById('score');
+            const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+            if (!scoreElement || !svg) return false;
+            const svgRect = svg.getBoundingClientRect();
+            return clientX >= svgRect.left &&
+                clientX <= svgRect.right &&
+                clientY >= svgRect.top &&
+                clientY <= svgRect.bottom;
+        }
+
+        function ensureIntervalPlaybackCursor() {
+            const cursorState = getIntervalPlaybackCursorState();
+            const scoreElement = document.getElementById('score');
+            if (!scoreElement) return null;
+            if (!cursorState.cursorEl || !cursorState.cursorEl.isConnected) {
+                const cursor = document.createElement('div');
+                cursor.id = 'intervalPlaybackCursor';
+                cursor.style.position = 'absolute';
+                cursor.style.top = '0';
+                cursor.style.width = '12px';
+                cursor.style.height = '100%';
+                cursor.style.left = '0';
+                cursor.style.background = 'rgba(52,199,89,0.25)';
+                cursor.style.border = '1px solid rgba(52,199,89,0.4)';
+                cursor.style.borderRadius = '4px';
+                cursor.style.pointerEvents = 'none';
+                cursor.style.display = 'none';
+                scoreElement.appendChild(cursor);
+                cursorState.cursorEl = cursor;
+            }
+            return cursorState.cursorEl;
+        }
+
+        function clearIntervalPlaybackSelection(options = {}) {
+            const cursorState = getIntervalPlaybackCursorState();
+            cursorState.selectedIndex = -1;
+            if (options.resetTimeline) {
+                cursorState.timeline = [];
+                cursorState.cacheKey = '';
+                cursorState.measureRects = [];
+                cursorState.measureNoteRanges = [];
+            }
+            if (cursorState.cursorEl) cursorState.cursorEl.style.display = 'none';
+        }
+
+        function getIntervalMeasureRects() {
+            if (typeof window.getOSMDMeasureRects === 'function') {
+                try {
+                    const rects = window.getOSMDMeasureRects();
+                    if (Array.isArray(rects) && rects.length) return rects;
+                } catch (_) {}
+            }
+            const progression = getCurrentIntervalPlaybackData();
+            const measureCount = Array.isArray(progression?.measures) ? progression.measures.length : 0;
+            const scoreElement = document.getElementById('score');
+            const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+            if (!scoreElement || !svg || !measureCount) return [];
+            const scoreRect = scoreElement.getBoundingClientRect();
+            const svgRect = svg.getBoundingClientRect();
+            const startX = svgRect.left - scoreRect.left + scoreElement.scrollLeft;
+            const startY = svgRect.top - scoreRect.top + scoreElement.scrollTop;
+            const width = svgRect.width / measureCount;
+            return Array.from({ length: measureCount }, (_, index) => ({
+                x: startX + index * width,
+                y: startY,
+                width,
+                height: svgRect.height
+            }));
+        }
+
+        function collectIntervalPlaybackCandidates(measureRects) {
+            const scoreElement = document.getElementById('score');
+            const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+            if (!scoreElement || !svg) return measureRects.map(() => []);
+            const scoreRect = scoreElement.getBoundingClientRect();
+            const selector = 'g.vf-stavenote, g.vf-note, g.vf-rest, .vf-notehead, .vf-rest';
+            const seen = new Set();
+            const byMeasure = measureRects.map(() => []);
+
+            svg.querySelectorAll(selector).forEach((node) => {
+                const target = getIntervalPlaybackGlyphTarget(node);
+                if (!target || seen.has(target)) return;
+                const rect = target.getBoundingClientRect ? target.getBoundingClientRect() : null;
+                if (!rect || (rect.width <= 0 && rect.height <= 0)) return;
+                seen.add(target);
+                const candidate = {
+                    el: target,
+                    left: rect.left - scoreRect.left + scoreElement.scrollLeft,
+                    right: rect.right - scoreRect.left + scoreElement.scrollLeft,
+                    top: rect.top - scoreRect.top + scoreElement.scrollTop,
+                    bottom: rect.bottom - scoreRect.top + scoreElement.scrollTop,
+                    cx: rect.left - scoreRect.left + scoreElement.scrollLeft + rect.width / 2,
+                    cy: rect.top - scoreRect.top + scoreElement.scrollTop + rect.height / 2
+                };
+                for (let i = 0; i < measureRects.length; i += 1) {
+                    const measureRect = measureRects[i];
+                    const inX = candidate.cx >= (measureRect.x - 8) && candidate.cx <= (measureRect.x + measureRect.width + 8);
+                    if (inX) {
+                        byMeasure[i].push(candidate);
+                        break;
+                    }
+                }
+            });
+
+            return byMeasure.map((items) => items.sort((a, b) => a.cx - b.cx));
+        }
+
+        function clusterIntervalPlaybackCandidates(items) {
+            if (!items.length) return [];
+            const widths = items.map((item) => Math.max(4, item.right - item.left)).sort((a, b) => a - b);
+            const medianWidth = widths[Math.floor(widths.length / 2)] || 12;
+            const tolerance = Math.max(8, medianWidth * 0.85);
+            const clusters = [];
+            items.forEach((item) => {
+                const last = clusters[clusters.length - 1];
+                if (!last || Math.abs(item.cx - last.cx) > tolerance) {
+                    clusters.push({
+                        cx: item.cx,
+                        left: item.left,
+                        right: item.right,
+                        top: item.top,
+                        bottom: item.bottom,
+                        elements: [item.el]
+                    });
+                    return;
+                }
+                last.left = Math.min(last.left, item.left);
+                last.right = Math.max(last.right, item.right);
+                last.top = Math.min(last.top, item.top);
+                last.bottom = Math.max(last.bottom, item.bottom);
+                last.cx = (last.left + last.right) / 2;
+                if (!last.elements.includes(item.el)) last.elements.push(item.el);
+            });
+            return clusters;
+        }
+
+        function extractIntervalPlaybackEvents(progression) {
+            const events = [];
+            if (!progression || !Array.isArray(progression.measures)) return events;
+            progression.measures.forEach((measure, measureIndex) => {
+                const lowerVoice = Array.isArray(measure.lowerVoice) ? measure.lowerVoice : [];
+                const upperVoice = Array.isArray(measure.upperVoice) ? measure.upperVoice : [];
+                const count = Math.max(lowerVoice.length, upperVoice.length);
+                for (let i = 0; i < count; i += 1) {
+                    const lowerNote = lowerVoice[i];
+                    const upperNote = upperVoice[i];
+                    const duration = lowerNote?.duration ?? upperNote?.duration ?? 'quarter';
+                    const isRest = lowerNote?.type === 'rest' || upperNote?.type === 'rest';
+                    events.push({
+                        measureIndex,
+                        eventInMeasure: i,
+                        sourceIndex: events.length,
+                        duration,
+                        isRest,
+                        type: isRest ? 'rest' : 'interval'
+                    });
+                }
+            });
+            return events;
+        }
+
+        function getIntervalClusterForEvent(clusters, eventIndex, eventCount) {
+            if (!clusters.length) return null;
+            if (clusters.length === eventCount) return clusters[eventIndex] || null;
+            if (eventCount <= 1) return clusters[0];
+            const clusterIndex = Math.round(eventIndex * (clusters.length - 1) / (eventCount - 1));
+            return clusters[Math.max(0, Math.min(clusters.length - 1, clusterIndex))] || null;
+        }
+
+        function buildIntervalPlaybackTimeline(progression) {
+            const measureRects = getIntervalMeasureRects();
+            const logicalEvents = extractIntervalPlaybackEvents(progression);
+            const candidatesByMeasure = collectIntervalPlaybackCandidates(measureRects);
+            const clustersByMeasure = candidatesByMeasure.map(clusterIntervalPlaybackCandidates);
+            const grouped = measureRects.map(() => []);
+            logicalEvents.forEach((event) => {
+                if (grouped[event.measureIndex]) grouped[event.measureIndex].push(event);
+            });
+
+            const measureNoteRanges = measureRects.map((_, index) => {
+                const clusters = clustersByMeasure[index] || [];
+                if (!clusters.length) return null;
+                return {
+                    min: Math.min(...clusters.map((cluster) => cluster.top)),
+                    max: Math.max(...clusters.map((cluster) => cluster.bottom))
+                };
+            });
+
+            const timeline = [];
+            grouped.forEach((events, measureIndex) => {
+                const clusters = clustersByMeasure[measureIndex] || [];
+                events.forEach((event, eventIndex) => {
+                    const cluster = getIntervalClusterForEvent(clusters, eventIndex, events.length);
+                    timeline.push({
+                        ...event,
+                        index: timeline.length,
+                        x: cluster ? cluster.cx : null,
+                        cursorLeft: cluster ? cluster.left : null,
+                        cursorRight: cluster ? cluster.right : null,
+                        top: cluster ? cluster.top : null,
+                        height: cluster ? Math.max(2, cluster.bottom - cluster.top) : null,
+                        elements: cluster ? cluster.elements : []
+                    });
+                });
+            });
+
+            return { timeline, measureRects, measureNoteRanges };
+        }
+
+        function refreshIntervalPlaybackTimeline(options = {}) {
+            const cursorState = getIntervalPlaybackCursorState();
+            const progression = getCurrentIntervalPlaybackData();
+            if (!progression) {
+                clearIntervalPlaybackSelection({ resetTimeline: true });
+                return [];
+            }
+            const cacheKey = getIntervalPlaybackCacheKey(progression);
+            if (!options.force && cursorState.cacheKey === cacheKey && cursorState.timeline.length) {
+                return cursorState.timeline;
+            }
+            const built = buildIntervalPlaybackTimeline(progression);
+            cursorState.timeline = built.timeline;
+            cursorState.cacheKey = cacheKey;
+            cursorState.measureRects = built.measureRects;
+            cursorState.measureNoteRanges = built.measureNoteRanges;
+            if (cursorState.selectedIndex >= 0) {
+                if (!setIntervalPlaybackSelectionByIndex(cursorState.selectedIndex)) {
+                    clearIntervalPlaybackSelection();
+                }
+            }
+            return cursorState.timeline;
+        }
+
+        function queueIntervalPlaybackRefresh(delayMs = 180) {
+            const cursorState = getIntervalPlaybackCursorState();
+            if (cursorState.refreshTimer) clearTimeout(cursorState.refreshTimer);
+            cursorState.refreshTimer = setTimeout(() => {
+                cursorState.refreshTimer = null;
+                refreshIntervalPlaybackTimeline({ force: true });
+            }, delayMs);
+        }
+
+        function stopIntervalPlaybackCursorFollow() {
+            const cursorState = getIntervalPlaybackCursorState();
+            if (Array.isArray(cursorState.followTimers) && cursorState.followTimers.length) {
+                cursorState.followTimers.forEach((timerId) => clearTimeout(timerId));
+            }
+            cursorState.followTimers = [];
+        }
+
+        function startIntervalPlaybackCursorFollow(playbackEvents, startTime, beatDuration) {
+            const cursorState = getIntervalPlaybackCursorState();
+            const timeline = refreshIntervalPlaybackTimeline();
+            if (!timeline.length || !Array.isArray(playbackEvents) || !playbackEvents.length || !window.intervalAudioCtx) {
+                return;
+            }
+
+            stopIntervalPlaybackCursorFollow();
+
+            const firstTimelineIndex = timeline.findIndex((item) => item.sourceIndex === playbackEvents[0].sourceIndex);
+            if (firstTimelineIndex >= 0) {
+                setIntervalPlaybackSelectionByIndex(firstTimelineIndex);
+            }
+
+            let currentOffset = 0;
+            playbackEvents.forEach((event) => {
+                const timelineIndex = timeline.findIndex((item) => item.sourceIndex === event.sourceIndex);
+                const delayMs = Math.max(0, ((startTime + currentOffset) - window.intervalAudioCtx.currentTime) * 1000);
+                const timerId = setTimeout(() => {
+                    if (!window.isPlayingInterval) return;
+                    if (timelineIndex >= 0) {
+                        setIntervalPlaybackSelectionByIndex(timelineIndex);
+                    }
+                }, delayMs);
+                cursorState.followTimers.push(timerId);
+                currentOffset += getIntervalEventDurationInBeats(event.duration) * beatDuration;
+            });
+        }
+
+        function setIntervalPlaybackSelectionByIndex(index) {
+            const cursorState = getIntervalPlaybackCursorState();
+            const event = cursorState.timeline[index];
+            const measureRect = event && cursorState.measureRects[event.measureIndex];
+            const cursor = ensureIntervalPlaybackCursor();
+            if (!event || !measureRect || !cursor || !Number.isFinite(event.x)) {
+                clearIntervalPlaybackSelection();
+                return false;
+            }
+            cursorState.selectedIndex = index;
+            const range = cursorState.measureNoteRanges[event.measureIndex];
+            const top = Number.isFinite(event.top) ? event.top : (range?.min ?? measureRect.y);
+            const height = Number.isFinite(event.height) ? event.height : Math.max(16, ((range?.max ?? (measureRect.y + measureRect.height)) - top));
+            const width = (Number.isFinite(event.cursorLeft) && Number.isFinite(event.cursorRight))
+                ? Math.max(12, event.cursorRight - event.cursorLeft)
+                : 12;
+            const left = Number.isFinite(event.cursorLeft) ? event.cursorLeft : (event.x - width / 2);
+            cursor.style.transform = `translateX(${left}px)`;
+            cursor.style.width = `${width}px`;
+            cursor.style.top = `${top}px`;
+            cursor.style.height = `${height}px`;
+            cursor.style.display = 'block';
+            return true;
+        }
+
+        function findIntervalPlaybackEventByTarget(target, timeline) {
+            const normalizedTarget = getIntervalPlaybackGlyphTarget(target) || getIntervalPlaybackPaintTarget(target);
+            if (!normalizedTarget) return null;
+            for (let i = 0; i < timeline.length; i += 1) {
+                const event = timeline[i];
+                if (!Array.isArray(event.elements) || !event.elements.length) continue;
+                const matched = event.elements.some((element) => element === normalizedTarget || element.contains?.(normalizedTarget) || normalizedTarget.contains?.(element));
+                if (matched) return { event, index: i };
+            }
+            return null;
+        }
+
+        function applyGlyphBoundsToIntervalPlaybackEvent(event, target) {
+            const glyphTarget = getIntervalPlaybackGlyphTarget(target);
+            const scoreElement = document.getElementById('score');
+            if (!event || !glyphTarget || !scoreElement || !glyphTarget.getBoundingClientRect) return;
+            const rect = glyphTarget.getBoundingClientRect();
+            const scoreRect = scoreElement.getBoundingClientRect();
+            event.cursorLeft = rect.left - scoreRect.left + scoreElement.scrollLeft;
+            event.cursorRight = rect.right - scoreRect.left + scoreElement.scrollLeft;
+            event.top = rect.top - scoreRect.top + scoreElement.scrollTop;
+            event.height = rect.height;
+            event.x = (event.cursorLeft + event.cursorRight) / 2;
+        }
+
+        function findNearestIntervalPlaybackEvent(point, timeline, measureRects) {
+            if (!point || !timeline.length) return null;
+            let measureIndex = -1;
+            for (let i = 0; i < measureRects.length; i += 1) {
+                const measureRect = measureRects[i];
+                if (point.x >= measureRect.x && point.x <= measureRect.x + measureRect.width &&
+                    point.y >= measureRect.y - 24 && point.y <= measureRect.y + measureRect.height + 24) {
+                    measureIndex = i;
+                    break;
+                }
+            }
+            const candidates = measureIndex >= 0
+                ? timeline.filter((event) => event.measureIndex === measureIndex && Number.isFinite(event.x))
+                : timeline.filter((event) => Number.isFinite(event.x));
+            if (!candidates.length) return null;
+            let best = null;
+            let bestDistance = Infinity;
+            candidates.forEach((event) => {
+                const distance = Math.abs(event.x - point.x);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    best = event;
+                }
+            });
+            return best ? { event: best, index: best.index } : null;
+        }
+
+        function initializeIntervalPlaybackCursorSystem() {
+            const scoreElement = document.getElementById('score');
+            const cursorState = getIntervalPlaybackCursorState();
+            if (!scoreElement) return;
+            if (scoreElement.dataset.playbackCursorBound !== 'true') {
+                scoreElement.dataset.playbackCursorBound = 'true';
+                scoreElement.addEventListener('click', (event) => {
+                    if (window.__icChallenge && typeof window.__icChallenge.isActive === 'function' && window.__icChallenge.isActive()) {
+                        return;
+                    }
+                    const clickedInsideScore = isIntervalPlaybackSelectableTarget(event.target) ||
+                        !!event.target.closest('svg') ||
+                        isPointInsideRenderedIntervalScore(event.clientX, event.clientY);
+                    if (!clickedInsideScore) return;
+                    const timeline = refreshIntervalPlaybackTimeline();
+                    if (!timeline.length) return;
+                    const directMatch = findIntervalPlaybackEventByTarget(event.target, timeline);
+                    const point = getIntervalScoreRelativePoint(event.clientX, event.clientY);
+                    const fallbackMatch = findNearestIntervalPlaybackEvent(point, timeline, cursorState.measureRects);
+                    const resolved = directMatch || fallbackMatch;
+                    if (!resolved) return;
+                    if (directMatch && directMatch.event) {
+                        applyGlyphBoundsToIntervalPlaybackEvent(directMatch.event, event.target);
+                    }
+                    setIntervalPlaybackSelectionByIndex(resolved.index);
+                });
+            }
+            if (!cursorState.observer) {
+                cursorState.observer = new MutationObserver(() => {
+                    queueIntervalPlaybackRefresh(220);
+                });
+                cursorState.observer.observe(scoreElement, { childList: true, subtree: true });
+            }
+            queueIntervalPlaybackRefresh(260);
+        }
 
         function directPlayTest() {
 
@@ -5606,6 +6101,8 @@
                     clearTimeout(window.intervalPlaybackFinishTimer);
                     window.intervalPlaybackFinishTimer = null;
                 }
+                stopManagedIntervalPlaybackMetronome();
+                stopIntervalPlaybackCursorFollow();
 
                 // 停止所有调度的播放
                 if (window.intervalScheduledSounds) {
@@ -5630,6 +6127,7 @@
                     });
                     window.intervalScheduledSounds = [];
                 }
+                clearIntervalPlaybackCountInUi();
                 updatePlayButton();
                 console.log('⏹️ 停止音程播放');
                 return;
@@ -5681,6 +6179,7 @@
             } catch (error) {
                 console.error('❌ 音程播放初始化失败:', error);
                 window.isPlayingInterval = false;
+                clearIntervalPlaybackCountInUi();
                 updatePlayButton();
                 alert('播放初始化失败：' + error.message);
             }
@@ -5706,8 +6205,130 @@
             return Math.max(1, parseInt(progression?.timeSignature?.beats, 10) || 4);
         }
 
+        function getIntervalPlaybackLeadInBeats(progression, startEventIndex = 0) {
+            const flatEvents = flattenIntervalPlaybackEvents(progression);
+            if (!flatEvents.length) return 0;
+            const safeStartIndex = Math.max(0, Math.min(flatEvents.length - 1, parseInt(startEventIndex, 10) || 0));
+            const startEvent = flatEvents[safeStartIndex];
+            return Math.max(0, startEvent?.startBeatInMeasure || 0);
+        }
+
+        function ensureIntervalPlaybackMetronomeRunning(startAtTime = null, beatOffset = 0) {
+            const wasRunning = typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning;
+            window.intervalMetronomeStopAfterPlayback = !wasRunning;
+            metronomeBeatOnlyDuringPlayback = true;
+            if (wasRunning) {
+                stopMetronome();
+            }
+            startMetronome(startAtTime, beatOffset);
+            if (!(typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning)) {
+                metronomeBeatOnlyDuringPlayback = false;
+                window.intervalMetronomeStopAfterPlayback = false;
+            }
+        }
+
+        function shouldUseIntervalPlaybackCountIn(startEventIndex = 0) {
+            const normalizedIndex = Number(startEventIndex);
+            return !Number.isFinite(normalizedIndex) || normalizedIndex <= 0;
+        }
+
+        function stopManagedIntervalPlaybackMetronome() {
+            if (window.intervalMetronomeSyncTimeout) {
+                clearTimeout(window.intervalMetronomeSyncTimeout);
+                window.intervalMetronomeSyncTimeout = null;
+            }
+            if (window.intervalMetronomeStopAfterPlayback) {
+                stopMetronome();
+            }
+            metronomeBeatOnlyDuringPlayback = false;
+            window.intervalMetronomeStopAfterPlayback = false;
+        }
+
+        function clearIntervalPlaybackCountInUi() {
+            if (Array.isArray(window.intervalPlaybackCountInUiTimers) && window.intervalPlaybackCountInUiTimers.length) {
+                window.intervalPlaybackCountInUiTimers.forEach((timerId) => clearTimeout(timerId));
+            }
+            window.intervalPlaybackCountInUiTimers = [];
+            const label = document.getElementById('playbackCountInLabel');
+            if (label && label.parentNode) {
+                label.parentNode.removeChild(label);
+            }
+        }
+
+        function ensureIntervalPlaybackCountInLabel() {
+            const score = document.getElementById('score');
+            if (!score) return null;
+            let label = document.getElementById('playbackCountInLabel');
+            if (!label) {
+                label = document.createElement('div');
+                label.id = 'playbackCountInLabel';
+                label.style.position = 'absolute';
+                label.style.top = '8px';
+                label.style.left = '50%';
+                label.style.transform = 'translateX(-50%)';
+                label.style.fontSize = '18px';
+                label.style.fontWeight = '700';
+                label.style.color = 'var(--text-color)';
+                label.style.background = 'rgba(0,0,0,0.05)';
+                label.style.padding = '4px 10px';
+                label.style.borderRadius = '999px';
+                label.style.backdropFilter = 'blur(2px)';
+                label.style.pointerEvents = 'none';
+                label.style.display = 'none';
+                label.style.zIndex = '5';
+                score.appendChild(label);
+            }
+            return label;
+        }
+
+        function showIntervalPlaybackCountInValue(value, isStrong) {
+            const label = ensureIntervalPlaybackCountInLabel();
+            if (!label) return;
+            label.textContent = String(value);
+            label.style.display = 'inline-flex';
+            if (isStrong) {
+                label.style.color = 'var(--primary-green, #34c759)';
+                label.style.opacity = '1';
+            } else {
+                label.style.color = 'var(--text-color)';
+                label.style.opacity = '0.75';
+            }
+        }
+
+        function scheduleIntervalPlaybackCountInUi(startTime, countInBeats, beatDuration, timeSignature) {
+            clearIntervalPlaybackCountInUi();
+            const ctx = window.intervalAudioCtx;
+            if (!ctx) return;
+            const beats = Math.max(1, parseInt(timeSignature?.beats, 10) || 4);
+            const beatType = Math.max(1, parseInt(timeSignature?.beatType, 10) || 4);
+            const isCompoundSixEight = beatType === 8 && beats === 6 && countInBeats >= 6;
+            window.intervalPlaybackCountInUiTimers = [];
+            for (let beat = 0; beat < countInBeats; beat += 1) {
+                const beatTime = startTime + beat * beatDuration;
+                const delayMs = Math.max(0, (beatTime - ctx.currentTime) * 1000);
+                const isStrong = isCompoundSixEight ? (beat === 0 || beat === 3) : beat === 0;
+                const timerId = setTimeout(() => {
+                    showIntervalPlaybackCountInValue(beat + 1, isStrong);
+                }, delayMs);
+                window.intervalPlaybackCountInUiTimers.push(timerId);
+            }
+            const hideDelayMs = Math.max(0, ((startTime + countInBeats * beatDuration) - ctx.currentTime) * 1000);
+            window.intervalPlaybackCountInUiTimers.push(setTimeout(() => {
+                clearIntervalPlaybackCountInUi();
+            }, hideDelayMs));
+        }
+
         function startIntervalPlayback() {
             // 🎯 修复：增强的数据验证和错误处理
+            const cursorState = getIntervalPlaybackCursorState();
+            const timeline = refreshIntervalPlaybackTimeline();
+            let startEventIndex = 0;
+            if (cursorState.selectedIndex >= 0 &&
+                timeline[cursorState.selectedIndex] &&
+                timeline[cursorState.selectedIndex].measureIndex != null) {
+                startEventIndex = timeline[cursorState.selectedIndex].sourceIndex ?? 0;
+                console.log(`🎯 从光标位置开始播放音程: 事件 ${cursorState.selectedIndex + 1}`);
+            }
 
             if (!window.currentIntervalProgression) {
                 console.warn('⚠️ 没有找到音程进行数据');
@@ -5776,51 +6397,46 @@
 
             updatePlayButton();
 
-            // 🎵 检查隐藏模式（隐藏模式需要count-in）
-            if (isIntervalHidden) {
-                if (isMetronomeRunning) {
-                    handleHiddenModeWithMetronome(window.currentIntervalProgression);
-                } else {
-                    playCountIn(window.currentIntervalProgression);
-                }
-                return;
-            }
-
-            // 🔧 智能播放时间：节拍器开启时对齐网格，关闭时立即响应
-
             // 确保 AudioContext 已初始化
             if (!window.intervalAudioCtx) {
                 window.intervalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
 
             const tempo = getIntervalPlaybackTempo();
-            const beatDuration = getIntervalBeatDuration(tempo, window.currentIntervalProgression);
             const now = window.intervalAudioCtx.currentTime;
-            let startTime;
+            const startTime = now + 0.08;
+            const playbackLeadInBeats = getIntervalPlaybackLeadInBeats(window.currentIntervalProgression, startEventIndex);
+            const useCountIn = shouldUseIntervalPlaybackCountIn(startEventIndex);
 
-            if (typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning) {
-                const minLookahead = 0.05;
-                const countInBeats = getIntervalCountInBeats(window.currentIntervalProgression);
-                const firstBeatTime = Math.ceil((now + minLookahead) / beatDuration) * beatDuration;
-                startTime = firstBeatTime + (countInBeats * beatDuration);
-                console.log(`🎵 节拍器开启 - 先count-in ${countInBeats}拍，再开始播放: BPM=${tempo}, 当前=${now.toFixed(3)}s, 开始=${startTime.toFixed(3)}s`);
-            } else {
-                // 🚀 节拍器关闭 - 立即播放，响应迅速
-                startTime = now + 0.1;
-                console.log(`🚀 节拍器未开启 - 立即播放: BPM=${tempo}, 当前=${now.toFixed(3)}s, 播放=${startTime.toFixed(3)}s`);
+            if (useCountIn) {
+                console.log(`🎵 从头播放：先 count-in，再起播。BPM=${tempo}, 当前=${now.toFixed(3)}s, count-in开始=${startTime.toFixed(3)}s`);
+                playCountIn(window.currentIntervalProgression, {
+                    autoStart: false,
+                    startEventIndex: 0,
+                    onFinish: ({ playbackStartAt }) => {
+                        if (!window.isPlayingInterval) return;
+                        ensureIntervalPlaybackMetronomeRunning(playbackStartAt, 0);
+                        playIntervalProgression(window.currentIntervalProgression, playbackStartAt, 0);
+                    }
+                });
+                return;
             }
 
-            playIntervalProgression(window.currentIntervalProgression, startTime);
+            clearIntervalPlaybackCountInUi();
+            ensureIntervalPlaybackMetronomeRunning(startTime, playbackLeadInBeats);
+            console.log(`🎵 中途起播：跳过 count-in，直接播放。BPM=${tempo}, 当前=${now.toFixed(3)}s, 开始=${startTime.toFixed(3)}s`);
+            playIntervalProgression(window.currentIntervalProgression, startTime, startEventIndex);
         }
 
         function updatePlayButton() {
             const playBtn = document.getElementById('playIntervalBtn');
             if (playBtn) {
+                const currentTranslations = translations[currentLanguage] || translations['zh-CN'];
                 if (window.isPlayingInterval) {
-                    playBtn.innerHTML = '暂停';
+                    playBtn.textContent = currentTranslations['controls.pause'] || 'Pause';
                     playBtn.classList.add('playing');
                 } else {
-                    playBtn.innerHTML = '播放';
+                    playBtn.textContent = currentTranslations['controls.play'] || 'Play';
                     playBtn.classList.remove('playing');
                 }
             }
@@ -5830,7 +6446,7 @@
          * 🎭🎵 处理隐藏模式 + 节拍器组合的特殊逻辑
          * @param {Object} progression - 音程进行数据
          */
-        function handleHiddenModeWithMetronome(progression) {
+        function handleHiddenModeWithMetronome(progression, startEventIndex = 0) {
 
             // 第一步：暂停节拍器
             const wasMetronomeRunning = isMetronomeRunning;
@@ -5839,7 +6455,7 @@
             }
 
             // 第二步：播放count-in
-            playCountInWithMetronomeRestart(progression, wasMetronomeRunning);
+            playCountInWithMetronomeRestart(progression, wasMetronomeRunning, startEventIndex);
         }
 
         /**
@@ -5853,7 +6469,7 @@
          * @param {Object} progression - 音程进行数据
          * @param {boolean} shouldRestartMetronome - 是否需要重新启动节拍器
          */
-        function playCountInWithMetronomeRestart(progression, shouldRestartMetronome) {
+        function playCountInWithMetronomeRestart(progression, shouldRestartMetronome, startEventIndex = 0) {
 
             // 获取当前节拍器速度
             const headerInput = document.getElementById('headerMetronomeBpm');
@@ -5888,13 +6504,14 @@
             // 播放count-in，但不由内部自动启动播放；由回调统一调度
             playCountIn(progression, {
                 autoStart: false,
+                startEventIndex,
                 onFinish: ({ playbackStartAt }) => {
                     if (shouldRestartMetronome) {
                         window.metronomeStartTime = performance.now();
                         startMetronome();
                     } else {
                     }
-                    playIntervalProgression(progression, playbackStartAt);
+                    playIntervalProgression(progression, playbackStartAt, startEventIndex);
                 }
             });
         }
@@ -5905,7 +6522,7 @@
          */
         function playCountIn(progression, options = {}) {
 
-            const { autoStart = true, onFinish = null } = options;
+            const { autoStart = true, onFinish = null, startEventIndex = 0 } = options;
 
             // 🎵 修复：使用当前节拍器的tempo而不是生成时的tempo
             const headerInput = document.getElementById('headerMetronomeBpm');
@@ -5940,8 +6557,16 @@
                 return;
             }
 
+            if (!metronomeAudioContext) {
+                initializeMetronomeAudio();
+            }
+
             // 以AudioContext时间为基准，避免setTimeout漂移
-            const baseTime = window.intervalAudioCtx.currentTime + 0.1;
+            const sharedCurrentTime = Math.max(
+                window.intervalAudioCtx.currentTime,
+                metronomeAudioContext ? metronomeAudioContext.currentTime : 0
+            );
+            const baseTime = sharedCurrentTime + 0.15;
             let currentTime = baseTime;
 
             // 初始化采样器（若可用）
@@ -5952,16 +6577,11 @@
                 }
             } catch (_) {}
 
-            // 播放每一拍的click声
+            // Count-in 与页面节拍器共用同一套声音，避免两套音色不一致
+            scheduleIntervalPlaybackCountInUi(baseTime, countInBeats, actualBeatDuration, timeSignature);
             for (let beat = 1; beat <= countInBeats; beat++) {
-                // 第一拍音调更高，其他拍音调较低
-                const frequency = beat === 1 ? 800 : 600;
-                const duration = 0.1; // click声的持续时间
                 const beatTime = currentTime + (beat - 1) * actualBeatDuration;
-
-
-                // 直接调度click声到AudioContext
-                playClickSound(frequency, beatTime, duration);
+                playMetronomeSound(beatTime);
             }
 
             // count-in结束后的精确播放时间（加入少量裕量以确保click尾音结束）
@@ -5974,7 +6594,7 @@
                         try { onFinish({ playbackStartAt, countInBeats, actualBeatDuration }); } catch (e) { console.warn('onFinish回调异常:', e); }
                     }
                     if (autoStart) {
-                        playIntervalProgression(progression, playbackStartAt);
+                        playIntervalProgression(progression, playbackStartAt, startEventIndex);
                     }
                 }
             }, delayMs);
@@ -6016,7 +6636,50 @@
             }
         }
 
-        function playIntervalProgression(progression, audioStartAt = null) {
+        function getIntervalEventDurationInBeats(duration) {
+            if (typeof duration === 'number') {
+                return duration;
+            }
+            const durationMap = {
+                'whole': 4.0,
+                'half.': 3.0,
+                'half': 2.0,
+                'quarter.': 1.5,
+                'quarter': 1.0,
+                'eighth': 0.5,
+                '16th': 0.25,
+                'triplet': 2 / 3
+            };
+            return durationMap[duration] || 1.0;
+        }
+
+        function flattenIntervalPlaybackEvents(progression) {
+            const events = [];
+            if (!progression || !Array.isArray(progression.measures)) return events;
+            progression.measures.forEach((measure, measureIndex) => {
+                const lowerVoice = Array.isArray(measure.lowerVoice) ? measure.lowerVoice : [];
+                const upperVoice = Array.isArray(measure.upperVoice) ? measure.upperVoice : [];
+                const count = Math.max(lowerVoice.length, upperVoice.length);
+                let beatCursor = 0;
+                for (let i = 0; i < count; i += 1) {
+                    const lowerNote = lowerVoice[i] || null;
+                    const upperNote = upperVoice[i] || null;
+                    const duration = lowerNote?.duration ?? upperNote?.duration ?? 'quarter';
+                    events.push({
+                        measureIndex,
+                        sourceIndex: events.length,
+                        startBeatInMeasure: beatCursor,
+                        duration,
+                        lowerNote,
+                        upperNote
+                    });
+                    beatCursor += getIntervalEventDurationInBeats(duration);
+                }
+            });
+            return events;
+        }
+
+        function playIntervalProgression(progression, audioStartAt = null, startEventIndex = 0) {
             if (!progression || !progression.measures) {
                 console.warn('⚠️ 无效的音程进行数据');
                 window.isPlayingInterval = false;
@@ -6070,36 +6733,41 @@
                                            : window.intervalAudioCtx.currentTime + 0.1; // 稍微延迟开始
             let totalPlaybackDuration = 0;
 
-            progression.measures.forEach((measure, measureIndex) => {
+            const flatEvents = flattenIntervalPlaybackEvents(progression);
+            const safeStartIndex = Math.max(0, Math.min(flatEvents.length - 1, startEventIndex || 0));
+            const playbackEvents = flatEvents.slice(safeStartIndex);
+            console.log(`🎵 音程播放从第 ${safeStartIndex + 1} 个事件开始，共 ${playbackEvents.length} 个事件`);
 
-                // 播放小节中的每个音符
-                for (let i = 0; i < measure.lowerVoice.length; i++) {
-                    const lowerNote = measure.lowerVoice[i];
-                    const upperNote = measure.upperVoice[i];
+            if (!playbackEvents.length) {
+                window.isPlayingInterval = false;
+                stopManagedIntervalPlaybackMetronome();
+                stopIntervalPlaybackCursorFollow();
+                updatePlayButton();
+                return;
+            }
 
+            startIntervalPlaybackCursorFollow(playbackEvents, currentTime, beatDuration);
 
-                    if (lowerNote.type === 'note' && upperNote.type === 'note') {
-                        // 检查音高字段
-                        if (!lowerNote.pitch || !upperNote.pitch) {
-                            console.error(`❌ 音高缺失: lower.pitch=${lowerNote.pitch}, upper.pitch=${upperNote.pitch}`);
-                            continue;
-                        }
+            playbackEvents.forEach(({ lowerNote, upperNote }) => {
+                const duration = lowerNote?.duration ?? upperNote?.duration ?? 'quarter';
+                const noteDuration = getNoteDurationInSeconds(duration, beatDuration);
 
-                        // 计算音符持续时间
-                        const noteDuration = getNoteDurationInSeconds(lowerNote.duration, beatDuration);
-
-                        // 播放音程（和弦）
-                        playIntervalChord([lowerNote.pitch, upperNote.pitch], currentTime, noteDuration);
-
+                if (lowerNote?.type === 'note' && upperNote?.type === 'note') {
+                    if (!lowerNote.pitch || !upperNote.pitch) {
+                        console.error(`❌ 音高缺失: lower.pitch=${lowerNote?.pitch}, upper.pitch=${upperNote?.pitch}`);
                         currentTime += noteDuration;
                         totalPlaybackDuration += noteDuration;
-                    } else if (lowerNote.type === 'rest') {
-                        // 休止符：只推进时间，不播放声音
-                        const restDuration = getNoteDurationInSeconds(lowerNote.duration, beatDuration);
-                        currentTime += restDuration;
-                        totalPlaybackDuration += restDuration;
+                        return;
                     }
+
+                    playIntervalChord([lowerNote.pitch, upperNote.pitch], currentTime, noteDuration);
+                    currentTime += noteDuration;
+                    totalPlaybackDuration += noteDuration;
+                    return;
                 }
+
+                currentTime += noteDuration;
+                totalPlaybackDuration += noteDuration;
             });
 
 
@@ -6112,6 +6780,8 @@
             window.intervalPlaybackFinishTimer = setTimeout(() => {
                 if (window.isPlayingInterval && currentRunId === window.intervalPlaybackRunId) {
                     window.isPlayingInterval = false;
+                    stopManagedIntervalPlaybackMetronome();
+                    stopIntervalPlaybackCursorFollow();
                     // 🎵 清除播放状态变量
                     window.intervalPlaybackStartTime = null;
                     window.intervalPlaybackTempo = 60;
@@ -6434,6 +7104,12 @@
                                                  targetElement.tagName === 'A' ||
                                                  targetElement.closest('button') ||
                                                  targetElement.closest('a');
+
+                    if (isIntervalPlaybackSelectableTarget(targetElement) ||
+                        targetElement.closest('svg') ||
+                        isPointInsideRenderedIntervalScore(event.clientX, event.clientY)) {
+                        return;
+                    }
 
                     // 如果点击的不是交互元素，触发生成
                     if (!isInteractiveElement && typeof generateIntervals === 'function') {

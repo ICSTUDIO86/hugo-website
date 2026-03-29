@@ -105,6 +105,26 @@ function closeAlipayLookupDialog() {
     }
 }
 
+function isBundleMerchantOrder(orderNumber) {
+    return /^IBD\d{10,24}$/i.test(String(orderNumber || '').trim());
+}
+
+function getLookupTradeNo(orderInfo) {
+    if (!orderInfo) return '';
+    return String(
+        orderInfo.alipay_trade_no ||
+        orderInfo.payment_trade_no ||
+        orderInfo.trade_no ||
+        ''
+    ).trim();
+}
+
+function isLookupNotFound(result) {
+    if (!result) return true;
+    if (result.success) return false;
+    return result.code === 'ORDER_NOT_FOUND' || /未找到/.test(result.error || '');
+}
+
 // 执行订单号查找
 async function performAlipayLookup() {
     const input = document.getElementById('alipay-account-input');
@@ -123,11 +143,11 @@ async function performAlipayLookup() {
     }
     
     // 验证格式：商家订单号或支付宝交易号
-    const isMerchantOrder = /^IC\d{17}$/.test(orderNumber);  // 商家订单号格式
+    const isMerchantOrder = /^IC\d{17}$/.test(orderNumber) || isBundleMerchantOrder(orderNumber);  // 商家订单号格式
     const isAlipayTrade = /^\d{28}$/.test(orderNumber);     // 支付宝交易号格式
     
     if (!isMerchantOrder && !isAlipayTrade) {
-        resultDiv.innerHTML = '<div style="color: #e74c3c; padding: 10px; background: #ffeaa7; border-radius: 8px; font-size: 14px;">❌ 请输入有效的订单号格式<br><small>商家订单号：IC开头的号码；支付宝交易号：28位数字</small></div>';
+        resultDiv.innerHTML = '<div style="color: #e74c3c; padding: 10px; background: #ffeaa7; border-radius: 8px; font-size: 14px;">❌ 请输入有效的订单号格式<br><small>商家订单号：IC/ICS/IBD开头的号码；支付宝交易号：28位数字</small></div>';
         return;
     }
     
@@ -145,6 +165,7 @@ async function performAlipayLookup() {
         
         const SINGLE_LOOKUP_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findSingleAccessCodeByOrderNo';
         const FULL_LOOKUP_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findAccessCodeProxy';
+        const BUNDLE_LOOKUP_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/findBundleAccessCodeByOrderNo';
 
         async function fetchLookup(endpoint) {
             const response = await fetch(endpoint, {
@@ -157,30 +178,31 @@ async function performAlipayLookup() {
             return await response.json();
         }
 
-        let actualResult;
+        const lookupChain = isBundleMerchantOrder(orderNumber)
+            ? [BUNDLE_LOOKUP_ENDPOINT]
+            : [SINGLE_LOOKUP_ENDPOINT, FULL_LOOKUP_ENDPOINT, BUNDLE_LOOKUP_ENDPOINT];
 
-        try {
-            actualResult = await fetchLookup(SINGLE_LOOKUP_ENDPOINT);
-            console.log('🔍 单件查找结果:', actualResult);
-        } catch (singleError) {
-            console.warn('⚠️ 单件查找失败，尝试完整版:', singleError);
-            actualResult = null;
-        }
+        let actualResult = null;
 
-        const shouldFallback = !actualResult || (actualResult && actualResult.success === false && (
-            actualResult.code === 'ORDER_NOT_FOUND' ||
-            /未找到/.test(actualResult.error || '')
-        ));
+        for (const endpoint of lookupChain) {
+            try {
+                actualResult = await fetchLookup(endpoint);
+                console.log('🔍 查找结果:', endpoint, actualResult);
+            } catch (lookupError) {
+                console.warn('⚠️ 查找失败，尝试下一个接口:', endpoint, lookupError);
+                actualResult = null;
+            }
 
-        if (shouldFallback) {
-            actualResult = await fetchLookup(FULL_LOOKUP_ENDPOINT);
-            console.log('🔍 完整版查找结果:', actualResult);
+            if (actualResult && (actualResult.success || !isLookupNotFound(actualResult))) {
+                break;
+            }
         }
         
         if (actualResult && actualResult.success && actualResult.result) {
             // 显示找到的访问码
             const orderInfo = actualResult.result.order_info;
             const accessCode = actualResult.result.access_code;
+            const tradeNo = getLookupTradeNo(orderInfo);
             
             const resultHtml = `
                 <div style="background: #f0fff4; border: 1px solid #9ae6b4; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
@@ -205,7 +227,7 @@ async function performAlipayLookup() {
                     <div style="margin-bottom: 5px;">
                         <strong>商家订单号：</strong><span style="font-family: monospace; font-size: 12px;">${orderInfo.merchant_order_no}</span>
                     </div>
-                    ${orderInfo.alipay_trade_no ? `<div style="margin-bottom: 5px;"><strong>订单号：</strong><span style="font-family: monospace; font-size: 12px;">${orderInfo.alipay_trade_no}</span></div>` : ''}
+                    ${tradeNo ? `<div style="margin-bottom: 5px;"><strong>订单号：</strong><span style="font-family: monospace; font-size: 12px;">${tradeNo}</span></div>` : ''}
                 </div>
             `;
             

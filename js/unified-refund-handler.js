@@ -10,6 +10,7 @@
 
     const SINGLE_REFUND_API_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/refundSingleByAccessCode';
     const FULL_REFUND_API_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/refundByAccessCode';
+    const BUNDLE_REFUND_API_ENDPOINT = 'https://cloud1-4g1r5ho01a0cfd85-1377702774.ap-shanghai.app.tcloudbase.com/refundBundleByAccessCode';
     const REFUND_RESET_KEY = 'ic-refund-reset';
     const REFUND_RESET_HANDLED_KEY = 'ic-refund-reset-handled';
     const ACCESS_RESET_KEYS = [
@@ -40,6 +41,10 @@
         } catch (e) {
             console.warn('⚠️ 清理本地访问状态失败:', e.message);
         }
+    }
+
+    function isBundleAccessCode(accessCode) {
+        return /^BDL[A-Z0-9]{3,27}$/i.test(String(accessCode || '').trim());
     }
 
     function broadcastRefundReset() {
@@ -352,6 +357,18 @@
             access_code: accessCode
         };
 
+        if (isBundleAccessCode(accessCode)) {
+            const bundleResp = await fetch(BUNDLE_REFUND_API_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Request-Source': 'IC-Studio-Refund-Bundle-Direct'
+                },
+                body: JSON.stringify(payload)
+            });
+            return await bundleResp.json();
+        }
+
         const looksLikeSingle = /^(MEL|JPU|RHY|CHD|INT)[A-Z0-9]{12}$/.test(accessCode);
 
         // 非单件访问码：直接走完整版退款，避免 NOT_SINGLE_CODE 误判
@@ -405,6 +422,9 @@
         if (!modal) return;
 
         clearLocalAccessState();
+        if (isBundleAccessCode(accessCode) && window.BundlePayment && typeof window.BundlePayment.clearBundleAccess === 'function') {
+            window.BundlePayment.clearBundleAccess();
+        }
         broadcastRefundReset();
 
         const orderNo = data.order_no || data.out_trade_no || data.order_id || '暂无';

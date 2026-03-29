@@ -1,10 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="zh-CN" data-theme="light">
 <head>
-<script src="/js/url-language-force.js"></script>
-<script defer src="/js/current-year.js"></script>
-<script defer src="/js/en-tools-route-guard.js"></script>
-  <base href="/tools/">
 <script>
     (function() {
       var isFile = location.protocol === 'file:' || location.origin === 'null';
@@ -12,8 +8,7 @@
       try {
         console.warn('🚫 检测到file://协议，已阻止');
       } catch (e) {}
-      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div>
-</body></html>';
+      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
       document.open();
       document.write(html);
       document.close();
@@ -22,42 +17,33 @@
   </script>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="language" content="en">
-    <meta http-equiv="content-language" content="en">
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
 
     <!-- Primary SEO Meta Tags -->
     <title>Chord Sight Reading Tool | Cognote - Harmony Training & Chord Recognition</title>
     <meta name="description" content="Professional chord sight reading and harmony training tool online. Practice chord recognition with triads, seventh chords, extended chords, and inversions. Features customizable range, multiple voicings, real-time piano audio playback, standard music notation. Free 20 trials. Perfect for pianists, guitarists, jazz musicians developing chord reading and harmony skills. | 专业和弦视奏与和声训练工具，支持三和弦、七和弦、延伸和弦、转位，自定义音域、多种和弦配置，实时钢琴音频。">
     <meta name="keywords" content="chord sight reading, chord recognition, harmony training, chord reading practice, jazz chords, chord inversions, seventh chords, extended chords, voicing practice, piano chords, guitar chords, music theory chords, chord identification, harmonic analysis, chord progression practice, free chord trainer, online chord tool, chord exercises, 和弦视奏, 和弦识别, 和声训练, 七和弦, 转位和弦, 爵士和弦, 钢琴和弦, 吉他和弦, IC 视奏工具, Cognote">
     <meta name="author" content="Igor Chen - Cognote">
-    <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="theme-color" content="#f59e0b">
-    <link rel="canonical" href="https://icstudio.club/en/tools/chord-generator.html">
-    <link rel="alternate" hreflang="zh-CN" href="https://icstudio.club/tools/chord-generator.html">
-    <link rel="alternate" hreflang="en" href="https://icstudio.club/en/tools/chord-generator.html">
-    <link rel="alternate" hreflang="x-default" href="https://icstudio.club/tools/chord-generator.html">
+    <link rel="canonical" href="https://icstudio.club/tools/chord-generator.html">
     <link rel="icon" type="image/svg+xml" href="assets/icon/cognote.svg">
     <link rel="icon" type="image/png" href="assets/icon/cognote.png">
 
     <!-- Open Graph / Facebook / WeChat -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://icstudio.club/en/tools/chord-generator.html" />
+    <meta property="og:url" content="https://icstudio.club/tools/chord-generator.html">
     <meta property="og:title" content="Chord Sight Reading Tool | Cognote">
     <meta property="og:description" content="Professional chord sight reading & harmony training tool. Practice chord recognition with triads, seventh chords, inversions. Piano audio playback. Free 20 trials. | 专业和弦视奏工具，三和弦、七和弦、转位，实时音频。">
-    <meta property="og:image" content="https://icstudio.club/images/hero-chord-en.png">
+    <meta property="og:image" content="https://icstudio.club/images/ICLOGO.png">
     <meta property="og:image:alt" content="Cognote Chord Sight Reading Tool Interface">
     <meta property="og:site_name" content="Cognote">
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:locale:alternate" content="zh_CN" />
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:locale:alternate" content="en_US">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@ICStudio86">
-    <meta name="twitter:url" content="https://icstudio.club/en/tools/chord-generator.html" />
+    <meta name="twitter:url" content="https://icstudio.club/tools/chord-generator.html">
     <meta name="twitter:title" content="Chord Sight Reading & Harmony Training Tool | Cognote">
     <meta name="twitter:description" content="Professional chord sight reading tool. Practice triads, seventh chords, inversions. Piano audio. Free 20 trials.">
-    <meta name="twitter:image" content="https://icstudio.club/images/hero-chord-en.png">
+    <meta name="twitter:image" content="https://icstudio.club/images/ICLOGO.png">
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -67,7 +53,7 @@
       "name": "Cognote Chord Sight Reading Tool",
       "alternateName": ["IC 视奏工具", "和弦视奏工具"],
       "description": "Professional online chord sight reading and harmony training tool for musicians. Practice chord recognition with triads, seventh chords, extended chords, and inversions. Features customizable pitch range, multiple voicings, real-time piano audio playback, and standard music notation rendering. Perfect for developing harmony reading skills.",
-      "url": "https://icstudio.club/en/tools/chord-generator.html",
+      "url": "https://icstudio.club/tools/chord-generator.html",
       "applicationCategory": "MusicApplication",
       "operatingSystem": "Web Browser",
       "browserRequirements": "Requires JavaScript. HTML5 compatible browser.",
@@ -113,12 +99,12 @@
         "@type": "EducationalAudience",
         "educationalRole": "music student, piano student, guitar student, jazz student, music theory student, music teacher, accompanist"
       },
-      "inLanguage": ["en-US", "zh-CN"],
+      "inLanguage": ["zh-CN", "en-US"],
       "potentialAction": {
         "@type": "UseAction",
         "target": {
           "@type": "EntryPoint",
-          "urlTemplate": "https://icstudio.club/en/tools/chord-generator.html"
+          "urlTemplate": "https://icstudio.club/tools/chord-generator.html"
         }
       }
     }
@@ -139,6 +125,25 @@
 
     <link rel="stylesheet" href="./IC 和弦视奏工具_files/apple-ui-styles-chord.css">
     <link rel="stylesheet" href="assets/css/midi-input.css">
+    <style>
+      .function-btn {
+        justify-content: center;
+        text-align: center;
+      }
+      .function-btn #currentFunction {
+        flex: 1 1 auto;
+        text-align: center;
+      }
+      .function-menu .function-option {
+        justify-content: center;
+        text-align: center;
+      }
+      .function-menu .function-option span {
+        display: block;
+        width: 100%;
+        text-align: center;
+      }
+    </style>
     <script src="assets/js/sample-player.js?v=6"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function(){
@@ -164,34 +169,29 @@
                 <div class="header-controls">
                     <div class="function-selector">
                         <button class="function-btn" id="functionBtn" onclick="toggleFunctionSelector()">
-                            🎹 <span id="currentFunction" data-i18n="app.chordMode">和弦视奏</span>
+                            <span id="currentFunction" data-i18n="app.chordMode">和弦视奏</span>
                         </button>
                         <div class="function-menu" id="functionMenu">
                             <div class="function-option" onclick="switchFunction('melody')">
-                                <span class="function-icon">🎵</span>
                                 <span data-i18n="app.melodyMode">旋律视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('jianpu')">
-                                <span class="function-icon">🔢</span>
                                 <span data-i18n="app.jianpuMode">简谱视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('interval')">
-                                <span class="function-icon">🎼</span>
                                 <span data-i18n="app.intervalMode">音程视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('chord')">
-                                <span class="function-icon">🎹</span>
                                 <span data-i18n="app.chordMode">和弦视奏</span>
                             </div>
                             <div class="function-option" onclick="switchFunction('rhythm')">
-                                <span class="function-icon">🥁</span>
                                 <span data-i18n="app.rhythmMode">节奏视奏</span>
                             </div>
                         </div>
                     </div>
                     <div class="settings-dropdown">
                         <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">
-                            ⚙️ <span data-i18n="settings.title">设置</span>
+                            <span data-i18n="settings.title">设置</span>
                         </button>
                     </div>
                 </div>
@@ -375,7 +375,7 @@
                     </div>
                     <div class="metronome-control">
                         <input type="number" id="headerMetronomeBpm" min="1" max="999" value="60" class="bpm-input-control">
-                        <button class="metronome-play-btn" id="headerMetronomeBtn" onclick="toggleMetronome()" title="开始/停止节拍器">
+                        <button class="metronome-play-btn" id="headerMetronomeBtn" onclick="toggleMetronome()" title="开始节拍器">
                             🎵
                         </button>
                         <div class="metronome-beat-indicator" id="headerBeatIndicator"></div>
@@ -440,7 +440,7 @@
                         </div>
                         <div class="metronome-control">
                             <input type="number" id="headerMetronomeBpm" min="1" max="999" value="60" class="bpm-input-control">
-                            <button class="metronome-play-btn" id="headerMetronomeBtn" onclick="toggleMetronome()" title="开始/停止节拍器">
+                            <button class="metronome-play-btn" id="headerMetronomeBtn" onclick="toggleMetronome()" title="开始节拍器">
                                 🎵
                             </button>
                             <div class="metronome-beat-indicator" id="headerBeatIndicator"></div>
@@ -517,7 +517,7 @@
                 <strong>Cognote</strong> - 专业级和弦视奏生成器
             </p>
             <p style="margin: 8px 0 0 0; font-size: 13px; opacity: 0.8;">
-                Copyright © <span data-current-year>2026</span>. All rights reserved. Igor Chen -
+                Copyright © 2026. All rights reserved. Igor Chen -
                 <a href="https://icstudio.club/" target="_blank" style="color: var(--primary-orange); text-decoration: none;">icstudio.club</a>
             </p>
         </div>
@@ -1530,6 +1530,22 @@
             }
         }
 
+        function getToolParameterBootstrapPreferences(preferences) {
+            const nextPreferences = (preferences && typeof preferences === 'object')
+                ? { ...preferences }
+                : {};
+            const savedTheme = localStorage.getItem('preferredTheme');
+            const savedLanguage = localStorage.getItem('preferredLanguage');
+
+            if (savedTheme) {
+                nextPreferences.theme = savedTheme;
+            }
+            if (savedLanguage && I18n.translations && I18n.translations[savedLanguage]) {
+                nextPreferences.language = savedLanguage;
+            }
+            return nextPreferences;
+        }
+
         function finalizeToolParameterApply() {
             const syncFnNames = [
                 'saveMeasureSettings',
@@ -1692,7 +1708,7 @@
             }
             const savedPayload = readSavedToolParameterPayload();
             if (savedPayload && savedPayload.controls) {
-                applyToolParameterPreferences(savedPayload.preferences);
+                applyToolParameterPreferences(getToolParameterBootstrapPreferences(savedPayload.preferences));
                 applyToolParameterSnapshot(savedPayload.controls);
                 finalizeToolParameterApply();
             }
@@ -1850,20 +1866,20 @@
         function switchFunction(mode) {
             if (mode === 'melody') {
                 // 导航到旋律视奏页面
-                window.location.href = '/en/tools/melody-generator.html';
+                window.location.href = 'melody-generator.html';
             } else if (mode === 'jianpu') {
                 // 导航到简谱视奏页面
-                window.location.href = '/en/tools/jianpu-generator.html';
+                window.location.href = 'jianpu-generator.html';
             } else if (mode === 'interval') {
                 // 导航到音程视奏页面
-                window.location.href = '/en/tools/interval-generator.html';
+                window.location.href = 'interval-generator.html';
             } else if (mode === 'chord') {
                 // 已经在和弦视奏页面
                 closeFunctionSelector();
                 console.log('已在和弦视奏模式');
             } else if (mode === 'rhythm') {
                 // 导航到节奏视奏页面
-                window.location.href = '/en/tools/rhythm.html';
+                window.location.href = 'rhythm.html';
             }
         }
 
@@ -2117,6 +2133,9 @@
                 window.I18n.applyLanguage(currentLanguage);
             } else {
                 console.warn('⚠️ I18n系统未加载，无法应用翻译');
+            }
+            if (typeof window.updateChordPlayButtonLabel === 'function') {
+                window.updateChordPlayButtonLabel();
             }
         }
 
@@ -2407,9 +2426,10 @@
         function getMetronomePatternInfo(tempoOverride) {
             const tempo = Math.max(1, tempoOverride || metronomeTempo);
             if (!metronomePattern.enabled) {
+                const tsInfo = getMetronomeTimeSignatureInfo();
                 return {
                     usePattern: false,
-                    stepDuration: 60.0 / tempo
+                    stepDuration: (60.0 / tempo) * (4 / tsInfo.den)
                 };
             }
 
@@ -4534,6 +4554,9 @@
          */
         function generatePianoChords() {
             console.log('🎹 ========== 开始生成钢琴和弦 ==========');
+            if (typeof clearChordPlaybackSelection === 'function') {
+                clearChordPlaybackSelection({ resetTimeline: true });
+            }
 
             try {
                 // 🔧 2025-10-01 修复：移除updatePianoSettingsFromUI()调用
@@ -5407,6 +5430,9 @@
             // 强制重新应用翻译到所有模态框
             if (window.I18n && window.I18n.applyLanguage) {
                 window.I18n.applyLanguage(currentLanguage);
+                if (typeof window.updateChordPlayButtonLabel === 'function') {
+                    window.updateChordPlayButtonLabel();
+                }
                 console.log('🌐 模态框翻译已通过I18n系统重新应用');
             } else {
                 console.warn('⚠️ I18n系统未加载，无法应用模态框翻译');
@@ -5587,5 +5613,8 @@
     </script>
 
     <!-- 🛡️ 试用保护系统脚本 -->
-    <script defer src="/js/tool-access-loader.js?v=1.0.2"></script>
+    <script src="/js/trial-limiter.js?v=20250909"></script>
+    <script src="/js/advanced-trial-protection.js?v=20250920"></script>
+    <script src="/js/melody-counter-system.js?v=20250920"></script>
+    <script src="/js/integrated-trial-manager.js?v=20250920"></script>
 </body></html>

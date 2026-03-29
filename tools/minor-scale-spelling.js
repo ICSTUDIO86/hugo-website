@@ -1,19 +1,16 @@
 /*!
  * IC Studio 视奏工具 - 小调音名拼写规范表
  * Minor Scale Spelling Standards
- *
+ * 
  * Copyright © 2026. All rights reserved. Igor Chen - icstudio.club
- *
+ * 
  * Author: Igor Chen
  * Website: https://icstudio.club
  * Email: icstudio@fastmail.com
- *
+ * 
  * Features:
  * - 严格遵循音乐理论，确保每个小调使用正确的变化音
  * - 不使用错误的等音（如A小调中不用Ab而用G#）
- *
- * 🎵 从旋律视奏工具迁移到音程视奏工具
- * 迁移日期: 2025-10-09
  */
 
 const MINOR_KEY_SPELLING = {
@@ -32,7 +29,7 @@ const MINOR_KEY_SPELLING = {
         10: 'A#',  // A# (不是Bb)
         11: 'B'    // B
     },
-
+    
     // E 小调（1个升号：F#）
     'Em': {
         0: 'C',    // C
@@ -48,7 +45,7 @@ const MINOR_KEY_SPELLING = {
         10: 'A#',  // A# (不是Bb)
         11: 'B'    // B
     },
-
+    
     // B 小调（2个升号：F#, C#）
     'Bm': {
         0: 'B#',   // B# (不是C)
@@ -64,7 +61,7 @@ const MINOR_KEY_SPELLING = {
         10: 'A#',  // A# (不是Bb) - 和声/旋律小调第7级
         11: 'B'    // B (主音)
     },
-
+    
     // F# 小调（3个升号：F#, C#, G#）
     'F#m': {
         0: 'B#',   // B# (不是C)
@@ -80,7 +77,7 @@ const MINOR_KEY_SPELLING = {
         10: 'A#',  // A# (不是Bb)
         11: 'B'    // B
     },
-
+    
     // C# 小调（4个升号：F#, C#, G#, D#）
     'C#m': {
         0: 'B#',   // B# (不是C) - 和声/旋律小调第7级
@@ -96,7 +93,7 @@ const MINOR_KEY_SPELLING = {
         10: 'A#',  // A# - 旋律小调第6级
         11: 'B'    // B
     },
-
+    
     // G# 小调（5个升号：F#, C#, G#, D#, A#）
     'G#m': {
         0: 'B#',   // B# (不是C)
@@ -105,14 +102,14 @@ const MINOR_KEY_SPELLING = {
         3: 'D#',   // D# (调号)
         4: 'E',    // E
         5: 'E#',   // E# - 旋律小调第6级
-        6: 'F#',   // F#
+        6: 'F#',   // F# 
         7: 'F##',  // F## (不是G) - 和声/旋律小调第7级
         8: 'G#',   // G# (主音)
         9: 'G##',  // G## (不是A)
         10: 'A#',  // A# (调号)
         11: 'B'    // B
     },
-
+    
     // D# 小调（6个升号：F#, C#, G#, D#, A#, E#）
     'D#m': {
         0: 'B#',   // B# - 旋律小调第6级
@@ -128,7 +125,7 @@ const MINOR_KEY_SPELLING = {
         10: 'A#',  // A# (调号)
         11: 'B'    // B
     },
-
+    
     // D 小调（1个降号：Bb）
     'Dm': {
         0: 'C',    // C
@@ -144,7 +141,7 @@ const MINOR_KEY_SPELLING = {
         10: 'Bb',  // Bb (调号)
         11: 'B'    // B (不是Cb) - 旋律小调第6级
     },
-
+    
     // G 小调（2个降号：Bb, Eb）
     'Gm': {
         0: 'C',    // C
@@ -160,7 +157,7 @@ const MINOR_KEY_SPELLING = {
         10: 'Bb',  // Bb (调号)
         11: 'B'    // B (不是Cb)
     },
-
+    
     // C 小调（3个降号：Bb, Eb, Ab）
     'Cm': {
         0: 'C',    // C (主音)
@@ -176,7 +173,7 @@ const MINOR_KEY_SPELLING = {
         10: 'Bb',  // Bb (调号)
         11: 'B'    // B (不是Cb) - 和声/旋律小调第7级
     },
-
+    
     // F 小调（4个降号：Bb, Eb, Ab, Db）
     'Fm': {
         0: 'C',    // C
@@ -192,7 +189,7 @@ const MINOR_KEY_SPELLING = {
         10: 'Bb',  // Bb (调号)
         11: 'B'    // B (不是Cb)
     },
-
+    
     // Bb 小调（5个降号：Bb, Eb, Ab, Db, Gb）
     'Bbm': {
         0: 'C',    // C
@@ -208,7 +205,7 @@ const MINOR_KEY_SPELLING = {
         10: 'Bb',  // Bb (主音)
         11: 'Cb',  // Cb (不是B)
     },
-
+    
     // Eb 小调（6个降号：Bb, Eb, Ab, Db, Gb, Cb）
     'Ebm': {
         0: 'C',    // C (不是Dbb) - 旋律小调第6级
@@ -226,7 +223,7 @@ const MINOR_KEY_SPELLING = {
     }
 };
 
-// 导出给interval-generator.js使用
+// 导出给sight-reading-final.js使用
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = MINOR_KEY_SPELLING;
 }

@@ -31,6 +31,7 @@ window.getChordAudioContext = function() {
 };
 // metronomeInterval variable is declared in main HTML file
 let currentTempo = 60;
+let metronomeStartTimeout = null;
 let chordsVisible = true;
 let chordSymbolsVisible = true; // 🎵 和弦代号显示控制
 function resolveChordSymbolsVisible() {
@@ -327,6 +328,10 @@ function testChordSymbolFunction() {
 let metronomeIsPlaying = false;
 let isPlayingChords = false;
 let currentPlayback = [];
+let chordPlaybackRunId = 0;
+let chordPlaybackFinishTimer = null;
+let chordMetronomeRestartTimeout = null;
+let chordMetronomeWasRunningBeforePlayback = false;
 
 // 音乐理论引擎
 let harmonyTheory = null;
@@ -686,25 +691,28 @@ function setupEventListeners() {
     const scoreContainer = document.getElementById('score');
     if (scoreContainer) {
         scoreContainer.addEventListener('click', function(event) {
-            // 避免在播放或其他交互时误触发
-            if (event.target === scoreContainer || event.target.tagName === 'svg' || event.target.closest('svg')) {
-                console.log('🎼 点击容器生成新和弦...');
+            if (typeof isChordPlaybackSelectableTarget === 'function' && isChordPlaybackSelectableTarget(event.target)) {
+                return;
+            }
+            if (typeof isPointInsideRenderedChordScore === 'function' && isPointInsideRenderedChordScore(event.clientX, event.clientY)) {
+                return;
+            }
+            if (event.target.closest('button') || event.target.closest('a') || event.target.closest('.control')) return;
+            console.log('🎼 点击空白区域生成新和弦...');
 
-                // 🔧 修复 (2025-10-01): 检测钢琴/吉他模式，调用对应的生成函数
-                const instrumentToggle = document.getElementById('instrumentModeToggle');
-                const isPianoMode = instrumentToggle && instrumentToggle.checked;
+            const instrumentToggle = document.getElementById('instrumentModeToggle');
+            const isPianoMode = instrumentToggle && instrumentToggle.checked;
 
-                if (isPianoMode) {
-                    console.log('🎹 钢琴模式：点击容器调用 generatePianoChords()');
-                    if (typeof generatePianoChords === 'function') {
-                        generatePianoChords();
-                    } else {
-                        console.error('❌ generatePianoChords 函数不可用');
-                    }
+            if (isPianoMode) {
+                console.log('🎹 钢琴模式：点击容器调用 generatePianoChords()');
+                if (typeof generatePianoChords === 'function') {
+                    generatePianoChords();
                 } else {
-                    console.log('🎸 吉他模式：点击容器调用 generateChords()');
-                    generateChords();
+                    console.error('❌ generatePianoChords 函数不可用');
                 }
+            } else {
+                console.log('🎸 吉他模式：点击容器调用 generateChords()');
+                generateChords();
             }
         });
 
@@ -1072,6 +1080,7 @@ function generateChords() {
         console.log('⏹️ 生成新和弦时自动停止当前播放');
         stopPlayback();
     }
+    clearChordPlaybackSelection({ resetTimeline: true });
 
     // 🕐 停止旧的周期性检查（如果有的话）
     if (typeof stopPeriodicChordSymbolCheck === 'function') {
@@ -5500,8 +5509,8 @@ function applyVoicingToProgression(chordProgression, key) {
 
             // 确保音域参数有效
             if (rangeMin === null || rangeMax === null || isNaN(rangeMin) || isNaN(rangeMax)) {
-                console.warn(`⚠️ 音域参数无效: rangeMin=${rangeMin}, rangeMax=${rangeMax}，使用默认值52-88`);
-                rangeMin = 52;
+                console.warn(`⚠️ 音域参数无效: rangeMin=${rangeMin}, rangeMax=${rangeMax}，使用默认值55-88`);
+                rangeMin = 55;
                 rangeMax = 88;
             }
 
@@ -12365,6 +12374,16 @@ function playNote(frequency, startTime, duration, volume = 0.2) {
 
 // 停止当前播放
 function stopPlayback() {
+    chordPlaybackRunId += 1;
+    stopChordPlaybackCursorFollow();
+    if (chordMetronomeRestartTimeout) {
+        clearTimeout(chordMetronomeRestartTimeout);
+        chordMetronomeRestartTimeout = null;
+    }
+    if (chordPlaybackFinishTimer) {
+        clearTimeout(chordPlaybackFinishTimer);
+        chordPlaybackFinishTimer = null;
+    }
     currentPlayback.forEach(osc => {
         try {
             osc.stop();
@@ -12378,10 +12397,417 @@ function stopPlayback() {
     // 更新播放按钮状态
     const playBtn = document.getElementById('playMelodyBtn');
     if (playBtn) {
-        playBtn.innerHTML = '播放';
+        playBtn.textContent = '播放';
     }
+    if (chordMetronomeWasRunningBeforePlayback) {
+        if (typeof isMetronomeRunning !== 'undefined' && !isMetronomeRunning) {
+            startMetronome();
+        }
+    } else if (typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning) {
+        stopMetronome();
+    }
+    chordMetronomeWasRunningBeforePlayback = false;
     console.log('⏹️ 播放已停止');
 }
+
+function getChordPlaybackTimeSignature() {
+    try {
+        const xml = (window.currentChords && window.currentChords.musicXML) || '';
+        if (!xml) return { beats: 4, beatType: 4 };
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xml, 'text/xml');
+        const timeEl = xmlDoc.querySelector('time');
+        const beats = parseInt(timeEl?.querySelector('beats')?.textContent || '4', 10);
+        const beatType = parseInt(timeEl?.querySelector('beat-type')?.textContent || '4', 10);
+        return {
+            beats: Number.isFinite(beats) && beats > 0 ? beats : 4,
+            beatType: Number.isFinite(beatType) && beatType > 0 ? beatType : 4
+        };
+    } catch (_) {
+        return { beats: 4, beatType: 4 };
+    }
+}
+
+function getChordBeatDuration(bpm, timeSignatureInfo) {
+    const safeBpm = Math.max(1, parseInt(bpm, 10) || 60);
+    const beatType = Math.max(1, parseInt(timeSignatureInfo?.beatType, 10) || 4);
+    return (60 / safeBpm) * (4 / beatType);
+}
+
+function getChordCountInBeats(timeSignatureInfo) {
+    return Math.max(1, parseInt(timeSignatureInfo?.beats, 10) || 4);
+}
+
+function getChordPlaybackCursorState() {
+    if (!window.chordPlaybackCursorState) {
+        window.chordPlaybackCursorState = {
+            timeline: [],
+            cacheKey: '',
+            selectedIndex: -1,
+            cursorEl: null,
+            measureRects: [],
+            followTimers: [],
+            refreshTimer: null,
+            observer: null
+        };
+    }
+    return window.chordPlaybackCursorState;
+}
+
+function getCurrentChordPlaybackProgression() {
+    if (Array.isArray(window.currentChords)) return window.currentChords;
+    if (window.currentChords && Array.isArray(window.currentChords.progression)) return window.currentChords.progression;
+    if (window.currentChords && Array.isArray(window.currentChords.chords)) return window.currentChords.chords;
+    return [];
+}
+
+function getChordPlaybackCacheKey() {
+    const progression = getCurrentChordPlaybackProgression();
+    const stamp = window.currentChords && window.currentChords.timestamp ? window.currentChords.timestamp : 0;
+    return `${stamp}:${progression.length}`;
+}
+
+function getChordPlaybackPaintTarget(el) {
+    if (!el) return null;
+    return el.closest('g.vf-stavenote, g.vf-note, g.vf-rest, g.vf-gracenote, g.vf-gracenote-group, g.vf-ghost-note, g.vf-textnote') ||
+        el.closest('g') ||
+        el;
+}
+
+function getChordPlaybackGlyphTarget(el) {
+    if (!el || !el.closest) return getChordPlaybackPaintTarget(el);
+    return el.closest('.vf-notehead, .vf-rest, .vf-textnote, .vf-gracenote, .vf-ghost-note') ||
+        getChordPlaybackPaintTarget(el);
+}
+
+function isChordPlaybackSelectableTarget(target) {
+    if (!target || !target.closest) return false;
+    return !!target.closest('g.vf-stavenote, g.vf-note, g.vf-rest, g.vf-gracenote, g.vf-gracenote-group, g.vf-ghost-note, g.vf-textnote, .vf-notehead, .vf-rest, .vf-stem, .vf-flag, .vf-beam, .vf-accidental, .vf-dot');
+}
+
+function isPointInsideRenderedChordScore(clientX, clientY) {
+    const scoreElement = document.getElementById('score');
+    const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+    if (!scoreElement || !svg) return false;
+    const svgRect = svg.getBoundingClientRect();
+    return clientX >= svgRect.left &&
+        clientX <= svgRect.right &&
+        clientY >= svgRect.top &&
+        clientY <= svgRect.bottom;
+}
+
+function getChordScoreRelativePoint(clientX, clientY) {
+    const scoreElement = document.getElementById('score');
+    if (!scoreElement) return null;
+    const rect = scoreElement.getBoundingClientRect();
+    return {
+        x: clientX - rect.left + scoreElement.scrollLeft,
+        y: clientY - rect.top + scoreElement.scrollTop
+    };
+}
+
+function ensureChordPlaybackCursor() {
+    const cursorState = getChordPlaybackCursorState();
+    const scoreElement = document.getElementById('score');
+    if (!scoreElement) return null;
+    if (!cursorState.cursorEl || !cursorState.cursorEl.isConnected) {
+        const cursor = document.createElement('div');
+        cursor.id = 'chordPlaybackCursor';
+        cursor.style.position = 'absolute';
+        cursor.style.top = '0';
+        cursor.style.width = '12px';
+        cursor.style.height = '100%';
+        cursor.style.left = '0';
+        cursor.style.background = 'rgba(255,149,0,0.25)';
+        cursor.style.border = '1px solid rgba(255,149,0,0.4)';
+        cursor.style.borderRadius = '4px';
+        cursor.style.pointerEvents = 'none';
+        cursor.style.display = 'none';
+        scoreElement.appendChild(cursor);
+        cursorState.cursorEl = cursor;
+    }
+    return cursorState.cursorEl;
+}
+
+function clearChordPlaybackSelection(options = {}) {
+    const cursorState = getChordPlaybackCursorState();
+    cursorState.selectedIndex = -1;
+    if (options.resetTimeline) {
+        cursorState.timeline = [];
+        cursorState.cacheKey = '';
+        cursorState.measureRects = [];
+    }
+    if (cursorState.cursorEl) cursorState.cursorEl.style.display = 'none';
+}
+
+function getChordMeasureRects() {
+    if (typeof window.getOSMDMeasureRects === 'function') {
+        try {
+            const rects = window.getOSMDMeasureRects();
+            if (Array.isArray(rects) && rects.length) return rects;
+        } catch (_) {}
+    }
+    const progression = getCurrentChordPlaybackProgression();
+    const measureCount = progression.length;
+    const scoreElement = document.getElementById('score');
+    const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+    if (!scoreElement || !svg || !measureCount) return [];
+    const scoreRect = scoreElement.getBoundingClientRect();
+    const svgRect = svg.getBoundingClientRect();
+    const startX = svgRect.left - scoreRect.left + scoreElement.scrollLeft;
+    const startY = svgRect.top - scoreRect.top + scoreElement.scrollTop;
+    const width = svgRect.width / measureCount;
+    return Array.from({ length: measureCount }, (_, index) => ({
+        x: startX + index * width,
+        y: startY,
+        width,
+        height: svgRect.height
+    }));
+}
+
+function collectChordPlaybackCandidates(measureRects) {
+    const scoreElement = document.getElementById('score');
+    const svg = scoreElement ? scoreElement.querySelector('svg') : null;
+    if (!scoreElement || !svg) return measureRects.map(() => []);
+    const scoreRect = scoreElement.getBoundingClientRect();
+    const selector = 'g.vf-stavenote, g.vf-note, g.vf-rest, .vf-notehead, .vf-rest';
+    const seen = new Set();
+    const byMeasure = measureRects.map(() => []);
+    svg.querySelectorAll(selector).forEach((node) => {
+        const target = getChordPlaybackGlyphTarget(node);
+        if (!target || seen.has(target)) return;
+        const rect = target.getBoundingClientRect ? target.getBoundingClientRect() : null;
+        if (!rect || (rect.width <= 0 && rect.height <= 0)) return;
+        seen.add(target);
+        const candidate = {
+            el: target,
+            left: rect.left - scoreRect.left + scoreElement.scrollLeft,
+            right: rect.right - scoreRect.left + scoreElement.scrollLeft,
+            top: rect.top - scoreRect.top + scoreElement.scrollTop,
+            bottom: rect.bottom - scoreRect.top + scoreElement.scrollTop,
+            cx: rect.left - scoreRect.left + scoreElement.scrollLeft + rect.width / 2,
+            cy: rect.top - scoreRect.top + scoreElement.scrollTop + rect.height / 2
+        };
+        for (let i = 0; i < measureRects.length; i += 1) {
+            const measureRect = measureRects[i];
+            const inX = candidate.cx >= (measureRect.x - 8) && candidate.cx <= (measureRect.x + measureRect.width + 8);
+            const inY = candidate.cy >= (measureRect.y - measureRect.height) && candidate.cy <= (measureRect.y + measureRect.height * 2);
+            if (inX && inY) {
+                byMeasure[i].push(candidate);
+                break;
+            }
+        }
+    });
+    return byMeasure.map((items) => items.sort((a, b) => a.cx - b.cx));
+}
+
+function clusterChordPlaybackCandidates(items) {
+    if (!items.length) return [];
+    const widths = items.map((item) => Math.max(4, item.right - item.left)).sort((a, b) => a - b);
+    const tolerance = Math.max(8, (widths[Math.floor(widths.length / 2)] || 12) * 0.85);
+    const clusters = [];
+    items.forEach((item) => {
+        const last = clusters[clusters.length - 1];
+        if (!last || Math.abs(item.cx - last.cx) > tolerance) {
+            clusters.push({
+                cx: item.cx,
+                left: item.left,
+                right: item.right,
+                top: item.top,
+                bottom: item.bottom,
+                elements: [item.el]
+            });
+            return;
+        }
+        last.left = Math.min(last.left, item.left);
+        last.right = Math.max(last.right, item.right);
+        last.top = Math.min(last.top, item.top);
+        last.bottom = Math.max(last.bottom, item.bottom);
+        last.cx = (last.left + last.right) / 2;
+        if (!last.elements.includes(item.el)) last.elements.push(item.el);
+    });
+    return clusters;
+}
+
+function buildChordPlaybackTimeline() {
+    const progression = getCurrentChordPlaybackProgression();
+    const measureRects = getChordMeasureRects();
+    const candidatesByMeasure = collectChordPlaybackCandidates(measureRects);
+    const timeline = progression.map((_, index) => {
+        const clusters = clusterChordPlaybackCandidates(candidatesByMeasure[index] || []);
+        const cluster = clusters[0] || null;
+        return {
+            index,
+            sourceIndex: index,
+            measureIndex: index,
+            x: cluster ? cluster.cx : null,
+            cursorLeft: cluster ? cluster.left : null,
+            cursorRight: cluster ? cluster.right : null,
+            top: cluster ? cluster.top : null,
+            height: cluster ? Math.max(2, cluster.bottom - cluster.top) : null,
+            elements: cluster ? cluster.elements : []
+        };
+    });
+    return { timeline, measureRects };
+}
+
+function refreshChordPlaybackTimeline(options = {}) {
+    const cursorState = getChordPlaybackCursorState();
+    const cacheKey = getChordPlaybackCacheKey();
+    if (!options.force && cursorState.cacheKey === cacheKey && cursorState.timeline.length) {
+        return cursorState.timeline;
+    }
+    const built = buildChordPlaybackTimeline();
+    cursorState.timeline = built.timeline;
+    cursorState.cacheKey = cacheKey;
+    cursorState.measureRects = built.measureRects;
+    if (cursorState.selectedIndex >= 0) {
+        if (!setChordPlaybackSelectionByIndex(cursorState.selectedIndex)) {
+            clearChordPlaybackSelection();
+        }
+    }
+    return cursorState.timeline;
+}
+
+function queueChordPlaybackRefresh(delayMs = 180) {
+    const cursorState = getChordPlaybackCursorState();
+    if (cursorState.refreshTimer) clearTimeout(cursorState.refreshTimer);
+    cursorState.refreshTimer = setTimeout(() => {
+        cursorState.refreshTimer = null;
+        refreshChordPlaybackTimeline({ force: true });
+    }, delayMs);
+}
+
+function stopChordPlaybackCursorFollow() {
+    const cursorState = getChordPlaybackCursorState();
+    if (Array.isArray(cursorState.followTimers) && cursorState.followTimers.length) {
+        cursorState.followTimers.forEach((timerId) => clearTimeout(timerId));
+    }
+    cursorState.followTimers = [];
+}
+
+function startChordPlaybackCursorFollow(playbackChords, startTime, chordDuration) {
+    const cursorState = getChordPlaybackCursorState();
+    const timeline = refreshChordPlaybackTimeline();
+    if (!timeline.length || !Array.isArray(playbackChords) || !playbackChords.length || !audioContext) {
+        return;
+    }
+
+    stopChordPlaybackCursorFollow();
+
+    const firstTimelineIndex = timeline.findIndex((item) => item.sourceIndex === playbackChords[0].sourceIndex);
+    if (firstTimelineIndex >= 0) {
+        setChordPlaybackSelectionByIndex(firstTimelineIndex);
+    }
+
+    playbackChords.forEach((chord, offsetIndex) => {
+        const timelineIndex = timeline.findIndex((item) => item.sourceIndex === chord.sourceIndex);
+        const delayMs = Math.max(0, ((startTime + (offsetIndex * chordDuration)) - audioContext.currentTime) * 1000);
+        const timerId = setTimeout(() => {
+            if (!isPlayingChords) return;
+            if (timelineIndex >= 0) {
+                setChordPlaybackSelectionByIndex(timelineIndex);
+            }
+        }, delayMs);
+        cursorState.followTimers.push(timerId);
+    });
+}
+
+function setChordPlaybackSelectionByIndex(index) {
+    const cursorState = getChordPlaybackCursorState();
+    const event = cursorState.timeline[index];
+    const cursor = ensureChordPlaybackCursor();
+    if (!event || !cursor || !isFinite(event.x)) {
+        clearChordPlaybackSelection();
+        return false;
+    }
+    cursorState.selectedIndex = index;
+    const width = (isFinite(event.cursorLeft) && isFinite(event.cursorRight))
+        ? Math.max(12, event.cursorRight - event.cursorLeft)
+        : 12;
+    const left = isFinite(event.cursorLeft) ? event.cursorLeft : (event.x - width / 2);
+    cursor.style.transform = `translateX(${left}px)`;
+    cursor.style.width = `${width}px`;
+    cursor.style.top = `${isFinite(event.top) ? event.top : 0}px`;
+    cursor.style.height = `${isFinite(event.height) ? event.height : 64}px`;
+    cursor.style.display = 'block';
+    return true;
+}
+
+function findChordPlaybackEventByTarget(target, timeline) {
+    const normalizedTarget = getChordPlaybackGlyphTarget(target) || getChordPlaybackPaintTarget(target);
+    if (!normalizedTarget) return null;
+    for (let i = 0; i < timeline.length; i += 1) {
+        const event = timeline[i];
+        if (!Array.isArray(event.elements) || !event.elements.length) continue;
+        const matched = event.elements.some((element) => element === normalizedTarget || element.contains?.(normalizedTarget) || normalizedTarget.contains?.(element));
+        if (matched) return { event, index: i };
+    }
+    return null;
+}
+
+function applyGlyphBoundsToChordPlaybackEvent(event, target) {
+    const glyphTarget = getChordPlaybackGlyphTarget(target);
+    const scoreElement = document.getElementById('score');
+    if (!event || !glyphTarget || !scoreElement || !glyphTarget.getBoundingClientRect) return;
+    const rect = glyphTarget.getBoundingClientRect();
+    const scoreRect = scoreElement.getBoundingClientRect();
+    event.cursorLeft = rect.left - scoreRect.left + scoreElement.scrollLeft;
+    event.cursorRight = rect.right - scoreRect.left + scoreElement.scrollLeft;
+    event.top = rect.top - scoreRect.top + scoreElement.scrollTop;
+    event.height = rect.height;
+    event.x = (event.cursorLeft + event.cursorRight) / 2;
+}
+
+function findNearestChordPlaybackEvent(point, timeline) {
+    if (!point || !timeline.length) return null;
+    let best = null;
+    let bestDistance = Infinity;
+    timeline.forEach((event) => {
+        if (!isFinite(event.x)) return;
+        const distance = Math.abs(event.x - point.x);
+        if (distance < bestDistance) {
+            bestDistance = distance;
+            best = event;
+        }
+    });
+    return best ? { event: best, index: best.index } : null;
+}
+
+function initializeChordPlaybackCursorSystem() {
+    const scoreElement = document.getElementById('score');
+    const cursorState = getChordPlaybackCursorState();
+    if (!scoreElement) return;
+    if (scoreElement.dataset.playbackCursorBound !== 'true') {
+        scoreElement.dataset.playbackCursorBound = 'true';
+        scoreElement.addEventListener('click', (event) => {
+            if (window.__icChallenge && typeof window.__icChallenge.isActive === 'function' && window.__icChallenge.isActive()) {
+                return;
+            }
+            if (!isChordPlaybackSelectableTarget(event.target)) return;
+            const timeline = refreshChordPlaybackTimeline();
+            if (!timeline.length) return;
+            const directMatch = findChordPlaybackEventByTarget(event.target, timeline);
+            const point = getChordScoreRelativePoint(event.clientX, event.clientY);
+            const fallbackMatch = findNearestChordPlaybackEvent(point, timeline);
+            const resolved = directMatch || fallbackMatch;
+            if (!resolved) return;
+            if (directMatch && directMatch.event) {
+                applyGlyphBoundsToChordPlaybackEvent(directMatch.event, event.target);
+            }
+            setChordPlaybackSelectionByIndex(resolved.index);
+        });
+    }
+    if (!cursorState.observer) {
+        cursorState.observer = new MutationObserver(() => {
+            queueChordPlaybackRefresh(220);
+        });
+        cursorState.observer.observe(scoreElement, { childList: true, subtree: true });
+    }
+    queueChordPlaybackRefresh(260);
+}
+
+document.addEventListener('DOMContentLoaded', initializeChordPlaybackCursorSystem);
 
 // 播放和弦
 function directPlayTest() {
@@ -12433,12 +12859,24 @@ function directPlayTest() {
     }
 
     console.log('▶️ 开始播放和弦...');
+    chordPlaybackRunId += 1;
+    const currentRunId = chordPlaybackRunId;
     isPlayingChords = true;
 
     // 更新播放按钮
     const playBtn = document.getElementById('playMelodyBtn');
     if (playBtn) {
-        playBtn.innerHTML = '⏸️ 停止';
+        playBtn.textContent = '暂停';
+    }
+
+    const cursorState = getChordPlaybackCursorState();
+    const timeline = refreshChordPlaybackTimeline();
+    let startChordIndex = 0;
+    if (cursorState.selectedIndex >= 0 &&
+        timeline[cursorState.selectedIndex] &&
+        timeline[cursorState.selectedIndex].measureIndex != null) {
+        startChordIndex = timeline[cursorState.selectedIndex].sourceIndex ?? 0;
+        console.log(`🎯 从光标位置开始播放和弦: 第 ${cursorState.selectedIndex + 1} 个和弦`);
     }
 
     // 🎵 获取页面上的BPM设定
@@ -12454,13 +12892,15 @@ function directPlayTest() {
     }
 
     const actualBPM = getCurrentBPM(); // 直接从页面获取BPM
-    const beatDuration = 60.0 / actualBPM;
+    const timeSignatureInfo = getChordPlaybackTimeSignature();
+    const beatDuration = getChordBeatDuration(actualBPM, timeSignatureInfo);
+    const countInBeats = getChordCountInBeats(timeSignatureInfo);
 
     const now = audioContext.currentTime;
-    let chordDuration = beatDuration * 4; // 每个和弦播放4拍，基于页面BPM设定
-    let needsCountIn = false;
+    let chordDuration = beatDuration * countInBeats; // 每个和弦播放一小节，跟随拍号
+    let chordStartTime = null;
 
-    console.log(`🎵 播放速度设定: ${actualBPM} BPM, 每拍: ${beatDuration.toFixed(3)}s, 每个和弦: ${chordDuration.toFixed(3)}s`);
+    console.log(`🎵 播放速度设定: ${actualBPM} BPM, 拍号: ${timeSignatureInfo.beats}/${timeSignatureInfo.beatType}, 每拍: ${beatDuration.toFixed(3)}s, 每个和弦: ${chordDuration.toFixed(3)}s`);
 
     // 🎵 参考旋律视奏工具的隐藏检测逻辑
     function checkIfChordsHidden() {
@@ -12482,130 +12922,27 @@ function directPlayTest() {
     }
 
     const isHiddenMode = checkIfChordsHidden();
-
-    // 🎵 Count In检查 - 参考旋律视奏工具的逻辑（隐藏模式就触发，不依赖节拍器）
     console.log('🔍 Count In诊断:', {
         chordsVisible: chordsVisible,
         isHiddenMode: isHiddenMode,
-        metronomeIsPlaying: metronomeIsPlaying,
-        shouldTriggerCountIn: isHiddenMode  // 只要隐藏模式就触发Count In
+        metronomeIsPlaying: metronomeIsPlaying
     });
 
-    // 🔒 隐藏模式下的Count In功能 (参考旋律视奏工具逻辑)
-    if (isHiddenMode) {
-        needsCountIn = true;
-        console.log('🔒🎵 隐藏模式激活：启动Count In (参考旋律视奏工具)');
-
-        // 🔇 修复 (2025-10-02): 如果节拍器开启，Count In首先终止节拍器
-        let metronomeWasPlaying = false;
-        if (isMetronomeRunning) {
-            metronomeWasPlaying = true;
-            console.log('🔇 Count In首先终止节拍器');
-
-            // 使用stopMetronome()函数完全停止节拍器（确保状态一致）
-            if (typeof stopMetronome === 'function') {
-                stopMetronome();
-            } else {
-                // 回退方案：手动停止
-                isMetronomeRunning = false;
-                if (metronomeInterval) {
-                    clearInterval(metronomeInterval);
-                    metronomeInterval = null;
-                }
-                const metronomeBtn = document.getElementById('headerMetronomeBtn');
-                if (metronomeBtn) {
-                    metronomeBtn.textContent = '🎵';
-                    metronomeBtn.title = '开始节拍器';
-                }
-            }
-        }
-
-        // Count In: 4拍预备
-        const countInBeats = 4;
-        const countInDuration = beatDuration * countInBeats;
-        console.log(`🎵 Count In: ${countInBeats}拍预备，时长: ${countInDuration.toFixed(3)}秒`);
-        console.log(`🎵 时机安排: Count In(${countInDuration.toFixed(1)}s) → 音频播放开始 → 节拍器对准拍子重启`);
-
-        // 播放Count In节拍
-        for (let beat = 0; beat < countInBeats; beat++) {
-            const beatTime = now + 0.1 + (beat * beatDuration);
-            const frequency = (beat === 0) ? 880 : 660; // 第一拍高音，其他中音
-            playCountInBeat(frequency, beatTime, Math.min(beatDuration * 0.8, 0.1));
-        }
-
-        // 和弦播放延迟到Count In后
-        chordStartTime = now + 0.1 + countInDuration;
-
-        // 🎵 修复 (2025-10-02): Count In结束后，节拍器以对准拍子的形式重启
-        if (metronomeWasPlaying) {
-            const audioStartDelay = (chordStartTime - now) * 1000; // 转换为毫秒
-            console.log(`🎵 节拍器将在 ${audioStartDelay.toFixed(0)}ms 后与音频播放对准拍子重启`);
-            console.log(`🎵 重启时机：第一个和弦的第一拍，确保节拍器与音频完全同步`);
-
-            setTimeout(() => {
-                console.log('🎵 ✅ Count In结束，节拍器以对准拍子的形式重启');
-
-                // 使用startMetronome()函数重启节拍器
-                if (typeof startMetronome === 'function') {
-                    startMetronome();
-                    console.log('🎵 节拍器已同步到音频第一拍');
-                } else {
-                    // 回退方案：手动重启
-                    isMetronomeRunning = true;
-                    const interval = 60000 / metronomeTempo;
-
-                    // 立即播放第一声（与第一个和弦的第一拍对齐）
-                    if (typeof playMetronomeSound === 'function') {
-                        playMetronomeSound();
-                    }
-
-                    // 设置定时器
-                    metronomeInterval = setInterval(() => {
-                        if (typeof playMetronomeSound === 'function') {
-                            playMetronomeSound();
-                        }
-                    }, interval);
-
-                    const metronomeBtn = document.getElementById('headerMetronomeBtn');
-                    if (metronomeBtn) {
-                        metronomeBtn.textContent = '⏸️';
-                        metronomeBtn.title = '停止节拍器';
-                    }
-                }
-            }, audioStartDelay);
-        }
+    chordMetronomeWasRunningBeforePlayback = typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning;
+    if (chordMetronomeWasRunningBeforePlayback) {
+        stopMetronome();
     }
 
-    // 🔧 智能播放时间：节拍器开启时对齐网格，关闭时立即响应
-    let chordStartTime;
+    chordStartTime = now + 0.08;
 
-    if (!needsCountIn) {
-        const currentNow = audioContext.currentTime;
-
-        if (typeof isMetronomeRunning !== 'undefined' && isMetronomeRunning) {
-            // 🎵 节拍器开启 - 对齐全局网格确保同步
-            const currentBeatNumber = Math.floor(currentNow / beatDuration);
-            let nextBeatNumber = currentBeatNumber + 1;
-            chordStartTime = nextBeatNumber * beatDuration;
-
-            // 安全检查：确保 chordStartTime 至少在未来 50ms
-            const minLookahead = 0.05;
-            if (chordStartTime < currentNow + minLookahead) {
-                nextBeatNumber++;
-                chordStartTime = nextBeatNumber * beatDuration;
-                console.log(`⚠️ 时间太近，跳到下一拍 (第${nextBeatNumber}拍)`);
-            }
-
-            console.log(`🎵 节拍器开启 - 同步到全局网格: BPM=${actualBPM}, 当前=${currentNow.toFixed(3)}s, 播放=${chordStartTime.toFixed(3)}s (第${nextBeatNumber}拍)`);
-        } else {
-            // 🚀 节拍器关闭 - 立即播放，响应迅速
-            chordStartTime = currentNow + 0.1;
-            console.log(`🚀 节拍器未开启 - 立即播放: BPM=${actualBPM}, 当前=${currentNow.toFixed(3)}s, 播放=${chordStartTime.toFixed(3)}s`);
-        }
-    } else {
-        // needsCountIn 情况下的开始时间由 count-in 逻辑处理
-        chordStartTime = now + 0.1 + (beatDuration * 4); // 设置在count-in之后
+    if (chordMetronomeRestartTimeout) {
+        clearTimeout(chordMetronomeRestartTimeout);
+        chordMetronomeRestartTimeout = null;
     }
+    if (typeof isMetronomeRunning === 'undefined' || !isMetronomeRunning) {
+        startMetronome(chordStartTime);
+    }
+    console.log(`🎵 播放时自动接入页面节拍器并直接起播: BPM=${actualBPM}, 当前=${now.toFixed(3)}s, 开始=${chordStartTime.toFixed(3)}s`);
 
     let totalNotesPlayed = 0;
     console.log('🔍 开始遍历和弦数据...');
@@ -12634,11 +12971,24 @@ function directPlayTest() {
     } else {
         console.error('🔍 无法处理currentChords数据格式:', typeof window.currentChords);
         alert('和弦数据格式错误，无法播放');
-        isPlayingChords = false;
+        stopPlayback();
         return;
     }
 
+    const safeStartChordIndex = Math.max(0, Math.min(chordsArray.length - 1, startChordIndex || 0));
+    chordsArray = chordsArray.slice(safeStartChordIndex).map((chord, localIndex) => ({
+        ...chord,
+        sourceIndex: safeStartChordIndex + localIndex
+    }));
+
     console.log('🔍 最终使用的和弦数组:', chordsArray);
+
+    if (!chordsArray.length) {
+        stopPlayback();
+        return;
+    }
+
+    startChordPlaybackCursorFollow(chordsArray, chordStartTime, chordDuration);
 
     chordsArray.forEach((chord, chordIndex) => {
         console.log(`🔍 处理和弦 ${chordIndex + 1}/${chordsArray.length}:`, chord);
@@ -12715,11 +13065,16 @@ function directPlayTest() {
 
     // 设置播放结束后的清理
     const totalDuration = chordsArray.length * chordDuration;
-    setTimeout(() => {
-        if (isPlayingChords) {
+    const playbackDelayMs = Math.max(0, (chordStartTime - audioContext.currentTime) * 1000);
+    if (chordPlaybackFinishTimer) {
+        clearTimeout(chordPlaybackFinishTimer);
+    }
+    chordPlaybackFinishTimer = setTimeout(() => {
+        if (isPlayingChords && currentRunId === chordPlaybackRunId) {
             stopPlayback();
         }
-    }, totalDuration * 1000 + 500);
+        chordPlaybackFinishTimer = null;
+    }, Math.ceil(playbackDelayMs + (totalDuration + 0.5) * 1000));
 
     console.log(`🎵 播放 ${chordsArray.length} 个和弦，总时长: ${totalDuration.toFixed(1)}秒`);
 }
@@ -12735,6 +13090,7 @@ function previousChords() {
     if (window.currentChordsIndex > 0) {
         window.currentChordsIndex--;
         window.currentChords = window.chordsHistory[window.currentChordsIndex];
+        clearChordPlaybackSelection({ resetTimeline: true });
         displayChords(window.currentChords);
     } else {
         console.log('已经是第一条和弦');
@@ -12752,6 +13108,7 @@ function nextChords() {
     if (window.currentChordsIndex < window.chordsHistory.length - 1) {
         window.currentChordsIndex++;
         window.currentChords = window.chordsHistory[window.currentChordsIndex];
+        clearChordPlaybackSelection({ resetTimeline: true });
         displayChords(window.currentChords);
     } else {
         console.log('已经是最后一条和弦');
@@ -12867,31 +13224,60 @@ function toggleChordSymbols() {
 // 节拍器控制
 function toggleMetronome() {
     const btn = document.getElementById('headerMetronomeBtn');
-
-    if (metronomeInterval) {
-        clearInterval(metronomeInterval);
-        metronomeInterval = null;
-        metronomeIsPlaying = false;
-        btn.classList.remove('playing');
-        btn.innerHTML = '🎵';
-        console.log('⏹️ 节拍器停止');
+    if (metronomeInterval || metronomeStartTimeout) {
+        stopMetronome();
     } else {
         startMetronome();
         metronomeIsPlaying = true;
         btn.classList.add('playing');
-        btn.innerHTML = '⏸️';
+        btn.textContent = '停';
+        btn.title = '停止节拍器';
         console.log('▶️ 节拍器开始');
     }
 }
 
-function startMetronome() {
+function stopMetronome() {
+    const btn = document.getElementById('headerMetronomeBtn');
+    if (metronomeInterval) {
+        clearInterval(metronomeInterval);
+        metronomeInterval = null;
+    }
+    if (metronomeStartTimeout) {
+        clearTimeout(metronomeStartTimeout);
+        metronomeStartTimeout = null;
+    }
+    metronomeIsPlaying = false;
+    if (btn) {
+        btn.classList.remove('playing');
+        btn.textContent = '开';
+        btn.title = '开始节拍器';
+    }
+    console.log('⏹️ 节拍器停止');
+}
+
+function startMetronome(startAtTime = null) {
     const interval = 60000 / currentTempo;
-    metronomeInterval = setInterval(() => {
+    if (metronomeStartTimeout) {
+        clearTimeout(metronomeStartTimeout);
+        metronomeStartTimeout = null;
+    }
+    const kickoff = () => {
         playMetronomeSound();
         updateBeatIndicator();
-    }, interval);
-    playMetronomeSound();
-    updateBeatIndicator();
+        metronomeInterval = setInterval(() => {
+            playMetronomeSound();
+            updateBeatIndicator();
+        }, interval);
+    };
+    const ctx = window.getChordAudioContext ? window.getChordAudioContext() : audioContext;
+    if (ctx && typeof startAtTime === 'number' && isFinite(startAtTime) && startAtTime > ctx.currentTime + 0.01) {
+        metronomeStartTimeout = setTimeout(() => {
+            metronomeStartTimeout = null;
+            kickoff();
+        }, Math.max(0, (startAtTime - ctx.currentTime) * 1000));
+        return;
+    }
+    kickoff();
 }
 
 function playMetronomeSound() {
@@ -14218,8 +14604,8 @@ function setRangeForClef(clef) {
         rangeMaxSelect.value = rangeSettings.max.toString();
 
         const noteNames = {
-            36: 'C2', 40: 'E2', 48: 'C3', 50: 'D3',
-            60: 'C4', 64: 'E4', 71: 'B4', 72: 'C5'
+            36: 'C2', 40: 'E2', 48: 'C3', 50: 'D3', 52: 'E3',
+            60: 'C4', 64: 'E4', 71: 'B4', 72: 'C5', 88: 'E6'
         };
 
         const minNote = noteNames[rangeSettings.min] || `MIDI${rangeSettings.min}`;
