@@ -875,6 +875,78 @@
       color: #1d4ed8;
     }
 
+    .bundle-offer-card {
+      position: relative;
+      overflow: visible;
+      border: 1px solid rgba(251, 146, 60, 0.24);
+      background: #ffffff;
+      box-shadow: 0 24px 56px rgba(37, 99, 235, 0.12);
+    }
+
+    .bundle-offer-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 1rem;
+    }
+
+    .bundle-offer-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(59, 130, 246, 0.18);
+      color: #475569;
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .bundle-offer-info {
+      display: grid;
+      gap: 0.55rem;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .bundle-offer-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .bundle-offer-price {
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      font-weight: 800;
+      line-height: 1;
+      color: #0f172a;
+      letter-spacing: -0.04em;
+    }
+
+    .bundle-offer-price-old {
+      font-size: 0.98rem;
+      color: #64748b;
+      text-decoration: line-through;
+      text-decoration-thickness: 2px;
+      text-decoration-color: rgba(100, 116, 139, 0.58);
+    }
+
+    .bundle-offer-info h3 {
+      margin: 0;
+    }
+
+    @media (max-width: 640px) {
+      .bundle-offer-head {
+        gap: 12px;
+      }
+
+      .bundle-offer-price-row {
+        gap: 0.5rem;
+      }
+    }
+
     .update-log-modal {
       position: fixed;
       inset: 0;
@@ -1702,7 +1774,10 @@
               </div>
 
               <div class="bundle-offer-info">
-                <div class="bundle-offer-price">¥148</div>
+                <div class="bundle-offer-price-row">
+                  <div class="bundle-offer-price">¥148</div>
+                  <div class="bundle-offer-price-old">原价 ¥168</div>
+                </div>
                 <h3>一次解锁 Cognote 与 FretLab</h3>
               </div>
 

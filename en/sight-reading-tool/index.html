@@ -878,6 +878,78 @@
       color: #1d4ed8;
     }
 
+    .bundle-offer-card {
+      position: relative;
+      overflow: visible;
+      border: 1px solid rgba(251, 146, 60, 0.24);
+      background: #ffffff;
+      box-shadow: 0 24px 56px rgba(37, 99, 235, 0.12);
+    }
+
+    .bundle-offer-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 1rem;
+    }
+
+    .bundle-offer-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(59, 130, 246, 0.18);
+      color: #475569;
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .bundle-offer-info {
+      display: grid;
+      gap: 0.55rem;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .bundle-offer-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .bundle-offer-price {
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      font-weight: 800;
+      line-height: 1;
+      color: #0f172a;
+      letter-spacing: -0.04em;
+    }
+
+    .bundle-offer-price-old {
+      font-size: 0.98rem;
+      color: #64748b;
+      text-decoration: line-through;
+      text-decoration-thickness: 2px;
+      text-decoration-color: rgba(100, 116, 139, 0.58);
+    }
+
+    .bundle-offer-info h3 {
+      margin: 0;
+    }
+
+    @media (max-width: 640px) {
+      .bundle-offer-head {
+        gap: 12px;
+      }
+
+      .bundle-offer-price-row {
+        gap: 0.5rem;
+      }
+    }
+
     .update-log-modal {
       position: fixed;
       inset: 0;
@@ -1224,19 +1296,18 @@
           </div>
         </div>
         <nav class="landing-header-nav">
-          <a href="#features" data-i18n="header.nav.features">Features</a>
-          <a href="#feedback-section" data-i18n="header.nav.reviews">Reviews</a>
-          <a href="#payment-section" data-i18n="header.nav.buy">Buy</a>
-          <a href="#faq-section" data-i18n="header.nav.faq">FAQ</a>
+          <a href="/en/sight-reading-tool/#features" data-i18n="header.nav.features">Features</a>
+          <a href="/en/sight-reading-tool/#feedback-section" data-i18n="header.nav.reviews">Reviews</a>
+          <a href="/en/sight-reading-tool/#payment-section" data-i18n="header.nav.buy">Buy</a>
+          <a href="/en/sight-reading-tool/#faq-section" data-i18n="header.nav.faq">FAQ</a>
         </nav>
         <div class="landing-header-actions">
-          <!-- 语言切换器 -->
-          <div class="lang-switcher" role="navigation" aria-label="语言切换">
-            <button class="lang-option active" data-lang="zh-CN" onclick="window.i18n && window.i18n.switchLanguage('zh-CN')" aria-label="切换到中文">
+          <div class="lang-switcher" role="navigation" aria-label="Language switcher">
+            <button class="lang-option" data-lang="zh-CN" onclick="window.i18n && window.i18n.switchLanguage('zh-CN')" aria-label="Switch to Chinese">
               <span class="lang-full">中文</span>
               <span class="lang-short">中</span>
             </button>
-            <button class="lang-option" data-lang="en" onclick="window.i18n && window.i18n.switchLanguage('en')" aria-label="Switch to English">
+            <button class="lang-option active" data-lang="en" onclick="window.i18n && window.i18n.switchLanguage('en')" aria-label="Switch to English">
               <span class="lang-full">EN</span>
               <span class="lang-short">EN</span>
             </button>
@@ -1252,19 +1323,19 @@
       </div>
 
       <!-- Navigation Menu -->
-      <nav id="menu-bar" class="mt-3 menu-collapse menu-collapse-closed hidden" aria-hidden="true">
+          <nav id="menu-bar" class="mt-3 menu-collapse menu-collapse-closed hidden" aria-hidden="true">
         <ul class="flex items-center justify-center flex-nowrap whitespace-nowrap overflow-x-auto space-x-4">
           <li class="my-2">
-            <a href="/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">主页</a>
+            <a href="/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">Home</a>
           </li>
           <li class="my-2">
             <a href="/blog/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">Blog</a>
           </li>
           <li class="my-2">
-            <a href="/products/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">产品内容</a>
+            <a href="/products/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">Products</a>
           </li>
           <li class="my-2">
-            <a href="/en/tools/melody-generator.html" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200 border-zinc-400">视奏工具</a>
+            <a href="/en/tools/melody-generator.html" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200 border-zinc-400">Sight-Reading Tools</a>
           </li>
         </ul>
       </nav>
@@ -1272,7 +1343,7 @@
       <!-- Search Bar -->
       <div id="search-bar" class="mt-3 hidden">
         <div class="relative">
-          <input type="text" placeholder="搜索..." class="w-full px-4 py-2 border rounded-full bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <input type="text" placeholder="Search..." class="w-full px-4 py-2 border rounded-full bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
       </div>
     </div>
@@ -1339,7 +1410,7 @@
           </p>
 
           <div class="hero-buttons">
-            <a href="#payment-section" class="btn btn-primary" data-i18n="hero.btnPurchase">立即购买</a>
+            <a href="/en/sight-reading-tool/#payment-section" class="btn btn-primary" data-i18n="hero.btnPurchase">立即购买</a>
             <a href="/en/tools/melody-generator.html" target="_blank" class="btn btn-outline" data-i18n="hero.btnTry">立即试用</a>
           </div>
 
@@ -1705,7 +1776,10 @@
               </div>
 
               <div class="bundle-offer-info">
-                <div class="bundle-offer-price">¥148</div>
+                <div class="bundle-offer-price-row">
+                  <div class="bundle-offer-price">¥148</div>
+                  <div class="bundle-offer-price-old">Original Price ¥168</div>
+                </div>
                 <h3>Unlock Cognote and FretLab at once</h3>
               </div>
 
@@ -2009,27 +2083,27 @@
             </svg>
             <span class="text-2xl font-semibold uppercase">IC STUDIO</span>
           </a>
-          <p class="font-semibold text-zinc-700">一起在音乐的道路上前进吧！</p>
-          <p class="text-sm text-zinc-500">音乐学习、工具研发、创作思考都在这里持续更新。</p>
+          <p class="font-semibold text-zinc-700">Keep moving forward on the path of music.</p>
+          <p class="text-sm text-zinc-500">Music learning, tool building, and creative thinking continue to grow here.</p>
         </div>
 
         <div class="md:col-span-5">
           <h3 class="text-lg font-semibold mb-3">Site Map</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <p class="text-sm font-semibold text-zinc-700 mb-2">网站导航</p>
+              <p class="text-sm font-semibold text-zinc-700 mb-2">Navigation</p>
               <ul class="space-y-2 text-sm text-zinc-600">
-                <li><a class="hover:text-zinc-900" href="https://icstudio.club/">主页</a></li>
+                <li><a class="hover:text-zinc-900" href="https://icstudio.club/">Home</a></li>
                 <li><a class="hover:text-zinc-900" href="https://icstudio.club/blog/">Blog</a></li>
-                <li><a class="hover:text-zinc-900" href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/">音乐内容</a></li>
-                <li><a class="hover:text-zinc-900" href="https://icstudio.club/contact/">联系我</a></li>
+                <li><a class="hover:text-zinc-900" href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/">Music Content</a></li>
+                <li><a class="hover:text-zinc-900" href="https://icstudio.club/contact/">Contact</a></li>
               </ul>
             </div>
             <div>
-              <p class="text-sm font-semibold text-zinc-700 mb-2">产品链接</p>
+              <p class="text-sm font-semibold text-zinc-700 mb-2">Product Links</p>
               <ul class="space-y-2 text-sm text-zinc-600">
-                <li><a class="hover:text-zinc-900" href="https://icstudio.club/sight-reading-tool/">Cognote</a></li>
-                <li><a class="hover:text-zinc-900" href="https://icstudio.club/fretlab/">FretLab</a></li>
+                <li><a class="hover:text-zinc-900" href="https://icstudio.club/en/sight-reading-tool/">Cognote</a></li>
+                <li><a class="hover:text-zinc-900" href="https://icstudio.club/en/fretlab/">FretLab</a></li>
                 <li><a class="hover:text-zinc-900" href="https://icstudio.club/just-intonation/harmonic_lattice_dualmode.html">Harmonic Lattice</a></li>
               </ul>
             </div>

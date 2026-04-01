@@ -37,6 +37,22 @@ class I18n {
     this.loadedLanguages = new Set();
   }
 
+  getLocalizedPageUrl(lang) {
+    const location = window.location;
+    const path = (location && location.pathname) ? location.pathname : '';
+    const search = (location && location.search) ? location.search : '';
+    const hash = (location && location.hash) ? location.hash : '';
+    const isEnglish = lang === 'en';
+    const normalizedPath = path.replace(/\/+$/, '') || '/';
+
+    if (normalizedPath === '/sight-reading-tool' || normalizedPath === '/en/sight-reading-tool') {
+      const targetPath = isEnglish ? '/en/sight-reading-tool/' : '/sight-reading-tool/';
+      return `${targetPath}${search}${hash}`;
+    }
+
+    return '';
+  }
+
   /**
    * 异步加载语言包
    * @param {string} lang - 语言代码 (zh-CN, en)
@@ -160,14 +176,21 @@ class I18n {
 
     console.log(`🔄 Switching language: ${this.currentLang} → ${lang}`);
 
+    // 保存到 localStorage
+    localStorage.setItem('ic-sight-reading-lang', lang);
+
+    const localizedPageUrl = this.getLocalizedPageUrl(lang);
+    if (localizedPageUrl && localizedPageUrl !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+      console.log(`↪️ Redirecting to localized page: ${localizedPageUrl}`);
+      window.location.assign(localizedPageUrl);
+      return;
+    }
+
     // 加载语言包（如果尚未加载）
     await this.loadLanguage(lang);
 
     // 切换当前语言
     this.currentLang = lang;
-
-    // 保存到 localStorage
-    localStorage.setItem('ic-sight-reading-lang', lang);
 
     // 应用翻译
     this.applyTranslations();

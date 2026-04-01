@@ -305,10 +305,16 @@
       }
 
       .fretlab-bundle-offer-top {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: flex-start;
+        gap: 18px;
         margin-bottom: 14px;
+      }
+
+      .fretlab-bundle-offer-top > :first-child {
+        grid-column: 2;
+        justify-self: center;
       }
 
       .fretlab-bundle-offer-badge {
@@ -321,6 +327,56 @@
         border: 1px solid hsl(0 0% 7% / 0.14);
         background: hsl(var(--card) / 0.86);
         color: hsl(var(--muted-foreground));
+      }
+
+      .fretlab-bundle-offer-tag-anchor {
+        display: flex;
+        grid-column: 3;
+        justify-self: end;
+        justify-content: flex-end;
+        padding-top: 2px;
+      }
+
+      .fretlab-bundle-discount-tag {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 86px;
+        padding: 10px 14px 9px;
+        border-radius: 15px;
+        border: 2px solid rgba(120, 53, 15, 0.22);
+        background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%);
+        color: #9a3412;
+        box-shadow: 0 12px 24px rgba(120, 53, 15, 0.12);
+        transform: rotate(7deg);
+        letter-spacing: 0.04em;
+      }
+
+      .fretlab-bundle-discount-tag::before {
+        content: '';
+        position: absolute;
+        top: 7px;
+        left: 50%;
+        width: 9px;
+        height: 9px;
+        margin-left: -4.5px;
+        border-radius: 999px;
+        background: rgba(255, 251, 235, 0.95);
+        border: 1.5px solid rgba(120, 53, 15, 0.2);
+      }
+
+      .fretlab-bundle-discount-tag::after {
+        content: '';
+        position: absolute;
+        top: -16px;
+        left: 50%;
+        width: 2px;
+        height: 18px;
+        margin-left: -1px;
+        background: linear-gradient(180deg, rgba(120, 53, 15, 0), rgba(120, 53, 15, 0.52));
+        transform: rotate(-8deg);
+        transform-origin: bottom center;
       }
 
       .fretlab-bundle-offer-title {
@@ -363,6 +419,16 @@
         margin: 12px 0 0;
         color: hsl(var(--muted-foreground));
         line-height: 1.65;
+      }
+
+      .fretlab-buy-mode-price-old {
+        display: block;
+        margin-top: 8px;
+        font-size: 1.05rem;
+        color: #78716c;
+        text-decoration: line-through;
+        text-decoration-thickness: 2px;
+        text-decoration-color: rgba(120, 53, 15, 0.38);
       }
 
       .fretlab-promo-campaign-wrap {
@@ -449,6 +515,8 @@
 
         .fretlab-bundle-offer-top {
           flex-direction: column;
+          align-items: center;
+          gap: 12px;
         }
 
         .fretlab-buy-mode-toggle {
@@ -466,6 +534,12 @@
 
         .fretlab-bundle-offer-buttons {
           grid-template-columns: 1fr;
+        }
+
+        .fretlab-bundle-discount-tag {
+          min-width: 76px;
+          padding: 9px 12px 8px;
+          font-size: 0.92rem;
         }
       }
 
@@ -947,6 +1021,50 @@
             faq: 'FAQ'
           }
         };
+        var MENU_BAR_CONTENT = {
+          zh: {
+            home: '主页',
+            blog: 'Blog',
+            products: '产品内容',
+            music: '音乐内容',
+            tools: '视奏工具'
+          },
+          en: {
+            home: 'Home',
+            blog: 'Blog',
+            products: 'Products',
+            music: 'Music Content',
+            tools: 'Sight-Reading Tools'
+          }
+        };
+        var SITE_FOOTER_CONTENT = {
+          zh: {
+            kicker: '一起在音乐的道路上前进吧！',
+            copy: '音乐学习、工具研发、创作思考都在这里持续更新。',
+            siteMap: 'Site Map',
+            navLabel: '网站导航',
+            home: '主页',
+            blog: 'Blog',
+            music: '音乐内容',
+            contact: '联系我',
+            productLabel: '产品链接',
+            cognoteHref: 'https://icstudio.club/sight-reading-tool/',
+            fretlabHref: 'https://icstudio.club/fretlab/'
+          },
+          en: {
+            kicker: 'Keep moving forward on the path of music.',
+            copy: 'Music learning, tool building, and creative thinking continue to grow here.',
+            siteMap: 'Site Map',
+            navLabel: 'Navigation',
+            home: 'Home',
+            blog: 'Blog',
+            music: 'Music Content',
+            contact: 'Contact',
+            productLabel: 'Product Links',
+            cognoteHref: 'https://icstudio.club/en/sight-reading-tool/',
+            fretlabHref: 'https://icstudio.club/en/fretlab/'
+          }
+        };
 
         function getLang() {
           var lang = (document.documentElement.lang || '').toLowerCase();
@@ -1099,25 +1217,46 @@
           var menuBar = document.getElementById('menu-bar');
           if (!menuBar) return;
 
-          var menuList = menuBar.querySelector('ul');
-          if (!menuList) return;
+          var lang = getLang();
+          var menuText = MENU_BAR_CONTENT[lang] || MENU_BAR_CONTENT.zh;
+          var menuContainer = menuBar.querySelector('ul') || menuBar.firstElementChild || menuBar;
+          var menuLinks = menuBar.querySelectorAll('a[href]');
+          if (!menuLinks.length) return;
 
-          var expectedKey = 'home|blog|products|music';
+          var expectedKey = [lang, menuText.home, menuText.blog, menuText.products, menuText.music, menuText.tools].join('|');
           menuBar.style.width = '100%';
-          menuList.className = 'flex w-full items-center justify-center flex-nowrap whitespace-nowrap overflow-x-auto space-x-4';
-          menuList.style.display = 'flex';
-          menuList.style.width = '100%';
-          menuList.style.justifyContent = 'center';
-          menuList.style.margin = '0 auto';
+          if (menuContainer.tagName === 'UL') {
+            menuContainer.className = 'flex w-full items-center justify-center flex-nowrap whitespace-nowrap overflow-x-auto space-x-4';
+          }
+          menuContainer.style.display = 'flex';
+          menuContainer.style.width = '100%';
+          menuContainer.style.justifyContent = 'center';
+          menuContainer.style.margin = '0 auto';
 
-          if (menuList.dataset.menuRenderKey === expectedKey) return;
+          Array.prototype.forEach.call(menuLinks, function (linkNode) {
+            var href = (linkNode.getAttribute('href') || '').trim();
+            if (href === '/') {
+              linkNode.textContent = menuText.home;
+              return;
+            }
+            if (href.indexOf('/blog') === 0) {
+              linkNode.textContent = menuText.blog;
+              return;
+            }
+            if (href.indexOf('/products') === 0) {
+              linkNode.textContent = menuText.products;
+              return;
+            }
+            if (href.indexOf('/tools/melody-generator') === 0 || href.indexOf('/sight-reading-tool') === 0) {
+              linkNode.textContent = menuText.tools;
+              return;
+            }
+            if (href.indexOf('/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/') === 0 || href.indexOf('/音乐内容/') === 0) {
+              linkNode.textContent = menuText.music;
+            }
+          });
 
-          menuList.innerHTML = ''
-            + '<li class="my-2"><a href="/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">主页</a></li>'
-            + '<li class="my-2"><a href="/blog/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">Blog</a></li>'
-            + '<li class="my-2"><a href="/products/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">产品内容</a></li>'
-            + '<li class="my-2"><a href="/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">音乐内容</a></li>';
-          menuList.dataset.menuRenderKey = expectedKey;
+          menuBar.dataset.menuRenderKey = expectedKey;
         }
 
         function scrollToFretlabSection(sectionId) {
@@ -1163,7 +1302,10 @@
             root.insertAdjacentElement('afterend', footer);
           }
 
-          if (footer.dataset.footerRenderKey === SITE_FOOTER_RENDER_KEY) return;
+          var lang = getLang();
+          var footerText = SITE_FOOTER_CONTENT[lang] || SITE_FOOTER_CONTENT.zh;
+          var footerRenderKey = [SITE_FOOTER_RENDER_KEY, lang, footerText.kicker, footerText.copy, footerText.navLabel, footerText.productLabel].join('|');
+          if (footer.dataset.footerRenderKey === footerRenderKey) return;
 
           footer.className = 'fretlab-site-footer-shell';
           footer.innerHTML = ''
@@ -1176,26 +1318,26 @@
             + '        </svg>'
             + '        <span class="fretlab-site-footer-logo-text">IC STUDIO</span>'
             + '      </a>'
-            + '      <p class="fretlab-site-footer-kicker">一起在音乐的道路上前进吧！</p>'
-            + '      <p class="fretlab-site-footer-copy">音乐学习、工具研发、创作思考都在这里持续更新。</p>'
+            + '      <p class="fretlab-site-footer-kicker">' + footerText.kicker + '</p>'
+            + '      <p class="fretlab-site-footer-copy">' + footerText.copy + '</p>'
             + '    </div>'
             + '    <div class="fretlab-site-footer-nav">'
-            + '      <h3>Site Map</h3>'
+            + '      <h3>' + footerText.siteMap + '</h3>'
             + '      <div class="fretlab-site-footer-nav-grid">'
             + '        <div>'
-            + '          <p class="fretlab-site-footer-nav-label">网站导航</p>'
+            + '          <p class="fretlab-site-footer-nav-label">' + footerText.navLabel + '</p>'
             + '          <ul class="fretlab-site-footer-list">'
-            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/">主页</a></li>'
-            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/blog/">Blog</a></li>'
-            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/">音乐内容</a></li>'
-            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/contact/">联系我</a></li>'
+            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/">' + footerText.home + '</a></li>'
+            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/blog/">' + footerText.blog + '</a></li>'
+            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/">' + footerText.music + '</a></li>'
+            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/contact/">' + footerText.contact + '</a></li>'
             + '          </ul>'
             + '        </div>'
             + '        <div>'
-            + '          <p class="fretlab-site-footer-nav-label">产品链接</p>'
+            + '          <p class="fretlab-site-footer-nav-label">' + footerText.productLabel + '</p>'
             + '          <ul class="fretlab-site-footer-list">'
-            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/sight-reading-tool/">Cognote</a></li>'
-            + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/fretlab/">FretLab</a></li>'
+            + '            <li><a class="fretlab-site-footer-link" href="' + footerText.cognoteHref + '">Cognote</a></li>'
+            + '            <li><a class="fretlab-site-footer-link" href="' + footerText.fretlabHref + '">FretLab</a></li>'
             + '            <li><a class="fretlab-site-footer-link" href="https://icstudio.club/just-intonation/harmonic_lattice_dualmode.html">Harmonic Lattice</a></li>'
             + '          </ul>'
             + '        </div>'
@@ -1229,7 +1371,7 @@
             + '  </div>'
             + '</div>';
 
-          footer.dataset.footerRenderKey = SITE_FOOTER_RENDER_KEY;
+          footer.dataset.footerRenderKey = footerRenderKey;
         }
 
         function getGumroadButtonText(lang) {
@@ -1243,6 +1385,7 @@
         var BUNDLE_OFFER_CONTENT = {
           zh: {
             badge: 'Cognote + FretLab',
+            discountTag: '减15%',
             title: '一次解锁 Cognote 与 FretLab',
             price: '¥148',
             description: '如果你准备同时把读谱训练和吉他指板训练一起拿下，这个套装会更直接。后续只需要一个 Bundle 访问码，就可以验证两边的完整工具。',
@@ -1252,6 +1395,7 @@
           },
           en: {
             badge: 'Cognote + FretLab',
+            discountTag: '15% off',
             title: 'Unlock Cognote and FretLab at once',
             price: '¥148',
             description: 'If you want reading practice and fretboard training together, the bundle is the more direct setup. Later, one dedicated bundle access code will unlock both full tools.',
@@ -1272,7 +1416,8 @@
               },
               bundle: {
                 amount: '¥148',
-                label: '一次购买'
+                label: '一次购买',
+                oldPrice: '原价 ¥168'
               }
             }
           },
@@ -1286,7 +1431,8 @@
               },
               bundle: {
                 amount: '¥148',
-                label: 'one-time purchase'
+                label: 'one-time purchase',
+                oldPrice: 'Original Price ¥168'
               }
             }
           }
@@ -1402,6 +1548,9 @@
               + '    <div>'
               + '      <span id="fretlab-bundle-offer-badge" class="fretlab-bundle-offer-badge font-hand"></span>'
               + '    </div>'
+              + '    <div class="fretlab-bundle-offer-tag-anchor">'
+              + '      <span id="fretlab-bundle-offer-discount" class="fretlab-bundle-discount-tag font-hand"></span>'
+              + '    </div>'
               + '  </div>'
               + '  <h3 id="fretlab-bundle-offer-title" class="fretlab-bundle-offer-title font-sketch text-2xl"></h3>'
               + '  <div class="fretlab-bundle-offer-buttons">'
@@ -1426,12 +1575,14 @@
           }
 
           var badgeNode = document.getElementById('fretlab-bundle-offer-badge');
+          var discountNode = document.getElementById('fretlab-bundle-offer-discount');
           var titleNode = document.getElementById('fretlab-bundle-offer-title');
           var alipayNode = document.getElementById('fretlab-bundle-offer-alipay');
           var wechatNode = document.getElementById('fretlab-bundle-offer-wechat');
           var gumroadNode = document.getElementById('fretlab-bundle-offer-gumroad');
 
           if (badgeNode) badgeNode.textContent = text.badge;
+          if (discountNode) discountNode.textContent = text.discountTag;
           if (titleNode) titleNode.innerHTML = text.title;
           if (alipayNode) alipayNode.textContent = text.alipay;
           if (wechatNode) wechatNode.textContent = text.wechat;
@@ -1577,7 +1728,9 @@
             if (bundleButton) bundleButton.classList.toggle('is-active', normalized === 'bundle');
             var priceCopy = text.priceModes && text.priceModes[normalized];
             if (headlinePriceNode && priceCopy) {
-              headlinePriceNode.innerHTML = priceCopy.amount + ' <span class="font-hand text-lg text-muted-foreground">' + priceCopy.label + '</span>';
+              headlinePriceNode.innerHTML = priceCopy.amount
+                + ' <span class="font-hand text-lg text-muted-foreground">' + priceCopy.label + '</span>'
+                + (priceCopy.oldPrice ? '<span class="fretlab-buy-mode-price-old font-hand">' + priceCopy.oldPrice + '</span>' : '');
             }
           }
 
@@ -2041,6 +2194,64 @@
           }
         }
 
+        function setPreferredFretlabLanguage(lang) {
+          try {
+            if (lang === 'en') {
+              localStorage.setItem('preferredLanguage', 'en');
+              localStorage.setItem('ic_fretlab_ui_language', 'en');
+            } else {
+              localStorage.setItem('preferredLanguage', 'zh-CN');
+              localStorage.setItem('ic_fretlab_ui_language', 'zh');
+            }
+          } catch (error) {
+            // Ignore localStorage failures and still continue with navigation.
+          }
+        }
+
+        function getFretlabLocalizedPageUrl(lang) {
+          var search = window.location.search || '';
+          var hash = window.location.hash || '';
+          if (lang === 'en') {
+            return '/en/fretlab/' + search + hash;
+          }
+          return '/fretlab/' + search + hash;
+        }
+
+        function bindFretlabLanguageRedirect() {
+          if (document.documentElement.dataset.fretlabLangRedirectBound === '1') return;
+
+          document.addEventListener('click', function (event) {
+            var target = event.target && event.target.closest ? event.target.closest('button') : null;
+            if (!target) return;
+
+            var header = target.closest('#root header');
+            if (!header) return;
+
+            var label = (target.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+            var targetLang = null;
+            if (label === 'en') {
+              targetLang = 'en';
+            } else if (label === '中文' || label === '简体中文' || label === 'zh') {
+              targetLang = 'zh';
+            }
+            if (!targetLang) return;
+
+            var nextUrl = getFretlabLocalizedPageUrl(targetLang);
+            var currentUrl = window.location.pathname + (window.location.search || '') + (window.location.hash || '');
+            if (nextUrl === currentUrl) return;
+
+            setPreferredFretlabLanguage(targetLang);
+            event.preventDefault();
+            event.stopPropagation();
+            if (typeof event.stopImmediatePropagation === 'function') {
+              event.stopImmediatePropagation();
+            }
+            window.location.assign(nextUrl);
+          }, true);
+
+          document.documentElement.dataset.fretlabLangRedirectBound = '1';
+        }
+
         var runtimeEnhancersStarted = false;
         function startRuntimeEnhancers() {
           if (runtimeEnhancersStarted) return;
@@ -2088,6 +2299,7 @@
         }
 
         bindEarlyHeaderNavScrollCapture();
+        bindFretlabLanguageRedirect();
 
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', startRuntimeEnhancers, { once: true });
