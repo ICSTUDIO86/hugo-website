@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="zh-Hans">
   <head>
+    <script src="/js/localhost-sw-reset.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IC Fretboard Lab</title>
@@ -111,6 +112,20 @@
               <button type="button" class="lang-switch__btn" data-ui-lang="zh-hant">繁</button>
               <button type="button" class="lang-switch__btn" data-ui-lang="en">en</button>
             </div>
+            <button
+              id="helpToggleBtn"
+              type="button"
+              class="header-tool-btn help-launch-btn"
+              data-i18n-aria-label="help.button.aria"
+              aria-controls="helpModal"
+              aria-expanded="false"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8.8 8.9c.2-2 1.9-3.5 4.2-3.5 2.5 0 4.3 1.5 4.3 3.8 0 1.6-.9 2.7-2.3 3.6-1.3.8-2 1.4-2 2.8v.5" />
+                <circle cx="12" cy="18.3" r="1.05" />
+              </svg>
+              <span class="sr-only" data-i18n="help.button">Help</span>
+            </button>
           </div>
           <img
             class="app__logo"
@@ -171,6 +186,17 @@
                   <option value="sharps" data-i18n="controls.notePreference.sharps">升号优先</option>
                   <option value="flats" data-i18n="controls.notePreference.flats">降号优先</option>
                 </select>
+              </label>
+              <label>
+                <span data-i18n="controls.labelMode">显示模式</span>
+                <select id="labelModeSelect">
+                  <option value="fixed" data-i18n="controls.labelMode.fixed">固定调</option>
+                  <option value="movable-do" data-i18n="controls.labelMode.movableDo">首调</option>
+                </select>
+              </label>
+              <label id="movableDoRootWrap" hidden>
+                <span data-i18n="controls.movableDoRoot">主音</span>
+                <select id="movableDoRootSelect" data-i18n-aria-label="controls.movableDoRoot"></select>
               </label>
               <button id="clearMarkersBtn" class="ghost-btn block-btn" data-i18n="controls.clearMarkers">
                 清空标记
@@ -341,6 +367,54 @@
             >
               生成 MP4
             </button>
+          </div>
+        </div>
+      </section>
+
+      <div id="helpModalBackdrop" class="help-modal-backdrop" aria-hidden="true"></div>
+      <section
+        id="helpModal"
+        class="help-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-hidden="true"
+        aria-labelledby="helpModalTitle"
+      >
+        <div class="help-modal__panel">
+          <div class="help-modal__header">
+            <h2 id="helpModalTitle" data-i18n="help.modal.title">快速帮助</h2>
+            <button
+              id="helpModalCloseBtn"
+              type="button"
+              class="help-modal__close-btn"
+              data-i18n-aria-label="help.modal.close"
+              aria-label="关闭"
+            >
+              ×
+            </button>
+          </div>
+          <div class="help-modal__body">
+            <p class="help-modal__intro" data-i18n="help.modal.intro">
+              这里是最常用的基础操作说明。
+            </p>
+            <div class="help-modal__section">
+              <h3 data-i18n="help.modal.section.markers">标记音符</h3>
+              <p class="help-modal__marker-inline">
+                <span data-i18n="help.modal.marker.singleShort">单击</span>
+                <span class="help-modal__ball help-modal__ball--white" aria-hidden="true"></span>
+                <span class="help-modal__marker-separator" aria-hidden="true">；</span>
+                <span data-i18n="help.modal.marker.doubleShort">双击</span>
+                <span class="help-modal__ball help-modal__ball--yellow" aria-hidden="true"></span>
+              </p>
+              <p data-i18n="help.modal.marker.enharmonic">长按已有音符，可以切换同音异名的显示名称。</p>
+            </div>
+            <div class="help-modal__section">
+              <h3 data-i18n="help.modal.section.shapes">拖拽指型</h3>
+              <ul class="help-modal__list">
+                <li data-i18n="help.modal.shapes.palette">点开 Palette，从指型库里把指型拖到指板上即可预览或放置。</li>
+                <li data-i18n="help.modal.shapes.select">长按后拖拽，可以框选当前区域里的音符，方便一起移动或复制。</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>

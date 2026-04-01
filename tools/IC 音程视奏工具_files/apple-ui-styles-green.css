@@ -742,7 +742,7 @@ input[type="range"]::-moz-range-thumb {
 
 .metronome-pattern-step.beat-start {
     border-color: var(--primary-green);
-    color: var(--primary-green);
+    color: #FFFFFF;
 }
 
 .metronome-pattern-step.active {
@@ -1552,31 +1552,35 @@ button {
 }
 
 .settings-section {
-    padding: 0;
+    padding: 0 0 14px;
 }
 
 .settings-section:not(:last-child) {
     border-bottom: 1px solid var(--border-color);
+    margin-bottom: 12px;
 }
 
 .settings-section-title {
-    padding: 16px 20px 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--neutral-dark);
+    margin: 0 0 12px;
+    padding: 12px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #FFFFFF;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: var(--neutral-light);
+    letter-spacing: 0.08em;
+    background: #34c75983;
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(52, 199, 89, 0.1);
 }
 
 .theme-options,
 .language-options {
-    padding: 8px 0;
+    padding: 4px 12px 0;
 }
 
 .theme-option,
 .language-option {
-    padding: 12px 20px;
+    padding: 12px 14px;
     font-size: 14px;
     font-weight: 400;
     color: var(--neutral-black);
@@ -1589,6 +1593,26 @@ button {
     white-space: nowrap;
     position: relative;
     z-index: 10000;
+    border-radius: 12px;
+}
+
+.settings-section .midi-settings-row,
+.settings-section .midi-status,
+.settings-section .parameter-buttons {
+    margin-left: 12px;
+    margin-right: 12px;
+}
+
+.settings-section .midi-settings-row {
+    padding: 10px 2px;
+}
+
+.settings-section .midi-settings-row > label,
+.settings-section .midi-settings-row > span,
+.settings-section .midi-settings-row > div,
+.settings-section > label {
+    padding-left: 2px;
+    padding-right: 2px;
 }
 
 .theme-option:hover,
@@ -1668,7 +1692,7 @@ button {
 [data-theme="dark"] .function-option:hover,
 [data-theme="dark"] .function-option:focus {
     background: rgba(48, 209, 88, 0.2) !important;
-    color: var(--primary-green) !important;
+    color: #FFFFFF !important;
 }
 
 [data-theme="dark"] .function-option:active {
@@ -1696,7 +1720,7 @@ button {
 }
 
 [data-theme="dark"] .settings-section-title {
-    background: var(--neutral-light) !important;
+    background: #34c75983 !important;
     color: #FFFFFF !important;
 }
 

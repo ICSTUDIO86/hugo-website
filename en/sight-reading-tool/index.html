@@ -1628,6 +1628,17 @@
             <div class="payment-card">
               <h3 data-i18n="payment.cardTitle">解锁你的音乐潜能</h3>
               <p data-i18n="payment.refundPolicy">支持 7 天无理由退款</p>
+              <div class="promo-campaign-card">
+                <div class="promo-campaign-eyebrow-wrap">
+                  <div class="promo-campaign-eyebrow">Limited Offer</div>
+                </div>
+                <div class="promo-campaign-row">
+                  <div class="promo-campaign-copy">
+                    <h4 class="promo-campaign-title">Buy the Cognote full version between March 14, 2026 and April 14, 2026, and you also get the full version of FretLab.</h4>
+                  </div>
+                  <button type="button" class="promo-campaign-trigger" id="open-promo-offer">Read details</button>
+                </div>
+              </div>
 
               <a href="/en/tools/melody-generator.html" target="_blank" class="btn btn-outline" style="display: block; margin-bottom: 1.25rem; text-align: center; font-size: 0.9375rem; padding: 0.875rem;" data-i18n="payment.btnFreeTrial">
                 免费试用
@@ -1694,7 +1705,7 @@
               </div>
 
               <div class="bundle-offer-info">
-                <div class="bundle-offer-price">¥168</div>
+                <div class="bundle-offer-price">¥148</div>
                 <h3>Unlock Cognote and FretLab at once</h3>
               </div>
 
@@ -1791,7 +1802,7 @@
         </div>
 
         <div class="payment-update-meta">
-          <span>Last version update: March 28, 2026</span>
+          <span>Last version update: March 29, 2026</span>
           <button type="button" class="payment-update-link" id="open-update-log">View details</button>
         </div>
       </div>
@@ -1804,19 +1815,19 @@
 
         <section class="update-log-block">
           <h4 class="update-log-heading">Current Version</h4>
-          <p style="margin:0 0 0.7rem;color:#0f172a;"><strong>v2.0.1 (March 28, 2026)</strong></p>
+          <p style="margin:0 0 0.7rem;color:#0f172a;"><strong>v2.0.1 (March 29, 2026)</strong></p>
           <ul class="update-log-list">
             <li>
-              <strong>Playback and cursor stability pass</strong>
-              <p>Fixed remaining cursor-follow drift, mid-playback start issues, and related timing problems across melody, jianpu, and rhythm flows, and removed the leftover English play-button emoji in the chord tool.</p>
+              <strong>Metronome sound and volume controls are now unified across all five tools</strong>
+              <p>Melody, Jianpu, Interval, Chord, and Rhythm now share the same metronome sound and volume settings, including a new woodblock sound; changing it in one tool also updates challenge mode and count-in across the suite.</p>
             </li>
             <li>
-              <strong>Cross-tool language sync completed</strong>
-              <p>Changing the language in any tool now keeps that language across the full tool suite until the user explicitly changes it again.</p>
+              <strong>BPM changes now stop playback, challenge mode, and count-in immediately</strong>
+              <p>If the user changes the metronome tempo while playback, challenge mode, or count-in is in progress, the current run now stops right away so the beat grid cannot drift out of sync mid-session.</p>
             </li>
             <li>
-              <strong>UI consistency refinements</strong>
-              <p>The Jianpu tool subtitle color now matches the rest of the suite, and the English tool menu switcher labels are aligned with the Rhythm tool’s shorter naming style.</p>
+              <strong>88-key piano sampling and release resources were refined further</strong>
+              <p>Melody, Jianpu, Interval, and Chord now share the fuller 88-key piano sample set, with additional BPM sync fixes in Chord; this sync also refreshes the web tools and installer resources for the current 2.0.1 release.</p>
             </li>
           </ul>
         </section>
@@ -1841,6 +1852,36 @@
             </li>
           </ul>
           <p class="update-log-history-empty">Note: this version is the starting point of the website update log, not the first product release; earlier iterations were not logged here.</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="promo-offer-modal" id="promo-offer-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="promo-offer-title">
+      <div class="promo-offer-panel">
+        <button type="button" class="promo-offer-close" id="close-promo-offer" aria-label="Close">×</button>
+        <h3 class="promo-offer-title" id="promo-offer-title">Offer details</h3>
+
+        <section class="promo-offer-block">
+          <h4 class="promo-offer-heading">What this offer includes</h4>
+          <p class="promo-offer-text">If you buy the Cognote full version between March 14, 2026 00:00:00 and April 14, 2026 23:59:59, Beijing time, you also receive full access to FretLab.</p>
+        </section>
+
+        <section class="promo-offer-block">
+          <h4 class="promo-offer-heading">Eligibility</h4>
+          <ul class="promo-offer-list">
+            <li>This offer applies only to Cognote full-version orders, not single-product purchases.</li>
+            <li>The included bonus is full FretLab access at no extra cost.</li>
+            <li>After payment, you can use the same Cognote full-version access code to unlock FretLab.</li>
+          </ul>
+        </section>
+
+        <section class="promo-offer-block">
+          <h4 class="promo-offer-heading">Notes</h4>
+          <ul class="promo-offer-list">
+            <li>The FretLab access-code verification area is in the FretLab purchase section.</li>
+            <li>If the qualifying Cognote order is refunded later, the gifted FretLab entitlement will also be revoked.</li>
+          </ul>
+          <p class="promo-offer-note">If you purchased the Cognote full version during the offer period but FretLab is still not unlocked, <a href="/contact/">contact me</a> and I can help verify the order.</p>
         </section>
       </div>
     </div>
@@ -2379,6 +2420,7 @@
       initFeedbackLoopMarquee();
       initPaymentModeToggle();
       initUpdateLogModal();
+      initPromoOfferModal();
       initAnimatedContentCards();
     });
 
@@ -2601,7 +2643,7 @@
           text: 'One purchase, lifetime access'
         },
         bundle: {
-          price: '168.00¥',
+          price: '148.00¥',
           text: 'One code unlocks Cognote + FretLab'
         }
       };
@@ -2764,6 +2806,39 @@
       const modal = document.getElementById('update-log-modal');
       const openButton = document.getElementById('open-update-log');
       const closeButton = document.getElementById('close-update-log');
+
+      if (!modal || !openButton || !closeButton) return;
+
+      const closeModal = () => {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+      };
+
+      const openModal = () => {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+      };
+
+      openButton.addEventListener('click', openModal);
+      closeButton.addEventListener('click', closeModal);
+
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+          closeModal();
+        }
+      });
+    }
+
+    function initPromoOfferModal() {
+      const modal = document.getElementById('promo-offer-modal');
+      const openButton = document.getElementById('open-promo-offer');
+      const closeButton = document.getElementById('close-promo-offer');
 
       if (!modal || !openButton || !closeButton) return;
 

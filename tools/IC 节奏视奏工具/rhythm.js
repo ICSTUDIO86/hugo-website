@@ -103,6 +103,11 @@
             'settings.darkMode': '深色模式',
             'settings.language': '语言',
             'settings.midi': 'MIDI 输入',
+            'settings.metronome': '节拍器',
+            'settings.metronomeSound': '音色',
+            'settings.metronomeSound.classic': '电子',
+            'settings.metronomeSound.woodblock': '木鱼',
+            'settings.metronomeVolume': '音量',
             'settings.calibration': '输入校准',
             'midi.enable': '启用',
             'midi.device': '设备',
@@ -274,6 +279,11 @@
             'settings.darkMode': '深色模式',
             'settings.language': '語言',
             'settings.midi': 'MIDI 輸入',
+            'settings.metronome': '節拍器',
+            'settings.metronomeSound': '音色',
+            'settings.metronomeSound.classic': '電子',
+            'settings.metronomeSound.woodblock': '木魚',
+            'settings.metronomeVolume': '音量',
             'settings.calibration': '輸入校準',
             'midi.enable': '啟用',
             'midi.device': '裝置',
@@ -445,6 +455,11 @@
             'settings.darkMode': 'Dark Mode',
             'settings.language': 'Language',
             'settings.midi': 'MIDI Input',
+            'settings.metronome': 'Metronome',
+            'settings.metronomeSound': 'Sound',
+            'settings.metronomeSound.classic': 'Electronic',
+            'settings.metronomeSound.woodblock': 'Woodblock',
+            'settings.metronomeVolume': 'Volume',
             'settings.calibration': 'Input Calibration',
             'midi.enable': 'Enable',
             'midi.device': 'Device',
@@ -1195,6 +1210,61 @@
     function getTranslation(key) {
         const pack = translations[currentLanguage] || translations['zh-CN'];
         return pack[key] || (translations['zh-CN'] && translations['zh-CN'][key]) || key;
+    }
+
+    function getSharedMetronomeSettings() {
+        if (window.ICMetronomeSettings && typeof window.ICMetronomeSettings.load === 'function') {
+            return window.ICMetronomeSettings.load();
+        }
+        return { sound: 'classic', volume: 70 };
+    }
+
+    function updateRhythmMetronomeSettingsUi() {
+        const settings = getSharedMetronomeSettings();
+        const soundSelect = document.getElementById('metronomeSoundSelect');
+        const volumeSlider = document.getElementById('metronomeVolumeSlider');
+        const volumeValue = document.getElementById('metronomeVolumeValue');
+        if (soundSelect) soundSelect.value = settings.sound;
+        if (volumeSlider) volumeSlider.value = String(settings.volume);
+        if (volumeValue) volumeValue.textContent = `${settings.volume}%`;
+    }
+
+    function saveSharedMetronomeSettings(partial) {
+        if (window.ICMetronomeSettings && typeof window.ICMetronomeSettings.save === 'function') {
+            window.ICMetronomeSettings.save(partial);
+        }
+        updateRhythmMetronomeSettingsUi();
+    }
+
+    function initializeRhythmMetronomeSettingsUi() {
+        const soundSelect = document.getElementById('metronomeSoundSelect');
+        const volumeSlider = document.getElementById('metronomeVolumeSlider');
+
+        if (soundSelect && soundSelect.dataset.bound !== 'true') {
+            soundSelect.dataset.bound = 'true';
+            soundSelect.addEventListener('change', (event) => {
+                saveSharedMetronomeSettings({ sound: event.target.value });
+            });
+        }
+
+        if (volumeSlider && volumeSlider.dataset.bound !== 'true') {
+            volumeSlider.dataset.bound = 'true';
+            volumeSlider.addEventListener('input', (event) => {
+                saveSharedMetronomeSettings({ volume: event.target.value });
+            });
+        }
+
+        if (!window.__rhythmMetronomeSettingsBound) {
+            window.__rhythmMetronomeSettingsBound = true;
+            window.addEventListener('storage', (event) => {
+                if (window.ICMetronomeSettings && event.key === window.ICMetronomeSettings.STORAGE_KEY) {
+                    updateRhythmMetronomeSettingsUi();
+                }
+            });
+            window.addEventListener('ic-metronome-settings-changed', updateRhythmMetronomeSettingsUi);
+        }
+
+        updateRhythmMetronomeSettingsUi();
     }
 
     function updatePlayButtonState(isPlaying) {
@@ -6311,6 +6381,11 @@
         }
     }
 
+    window.__icRhythmPlayback = {
+        isPlaying: () => !!state.playback.isPlaying,
+        stop: () => stopPlayback()
+    };
+
     function startPlaybackAt(startTime, tempoOverride, startTick = 0) {
         const { events, totalTicks, settings } = buildPlaybackEvents();
         const ctx = ensurePlaybackContext();
@@ -6547,16 +6622,12 @@
         const output = getMetronomeOutputGain(ctx);
         if (!output) return;
         const scheduleTime = typeof time === 'number' ? time : ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        const baseFreq = 523.25; // C5, match other tools
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(accent ? baseFreq * 1.2 : baseFreq, scheduleTime);
-        gain.gain.setValueAtTime(0.5, scheduleTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, scheduleTime + 0.05);
-        osc.connect(gain).connect(output);
-        osc.start(scheduleTime);
-        osc.stop(scheduleTime + 0.05);
+        if (window.ICMetronomeSettings && typeof window.ICMetronomeSettings.play === 'function') {
+            window.ICMetronomeSettings.play(ctx, scheduleTime, {
+                isDownbeat: !!accent,
+                outputNode: output
+            });
+        }
     }
 
     function startMetronome(startAtTime, startedByPlayback = false, beatOffset = 0) {
@@ -6835,6 +6906,7 @@
         initializeCalibrationSettings();
         bindEvents();
         initializeMetronomePatternUI();
+        initializeRhythmMetronomeSettingsUi();
         initializeOstinatoPatternUI();
         updateDensityLabels();
         updateOstinatoUI();

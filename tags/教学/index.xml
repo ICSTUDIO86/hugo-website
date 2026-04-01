@@ -66,28 +66,38 @@
 &lt;ul>
 &lt;li>主音位置：该指型的最低音为主音，此外在四弦7品、一弦5品也有主音。&lt;/li>
 &lt;li>形状参考：
-&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-1.png" alt="A 小调五声音阶：Box 1（主音示意）">&lt;/li>
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-1.png"
+ alt="A 小调五声音阶：Box 1（主音示意）">
+&lt;/li>
 &lt;/ul>
 &lt;h3 id="box-2">Box 2&lt;/h3>
 &lt;ul>
 &lt;li>主音位置：四弦7品、二弦10品。
-&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-2.png" alt="A 小调五声音阶：Box 2（主音示意）">&lt;/li>
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-2.png"
+ alt="A 小调五声音阶：Box 2（主音示意）">
+&lt;/li>
 &lt;/ul>
 &lt;h3 id="box-3">Box 3&lt;/h3>
 &lt;ul>
 &lt;li>主音位置：五弦12品、二弦10品。
-&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-3.png" alt="A 小调五声音阶：Box 3（主音示意）">&lt;/li>
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-3.png"
+ alt="A 小调五声音阶：Box 3（主音示意）">
+&lt;/li>
 &lt;/ul>
 &lt;h3 id="box-4">Box 4&lt;/h3>
 &lt;ul>
 &lt;li>指板重复：12 品后音高开始重复，此 box 既可从空弦起，也可从 12 品起。&lt;/li>
 &lt;li>主音位置：五弦空弦/12品、三弦2品/14品。
-&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-4.png" alt="A 小调五声音阶：Box 4（主音示意）">&lt;/li>
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-4.png"
+ alt="A 小调五声音阶：Box 4（主音示意）">
+&lt;/li>
 &lt;/ul>
 &lt;h3 id="box-5">Box 5&lt;/h3>
 &lt;ul>
 &lt;li>主音位置：六弦5品、三弦2品、一弦5品。
-&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-5.png" alt="A 小调五声音阶：Box 5（主音示意）">&lt;/li>
+&lt;img src="https://icstudio.club/images/pentatonic-scale/a-minor-pentatonic-box-5.png"
+ alt="A 小调五声音阶：Box 5（主音示意）">
+&lt;/li>
 &lt;/ul>
 &lt;p>小结与延伸：&lt;/p>
 &lt;ul>
@@ -98,18 +108,24 @@
 &lt;p>把五个 box 抽象起来，核心就两类手型：&lt;/p></description></item><item><title>什么是错音？为什么大师弹的音都是对的？为什么爵士没有错音？</title><link>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/%E4%BB%80%E4%B9%88%E6%98%AF%E9%94%99%E9%9F%B3-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%A4%A7%E5%B8%88%E5%BC%B9%E7%9A%84%E9%9F%B3%E9%83%BD%E6%98%AF%E5%AF%B9%E7%9A%84-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%88%B5%E5%A3%AB%E6%B2%A1%E6%9C%89%E9%94%99%E9%9F%B3/</link><pubDate>Tue, 08 Oct 2024 00:00:00 +0000</pubDate><guid>https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/%E4%BB%80%E4%B9%88%E6%98%AF%E9%94%99%E9%9F%B3-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%A4%A7%E5%B8%88%E5%BC%B9%E7%9A%84%E9%9F%B3%E9%83%BD%E6%98%AF%E5%AF%B9%E7%9A%84-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%88%B5%E5%A3%AB%E6%B2%A1%E6%9C%89%E9%94%99%E9%9F%B3/</guid><description>&lt;p>很多人第一次即兴都会遇到同一个问题：为什么自己一“出格”就难听，而有些音乐家看起来怎么弹都成立？关键并不在于他们“不会弹错”，而在于他们知道如何管理张力。理解这一点，必须先从和弦外音开始。&lt;/p>
 &lt;h2 id="什么是和弦外音">什么是和弦外音？&lt;/h2>
 &lt;p>和弦外音（tension note）指的是：&lt;strong>不属于当前和弦内音，但通常属于当下调性音阶&lt;/strong>的音。它的存在不是为了制造错误，而是为了制造紧张感，再通过节奏与解决把这股紧张感变成音乐表达。&lt;/p>
-&lt;p>&lt;img src="https://icstudio.club/images/wrong-notes/chord-outside-tone-title.png" alt="和弦外音概念示意">&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/wrong-notes/chord-outside-tone-title.png"
+ alt="和弦外音概念示意">
+&lt;/p>
 &lt;p>当你把“张力”和“错误”分开，耳朵会变得更客观。很多听起来“高级”的句子，本质上都是张力与释放的设计。&lt;/p>
 &lt;h2 id="流行音乐里一直都在用它">流行音乐里一直都在用它&lt;/h2>
 &lt;p>和弦外音并不是爵士乐的专利。流行歌、R&amp;amp;B、抒情歌里都在大量使用。区别不在“有没有外音”，而在这个外音出现的位置、停留时值，以及最后是否被妥善解决。&lt;/p>
-&lt;p>&lt;img src="https://icstudio.club/images/wrong-notes/chord-outside-tone-pop-songs-example.png" alt="流行音乐中的和弦外音示例">&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/wrong-notes/chord-outside-tone-pop-songs-example.png"
+ alt="流行音乐中的和弦外音示例">
+&lt;/p>
 &lt;p>这也是为什么同样一个音，有时动人、有时刺耳：&lt;strong>音名本身不是全部，语境才是全部&lt;/strong>。&lt;/p>
 &lt;h2 id="哪些外音更容易好听">哪些外音更容易好听？&lt;/h2>
 &lt;p>实战里可以先用一个简化规则入手：&lt;strong>和弦内音上方全音关系的外音通常更安全，上方半音关系通常更容易冲突&lt;/strong>。这不是绝对法则，但作为训练起点非常有效。&lt;/p>
 &lt;p>放到常见和弦上，大方向可以这样抓：大和弦常见 7、9、13；小和弦常见 7、9、11；属和弦因为本身张力强，可用范围更宽，但仍要注意与三音的冲突管理。你不需要把它背成死表，而是把它当成“默认选项”，再用耳朵微调。&lt;/p>
 &lt;h2 id="把危险音变成可控表达的三种做法">把“危险音”变成可控表达的三种做法&lt;/h2>
 &lt;p>最直接的方式是把它们放进经典的旋律功能里：经过音、邻音、倚音。你会发现，很多原本让人紧张的音，一旦放到正确位置，反而会让旋律更有生命力。&lt;/p>
-&lt;p>&lt;img src="https://icstudio.club/images/wrong-notes/passing-tone-score-example.png" alt="经过音谱例">
+&lt;p>&lt;img src="https://icstudio.club/images/wrong-notes/passing-tone-score-example.png"
+ alt="经过音谱例">
+
 &lt;figure style="text-align: center; margin: 20px auto; width: 100%;">
  &lt;div style="display: flex; justify-content: center;">
  &lt;audio controls preload="auto" style="max-width: 100%; display: inline-block !important; margin: 0 auto;">
@@ -126,7 +142,9 @@
  
 &lt;/figure>
  &lt;/p>
-&lt;p>&lt;img src="https://icstudio.club/images/wrong-notes/neighbor-tone-score-example.png" alt="邻音谱例">
+&lt;p>&lt;img src="https://icstudio.club/images/wrong-notes/neighbor-tone-score-example.png"
+ alt="邻音谱例">
+
 &lt;figure style="text-align: center; margin: 20px auto; width: 100%;">
  &lt;div style="display: flex; justify-content: center;">
  &lt;audio controls preload="auto" style="max-width: 100%; display: inline-block !important; margin: 0 auto;">

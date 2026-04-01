@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
 <script src="/js/url-language-force.js"></script>
+<script src="/js/localhost-sw-reset.js"></script>
   <base href="/fretlab/">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -140,6 +141,14 @@
         background: transparent;
         z-index: 10000;
         overscroll-behavior: contain;
+      }
+
+      .fretlab-update-log-modal[open],
+      .fretlab-update-log-modal.is-open {
+        display: block;
+        position: fixed;
+        inset: 0;
+        margin: auto;
       }
 
       .fretlab-update-log-modal::backdrop {
@@ -667,7 +676,7 @@
 
   <body>
     <div id="root"></div>
-    <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.5"></script>
+    <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.6"></script>
     <script defer src="/fretlab/js/fretlab-payment.js?v=1.1.15"></script>
     <script defer src="/js/bundle-payment.js?v=1.0.0"></script>
     <script>
@@ -724,7 +733,7 @@
         var SITE_FOOTER_RENDER_KEY = 'site-footer-v3';
         var UPDATE_LOG_CONTENT = {
           zh: {
-            banner: '最后一次版本更新时间：2026年03月25日',
+            banner: '最后一次版本更新时间：2026年03月31日',
             button: '了解详情',
             modalTitle: '更新日志',
             close: '关闭',
@@ -732,15 +741,26 @@
             sectionHistory: '历史更新记录',
             historyButton: '了解详情',
             historyNote: '暂无更早历史记录。',
-            currentVersion: 'v1.0.5（2026年03月25日）',
+            currentVersion: 'v1.0.6（2026年03月31日）',
             currentItems: [
-              '修正自定义指板拖拽指型时的音名与落点映射，优先保证音名正确。',
-              '自定义调弦下保留原始弦位，不再把预制指型按标准吉他 1:1 硬搬。',
-              '音名显示改为按自定义指板实际落点输出，减少理论拼写造成的错位。',
-              '官网工具页已同步这一轮自定义指板拖拽修正。',
-              '安装包版本同步更新，供官网与后端下载链路使用。'
+              '新增固定调 / 首调切换，可选择主音并用数字显示指板与指型库音名。',
+              '新增长按框选，可批量选择、移动、复制、剪切与粘贴多个音符。',
+              '新增 Help 帮助弹窗，补充点击、双击、拖拽与框选等基础操作说明。',
+              '优化单击 / 双击标记响应速度，并支持点击空白处只取消当前选区。',
+              '调整长按音符交互：同音异名菜单更快弹出，选区音符可直接整体拖拽。'
             ],
             historyItems: [
+              {
+                version: 'v1.0.5',
+                detailTitle: 'v1.0.5（2026年03月25日）',
+                detailItems: [
+                  '修正自定义指板拖拽指型时的音名与落点映射，优先保证音名正确。',
+                  '自定义调弦下保留原始弦位，不再把预制指型按标准吉他 1:1 硬搬。',
+                  '音名显示改为按自定义指板实际落点输出，减少理论拼写造成的错位。',
+                  '官网工具页已同步这一轮自定义指板拖拽修正。',
+                  '安装包版本同步更新，供官网与后端下载链路使用。'
+                ]
+              },
               {
                 version: 'v1.0.4',
                 detailTitle: 'v1.0.4（2026年03月24日）',
@@ -788,7 +808,7 @@
             ],
           },
           en: {
-            banner: 'Last version update: March 25, 2026',
+            banner: 'Last version update: March 31, 2026',
             button: 'View details',
             modalTitle: 'Update Log',
             close: 'Close',
@@ -796,15 +816,26 @@
             sectionHistory: 'History',
             historyButton: 'View details',
             historyNote: 'No earlier history is available.',
-            currentVersion: 'v1.0.5 (March 25, 2026)',
+            currentVersion: 'v1.0.6 (March 31, 2026)',
             currentItems: [
-              'Fixed note-name and drop-position mapping when dragging preset shapes onto a custom fretboard.',
-              'Custom tuning now keeps each note on its original string instead of copying preset shapes from standard guitar 1:1.',
-              'Displayed note names now follow the actual dropped pitch on the custom fretboard.',
-              'The website tool page has been synced with this custom-fretboard drag-and-drop fix.',
-              'Installer packages were refreshed for the website and backend download flow.'
+              'Added Fixed Do / Movable Do switching, with selectable tonic and numeric note labels across the board and shape library.',
+              'Added long-press marquee selection for moving, copying, cutting, and pasting multiple notes together.',
+              'Added a Help modal with quick guidance for click, double-click, drag, and selection workflows.',
+              'Improved single-click / double-click marker responsiveness and blank-click deselection behavior.',
+              'Refined long-press note interactions: enharmonic options appear faster, while selected notes drag as a group.'
             ],
             historyItems: [
+              {
+                version: 'v1.0.5',
+                detailTitle: 'v1.0.5 (March 25, 2026)',
+                detailItems: [
+                  'Fixed note-name and drop-position mapping when dragging preset shapes onto a custom fretboard.',
+                  'Custom tuning now keeps each note on its original string instead of copying preset shapes from standard guitar 1:1.',
+                  'Displayed note names now follow the actual dropped pitch on the custom fretboard.',
+                  'The website tool page has been synced with this custom-fretboard drag-and-drop fix.',
+                  'Installer packages were refreshed for the website and backend download flow.'
+                ]
+              },
               {
                 version: 'v1.0.4',
                 detailTitle: 'v1.0.4 (March 24, 2026)',
@@ -850,6 +881,60 @@
                 ]
               }
             ],
+          }
+        };
+        var PROMO_CAMPAIGN_CONTENT = {
+          zh: {
+            title: '如果你在 2026 年 3 月 14 日到 4 月 14 日之间购买了 Cognote 完整版，这个访问码也可以直接解锁 FretLab 完整版。',
+            button: '了解详情',
+            modalTitle: '活动详情',
+            sections: [
+              {
+                heading: '活动内容',
+                paragraph: '在北京时间 2026 年 3 月 14 日 00:00:00 到 2026 年 4 月 14 日 23:59:59 之间购买 Cognote 完整版的用户，也会获得 FretLab 完整版授权。'
+              },
+              {
+                heading: '适用范围',
+                items: [
+                  '本次活动只适用于 Cognote 完整版订单，不适用于单件购买。',
+                  '在本页输入活动期间购买的 Cognote 完整版访问码，即可验证通过。',
+                  '赠送内容为 FretLab 完整版，无需额外购买。'
+                ]
+              },
+              {
+                heading: '补充说明',
+                items: [
+                  '如果对应的 Cognote 订单后续退款，赠送的 FretLab 权限也会一并失效。',
+                  '如果你确认自己在活动期内购买了 Cognote 完整版，但仍无法解锁 FretLab，可以<a href="/contact/" class="underline underline-offset-2">联系我</a>协助核对订单。'
+                ]
+              }
+            ]
+          },
+          en: {
+            title: 'If you bought the Cognote full version between March 14, 2026 and April 14, 2026, that same access code can also unlock the full version of FretLab.',
+            button: 'Read details',
+            modalTitle: 'Offer details',
+            sections: [
+              {
+                heading: 'What this offer includes',
+                paragraph: 'If you bought the Cognote full version between March 14, 2026 00:00:00 and April 14, 2026 23:59:59, Beijing time, that same access code can also unlock the full version of FretLab.'
+              },
+              {
+                heading: 'Eligibility',
+                items: [
+                  'This offer applies only to Cognote full-version orders, not single-product purchases.',
+                  'Enter the qualifying Cognote full-version access code on this page and FretLab should verify successfully.',
+                  'The included bonus is full FretLab access at no extra cost.'
+                ]
+              },
+              {
+                heading: 'Notes',
+                items: [
+                  'If the qualifying Cognote order is refunded later, the gifted FretLab access will also be revoked.',
+                  'If you bought Cognote during the offer period but FretLab is still not unlocked, <a href="/contact/" class="underline underline-offset-2">contact me</a> and I can help verify the order.'
+                ]
+              }
+            ]
           }
         };
         var ESCAPE_HANDLER_ATTACHED = false;
@@ -1162,7 +1247,7 @@
           zh: {
             badge: 'Cognote + FretLab',
             title: '一次解锁 Cognote 与 FretLab',
-            price: '¥168',
+            price: '¥148',
             description: '如果你准备同时把读谱训练和吉他指板训练一起拿下，这个套装会更直接。后续只需要一个 Bundle 访问码，就可以验证两边的完整工具。',
             alipay: '支付宝支付',
             wechat: '微信支付',
@@ -1171,7 +1256,7 @@
           en: {
             badge: 'Cognote + FretLab',
             title: 'Unlock Cognote and FretLab at once',
-            price: '¥168',
+            price: '¥148',
             description: 'If you want reading practice and fretboard training together, the bundle is the more direct setup. Later, one dedicated bundle access code will unlock both full tools.',
             alipay: 'Alipay',
             wechat: 'WeChat Pay',
@@ -1189,7 +1274,7 @@
                 label: '一次购买'
               },
               bundle: {
-                amount: '¥168',
+                amount: '¥148',
                 label: '一次购买'
               }
             }
@@ -1203,7 +1288,7 @@
                 label: 'one-time purchase'
               },
               bundle: {
-                amount: '¥168',
+                amount: '¥148',
                 label: 'one-time purchase'
               }
             }
@@ -1639,6 +1724,21 @@
 
           var lang = getLang();
           var text = UPDATE_LOG_CONTENT[lang] || UPDATE_LOG_CONTENT.zh;
+          var promo = PROMO_CAMPAIGN_CONTENT[lang] || PROMO_CAMPAIGN_CONTENT.zh;
+
+          var promoBlock = document.getElementById('fretlab-promo-campaign-block');
+          if (!promoBlock) {
+            promoBlock = document.createElement('div');
+            promoBlock.id = 'fretlab-promo-campaign-block';
+            promoBlock.className = 'relative w-full fretlab-promo-campaign-wrap';
+            promoBlock.innerHTML = ''
+              + '<div class="fretlab-promo-campaign-card">'
+              + '  <div class="fretlab-promo-campaign-copy">'
+              + '    <p id="fretlab-promo-campaign-title" class="fretlab-promo-campaign-title font-hand text-base"></p>'
+              + '  </div>'
+              + '  <button id="fretlab-promo-campaign-open" type="button" class="fretlab-promo-campaign-trigger font-hand text-sm"></button>'
+              + '</div>';
+          }
 
           var block = document.getElementById('fretlab-update-log-block');
           if (!block) {
@@ -1659,17 +1759,21 @@
           var trialFullBlock = findTrialFullBlock(contentRoot);
           var previewContainer = findPreviewContainer(contentRoot);
           var paymentButtonRow = payButton && payButton.parentNode ? payButton.parentNode : null;
-          var gumroadButton = document.getElementById('fretlab-buy-gumroad');
           var accessSection = accessInput && accessInput.closest ? accessInput.closest('div.rounded-xl') : null;
 
-          var promoBlock = document.getElementById('fretlab-promo-campaign-block');
-          if (promoBlock && promoBlock.parentNode) {
-            promoBlock.parentNode.removeChild(promoBlock);
-          }
-
-          var promoModal = document.getElementById('fretlab-promo-campaign-modal');
-          if (promoModal && promoModal.parentNode) {
-            promoModal.parentNode.removeChild(promoModal);
+          if (paymentButtonRow && accessSection && paymentButtonRow.parentNode === accessSection.parentNode) {
+            if (promoBlock.parentNode !== paymentButtonRow.parentNode || promoBlock.nextElementSibling !== accessSection) {
+              paymentButtonRow.insertAdjacentElement('afterend', promoBlock);
+            }
+          } else if (previewContainer && previewContainer.parentNode) {
+            var promoParentNode = previewContainer.parentNode;
+            if (promoBlock.parentNode !== promoParentNode || promoBlock.nextElementSibling !== previewContainer) {
+              promoParentNode.insertBefore(promoBlock, previewContainer);
+            }
+          } else if (trialFullBlock && trialFullBlock.parentNode) {
+            if (promoBlock.parentNode !== trialFullBlock.parentNode || promoBlock.previousElementSibling !== trialFullBlock) {
+              trialFullBlock.insertAdjacentElement('afterend', promoBlock);
+            }
           }
 
           // Preferred position:
@@ -1685,6 +1789,26 @@
             }
           } else {
             return;
+          }
+
+          var promoTitleNode = document.getElementById('fretlab-promo-campaign-title');
+          var promoOpenNode = document.getElementById('fretlab-promo-campaign-open');
+          if (promoTitleNode) promoTitleNode.textContent = promo.title;
+          if (promoOpenNode) promoOpenNode.textContent = promo.button;
+
+          var promoModal = document.getElementById('fretlab-promo-campaign-modal');
+          if (!promoModal) {
+            promoModal = document.createElement('dialog');
+            promoModal.id = 'fretlab-promo-campaign-modal';
+            promoModal.className = 'fretlab-update-log-modal';
+            promoModal.setAttribute('aria-hidden', 'true');
+            document.body.appendChild(promoModal);
+          }
+
+          var promoModalRenderKey = getPromoCampaignRenderKey(lang, promo);
+          if (promoModal.dataset.renderKey !== promoModalRenderKey) {
+            promoModal.innerHTML = buildPromoCampaignModalHtml(promo);
+            promoModal.dataset.renderKey = promoModalRenderKey;
           }
 
           var bannerNode = document.getElementById('fretlab-update-log-banner');
@@ -1711,6 +1835,7 @@
 
           function finalizeModalClose() {
             modal.classList.remove('is-open');
+            modal.removeAttribute('open');
             modal.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = modal.dataset.bodyOverflow || '';
             modal.dataset.bodyOverflow = '';
@@ -1727,11 +1852,38 @@
           function openModal() {
             modal.dataset.bodyOverflow = document.body.style.overflow || '';
             document.body.style.overflow = 'hidden';
+            modal.classList.add('is-open');
+            modal.setAttribute('open', '');
             modal.setAttribute('aria-hidden', 'false');
             if (typeof modal.showModal === 'function' && !modal.open) {
               modal.showModal();
-            } else {
-              modal.classList.add('is-open');
+            }
+          }
+
+          function finalizePromoModalClose() {
+            promoModal.classList.remove('is-open');
+            promoModal.removeAttribute('open');
+            promoModal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = promoModal.dataset.bodyOverflow || '';
+            promoModal.dataset.bodyOverflow = '';
+          }
+
+          function closePromoModal() {
+            if (typeof promoModal.close === 'function' && promoModal.open) {
+              promoModal.close();
+              return;
+            }
+            finalizePromoModalClose();
+          }
+
+          function openPromoModal() {
+            promoModal.dataset.bodyOverflow = document.body.style.overflow || '';
+            document.body.style.overflow = 'hidden';
+            promoModal.classList.add('is-open');
+            promoModal.setAttribute('open', '');
+            promoModal.setAttribute('aria-hidden', 'false');
+            if (typeof promoModal.showModal === 'function' && !promoModal.open) {
+              promoModal.showModal();
             }
           }
 
@@ -1805,9 +1957,18 @@
             bindPressAction(openNode, openModal);
           }
 
+          if (promoOpenNode) {
+            bindPressAction(promoOpenNode, openPromoModal);
+          }
+
           var closeButton = document.getElementById('fretlab-update-log-close');
           if (closeButton) {
             bindPressAction(closeButton, closeModal);
+          }
+
+          var promoCloseButton = document.getElementById('fretlab-promo-campaign-close');
+          if (promoCloseButton) {
+            bindPressAction(promoCloseButton, closePromoModal);
           }
 
           var historyToggleNodes = modal.querySelectorAll('.fretlab-history-toggle');
@@ -1843,10 +2004,25 @@
             if (event.target === modal) closeModal();
           };
 
+          promoModal.onclose = function () {
+            finalizePromoModalClose();
+          };
+
+          promoModal.onclick = function (event) {
+            if (event.target === promoModal) closePromoModal();
+          };
+
           if (!ESCAPE_HANDLER_ATTACHED) {
             document.addEventListener('keydown', function (event) {
               var modalNode = document.getElementById('fretlab-update-log-modal');
-              if (!modalNode || !modalNode.classList.contains('is-open')) return;
+              var promoModalNode = document.getElementById('fretlab-promo-campaign-modal');
+              var promoIsOpen = !!(promoModalNode && (promoModalNode.open || promoModalNode.classList.contains('is-open')));
+              var modalIsOpen = !!(modalNode && (modalNode.open || modalNode.classList.contains('is-open')));
+              if (event.key === 'Escape' && promoIsOpen) {
+                closePromoModal();
+                return;
+              }
+              if (!modalIsOpen) return;
               if (event.key === 'Escape') {
                 closeModal();
               }

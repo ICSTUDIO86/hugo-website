@@ -3,7 +3,7 @@
 
   const DEFAULT_CONFIG = {
     toolId: 'icstudio-bundle',
-    amount: '168.00',
+    amount: '148.00',
     mockPaymentSuccess: false,
     storageKey: 'ic-bundle-license-v1',
     api: {

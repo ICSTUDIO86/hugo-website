@@ -12340,7 +12340,17 @@ function playCountInBeat(frequency, startTime, duration, volume = 0.6) {
 function ensureChordSamplePlayer() {
     try {
         if (!window.__icSamplePlayer && window.ICSamplePlayer) {
-            window.__icSamplePlayer = new ICSamplePlayer({ rootPath: 'assets/samples/piano-ogg-full' });
+            if (typeof window.createFullPiano88SamplePlayer === 'function') {
+                window.__icSamplePlayer = window.createFullPiano88SamplePlayer(window.IC_FULL_PIANO_88_SAMPLE_ROOT);
+            } else {
+                window.__icSamplePlayer = new ICSamplePlayer({
+                    rootPath: 'assets/samples/piano-ogg-full-boosted-88',
+                    sampleMap: (typeof window.buildICFullPiano88SampleMap === 'function') ? window.buildICFullPiano88SampleMap() : undefined,
+                    extension: 'ogg',
+                    outputGain: 1.05,
+                    volumeBoost: 1.7
+                });
+            }
             window.__icSamplePlayer.load();
         }
     } catch (error) {
@@ -12457,6 +12467,11 @@ function stopPlayback() {
     chordMetronomeWasRunningBeforePlayback = false;
     console.log('⏹️ 播放已停止');
 }
+
+window.__icChordPlayback = {
+    isPlaying: () => !!isPlayingChords,
+    stop: () => stopPlayback()
+};
 
 function getChordPlaybackTimeSignature() {
     try {
@@ -13486,7 +13501,7 @@ function startMetronome(startAtTime = null) {
     kickoff();
 }
 
-function playMetronomeSound(time = null) {
+function playMetronomeSound(time = null, isDownbeat = false) {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
@@ -13497,25 +13512,12 @@ function playMetronomeSound(time = null) {
             audioContext.resume();
         }
 
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
         const scheduleTime = (typeof time === 'number' && isFinite(time))
             ? time
             : audioContext.currentTime;
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        // 使用方波和自然音高 (参考NiceChord节拍器)
-        oscillator.type = 'square';
-        oscillator.frequency.setValueAtTime(523.25, scheduleTime); // C5音高
-
-        // 设置自然的音量包络 (更好的release time)
-        gainNode.gain.setValueAtTime(0.5, scheduleTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, scheduleTime + 0.05);
-
-        oscillator.start(scheduleTime);
-        oscillator.stop(scheduleTime + 0.05);
+        if (window.ICMetronomeSettings && typeof window.ICMetronomeSettings.play === 'function') {
+            window.ICMetronomeSettings.play(audioContext, scheduleTime, { isDownbeat });
+        }
     } catch (error) {
         console.error('❌ 节拍器声音播放失败:', error);
     }

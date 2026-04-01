@@ -8,7 +8,8 @@
       try {
         console.warn('🚫 检测到file://协议，已阻止');
       } catch (e) {}
-      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
+      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div><script defer src="/js/tool-access-loader.js?v=1.0.2"></script>
+</body></html>';
       document.open();
       document.write(html);
       document.close();
@@ -145,11 +146,32 @@
       }
     </style>
     <script src="assets/js/sample-player.js?v=6"></script>
+    <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
+      window.IC_FULL_PIANO_88_SAMPLE_ROOT = 'assets/samples/piano-ogg-full-boosted-88';
+      window.buildICFullPiano88SampleMap = function() {
+        const noteNames = ['C', 'Csharp', 'D', 'Dsharp', 'E', 'F', 'Fsharp', 'G', 'Gsharp', 'A', 'Asharp', 'B'];
+        const roots = [];
+        for (let midi = 21; midi <= 108; midi++) {
+          const octave = Math.floor(midi / 12) - 1;
+          const noteName = noteNames[midi % 12];
+          roots.push({ midi, name: `${noteName}${octave}` });
+        }
+        return roots;
+      };
+      window.createFullPiano88SamplePlayer = function(rootPath) {
+        return new ICSamplePlayer({
+          rootPath: rootPath || window.IC_FULL_PIANO_88_SAMPLE_ROOT,
+          sampleMap: window.buildICFullPiano88SampleMap(),
+          extension: 'ogg',
+          outputGain: 1.05,
+          volumeBoost: 1.7
+        });
+      };
       document.addEventListener('DOMContentLoaded', function(){
         try {
           if (!window.__icSamplePlayer && window.ICSamplePlayer) {
-            window.__icSamplePlayer = new ICSamplePlayer({ rootPath: 'assets/samples/piano-ogg-full' });
+            window.__icSamplePlayer = window.createFullPiano88SamplePlayer(window.IC_FULL_PIANO_88_SAMPLE_ROOT);
             window.__icSamplePlayer.load();
           }
         } catch(e) { console.warn('采样器初始化失败:', e); }
@@ -560,6 +582,24 @@
                             </div>
                             <div class="language-option" onclick="switchLanguage('en')">
                                 English
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-section-title" data-i18n="settings.metronome">节拍器</div>
+                        <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
+                            <label for="metronomeSoundSelect" data-i18n="settings.metronomeSound">音色</label>
+                            <select id="metronomeSoundSelect" class="midi-select">
+                                <option value="classic" data-i18n="settings.metronomeSound.classic">电子</option>
+                                <option value="woodblock" data-i18n="settings.metronomeSound.woodblock">木鱼</option>
+                            </select>
+                        </div>
+                        <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
+                            <label for="metronomeVolumeSlider" data-i18n="settings.metronomeVolume">音量</label>
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <input type="range" id="metronomeVolumeSlider" min="0" max="100" step="1" value="70" style="flex:1;">
+                                <span id="metronomeVolumeValue" style="min-width:46px; text-align:right;">70%</span>
                             </div>
                         </div>
                     </div>
@@ -1292,13 +1332,10 @@
             <div class="modal-body">
                 <div class="metronome-pattern-row">
                     <div class="control-group metronome-pattern-toggle-group" style="flex: 1; min-width: 160px;">
-                        <div class="toggle-container">
-                            <input type="checkbox" id="metronomePatternEnable" class="toggle-input">
-                            <label for="metronomePatternEnable" class="toggle-slider">
-                                <span class="toggle-button"></span>
-                            </label>
-                        </div>
-                        <label for="metronomePatternEnable" data-i18n="metronomePattern.enable">启用自定义节奏</label>
+                        <label class="checkbox-item checkbox-item-inline" for="metronomePatternEnable">
+                            <input type="checkbox" id="metronomePatternEnable" class="metronome-pattern-checkbox">
+                            <span data-i18n="metronomePattern.enable">启用自定义节奏</span>
+                        </label>
                     </div>
                     <div class="control-group" style="flex: 1; min-width: 180px;">
                         <label data-i18n="metronomePattern.subdivision">细分</label>
@@ -1324,7 +1361,6 @@
                 </div>
 
                 <div class="metronome-pattern-grid" id="metronomePatternGrid"></div>
-                <p class="modal-hint" data-i18n="metronomePattern.hint">点击方格启用/静音节拍</p>
 
                 <div class="modal-buttons">
                     <button class="btn-secondary" onclick="resetMetronomePattern()" data-i18n="metronomePattern.resetBeats">重置为每拍</button>
@@ -2626,7 +2662,7 @@
         }
 
         // 播放节拍器声音
-        function playMetronomeSound() {
+        function playMetronomeSound(time, isDownbeat = false) {
             if (!metronomeAudioContext) {
                 if (!initializeMetronomeAudio()) return;
             }
@@ -2637,22 +2673,13 @@
                     metronomeAudioContext.resume();
                 }
 
-                const oscillator = metronomeAudioContext.createOscillator();
-                const gainNode = metronomeAudioContext.createGain();
+                const scheduleTime = (typeof time === 'number' && isFinite(time))
+                    ? time
+                    : metronomeAudioContext.currentTime;
 
-                oscillator.connect(gainNode);
-                gainNode.connect(metronomeAudioContext.destination);
-
-                // 使用方波和自然音高 (参考NiceChord节拍器)
-                oscillator.type = 'square';
-                oscillator.frequency.setValueAtTime(523.25, metronomeAudioContext.currentTime); // C5音高
-
-                // 设置自然的音量包络 (更好的release time)
-                gainNode.gain.setValueAtTime(0.5, metronomeAudioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, metronomeAudioContext.currentTime + 0.05);
-
-                oscillator.start(metronomeAudioContext.currentTime);
-                oscillator.stop(metronomeAudioContext.currentTime + 0.05);
+                if (window.ICMetronomeSettings && typeof window.ICMetronomeSettings.play === 'function') {
+                    window.ICMetronomeSettings.play(metronomeAudioContext, scheduleTime, { isDownbeat });
+                }
 
                 // 视觉反馈 - 更新header指示器
                 const headerIndicator = document.getElementById('headerBeatIndicator');
@@ -2671,8 +2698,25 @@
 
         let isSyncingChallengeBpm = false;
 
+        function getHeaderMetronomeInputs() {
+            return Array.from(document.querySelectorAll('#headerMetronomeBpm'));
+        }
+
+        function getPrimaryHeaderMetronomeInput() {
+            return getHeaderMetronomeInputs()[0] || null;
+        }
+
+        function syncHeaderMetronomeInputs(value) {
+            const normalized = String(Math.max(1, Math.min(999, parseInt(value, 10) || 60)));
+            getHeaderMetronomeInputs().forEach((input) => {
+                if (input && input.value !== normalized) {
+                    input.value = normalized;
+                }
+            });
+        }
+
         function getUnifiedMetronomeTempo() {
-            const headerInput = document.getElementById('headerMetronomeBpm');
+            const headerInput = getPrimaryHeaderMetronomeInput();
             const parsed = parseInt(headerInput ? headerInput.value : metronomeTempo, 10);
             if (!isNaN(parsed)) {
                 return Math.max(1, Math.min(999, parsed));
@@ -2690,10 +2734,87 @@
             isSyncingChallengeBpm = false;
         }
 
+        function getSharedMetronomeSettings() {
+            if (window.ICMetronomeSettings && typeof window.ICMetronomeSettings.load === 'function') {
+                return window.ICMetronomeSettings.load();
+            }
+            return { sound: 'classic', volume: 70 };
+        }
+
+        function updateChordMetronomeSettingsUi() {
+            const settings = getSharedMetronomeSettings();
+            const soundSelect = document.getElementById('metronomeSoundSelect');
+            const volumeSlider = document.getElementById('metronomeVolumeSlider');
+            const volumeValue = document.getElementById('metronomeVolumeValue');
+            if (soundSelect) soundSelect.value = settings.sound;
+            if (volumeSlider) volumeSlider.value = String(settings.volume);
+            if (volumeValue) volumeValue.textContent = `${settings.volume}%`;
+        }
+
+        function saveSharedMetronomeSettings(partial) {
+            if (window.ICMetronomeSettings && typeof window.ICMetronomeSettings.save === 'function') {
+                window.ICMetronomeSettings.save(partial);
+            }
+            updateChordMetronomeSettingsUi();
+        }
+
+        function initializeChordMetronomeSettingsUi() {
+            const soundSelect = document.getElementById('metronomeSoundSelect');
+            const volumeSlider = document.getElementById('metronomeVolumeSlider');
+
+            if (soundSelect && soundSelect.dataset.bound !== 'true') {
+                soundSelect.dataset.bound = 'true';
+                soundSelect.addEventListener('change', (event) => {
+                    saveSharedMetronomeSettings({ sound: event.target.value });
+                });
+            }
+
+            if (volumeSlider && volumeSlider.dataset.bound !== 'true') {
+                volumeSlider.dataset.bound = 'true';
+                volumeSlider.addEventListener('input', (event) => {
+                    saveSharedMetronomeSettings({ volume: event.target.value });
+                });
+            }
+
+            if (!window.__chordMetronomeSettingsBound) {
+                window.__chordMetronomeSettingsBound = true;
+                window.addEventListener('storage', (event) => {
+                    if (window.ICMetronomeSettings && event.key === window.ICMetronomeSettings.STORAGE_KEY) {
+                        updateChordMetronomeSettingsUi();
+                    }
+                });
+                window.addEventListener('ic-metronome-settings-changed', updateChordMetronomeSettingsUi);
+            }
+
+            updateChordMetronomeSettingsUi();
+        }
+
+        function interruptChordTempoSensitiveActivity() {
+            let interrupted = false;
+
+            if (window.__icChordPlayback && typeof window.__icChordPlayback.isPlaying === 'function' &&
+                window.__icChordPlayback.isPlaying() &&
+                typeof window.__icChordPlayback.stop === 'function') {
+                window.__icChordPlayback.stop();
+                interrupted = true;
+            }
+
+            const challengeActive = !!(
+                (window.__icChallenge && typeof window.__icChallenge.isActive === 'function' && window.__icChallenge.isActive()) ||
+                document.getElementById('challengeModeToggle')?.checked
+            );
+            if (challengeActive && typeof window.stopChallenge === 'function') {
+                window.stopChallenge();
+                interrupted = true;
+            }
+
+            return interrupted;
+        }
+
         function setMetronomeTempo(bpm) {
+            interruptChordTempoSensitiveActivity();
             metronomeTempo = Math.max(1, Math.min(999, parseInt(bpm, 10) || 60));
-            const headerInput = document.getElementById('headerMetronomeBpm');
-            if (headerInput) headerInput.value = String(metronomeTempo);
+            syncHeaderMetronomeInputs(metronomeTempo);
             syncChallengeBpmFromHeader();
 
             if (isMetronomeRunning) {
@@ -2705,7 +2826,7 @@
         // 开启/停止节拍器
         function toggleMetronome() {
             const btn = document.getElementById('headerMetronomeBtn');
-            const bpmInput = document.getElementById('headerMetronomeBpm');
+            const bpmInput = getPrimaryHeaderMetronomeInput();
 
             if (isMetronomeRunning) {
                 // 停止节拍器
@@ -2773,9 +2894,11 @@
         }
 
         // 更新节拍器速度
-        function updateMetronomeTempo() {
-            const bpmInput = document.getElementById('headerMetronomeBpm');
-            setMetronomeTempo(parseInt(bpmInput?.value, 10) || 60);
+        function updateMetronomeTempo(eventOrValue) {
+            const nextValue = typeof eventOrValue === 'number'
+                ? eventOrValue
+                : parseInt(eventOrValue?.target?.value ?? getPrimaryHeaderMetronomeInput()?.value, 10) || 60;
+            setMetronomeTempo(nextValue);
         }
 
         // 功能和声开关切换
@@ -3605,7 +3728,8 @@
 
         // 监听BPM输入变化
         document.addEventListener('DOMContentLoaded', function() {
-            const bpmInput = document.getElementById('headerMetronomeBpm');
+            const bpmInputs = getHeaderMetronomeInputs();
+            const bpmInput = getPrimaryHeaderMetronomeInput();
             const challengeBpmInput = document.getElementById('challengeBPM');
             const clampTempoValue = function(rawValue, fallbackValue) {
                 const parsed = parseInt(rawValue, 10);
@@ -3703,11 +3827,11 @@
                     }
                 });
             };
-            if (bpmInput) {
-                bpmInput.addEventListener('change', updateMetronomeTempo);
-                bpmInput.addEventListener('input', updateMetronomeTempo);
-                bindBpmReactGrab(bpmInput, 60);
-            }
+            bpmInputs.forEach((input) => {
+                input.addEventListener('change', updateMetronomeTempo);
+                input.addEventListener('input', updateMetronomeTempo);
+                bindBpmReactGrab(input, 60);
+            });
             if (challengeBpmInput) {
                 challengeBpmInput.addEventListener('input', function() {
                     if (isSyncingChallengeBpm) return;
@@ -3735,6 +3859,7 @@
             }
             syncChallengeBpmFromHeader();
             initializeMetronomePatternUI();
+            initializeChordMetronomeSettingsUi();
 
             // 监听临时记号滑块变化
             const accidentalSlider = document.getElementById('accidentalRate');
@@ -5581,7 +5706,17 @@
                 }
                 return window.__chordMidiAudioCtx;
             },
-            sampleRoot: 'assets/samples/piano-ogg-full',
+            ensureSamplePlayer: () => {
+                if (!window.__icSamplePlayer && window.ICSamplePlayer && window.createFullPiano88SamplePlayer) {
+                    window.__icSamplePlayer = window.createFullPiano88SamplePlayer(window.IC_FULL_PIANO_88_SAMPLE_ROOT);
+                    window.__icSamplePlayer.load();
+                    return;
+                }
+                if (window.__icSamplePlayer && !window.__icSamplePlayer.ready && typeof window.__icSamplePlayer.load === 'function') {
+                    window.__icSamplePlayer.load();
+                }
+            },
+            sampleRoot: window.IC_FULL_PIANO_88_SAMPLE_ROOT,
             useSamplePlayer: true,
             translations: (typeof I18n !== 'undefined' ? I18n.translations : null),
             getLanguage: () => {
@@ -5613,8 +5748,4 @@
     </script>
 
     <!-- 🛡️ 试用保护系统脚本 -->
-    <script src="/js/trial-limiter.js?v=20250909"></script>
-    <script src="/js/advanced-trial-protection.js?v=20250920"></script>
-    <script src="/js/melody-counter-system.js?v=20250920"></script>
-    <script src="/js/integrated-trial-manager.js?v=20250920"></script>
-</body></html>
+    </body></html>

@@ -1625,6 +1625,17 @@
             <div class="payment-card">
               <h3 data-i18n="payment.cardTitle">解锁你的音乐潜能</h3>
               <p data-i18n="payment.refundPolicy">支持 7 天无理由退款</p>
+              <div class="promo-campaign-card">
+                <div class="promo-campaign-eyebrow-wrap">
+                  <div class="promo-campaign-eyebrow">限时活动</div>
+                </div>
+                <div class="promo-campaign-row">
+                  <div class="promo-campaign-copy">
+                    <h4 class="promo-campaign-title">2026 年 3 月 14 日到 4 月 14 日购买 Cognote 完整版，额外赠送 FretLab 完整版。</h4>
+                  </div>
+                  <button type="button" class="promo-campaign-trigger" id="open-promo-offer">了解详情</button>
+                </div>
+              </div>
 
               <a href="/tools/melody-generator.html" target="_blank" class="btn btn-outline" style="display: block; margin-bottom: 1.25rem; text-align: center; font-size: 0.9375rem; padding: 0.875rem;" data-i18n="payment.btnFreeTrial">
                 免费试用
@@ -1691,7 +1702,7 @@
               </div>
 
               <div class="bundle-offer-info">
-                <div class="bundle-offer-price">¥168</div>
+                <div class="bundle-offer-price">¥148</div>
                 <h3>一次解锁 Cognote 与 FretLab</h3>
               </div>
 
@@ -1788,7 +1799,7 @@
         </div>
 
         <div class="payment-update-meta">
-          <span>最后一次版本更新时间：2026年03月28日</span>
+          <span>最后一次版本更新时间：2026年03月29日</span>
           <button type="button" class="payment-update-link" id="open-update-log">了解详情</button>
         </div>
       </div>
@@ -1801,19 +1812,19 @@
 
         <section class="update-log-block">
           <h4 class="update-log-heading">当前版本</h4>
-          <p style="margin:0 0 0.7rem;color:#0f172a;"><strong>v2.0.1（2026年03月28日）</strong></p>
+          <p style="margin:0 0 0.7rem;color:#0f172a;"><strong>v2.0.1（2026年03月29日）</strong></p>
           <ul class="update-log-list">
             <li>
-              <strong>播放与光标稳定性继续修正</strong>
-              <p>修复了简谱、旋律、节奏等工具里残留的播放光标偏移、跟随不准与中途起播异常，和弦工具播放按钮中的英文 emoji 也已移除。</p>
+              <strong>五个工具已统一节拍器音色与音量设置</strong>
+              <p>旋律、简谱、音程、和弦与节奏工具现在都支持统一的节拍器音色与音量控制，并新增木鱼音色；用户在任意一个工具里修改后，其他工具、挑战模式与预备拍都会同步使用同一套设置。</p>
             </li>
             <li>
-              <strong>跨工具语言同步完成</strong>
-              <p>现在用户在任意工具中切换语言后，其他工具会保持同一语言，直到用户再次手动更改。</p>
+              <strong>播放、挑战与 Count In 期间改 BPM 会立即停止当前流程</strong>
+              <p>现在只要用户在播放、挑战模式或预备拍进行时调整节拍器速度，当前播放或挑战就会立刻终止，避免节拍基准在中途被改写后造成光标、音频与节拍器错位。</p>
             </li>
             <li>
-              <strong>界面细节进一步统一</strong>
-              <p>简谱工具的英文副标题颜色已与其他工具保持一致，英文 tool menu switcher 也统一成与节奏工具相同的短标签样式。</p>
+              <strong>88 键钢琴采样与发布资源继续完善</strong>
+              <p>旋律、简谱、音程与和弦工具已统一使用更完整的 88 键钢琴采样，并继续修复和弦工具的 BPM 同步等发布细节；本次同步会同时刷新官网网页版与安装包资源。</p>
             </li>
           </ul>
         </section>
@@ -1838,6 +1849,36 @@
             </li>
           </ul>
           <p class="update-log-history-empty">注：该版本是官网更新日志的记录起点，并非产品首个版本；此前已有多次迭代未纳入历史记录。</p>
+        </section>
+      </div>
+    </div>
+
+    <div class="promo-offer-modal" id="promo-offer-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="promo-offer-title">
+      <div class="promo-offer-panel">
+        <button type="button" class="promo-offer-close" id="close-promo-offer" aria-label="关闭">×</button>
+        <h3 class="promo-offer-title" id="promo-offer-title">限时活动详情</h3>
+
+        <section class="promo-offer-block">
+          <h4 class="promo-offer-heading">活动内容</h4>
+          <p class="promo-offer-text">在北京时间 2026 年 3 月 14 日 00:00:00 到 2026 年 4 月 14 日 23:59:59 之间购买 Cognote 完整版的用户，将额外获得 FretLab 完整版授权。</p>
+        </section>
+
+        <section class="promo-offer-block">
+          <h4 class="promo-offer-heading">适用范围</h4>
+          <ul class="promo-offer-list">
+            <li>本次活动仅适用于 Cognote 完整版订单，不适用于单件购买。</li>
+            <li>赠送内容为 FretLab 完整版，无需额外支付。</li>
+            <li>支付成功后，可直接使用同一个 Cognote 完整版访问码去解锁 FretLab。</li>
+          </ul>
+        </section>
+
+        <section class="promo-offer-block">
+          <h4 class="promo-offer-heading">补充说明</h4>
+          <ul class="promo-offer-list">
+            <li>FretLab 访问码验证入口位于 FretLab 官网购买区。</li>
+            <li>若符合活动条件的 Cognote 订单后续退款，对应赠送的 FretLab 权限也会一并失效。</li>
+          </ul>
+          <p class="promo-offer-note">如你已经在活动期内购买 Cognote 完整版，但 FretLab 仍未解锁，可<a href="/contact/">联系我</a>协助核对订单。</p>
         </section>
       </div>
     </div>
@@ -2376,6 +2417,7 @@
       initFeedbackLoopMarquee();
       initPaymentModeToggle();
       initUpdateLogModal();
+      initPromoOfferModal();
       initAnimatedContentCards();
     });
 
@@ -2598,7 +2640,7 @@
           text: '一次购买，终身受用'
         },
         bundle: {
-          price: '168.00¥',
+          price: '148.00¥',
           text: '一个访问码解锁 Cognote + FretLab'
         }
       };
@@ -2761,6 +2803,39 @@
       const modal = document.getElementById('update-log-modal');
       const openButton = document.getElementById('open-update-log');
       const closeButton = document.getElementById('close-update-log');
+
+      if (!modal || !openButton || !closeButton) return;
+
+      const closeModal = () => {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+      };
+
+      const openModal = () => {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+      };
+
+      openButton.addEventListener('click', openModal);
+      closeButton.addEventListener('click', closeModal);
+
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+          closeModal();
+        }
+      });
+    }
+
+    function initPromoOfferModal() {
+      const modal = document.getElementById('promo-offer-modal');
+      const openButton = document.getElementById('open-promo-offer');
+      const closeButton = document.getElementById('close-promo-offer');
 
       if (!modal || !openButton || !closeButton) return;
 

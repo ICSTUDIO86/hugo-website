@@ -8,7 +8,8 @@
       try {
         console.warn('🚫 检测到file://协议，已阻止');
       } catch (e) {}
-      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
+      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div><script defer src="/js/tool-access-loader.js?v=1.0.2"></script>
+</body></html>';
       document.open();
       document.write(html);
       document.close();
@@ -154,11 +155,32 @@
       }
     </style>
     <script src="assets/js/sample-player.js?v=6"></script>
+    <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
+      window.IC_FULL_PIANO_88_SAMPLE_ROOT = 'assets/samples/piano-ogg-full-boosted-88';
+      window.buildICFullPiano88SampleMap = function() {
+        const noteNames = ['C', 'Csharp', 'D', 'Dsharp', 'E', 'F', 'Fsharp', 'G', 'Gsharp', 'A', 'Asharp', 'B'];
+        const roots = [];
+        for (let midi = 21; midi <= 108; midi++) {
+          const octave = Math.floor(midi / 12) - 1;
+          const noteName = noteNames[midi % 12];
+          roots.push({ midi, name: `${noteName}${octave}` });
+        }
+        return roots;
+      };
+      window.createFullPiano88SamplePlayer = function(rootPath) {
+        return new ICSamplePlayer({
+          rootPath: rootPath || window.IC_FULL_PIANO_88_SAMPLE_ROOT,
+          sampleMap: window.buildICFullPiano88SampleMap(),
+          extension: 'ogg',
+          outputGain: 1.05,
+          volumeBoost: 1.7
+        });
+      };
       document.addEventListener('DOMContentLoaded', function(){
         try {
           if (!window.__icSamplePlayer && window.ICSamplePlayer) {
-            window.__icSamplePlayer = new ICSamplePlayer({ rootPath: 'assets/samples/piano-ogg-full' });
+            window.__icSamplePlayer = window.createFullPiano88SamplePlayer(window.IC_FULL_PIANO_88_SAMPLE_ROOT);
             window.__icSamplePlayer.load();
           }
         } catch(e) { console.warn('采样器初始化失败:', e); }
@@ -248,7 +270,11 @@
         background: rgba(229, 57, 53, 0.12);
         color: #b71c1c;
       }
-      body.jianpu-theme .settings-menu .settings-section-title { color: #b71c1c; }
+      body.jianpu-theme .settings-menu .settings-section-title {
+        color: #FFFFFF !important;
+        background: rgba(229, 57, 53, 0.35) !important;
+        box-shadow: 0 8px 20px rgba(229, 57, 53, 0.1);
+      }
       body.jianpu-theme .settings-menu .language-option:hover,
       body.jianpu-theme .settings-menu .theme-option:hover {
         background: rgba(229, 57, 53, 0.08);
@@ -867,7 +893,6 @@
                 </div>
 
                 <div class="metronome-pattern-grid" id="metronomePatternGrid"></div>
-                <p class="modal-hint" data-i18n="metronomePattern.hint">点击方格启用/静音节拍</p>
 
                 <div class="modal-buttons">
                     <button class="btn-secondary" onclick="resetMetronomePattern()" data-i18n="metronomePattern.resetBeats">重置为每拍</button>
@@ -902,24 +927,42 @@
                     </div>
                     
                     <!-- 语言设置 -->
-                    <div class="settings-section">
-                        <div class="settings-section-title" data-i18n="settings.language">语言</div>
-                        <div class="language-options">
-                            <div class="language-option" onclick="switchLanguage('zh-CN')">
-                                简体中文
+                <div class="settings-section">
+                    <div class="settings-section-title" data-i18n="settings.language">语言</div>
+                    <div class="language-options">
+                        <div class="language-option" onclick="switchLanguage('zh-CN')">
+                            简体中文
                             </div>
                             <div class="language-option" onclick="switchLanguage('zh-TW')">
                                 繁體中文
                             </div>
                             <div class="language-option" onclick="switchLanguage('en')">
                                 English
-                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- MIDI 输入 -->
-                    <div class="settings-section" id="midiSettingsSection">
-                        <div class="settings-section-title" data-i18n="settings.midi">MIDI 输入</div>
+                <div class="settings-section">
+                    <div class="settings-section-title" data-i18n="settings.metronome">节拍器</div>
+                    <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
+                        <label for="metronomeSoundSelect" data-i18n="settings.metronomeSound">音色</label>
+                        <select id="metronomeSoundSelect" class="midi-select">
+                            <option value="classic" data-i18n="settings.metronomeSound.classic">电子</option>
+                            <option value="woodblock" data-i18n="settings.metronomeSound.woodblock">木鱼</option>
+                        </select>
+                    </div>
+                    <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
+                        <label for="metronomeVolumeSlider" data-i18n="settings.metronomeVolume">音量</label>
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <input type="range" id="metronomeVolumeSlider" min="0" max="100" step="1" value="70" style="flex:1;">
+                            <span id="metronomeVolumeValue" style="min-width:46px; text-align:right;">70%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MIDI 输入 -->
+                <div class="settings-section" id="midiSettingsSection">
+                    <div class="settings-section-title" data-i18n="settings.midi">MIDI 输入</div>
                         <div class="midi-settings-row">
                             <span data-i18n="midi.enable">启用</span>
                             <label class="toggle-container">
@@ -2605,7 +2648,7 @@
         }
 
         // 播放节拍器声音 - 支持精确调度
-        function playMetronomeSound(time) {
+        function playMetronomeSound(time, isDownbeat = false) {
             if (!metronomeAudioContext) {
                 if (!initializeMetronomeAudio()) return;
             }
@@ -2619,22 +2662,9 @@
                 // 🔧 使用传入的精确时间，如果没有则使用当前时间
                 const scheduleTime = time !== undefined ? time : metronomeAudioContext.currentTime;
 
-                const oscillator = metronomeAudioContext.createOscillator();
-                const gainNode = metronomeAudioContext.createGain();
-
-                oscillator.connect(gainNode);
-                gainNode.connect(metronomeAudioContext.destination);
-
-                // 使用方波和自然音高 (参考NiceChord节拍器)
-                oscillator.type = 'square';
-                oscillator.frequency.setValueAtTime(523.25, scheduleTime); // C5音高
-
-                // 设置自然的音量包络 (更好的release time)
-                gainNode.gain.setValueAtTime(0.5, scheduleTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, scheduleTime + 0.05);
-
-                oscillator.start(scheduleTime);
-                oscillator.stop(scheduleTime + 0.05);
+                if (window.ICMetronomeSettings && typeof window.ICMetronomeSettings.play === 'function') {
+                    window.ICMetronomeSettings.play(metronomeAudioContext, scheduleTime, { isDownbeat });
+                }
 
                 // 视觉反馈：若是提前调度的拍子，则安排UI同步闪烁
                 if (time !== undefined) {
@@ -2674,8 +2704,84 @@
             isSyncingChallengeBpm = false;
         }
 
+        function getSharedMetronomeSettings() {
+            if (window.ICMetronomeSettings && typeof window.ICMetronomeSettings.load === 'function') {
+                return window.ICMetronomeSettings.load();
+            }
+            return { sound: 'classic', volume: 70 };
+        }
+
+        function updateJianpuMetronomeSettingsUi() {
+            const settings = getSharedMetronomeSettings();
+            const soundSelect = document.getElementById('metronomeSoundSelect');
+            const volumeSlider = document.getElementById('metronomeVolumeSlider');
+            const volumeValue = document.getElementById('metronomeVolumeValue');
+            if (soundSelect) soundSelect.value = settings.sound;
+            if (volumeSlider) volumeSlider.value = String(settings.volume);
+            if (volumeValue) volumeValue.textContent = `${settings.volume}%`;
+        }
+
+        function saveSharedMetronomeSettings(partial) {
+            if (window.ICMetronomeSettings && typeof window.ICMetronomeSettings.save === 'function') {
+                window.ICMetronomeSettings.save(partial);
+            }
+            updateJianpuMetronomeSettingsUi();
+        }
+
+        function initializeJianpuMetronomeSettingsUi() {
+            const soundSelect = document.getElementById('metronomeSoundSelect');
+            const volumeSlider = document.getElementById('metronomeVolumeSlider');
+
+            if (soundSelect && soundSelect.dataset.bound !== 'true') {
+                soundSelect.dataset.bound = 'true';
+                soundSelect.addEventListener('change', (event) => {
+                    saveSharedMetronomeSettings({ sound: event.target.value });
+                });
+            }
+
+            if (volumeSlider && volumeSlider.dataset.bound !== 'true') {
+                volumeSlider.dataset.bound = 'true';
+                volumeSlider.addEventListener('input', (event) => {
+                    saveSharedMetronomeSettings({ volume: event.target.value });
+                });
+            }
+
+            if (!window.__jianpuMetronomeSettingsBound) {
+                window.__jianpuMetronomeSettingsBound = true;
+                window.addEventListener('storage', (event) => {
+                    if (window.ICMetronomeSettings && event.key === window.ICMetronomeSettings.STORAGE_KEY) {
+                        updateJianpuMetronomeSettingsUi();
+                    }
+                });
+                window.addEventListener('ic-metronome-settings-changed', updateJianpuMetronomeSettingsUi);
+            }
+
+            updateJianpuMetronomeSettingsUi();
+        }
+
+        function interruptJianpuTempoSensitiveActivity() {
+            let interrupted = false;
+
+            if (window.isPlayingMelody && typeof directPlayTest === 'function') {
+                directPlayTest();
+                interrupted = true;
+            }
+
+            const challengeActive = !!(
+                (window.__icChallenge && typeof window.__icChallenge.isActive === 'function' && window.__icChallenge.isActive()) ||
+                document.getElementById('challengeModeToggle')?.checked
+            );
+            if (challengeActive && typeof window.stopChallenge === 'function') {
+                window.stopChallenge();
+                interrupted = true;
+            }
+
+            return interrupted;
+        }
+
         // 设置节拍器速度
         function setMetronomeTempo(bpm) {
+            interruptJianpuTempoSensitiveActivity();
             metronomeTempo = Math.max(1, Math.min(999, bpm));
             
             // 同步更新header输入框
@@ -2715,7 +2821,10 @@
 
                 // 调度这一拍（声音 + UI指示）
                 if (shouldPlay) {
-                    playMetronomeSound(beatTime);
+                    const isDownbeat = patternInfo.usePattern
+                        ? (metronomeCurrentBeat % patternInfo.stepsPerBar === 0)
+                        : (metronomeCurrentBeat % Math.max(1, getMetronomeTimeSignatureInfo().beats) === 0);
+                    playMetronomeSound(beatTime, isDownbeat);
                     triggerBeatIndicatorAt(beatTime);
                 }
 
@@ -3011,6 +3120,7 @@
             }
             syncChallengeBpmFromHeader();
             initializeMetronomePatternUI();
+            initializeJianpuMetronomeSettingsUi();
         });
         
         // 初始化主题
@@ -3107,6 +3217,10 @@
                 'mic.status.listeningDevice': '麦克风监听中: {device}',
                 'mic.status.disabled': '麦克风已关闭',
                 'settings.metronome': '节拍器',
+                'settings.metronomeSound': '音色',
+                'settings.metronomeSound.classic': '电子',
+                'settings.metronomeSound.woodblock': '木鱼',
+                'settings.metronomeVolume': '音量',
                 'settings.tempo': '速度 (BPM)',
                 'settings.startMetronome': '开始节拍器',
                 'settings.stopMetronome': '停止节拍器',
@@ -3314,6 +3428,10 @@
                 'mic.status.listeningDevice': '麥克風監聽中: {device}',
                 'mic.status.disabled': '麥克風已關閉',
                 'settings.metronome': '節拍器',
+                'settings.metronomeSound': '音色',
+                'settings.metronomeSound.classic': '電子',
+                'settings.metronomeSound.woodblock': '木魚',
+                'settings.metronomeVolume': '音量',
                 'settings.tempo': '速度 (BPM)',
                 'settings.startMetronome': '開始節拍器',
                 'settings.stopMetronome': '停止節拍器',
@@ -3521,6 +3639,10 @@
                 'mic.status.listeningDevice': 'Microphone listening: {device}',
                 'mic.status.disabled': 'Microphone is off',
                 'settings.metronome': 'Metronome',
+                'settings.metronomeSound': 'Sound',
+                'settings.metronomeSound.classic': 'Electronic',
+                'settings.metronomeSound.woodblock': 'Woodblock',
+                'settings.metronomeVolume': 'Volume',
                 'settings.tempo': 'Tempo (BPM)',
                 'settings.startMetronome': 'Start Metronome',
                 'settings.stopMetronome': 'Stop Metronome',
@@ -5445,7 +5567,7 @@
                 console.log('⚠️ 没有旋律数据，播放测试音符');
                 // 初始化采样器（懒加载）
                 if (!window.__icSamplePlayer && window.ICSamplePlayer) {
-                    window.__icSamplePlayer = new ICSamplePlayer({ rootPath: 'assets/samples/piano-ogg-full' });
+                    window.__icSamplePlayer = window.createFullPiano88SamplePlayer(window.IC_FULL_PIANO_88_SAMPLE_ROOT);
                     window.__icSamplePlayer.load();
                 }
                 playTestNote();
@@ -6322,47 +6444,15 @@
         // ====== 隐藏模式下的节拍器功能 ======
 
         // 创建节拍器声音
-        function createMetronomeClick(frequency = 523.25, isDownbeat = false) {
-            try {
-                const oscillator = window.melodyAudioCtx.createOscillator();
-                const gainNode = window.melodyAudioCtx.createGain();
-
-                // 使用方波和自然音高 (与主节拍器保持一致)
-                oscillator.type = 'square';
-                oscillator.frequency.setValueAtTime(
-                    isDownbeat ? frequency * 1.2 : frequency,
-                    window.melodyAudioCtx.currentTime
-                );
-
-                oscillator.connect(gainNode);
-                gainNode.connect(window.melodyAudioCtx.destination);
-
-                return { oscillator, gainNode };
-            } catch (error) {
-                console.error('❌ 创建节拍器声音失败:', error);
-                return null;
-            }
-        }
+        function createMetronomeClick() { return []; }
 
         // 播放节拍器点击声
         function playMetronomeClick(startTime, isDownbeat = false) {
-            const metronome = createMetronomeClick(523.25, isDownbeat);
-            if (!metronome) return;
-
-            const { oscillator, gainNode } = metronome;
-
-            // 使用与NiceChord节拍器一致的包络
-            const clickDuration = 0.05;
-            const volume = 0.5; // 统一音量
-
-            gainNode.gain.setValueAtTime(volume, startTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + clickDuration);
-
-            oscillator.start(startTime);
-            oscillator.stop(startTime + clickDuration);
-
-            // 记录以便停止时清理
-            window.melodyScheduledSounds.push({ oscillator, gainNode });
+            if (!window.melodyAudioCtx || !window.ICMetronomeSettings || typeof window.ICMetronomeSettings.play !== 'function') return;
+            const items = window.ICMetronomeSettings.play(window.melodyAudioCtx, startTime, { isDownbeat });
+            if (Array.isArray(items) && window.melodyScheduledSounds) {
+                window.melodyScheduledSounds.push(...items);
+            }
 
             console.log(`🥁 节拍器: ${isDownbeat ? '强拍' : '弱拍'} @ ${startTime.toFixed(2)}s`);
         }
@@ -7775,20 +7865,12 @@ function collectMeasureRectsByGlobalEqualSplit(){
             function playClick(isStrong){
                 if (!state.audioCtx) return;
                 try {
-                    const ctx = state.audioCtx;
-                    const osc = ctx.createOscillator();
-                    const g = ctx.createGain();
-                    osc.type = 'square';
-                    osc.frequency.value = isStrong ? 880 : 660;
-                    const now = ctx.currentTime;
-                    const dur = isStrong ? 0.09 : 0.06;
-                    const peak = isStrong ? 0.5 : 0.35;
-                    g.gain.setValueAtTime(0.0001, now);
-                    g.gain.exponentialRampToValueAtTime(peak, now + 0.005);
-                    g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-                    osc.connect(g).connect(ctx.destination);
-                    osc.start(now);
-                    osc.stop(now + dur + 0.02);
+                    if (window.ICMetronomeSettings && typeof window.ICMetronomeSettings.play === 'function') {
+                        window.ICMetronomeSettings.play(state.audioCtx, state.audioCtx.currentTime, {
+                            isDownbeat: !!isStrong,
+                            volumeScale: 1.05
+                        });
+                    }
                 } catch(_) {}
             }
 
@@ -7916,15 +7998,20 @@ function collectMeasureRectsByGlobalEqualSplit(){
                 }
                 return window.melodyAudioCtx;
             },
-            sampleRoot: 'assets/samples/piano-ogg-full',
+            ensureSamplePlayer: () => {
+                if (!window.__icSamplePlayer && window.ICSamplePlayer && window.createFullPiano88SamplePlayer) {
+                    window.__icSamplePlayer = window.createFullPiano88SamplePlayer(window.IC_FULL_PIANO_88_SAMPLE_ROOT);
+                    window.__icSamplePlayer.load();
+                    return;
+                }
+                if (window.__icSamplePlayer && !window.__icSamplePlayer.ready && typeof window.__icSamplePlayer.load === 'function') {
+                    window.__icSamplePlayer.load();
+                }
+            },
+            sampleRoot: window.IC_FULL_PIANO_88_SAMPLE_ROOT,
             useSamplePlayer: true
         };
     </script>
     <script src="assets/js/midi-input.js?v=1"></script>
 
-    <script src="/js/trial-limiter.js?v=20250909"></script>
-    <script src="/js/advanced-trial-protection.js?v=20250920"></script>
-    <script src="/js/melody-counter-system.js?v=20250920"></script>
-    <script src="/js/integrated-trial-manager.js?v=20250920"></script>
-
-</body></html>
+    </body></html>

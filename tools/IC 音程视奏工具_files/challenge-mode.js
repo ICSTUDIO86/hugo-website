@@ -110,6 +110,10 @@
     return tempo;
   }
 
+  function isChallengeRunningOrCountingIn(){
+    return !!((toggleEl && toggleEl.checked) && (state.active || state.countInTimerId));
+  }
+
   function isMidiConnected(){
     try {
       return !!(window.__icMidi && typeof window.__icMidi.getState === 'function' && window.__icMidi.getState().connected);
@@ -3426,6 +3430,12 @@
   if (challengeBpmEl){
     const onChallengeBpmChanged = () => {
       if (isSyncingChallengeBpmInput) return;
+      if (window.isPlayingInterval && typeof window.directPlayTest === 'function') {
+        window.directPlayTest();
+      }
+      if (isChallengeRunningOrCountingIn() && typeof window.stopChallenge === 'function') {
+        window.stopChallenge();
+      }
       const tempo = syncTempoAcrossInputs(challengeBpmEl.value);
       challengeBpmEl.value = String(tempo);
     };
@@ -3445,7 +3455,7 @@
   } catch(_) {}
 
   window.__icChallenge = {
-    isActive: () => !!(state.active && toggleEl && toggleEl.checked),
+    isActive: () => isChallengeRunningOrCountingIn(),
     handleMidiNoteOn: (midi) => enqueueJudgeInput(midi),
     clearJudgement: () => clearJudgementStyles()
   };

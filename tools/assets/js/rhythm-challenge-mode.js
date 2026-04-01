@@ -125,6 +125,10 @@
     return tempo;
   }
 
+  function isChallengeRunningOrCountingIn(){
+    return !!(state.active || state.countInTimerId);
+  }
+
   function setCalibrationStatus(status){
     if (!calibrationStatusEl) return;
     calibrationStatusEl.classList.remove('ok', 'error');
@@ -3000,6 +3004,14 @@
   if (challengeBpmEl) {
     const onChallengeBpmChanged = () => {
       if (isSyncingChallengeBpmInput) return;
+      if (window.__icRhythmPlayback && typeof window.__icRhythmPlayback.isPlaying === 'function' &&
+          window.__icRhythmPlayback.isPlaying() &&
+          typeof window.__icRhythmPlayback.stop === 'function') {
+        window.__icRhythmPlayback.stop();
+      }
+      if (isChallengeRunningOrCountingIn() && typeof window.stopChallenge === 'function') {
+        window.stopChallenge();
+      }
       const tempo = syncTempoAcrossInputs(challengeBpmEl.value);
       challengeBpmEl.value = String(tempo);
     };
@@ -3010,6 +3022,14 @@
   if (metronomeBpmEl) {
     const onMetronomeBpmChanged = () => {
       if (isSyncingChallengeBpmInput) return;
+      if (window.__icRhythmPlayback && typeof window.__icRhythmPlayback.isPlaying === 'function' &&
+          window.__icRhythmPlayback.isPlaying() &&
+          typeof window.__icRhythmPlayback.stop === 'function') {
+        window.__icRhythmPlayback.stop();
+      }
+      if (isChallengeRunningOrCountingIn() && typeof window.stopChallenge === 'function') {
+        window.stopChallenge();
+      }
       syncTempoAcrossInputs(metronomeBpmEl.value);
     };
     metronomeBpmEl.addEventListener('input', onMetronomeBpmChanged);
@@ -3070,7 +3090,7 @@
   window.getOSMDMeasureRects = getOSMDMeasureRects;
   window.stopChallenge = stopChallenge;
   window.__icChallenge = {
-    isActive: () => state.active,
+    isActive: () => isChallengeRunningOrCountingIn(),
     handleMidiNoteOn,
     debugSnapshot: () => {
       const events = Array.isArray(state.judgeEvents) ? state.judgeEvents : [];

@@ -1,24 +1,28 @@
 /*
   ICSamplePlayer: lightweight multi-sample player for Web Audio
-  - Loads 14 OGG samples (A1–E6 roots) from `rootPath`
+  - Loads OGG samples from `rootPath` using a configurable sample map
   - Pitch-shifts nearest root via playbackRate (12-TET)
   - Schedules relative to an external AudioContext’s time for seamless integration
 */
 (function(){
-  const VOLUME_BOOST = 2;
+  const DEFAULT_VOLUME_BOOST = 2;
   class ICSamplePlayer {
     constructor(opts = {}) {
       const meta = (typeof document !== 'undefined') ? document.querySelector('meta[name="ic-sample-root"]') : null;
       const metaRoot = meta ? (meta.getAttribute('content') || '').trim() : '';
       const globalRoot = (typeof window !== 'undefined' && window.IC_SAMPLE_ROOT) ? String(window.IC_SAMPLE_ROOT) : '';
       this.rootPath = opts.rootPath || globalRoot || metaRoot || 'assets/samples/piano-ogg';
-      this.sampleMap = this._buildSampleMap();
+      this.extension = (opts.extension || 'ogg').replace(/^\./, '');
+      this.sampleMap = Array.isArray(opts.sampleMap) && opts.sampleMap.length
+        ? opts.sampleMap.map((entry) => ({ midi: Number(entry.midi), name: String(entry.name) }))
+        : this._buildSampleMap();
       this.ctx = new (window.AudioContext || window.webkitAudioContext)();
       this.buffers = new Map();
       this.mediaElems = new Map(); // (unused by default)
       this.ready = false;
+      this.volumeBoost = Number.isFinite(Number(opts.volumeBoost)) ? Number(opts.volumeBoost) : DEFAULT_VOLUME_BOOST;
       this.outputGain = this.ctx.createGain();
-      this.outputGain.gain.value = 0.9;
+      this.outputGain.gain.value = Number.isFinite(Number(opts.outputGain)) ? Number(opts.outputGain) : 0.9;
       this.outputGain.connect(this.ctx.destination);
       // 在直接双击打开 HTML (file://) 时，使用 HTMLAudio 元素加载本地样本，避免 fetch 的 CORS 限制
       this.useMediaElement = !!(window.location && window.location.protocol === 'file:');
@@ -40,7 +44,7 @@
       try {
         if (!this.useMediaElement) {
           const tasks = this.sampleMap.map(async r => {
-            const url = `${this.rootPath}/${r.name}.ogg`;
+            const url = `${this.rootPath}/${encodeURIComponent(r.name)}.${this.extension}`;
             const res = await fetch(url);
             if (!res.ok) throw new Error(`Fetch failed: ${url}`);
             const arr = await res.arrayBuffer();
@@ -53,7 +57,7 @@
         } else {
           // file:// fallback using HTMLAudioElement (no fetch CORS)
           this.sampleMap.forEach(r => {
-            const url = `${this.rootPath}/${r.name}.ogg`;
+            const url = `${this.rootPath}/${encodeURIComponent(r.name)}.${this.extension}`;
             const el = new Audio();
             el.src = url;
             el.preload = 'auto';
@@ -101,7 +105,7 @@
       // Optimized ADSR envelope for seamless, connected playback (zero gap)
       const a = 0.002;   // Attack: 2ms (快速起音)
       const d = 0.05;    // Decay: 50ms (短衰减到 sustain)
-      const s = gain * VOLUME_BOOST;    // Sustain level
+      const s = gain * this.volumeBoost;    // Sustain level
       const r = 0.001;   // Release: 1ms (极短平滑过渡，避免 click 但几乎无空白)
 
       const t0 = startTime;
@@ -167,7 +171,7 @@
             this.ctx.resume().catch(()=>{});
             const mediaSource = this.ctx.createMediaElementSource(clone);
             const g = this.ctx.createGain();
-            g.gain.value = Math.max(0.01, gain * VOLUME_BOOST);
+            g.gain.value = Math.max(0.01, gain * this.volumeBoost);
             mediaSource.connect(g).connect(this.outputGain);
             clone.volume = 1;
             useWebAudio = true;
@@ -176,7 +180,7 @@
           }
         }
         if (!useWebAudio) {
-          clone.volume = Math.max(0.01, Math.min(1, gain * VOLUME_BOOST));
+          clone.volume = Math.max(0.01, Math.min(1, gain * this.volumeBoost));
         }
         const start = () => {
           try { clone.currentTime = 0; } catch(_) {}

@@ -102,6 +102,10 @@
     return tempo;
   }
 
+  function isChallengeRunningOrCountingIn(){
+    return !!((toggleEl && toggleEl.checked) && (state.active || state.countInTimerId));
+  }
+
   function isMidiConnected(){
     try {
       return !!(window.__icMidi && typeof window.__icMidi.getState === 'function' && window.__icMidi.getState().connected);
@@ -1717,20 +1721,12 @@
   function playClick(isStrong){
     if (!state.audioCtx) return;
     try {
-      const ctx = state.audioCtx;
-      const osc = ctx.createOscillator();
-      const g = ctx.createGain();
-      osc.type = 'square';
-      osc.frequency.value = isStrong ? 880 : 660;
-      const now = ctx.currentTime;
-      const dur = isStrong ? 0.09 : 0.06;
-      const peak = isStrong ? 1.0 : 0.7;
-      g.gain.setValueAtTime(0.0001, now);
-      g.gain.exponentialRampToValueAtTime(peak, now + 0.005);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-      osc.connect(g).connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + dur + 0.02);
+      if (window.ICMetronomeSettings && typeof window.ICMetronomeSettings.play === 'function') {
+        window.ICMetronomeSettings.play(state.audioCtx, state.audioCtx.currentTime, {
+          isDownbeat: !!isStrong,
+          volumeScale: 1.05
+        });
+      }
     } catch(_) {}
   }
 
@@ -2958,6 +2954,14 @@
   if (challengeBpmEl){
     const onChallengeBpmChanged = () => {
       if (isSyncingChallengeBpmInput) return;
+      if (window.__icChordPlayback && typeof window.__icChordPlayback.isPlaying === 'function' &&
+          window.__icChordPlayback.isPlaying() &&
+          typeof window.__icChordPlayback.stop === 'function') {
+        window.__icChordPlayback.stop();
+      }
+      if (isChallengeRunningOrCountingIn() && typeof window.stopChallenge === 'function') {
+        window.stopChallenge();
+      }
       const tempo = syncTempoAcrossInputs(challengeBpmEl.value);
       challengeBpmEl.value = String(tempo);
     };
@@ -2986,7 +2990,7 @@
   window._challengeState = state;
   window._applyClipForIndex = applyClipForIndex;
   window.__icChallenge = {
-    isActive: () => !!(state.active && toggleEl && toggleEl.checked),
+    isActive: () => isChallengeRunningOrCountingIn(),
     handleMidiNoteOn: (midi) => handleJudgeInput(midi),
     clearJudgement: () => clearJudgementStyles()
   };

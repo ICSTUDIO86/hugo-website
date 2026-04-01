@@ -59,7 +59,14 @@
         width: 100%;
         text-align: center;
       }
+      .settings-section-title {
+        background: rgba(255, 79, 163, 0.5) !important;
+        color: #FFFFFF !important;
+        border-radius: 14px;
+        box-shadow: 0 8px 20px rgba(255, 79, 163, 0.1);
+      }
     </style>
+    <script src="assets/js/metronome-audio.js?v=1" defer></script>
     <script src="IC 节奏视奏工具/rhythm.js?v=20260203" defer></script>
     <script src="assets/js/midi-input.js?v=1" defer></script>
     <script src="assets/js/rhythm-challenge-mode.js" defer></script>
@@ -249,6 +256,24 @@
                             <div class="language-option" onclick="switchLanguage('zh-CN')">简体中文</div>
                             <div class="language-option" onclick="switchLanguage('zh-TW')">繁體中文</div>
                             <div class="language-option" onclick="switchLanguage('en')">English</div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-section-title" data-i18n="settings.metronome">节拍器</div>
+                        <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
+                            <label for="metronomeSoundSelect" data-i18n="settings.metronomeSound">音色</label>
+                            <select id="metronomeSoundSelect" class="midi-select">
+                                <option value="classic" data-i18n="settings.metronomeSound.classic">电子</option>
+                                <option value="woodblock" data-i18n="settings.metronomeSound.woodblock">木鱼</option>
+                            </select>
+                        </div>
+                        <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
+                            <label for="metronomeVolumeSlider" data-i18n="settings.metronomeVolume">音量</label>
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <input type="range" id="metronomeVolumeSlider" min="0" max="100" step="1" value="70" style="flex:1;">
+                                <span id="metronomeVolumeValue" style="min-width:46px; text-align:right;">70%</span>
+                            </div>
                         </div>
                     </div>
 
@@ -591,7 +616,6 @@
                         </div>
 
                         <div class="metronome-pattern-grid" id="ostinatoPatternGrid"></div>
-                        <p class="modal-hint" data-i18n="metronomePattern.hint">点击方格启用/静音节拍</p>
 
                         <div class="modal-buttons">
                             <button class="btn-secondary" type="button" onclick="resetOstinatoPattern()" data-i18n="metronomePattern.resetBeats">重置为每拍</button>
@@ -730,7 +754,6 @@
                 </div>
 
                 <div class="metronome-pattern-grid" id="metronomePatternGrid"></div>
-                <p class="modal-hint" data-i18n="metronomePattern.hint">点击方格启用/静音节拍</p>
 
                 <div class="modal-buttons">
                     <button class="btn-secondary" onclick="resetMetronomePattern()" data-i18n="metronomePattern.resetBeats">重置为每拍</button>

@@ -11,10 +11,13 @@ const state = {
   instrumentId: "guitar",
   customInstrumentConfig: null,
   guitarTone: "classical",
+  labelMode: "fixed",
+  movableDoRoot: 0,
   paletteOpen: false,
   exportMenuOpen: false,
   customInstrumentModalOpen: false,
   videoModalOpen: false,
+  helpModalOpen: false,
   boardCount: 1,
   activeBoardIndex: 0,
   fretCount: 12,
@@ -22,7 +25,7 @@ const state = {
   hasCustomFretRange: false,
   fretboardOrientation: 0,
   notePreference: "sharps",
-  boardStates: [{ markers: {}, selectedId: null }],
+  boardStates: [{ markers: {}, selectedId: null, selectedIds: [] }],
   isFullAccess: false,
 };
 
@@ -38,9 +41,13 @@ const dom = {
   fretStartInput: document.getElementById("fretStartInput"),
   fretEndInput: document.getElementById("fretEndInput"),
   notePreferenceSelect: document.getElementById("notePreferenceSelect"),
+  labelModeSelect: document.getElementById("labelModeSelect"),
+  movableDoRootWrap: document.getElementById("movableDoRootWrap"),
+  movableDoRootSelect: document.getElementById("movableDoRootSelect"),
   exportToggleBtn: document.getElementById("exportToggleBtn"),
   exportMenu: document.getElementById("exportMenu"),
   videoRenderBtn: document.getElementById("videoRenderBtn"),
+  helpToggleBtn: document.getElementById("helpToggleBtn"),
   clearBtn: document.getElementById("clearMarkersBtn"),
   flipBoardBtn: document.getElementById("flipBoardBtn"),
   addBoardBtn: document.getElementById("addBoardBtn"),
@@ -93,15 +100,21 @@ const dom = {
   videoCancelBtn: document.getElementById("videoCancelBtn"),
   videoGenerateBtn: document.getElementById("videoGenerateBtn"),
   videoRenderStatus: document.getElementById("videoRenderStatus"),
+  helpModal: document.getElementById("helpModal"),
+  helpModalBackdrop: document.getElementById("helpModalBackdrop"),
+  helpModalCloseBtn: document.getElementById("helpModalCloseBtn"),
 };
 
 const UI_LANGUAGE_STORAGE_KEY = "ic_fretlab_ui_language";
 const INSTRUMENT_STORAGE_KEY = "ic_fretlab_instrument";
 const CUSTOM_INSTRUMENT_STORAGE_KEY = "ic_fretlab_custom_instrument";
 const GUITAR_TONE_STORAGE_KEY = "ic_fretlab_guitar_tone";
+const LABEL_MODE_STORAGE_KEY = "ic_fretlab_label_mode";
+const MOVABLE_DO_ROOT_STORAGE_KEY = "ic_fretlab_movable_do_root";
 const MOBILE_LAYOUT_MEDIA_QUERY = "(max-width: 1024px)";
 const UI_LANGUAGES = new Set(["zh", "zh-hant", "en"]);
 const GUITAR_TONES = new Set(["classical", "folk"]);
+const LABEL_MODES = new Set(["fixed", "movable-do"]);
 const CUSTOM_INSTRUMENT_ID = "custom";
 const INSTRUMENTS = {
   guitar: {
@@ -173,6 +186,12 @@ const UI_TEXT = {
     "controls.notePreference": "音名偏好",
     "controls.notePreference.sharps": "升号",
     "controls.notePreference.flats": "降号",
+    "controls.labelMode": "音名模式",
+    "controls.labelMode.fixed": "固定调",
+    "controls.labelMode.movableDo": "首调",
+    "controls.movableDoRoot": "主音",
+    "controls.tool.pointer": "鼠标模式",
+    "controls.tool.select": "框选模式",
     "controls.clearMarkers": "清除",
     "controls.flipBoard": "旋转",
     "instrument.guitar": "吉他",
@@ -219,6 +238,26 @@ const UI_TEXT = {
     "export.error.popup": "导出 PDF 失败：浏览器拦截了弹出窗口，请允许弹窗后重试。",
     "export.error.render": "导出失败：无法渲染当前指板。",
     "video.button": "视频",
+    "help.button": "帮助",
+    "help.button.aria": "打开帮助弹窗",
+    "help.modal.title": "快速帮助",
+    "help.modal.close": "关闭帮助弹窗",
+    "help.modal.intro": "这里是最常用的基础操作说明。",
+    "help.modal.section.markers": "标记音符",
+    "help.modal.marker.singleShort": "单击",
+    "help.modal.marker.doubleShort": "双击",
+    "help.modal.marker.enharmonic": "长按已有音符，可以切换同音异名的显示名称。",
+    "help.modal.marker.single": "点击一下：在该位置放置一个白色音符球。",
+    "help.modal.marker.double": "点击两下：在该位置放置一个黄色主音球。",
+    "help.modal.marker.repeat": "再次点击已有白球可移除它；黄色主音可在多个位置同时标记。",
+    "help.modal.section.shapes": "拖拽指型",
+    "help.modal.shapes.palette": "点开 Palette，从指型库里把指型拖到指板上即可预览或放置。",
+    "help.modal.shapes.select": "长按后拖拽，可以框选当前区域里的音符，方便一起移动或复制。",
+    "help.modal.shapes.custom": "自定义指板会按当前定弦重新换算指型位置，不再强行沿用标准吉他。",
+    "help.modal.section.tools": "常用工具",
+    "help.modal.tools.rotate": "使用 Rotate 可以切换指板朝向。",
+    "help.modal.tools.range": "Start Fret / End Fret 可以控制当前显示的品位范围。",
+    "help.modal.tools.audio": "点击指板或通过 MIDI 输入时，会播放当前位置对应的音高。",
     "video.modal.title": "生成 MP4 视频",
     "video.modal.close": "关闭视频弹窗",
     "video.modal.support": "支持格式：MuseScore（.mscz / .mscx）与 Guitar Pro 5（.gp5）",
@@ -311,6 +350,12 @@ const UI_TEXT = {
     "controls.notePreference": "Note labels",
     "controls.notePreference.sharps": "Sharps",
     "controls.notePreference.flats": "Flats",
+    "controls.labelMode": "Label mode",
+    "controls.labelMode.fixed": "Fixed",
+    "controls.labelMode.movableDo": "Movable Do",
+    "controls.movableDoRoot": "Tonic",
+    "controls.tool.pointer": "Pointer tool",
+    "controls.tool.select": "Select tool",
     "controls.clearMarkers": "Clear",
     "controls.flipBoard": "Rotate",
     "instrument.guitar": "Guitar",
@@ -357,6 +402,25 @@ const UI_TEXT = {
     "export.error.popup": "PDF export failed: popup was blocked by the browser.",
     "export.error.render": "Export failed: unable to render the current fretboard.",
     "video.button": "Video",
+    "help.button": "Help",
+    "help.button.aria": "Open help modal",
+    "help.modal.title": "Quick Help",
+    "help.modal.close": "Close help modal",
+    "help.modal.intro": "These are the most common actions to get started.",
+    "help.modal.section.markers": "Mark Notes",
+    "help.modal.marker.singleShort": "Click",
+    "help.modal.marker.doubleShort": "Double-click",
+    "help.modal.marker.single": "Click once: place a white note marker on that spot.",
+    "help.modal.marker.double": "Click twice: place a yellow root marker on that spot.",
+    "help.modal.marker.repeat": "Click an existing white marker again to remove it; yellow root markers can exist on multiple spots.",
+    "help.modal.section.shapes": "Drag Shapes",
+    "help.modal.shapes.palette": "Open Palette, then drag a shape from the library onto the fretboard to preview or place it.",
+    "help.modal.shapes.select": "Press and hold, then drag to marquee-select notes in an area so you can move or copy them together.",
+    "help.modal.shapes.custom": "On a custom fretboard, shapes are recalculated against the current tuning instead of being forced into standard guitar tuning.",
+    "help.modal.section.tools": "Useful Tools",
+    "help.modal.tools.rotate": "Use Rotate to switch the fretboard orientation.",
+    "help.modal.tools.range": "Start Fret / End Fret controls the visible fret range.",
+    "help.modal.tools.audio": "Clicking the fretboard or playing through MIDI will sound the pitch for that position.",
     "video.modal.title": "Generate MP4 Video",
     "video.modal.close": "Close video modal",
     "video.modal.support": "Supported formats: MuseScore (.mscz / .mscx) and Guitar Pro 5 (.gp5)",
@@ -424,6 +488,7 @@ const UI_TEXT = {
     "license.locked.export": "Export is a full-version feature. Please unlock first on /fretlab/.",
     "license.locked.library": "Preset shape library is a full-version feature. Please unlock first on /fretlab/.",
     "license.locked.video": "Video rendering is a full-version feature. Please unlock first on /fretlab/.",
+    "help.modal.marker.enharmonic": "Long-press an existing note to switch its enharmonic spelling.",
     "footer.tagline": "Cognitive guitar fretboard training tool",
     "footer.copyrightPrefix": "Copyright © 2026. All rights reserved. Igor Chen ·",
     "meta.title": "IC Fretboard Lab",
@@ -451,6 +516,12 @@ UI_TEXT["zh-hant"] = {
   "controls.notePreference": "音名偏好",
   "controls.notePreference.sharps": "升號",
   "controls.notePreference.flats": "降號",
+  "controls.labelMode": "音名模式",
+  "controls.labelMode.fixed": "固定調",
+  "controls.labelMode.movableDo": "首調",
+  "controls.movableDoRoot": "主音",
+  "controls.tool.pointer": "滑鼠模式",
+  "controls.tool.select": "框選模式",
   "controls.clearMarkers": "清除",
   "controls.flipBoard": "旋轉",
   "instrument.guitar": "吉他",
@@ -490,6 +561,25 @@ UI_TEXT["zh-hant"] = {
   "interval.P8": "純八度",
   "export.format": "匯出格式",
   "export.button": "匯出",
+  "help.button": "幫助",
+  "help.button.aria": "打開幫助彈窗",
+  "help.modal.title": "快速幫助",
+  "help.modal.close": "關閉幫助彈窗",
+  "help.modal.intro": "這裡是最常用的基礎操作說明。",
+  "help.modal.section.markers": "標記音符",
+  "help.modal.marker.singleShort": "單擊",
+  "help.modal.marker.doubleShort": "雙擊",
+  "help.modal.marker.single": "點擊一下：在該位置放置一個白色音符球。",
+  "help.modal.marker.double": "點擊兩下：在該位置放置一個黃色主音球。",
+  "help.modal.marker.repeat": "再次點擊已有白球可移除它；黃色主音可在多個位置同時標記。",
+  "help.modal.section.shapes": "拖拽指型",
+  "help.modal.shapes.palette": "點開 Palette，從指型庫裡把指型拖到指板上即可預覽或放置。",
+  "help.modal.shapes.select": "長按後拖拽，可以框選目前區域裡的音符，方便一起移動或複製。",
+  "help.modal.shapes.custom": "自訂指板會按目前定弦重新換算指型位置，不再強行沿用標準吉他。",
+  "help.modal.section.tools": "常用工具",
+  "help.modal.tools.rotate": "使用 Rotate 可以切換指板朝向。",
+  "help.modal.tools.range": "Start Fret / End Fret 可以控制目前顯示的品位範圍。",
+  "help.modal.tools.audio": "點擊指板或透過 MIDI 輸入時，會播放目前位置對應的音高。",
   "video.modal.title": "生成 MP4 視頻",
   "video.modal.close": "關閉視頻彈窗",
   "video.modal.support": "支援格式：MuseScore（.mscz / .mscx）與 Guitar Pro 5（.gp5）",
@@ -543,6 +633,7 @@ UI_TEXT["zh-hant"] = {
   "overlay.action.show": "顯示",
   "overlay.action.delete": "刪除",
   "marker.hint": "標記數 <strong>{count}</strong> · 點擊任意位置添加標記",
+  "help.modal.marker.enharmonic": "長按已有音符，可以切換同音異名的顯示名稱。",
   "license.status.trial": "當前為試用版：可點擊指板標記；匯出、預設指型庫與視頻生成功能僅限完整版。前往 /fretlab/ 完成支付並驗證訪問碼。",
   "license.status.full": "完整版已解鎖：預設指型庫、PNG / SVG / PDF 匯出與視頻生成功能可用。",
   "license.locked.export": "匯出功能僅限完整版。請先在 Landing Page 完成支付並驗證訪問碼。",
@@ -984,8 +1075,32 @@ const getMarkerCenterX = (fret) =>
   fret === 0 && isOpenFretVisible()
     ? getOpenAreaX() + DIMENSIONS.openWidth / 2
     : getFretX(fret) + DIMENSIONS.fretSpacing / 2;
-const getMarkerDisplayLabel = (marker) =>
-  marker.customLabel ?? getNoteName(marker.noteIndex, state.notePreference);
+const MOVABLE_DO_LABELS_SHARPS = ["1", "#1", "2", "#2", "3", "4", "#4", "5", "#5", "6", "#6", "7"];
+const MOVABLE_DO_LABELS_FLATS = ["1", "b2", "2", "b3", "3", "4", "b5", "5", "b6", "6", "b7", "7"];
+const NUMERIC_LABEL_FONT_STACK = '"Virgil FretLab", "Virgil", "Patrick Hand", "Xiaolai SC", "Xiaolai", "HanziPen SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", cursive, sans-serif';
+const isMovableDoEnabled = () => state.labelMode === "movable-do";
+const getMovableDoRootNoteIndex = () => mod12(Number(state.movableDoRoot) || 0);
+
+function getMovableDoLabelFromSemitone(semitone) {
+  const labels = state.notePreference === "flats" ? MOVABLE_DO_LABELS_FLATS : MOVABLE_DO_LABELS_SHARPS;
+  return labels[mod12(Number(semitone) || 0)] ?? "1";
+}
+
+function getMovableDoLabel(noteIndex) {
+  if (!Number.isFinite(noteIndex)) {
+    return "";
+  }
+  return getMovableDoLabelFromSemitone(mod12(noteIndex - getMovableDoRootNoteIndex()));
+}
+
+function getDisplayLabelForNoteIndex(noteIndex, { customLabel = null } = {}) {
+  if (isMovableDoEnabled()) {
+    return getMovableDoLabel(noteIndex);
+  }
+  return customLabel ?? getNoteName(noteIndex, state.notePreference);
+}
+
+const getMarkerDisplayLabel = (marker) => getDisplayLabelForNoteIndex(marker.noteIndex, { customLabel: marker.customLabel });
 const getOverlayPreferredNoteName = (noteIndex) => OVERLAY_NOTE_NAME_PRIORITY[mod12(noteIndex)] ?? "C";
 const instrumentShapeCache = new Map();
 
@@ -1191,6 +1306,8 @@ function chooseClosestEquivalentFretOffset(baseOffset, preferredOffset = 0) {
   for (let octave = -4; octave <= 4; octave += 1) {
     const candidate = normalizedBase + octave * 12;
     const distance = Math.abs(candidate - preferred);
+    // Preserve the original shape contour first, and only then prefer lower
+    // octaves to avoid wrapping near the nut (e.g. -1 should win over 11).
     const score = distance * 100 + Math.abs(candidate);
     if (score < bestScore) {
       bestScore = score;
@@ -1199,6 +1316,70 @@ function chooseClosestEquivalentFretOffset(baseOffset, preferredOffset = 0) {
   }
 
   return bestCandidate;
+}
+
+function compactRetunedRelativePositions(positions) {
+  const nextPositions = (positions ?? []).map((pos) => ({ ...pos }));
+  if (nextPositions.length < 2) {
+    return nextPositions;
+  }
+
+  const preferredFrets = nextPositions.map((pos) =>
+    Number.isFinite(pos?.preferredFret) ? Number(pos.preferredFret) : Number(pos?.fret) || 0
+  );
+  const minPreferred = Math.min(...preferredFrets);
+  const maxPreferred = Math.max(...preferredFrets);
+  const avgPreferred = preferredFrets.reduce((sum, value) => sum + value, 0) / preferredFrets.length;
+
+  let bestPositions = nextPositions.map((pos) => ({ ...pos }));
+  let bestScore = Number.POSITIVE_INFINITY;
+
+  for (let windowStart = Math.floor(minPreferred) - 12; windowStart <= Math.ceil(maxPreferred) + 12; windowStart += 1) {
+    const windowEnd = windowStart + 11;
+    const candidatePositions = [];
+    let valid = true;
+
+    for (let index = 0; index < nextPositions.length; index += 1) {
+      const pos = nextPositions[index];
+      const baseClass = mod12(Number(pos?.fret) || 0);
+      let candidateFret = null;
+      for (let octave = -6; octave <= 12; octave += 1) {
+        const value = baseClass + octave * 12;
+        if (value >= windowStart && value <= windowEnd) {
+          candidateFret = value;
+          break;
+        }
+      }
+      if (!Number.isFinite(candidateFret)) {
+        valid = false;
+        break;
+      }
+      candidatePositions.push({
+        ...pos,
+        fret: candidateFret,
+      });
+    }
+
+    if (!valid || !candidatePositions.length) {
+      continue;
+    }
+
+    const candidateFrets = candidatePositions.map((pos) => Number(pos.fret));
+    const span = Math.max(...candidateFrets) - Math.min(...candidateFrets);
+    const negativePenalty = Math.max(0, -Math.min(...candidateFrets));
+    const avgCandidate = candidateFrets.reduce((sum, value) => sum + value, 0) / candidateFrets.length;
+    const distancePenalty = candidatePositions.reduce((sum, pos, index) => {
+      return sum + Math.abs(Number(pos.fret) - preferredFrets[index]);
+    }, 0);
+    const score = span * 10000 + negativePenalty * 500 + distancePenalty * 100 + Math.abs(avgCandidate - avgPreferred);
+
+    if (score < bestScore) {
+      bestScore = score;
+      bestPositions = candidatePositions;
+    }
+  }
+
+  return bestPositions;
 }
 
 function retuneRelativePositionsForCustomTuning(positions, anchorString, tuning) {
@@ -1218,7 +1399,7 @@ function retuneRelativePositionsForCustomTuning(positions, anchorString, tuning)
     return cloneRelativePositions(positions);
   }
 
-  const deduped = new Map();
+  const retuned = [];
   for (const pos of positions ?? []) {
     const relativeString = Number(pos?.string);
     const originalFret = Number(pos?.fret);
@@ -1248,14 +1429,20 @@ function retuneRelativePositionsForCustomTuning(positions, anchorString, tuning)
       ...pos,
       string: relativeString,
       fret: adaptedFret,
+      preferredFret: originalFret,
       interval: mod12(interval),
       sourceNoteIndex: Number.isFinite(sourceNoteIndex) ? sourceNoteIndex : null,
     };
-    const key = `${nextPos.string}:${nextPos.fret}:${nextPos.interval}`;
-    if (!deduped.has(key)) {
-      deduped.set(key, nextPos);
-    }
+    retuned.push(nextPos);
   }
+
+  const deduped = new Map();
+  compactRetunedRelativePositions(retuned).forEach((pos) => {
+    const key = `${pos.string}:${pos.fret}:${pos.interval}`;
+    if (!deduped.has(key)) {
+      deduped.set(key, pos);
+    }
+  });
 
   return Array.from(deduped.values()).sort((a, b) => a.string - b.string || a.fret - b.fret);
 }
@@ -1324,8 +1511,9 @@ function buildCustomPlacementVariantList(shape, instrument, variantMap) {
     if (windowEntries.length) {
       windowEntries.forEach((entry, entryIndex) => {
         const absoluteAnchorString = Number(entry.anchorString) + targetStart;
+        const sourcePositions = cloneRelativePositions(entry.positions);
         const retunedPositions = retuneRelativePositionsForCustomTuning(
-          entry.positions,
+          sourcePositions,
           absoluteAnchorString,
           instrument?.tuning
         );
@@ -1336,6 +1524,7 @@ function buildCustomPlacementVariantList(shape, instrument, variantMap) {
           variantId: `${windowIndex}:${entry.variantId}:${entryIndex}`,
           stringSetStart: Number(entry.stringSetStart) + targetStart,
           anchorString: absoluteAnchorString,
+          sourcePositions,
           positions: retunedPositions,
         });
       });
@@ -1347,8 +1536,9 @@ function buildCustomPlacementVariantList(shape, instrument, variantMap) {
     }
 
     const absoluteAnchorString = adaptedMain.anchorString + targetStart;
+    const sourcePositions = cloneRelativePositions(adaptedMain.positions);
     const retunedPositions = retuneRelativePositionsForCustomTuning(
-      adaptedMain.positions,
+      sourcePositions,
       absoluteAnchorString,
       instrument?.tuning
     );
@@ -1360,6 +1550,7 @@ function buildCustomPlacementVariantList(shape, instrument, variantMap) {
       variantId: `${windowIndex}:base`,
       stringSetStart: targetStart,
       anchorString: absoluteAnchorString,
+      sourcePositions,
       positions: retunedPositions,
     });
   });
@@ -1409,6 +1600,7 @@ function adaptShapeForInstrument(shape, instrument) {
       anchorString: absoluteAnchorString,
       anchorLabel: getStringLabelByCount(absoluteAnchorString, instrument.tuning.length),
       positions: retunedMainPositions,
+      customPlacementSourcePositions: cloneRelativePositions(adaptedMain.positions),
       dragPlacementStarts: dragPlacementStarts.length ? Array.from(new Set(dragPlacementStarts)) : undefined,
       dragPlacementVariantList: dragPlacementVariantList.length ? dragPlacementVariantList : undefined,
       dragPlacementVariants: undefined,
@@ -1875,6 +2067,16 @@ function normalizeGuitarTone(tone) {
   return GUITAR_TONES.has(normalized) ? normalized : "classical";
 }
 
+function normalizeLabelMode(mode) {
+  const normalized = `${mode ?? ""}`.trim().toLowerCase();
+  return LABEL_MODES.has(normalized) ? normalized : "fixed";
+}
+
+function normalizeMovableDoRoot(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? mod12(Math.round(numeric)) : 0;
+}
+
 function getActiveInstrument() {
   const instrumentId = normalizeInstrumentId(state.instrumentId);
   if (instrumentId === CUSTOM_INSTRUMENT_ID) {
@@ -1939,6 +2141,22 @@ function getInitialGuitarTone() {
   }
 }
 
+function getInitialLabelMode() {
+  try {
+    return normalizeLabelMode(localStorage.getItem(LABEL_MODE_STORAGE_KEY));
+  } catch {
+    return "fixed";
+  }
+}
+
+function getInitialMovableDoRoot() {
+  try {
+    return normalizeMovableDoRoot(localStorage.getItem(MOVABLE_DO_ROOT_STORAGE_KEY));
+  } catch {
+    return 0;
+  }
+}
+
 function t(key, vars = {}) {
   const langPack = UI_TEXT[state.language] ?? UI_TEXT.zh;
   const template = langPack[key] ?? UI_TEXT.zh[key] ?? key;
@@ -1998,6 +2216,45 @@ function refreshAccessUi() {
   dom.videoRenderBtn?.classList.toggle("is-locked", !state.isFullAccess);
 }
 
+function populateMovableDoRootOptions() {
+  if (!dom.movableDoRootSelect) {
+    return;
+  }
+  const currentValue = `${normalizeMovableDoRoot(state.movableDoRoot)}`;
+  dom.movableDoRootSelect.innerHTML = Array.from({ length: 12 }, (_, noteIndex) => {
+    const label = getNoteName(noteIndex, state.notePreference);
+    return `<option value="${noteIndex}">${escapeHtml(label)}</option>`;
+  }).join("");
+  dom.movableDoRootSelect.value = currentValue;
+}
+
+function syncLabelModeControls() {
+  const normalizedMode = normalizeLabelMode(state.labelMode);
+  state.labelMode = normalizedMode;
+  if (dom.labelModeSelect) {
+    dom.labelModeSelect.value = normalizedMode;
+  }
+  const shouldShowMovableDoRoot = normalizedMode === "movable-do";
+  if (dom.movableDoRootWrap) {
+    dom.movableDoRootWrap.hidden = !shouldShowMovableDoRoot;
+    dom.movableDoRootWrap.style.display = shouldShowMovableDoRoot ? "" : "none";
+    dom.movableDoRootWrap.setAttribute("aria-hidden", shouldShowMovableDoRoot ? "false" : "true");
+  }
+  if (dom.movableDoRootSelect) {
+    dom.movableDoRootSelect.disabled = !shouldShowMovableDoRoot;
+  }
+  populateMovableDoRootOptions();
+}
+
+function refreshDisplayedNoteLabels() {
+  syncLabelModeControls();
+  renderGrid();
+  renderMarkers();
+  renderOverlays();
+  renderRealtimeMarkers();
+  buildShapeLibrary();
+}
+
 function ensureFullAccess(featureKey) {
   if (state.isFullAccess) {
     return true;
@@ -2052,7 +2309,9 @@ function applyTranslations() {
     dom.paletteCloseBtn.setAttribute("aria-label", t("palette.close.aria"));
   }
 
+  syncLabelModeControls();
   syncVideoRendererUi();
+  syncHelpModalUi();
   refreshAccessUi();
   syncInstrumentControls();
   if (state.customInstrumentModalOpen) {
@@ -2261,6 +2520,13 @@ function syncVideoRendererUi() {
   }
 }
 
+function syncHelpModalUi() {
+  if (dom.helpToggleBtn) {
+    dom.helpToggleBtn.classList.toggle("is-active", state.helpModalOpen);
+    dom.helpToggleBtn.setAttribute("aria-expanded", state.helpModalOpen ? "true" : "false");
+  }
+}
+
 function setVideoModalOpen(nextOpen) {
   const isOpen = Boolean(nextOpen);
   if (isOpen && state.exportMenuOpen) {
@@ -2285,6 +2551,23 @@ function toggleVideoModal() {
     return;
   }
   setVideoModalOpen(!state.videoModalOpen);
+}
+
+function setHelpModalOpen(nextOpen) {
+  const isOpen = Boolean(nextOpen);
+  if (isOpen && state.exportMenuOpen) {
+    setExportMenuOpen(false);
+  }
+  state.helpModalOpen = isOpen;
+  dom.helpModal?.classList.toggle("is-open", isOpen);
+  dom.helpModalBackdrop?.classList.toggle("is-open", isOpen);
+  dom.helpModal?.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  dom.helpModalBackdrop?.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  syncHelpModalUi();
+}
+
+function toggleHelpModal() {
+  setHelpModalOpen(!state.helpModalOpen);
 }
 
 function getFileExtension(name = "") {
@@ -2623,6 +2906,7 @@ function normalizeMarkersForInstrument() {
     if (!nextMarkers[board.selectedId]) {
       board.selectedId = null;
     }
+    board.selectedIds = getExistingMarkerIds({ markers: nextMarkers }, board.selectedIds);
   });
   if (recorder.rootMarkerId && !getBoardState().markers[recorder.rootMarkerId]) {
     recorder.rootMarkerId = null;
@@ -2888,13 +3172,54 @@ function setInstrument(instrumentId, { persist = true, forceRefresh = false } = 
   renderRecorderPanel();
 }
 
-const LONG_PRESS_MS = 600;
+const LONG_PRESS_MS = 420;
 let longPressTimer = null;
 let longPressTargetId = null;
 let longPressSuppressedId = null;
 let longPressPointer = { x: 0, y: 0 };
 let enharmonicMenuState = null;
 let pendingSvgClick = null;
+let marqueeSelection = {
+  boardIndex: 0,
+  pointerId: null,
+  svg: null,
+  active: false,
+  armed: false,
+  ready: false,
+  originClientX: 0,
+  originClientY: 0,
+  currentClientX: 0,
+  currentClientY: 0,
+  originSvgX: 0,
+  originSvgY: 0,
+  currentSvgX: 0,
+  currentSvgY: 0,
+  activationTimer: null,
+};
+let selectedMarkerDrag = {
+  active: false,
+  boardIndex: 0,
+  pointerId: null,
+  svg: null,
+  anchorMarkerId: null,
+  anchorStringIndex: 0,
+  anchorFret: 0,
+  selectedIds: [],
+  initialMarkers: {},
+  moved: false,
+  historyRecorded: false,
+  rootMarkerId: null,
+};
+let pendingSelectedMarkerDrag = {
+  active: false,
+  boardIndex: 0,
+  pointerId: null,
+  svg: null,
+  markerId: null,
+  originClientX: 0,
+  originClientY: 0,
+};
+let selectionInteractionSuppressedUntil = 0;
 
 const overlays = [];
 let dragShapeId = null;
@@ -3074,6 +3399,15 @@ const AUDIO_UNLOCK_EVENTS = ["pointerdown", "keydown", "touchstart"];
 const CLICK_PREVIEW_DURATION_MS = 420;
 const CLICK_PREVIEW_VELOCITY = 108;
 const SVG_CLICK_DELAY_MS = 220;
+const SELECTION_CLICK_SUPPRESS_MS = 90;
+const MARQUEE_SELECTION_LONG_PRESS_MS = 160;
+const MARQUEE_SELECTION_DRAG_THRESHOLD_PX = 6;
+const MARKER_DOT_RADIUS = 18;
+const OVERLAY_DOT_RADIUS = 18;
+const OVERLAY_ROOT_DOT_RADIUS = 19;
+const REALTIME_DOT_RADIUS = 21;
+const REALTIME_DOT_CORE_RADIUS = 16;
+const REALTIME_ONSET_RING_RADIUS = 23;
 const realtimeAudio = {
   context: null,
   masterGain: null,
@@ -3081,6 +3415,8 @@ const realtimeAudio = {
   loadPromises: new Map(),
   activeVoices: new Map(),
   stopTimers: new Map(),
+  warmedVoices: new Set(),
+  recentCellPreviews: new Map(),
   unlockBound: false,
 };
 
@@ -3107,7 +3443,7 @@ function getFretboardSvgs() {
 }
 
 function createEmptyBoardState() {
-  return { markers: {}, selectedId: null };
+  return { markers: {}, selectedId: null, selectedIds: [] };
 }
 
 function normalizeBoardIndex(value) {
@@ -3142,6 +3478,32 @@ function getBoardState(boardIndex = state.activeBoardIndex) {
   return state.boardStates[normalized];
 }
 
+function getExistingMarkerIds(board, markerIds) {
+  if (!Array.isArray(markerIds) || !markerIds.length) {
+    return [];
+  }
+  return markerIds.filter((id) => Boolean(board?.markers?.[id]));
+}
+
+function setSelectedMarkerIds(boardIndex, markerIds = [], { preferredId = null } = {}) {
+  const board = getBoardState(boardIndex);
+  const nextSelectedIds = getExistingMarkerIds(board, markerIds);
+  board.selectedIds = nextSelectedIds;
+  if (preferredId && board.markers[preferredId]) {
+    board.selectedId = preferredId;
+  } else if (nextSelectedIds.length) {
+    board.selectedId = nextSelectedIds.includes(board.selectedId) ? board.selectedId : nextSelectedIds[0];
+  } else if (!board.markers[board.selectedId]) {
+    board.selectedId = null;
+  }
+  return nextSelectedIds;
+}
+
+function clearSelectedMarkerIds(boardIndex) {
+  const board = getBoardState(boardIndex);
+  board.selectedIds = [];
+}
+
 function cloneBoardMarkers(markers, { maxFret = Infinity } = {}) {
   const tuning = getActiveTuning();
   const stringCount = tuning.length;
@@ -3163,6 +3525,7 @@ function cloneBoardMarkers(markers, { maxFret = Infinity } = {}) {
       noteIndex: getPositionNoteIndex(stringIndex, fret, tuning),
       interval: `${marker?.interval ?? ""}`,
       customLabel: typeof marker?.customLabel === "string" ? marker.customLabel : null,
+      isRecorderRoot: Boolean(marker?.isRecorderRoot),
     };
   });
   return nextMarkers;
@@ -3172,10 +3535,12 @@ function createBoardSnapshot(boardIndex = state.activeBoardIndex) {
   const normalizedBoardIndex = normalizeBoardIndex(boardIndex);
   const board = getBoardState(normalizedBoardIndex);
   const markers = cloneBoardMarkers(board.markers);
+  const selectedIds = getExistingMarkerIds({ markers }, board.selectedIds);
   return {
     boardIndex: normalizedBoardIndex,
     markers,
     selectedId: markers[board.selectedId] ? board.selectedId : null,
+    selectedIds,
     rootMarkerId:
       normalizedBoardIndex === state.activeBoardIndex && markers[recorder.rootMarkerId]
         ? recorder.rootMarkerId
@@ -3206,6 +3571,7 @@ function restoreBoardSnapshot(snapshot) {
   const markers = cloneBoardMarkers(snapshot.markers, { maxFret: state.fretCount });
   board.markers = markers;
   board.selectedId = markers[snapshot.selectedId] ? snapshot.selectedId : null;
+  board.selectedIds = getExistingMarkerIds({ markers }, snapshot.selectedIds);
   if (state.activeBoardIndex === boardIndex) {
     recorder.rootMarkerId = markers[snapshot.rootMarkerId] ? snapshot.rootMarkerId : null;
     recorder.output = "";
@@ -3242,13 +3608,23 @@ function redoBoardMutation() {
 
 function buildMarkerClipboardPayload(boardIndex = state.activeBoardIndex) {
   const board = getBoardState(boardIndex);
-  const markers = Object.values(cloneBoardMarkers(board.markers));
+  const selectedIds = getExistingMarkerIds(board, board.selectedIds);
+  const clonedMarkers = cloneBoardMarkers(board.markers);
+  const markers = (selectedIds.length ? selectedIds.map((id) => clonedMarkers[id]) : Object.values(clonedMarkers)).filter(Boolean);
+  const selectedId = selectedIds.length
+    ? (selectedIds.includes(board.selectedId) ? board.selectedId : selectedIds[0] ?? null)
+    : board.selectedId;
   return {
     type: MARKER_CLIPBOARD_TYPE,
     instrumentId: getActiveInstrument().id,
     markers,
-    selectedId: board.selectedId,
-    rootMarkerId: boardIndex === state.activeBoardIndex ? recorder.rootMarkerId : null,
+    selectedId,
+    selectedIds,
+    selectionOnly: selectedIds.length > 0,
+    rootMarkerId:
+      boardIndex === state.activeBoardIndex && clonedMarkers[recorder.rootMarkerId] && (!selectedIds.length || selectedIds.includes(recorder.rootMarkerId))
+        ? recorder.rootMarkerId
+        : null,
   };
 }
 
@@ -3285,16 +3661,27 @@ function applyMarkerClipboardPayload(payload, boardIndex = state.activeBoardInde
     return false;
   }
   const normalizedBoardIndex = normalizeBoardIndex(boardIndex);
-  const nextMarkers = cloneBoardMarkers(payload.markers, { maxFret: state.fretCount });
-  if (!Object.keys(nextMarkers).length) {
+  const pastedMarkers = cloneBoardMarkers(payload.markers, { maxFret: state.fretCount });
+  const pastedIds = Object.keys(pastedMarkers);
+  if (!pastedIds.length) {
     return false;
   }
   rememberBoardHistory(normalizedBoardIndex);
   const board = getBoardState(normalizedBoardIndex);
+  const nextMarkers = payload.selectionOnly
+    ? {
+        ...cloneBoardMarkers(board.markers, { maxFret: state.fretCount }),
+        ...pastedMarkers,
+      }
+    : pastedMarkers;
   board.markers = nextMarkers;
-  board.selectedId = nextMarkers[payload.selectedId] ? payload.selectedId : Object.keys(nextMarkers)[0] ?? null;
+  const selectedIds = getExistingMarkerIds({ markers: nextMarkers }, payload.selectionOnly ? pastedIds : payload.selectedIds ?? pastedIds);
+  board.selectedIds = selectedIds;
+  board.selectedId = nextMarkers[payload.selectedId] ? payload.selectedId : selectedIds[0] ?? Object.keys(nextMarkers)[0] ?? null;
   if (state.activeBoardIndex === normalizedBoardIndex) {
-    recorder.rootMarkerId = nextMarkers[payload.rootMarkerId] ? payload.rootMarkerId : null;
+    recorder.rootMarkerId = nextMarkers[payload.rootMarkerId]
+      ? payload.rootMarkerId
+      : (payload.selectionOnly ? recorder.rootMarkerId : null);
     recorder.output = "";
   }
   renderMarkers();
@@ -3429,7 +3816,11 @@ function bindRealtimeAudioUnlockGestures() {
   }
   realtimeAudio.unlockBound = true;
   const unlock = () => {
-    void unlockRealtimeAudio();
+    void unlockRealtimeAudio().then((unlocked) => {
+      if (unlocked) {
+        warmupRealtimeAudioForActiveVoice();
+      }
+    });
   };
   AUDIO_UNLOCK_EVENTS.forEach((eventName) => {
     window.addEventListener(eventName, unlock, { passive: true });
@@ -3621,6 +4012,31 @@ function getBoardClickPreviewEventKey(boardIndex, stringIndex, fret) {
   return `click:${normalizeBoardIndex(boardIndex)}:${Number(stringIndex)}:${Number(fret)}`;
 }
 
+function getBoardCellPreviewKey(boardIndex, stringIndex, fret) {
+  return `${normalizeBoardIndex(boardIndex)}:${Number(stringIndex)}:${Number(fret)}`;
+}
+
+function rememberRecentBoardCellPreview(boardIndex, stringIndex, fret) {
+  realtimeAudio.recentCellPreviews.set(
+    getBoardCellPreviewKey(boardIndex, stringIndex, fret),
+    Date.now() + SVG_CLICK_DELAY_MS + 120
+  );
+}
+
+function consumeRecentBoardCellPreview(boardIndex, stringIndex, fret) {
+  const key = getBoardCellPreviewKey(boardIndex, stringIndex, fret);
+  const until = realtimeAudio.recentCellPreviews.get(key);
+  if (!until) {
+    return false;
+  }
+  if (until < Date.now()) {
+    realtimeAudio.recentCellPreviews.delete(key);
+    return false;
+  }
+  realtimeAudio.recentCellPreviews.delete(key);
+  return true;
+}
+
 function previewBoardCellAudio(boardIndex, stringIndex, fret, velocity = CLICK_PREVIEW_VELOCITY) {
   if (!Number.isInteger(Number(stringIndex)) || !Number.isFinite(Number(fret))) {
     return;
@@ -3630,6 +4046,7 @@ function previewBoardCellAudio(boardIndex, stringIndex, fret, velocity = CLICK_P
   if (!isValidRealtimePosition(normalizedStringIndex, normalizedFret)) {
     return;
   }
+  rememberRecentBoardCellPreview(boardIndex, normalizedStringIndex, normalizedFret);
   const eventKey = getBoardClickPreviewEventKey(boardIndex, normalizedStringIndex, normalizedFret);
   void playRealtimeAudioNote(
     eventKey,
@@ -3649,8 +4066,11 @@ function warmupRealtimeAudioForActiveVoice() {
   if (!voice?.samples?.length) {
     return;
   }
-  const sortedByWeight = [...voice.samples].sort((a, b) => (b.weight ?? 1) - (a.weight ?? 1));
-  sortedByWeight.slice(0, 2).forEach((sample) => {
+  if (realtimeAudio.warmedVoices.has(voiceId)) {
+    return;
+  }
+  realtimeAudio.warmedVoices.add(voiceId);
+  voice.samples.forEach((sample) => {
     void loadSampleBuffer(voiceId, sample.url);
   });
 }
@@ -3661,6 +4081,11 @@ function getBoardIndexFromSvg(svg) {
   }
   const value = Number(svg.dataset.boardIndex);
   return normalizeBoardIndex(Number.isNaN(value) ? state.activeBoardIndex : value);
+}
+
+function getSvgForBoardIndex(boardIndex = state.activeBoardIndex) {
+  const svgs = getFretboardSvgs();
+  return svgs[normalizeBoardIndex(boardIndex)] ?? svgs[0] ?? null;
 }
 
 function getBoardIndexFromEvent(event) {
@@ -3702,6 +4127,7 @@ function bindFretboardSvgInteractions(svg) {
   svg.addEventListener("click", handleSvgClick);
   svg.addEventListener("dblclick", handleSvgDoubleClick);
   svg.addEventListener("pointerdown", handleMarkerPointerDown);
+  svg.addEventListener("pointermove", handleSvgPointerMove);
   svg.addEventListener("pointerup", handlePointerUp);
   svg.addEventListener("pointerleave", handlePointerUp);
   svg.addEventListener("pointercancel", handlePointerUp);
@@ -3832,6 +4258,552 @@ function getTransparentDragImage() {
   return transparentDragImage;
 }
 
+function pruneBoardSelection(boardIndex) {
+  const board = getBoardState(boardIndex);
+  board.selectedIds = getExistingMarkerIds(board, board.selectedIds);
+  if (!board.selectedIds.includes(board.selectedId) && !board.markers[board.selectedId]) {
+    board.selectedId = null;
+  }
+}
+
+function deleteSelectedMarkers(boardIndex = state.activeBoardIndex) {
+  const normalizedBoardIndex = normalizeBoardIndex(boardIndex);
+  const board = getBoardState(normalizedBoardIndex);
+  const selectedIds = getExistingMarkerIds(board, board.selectedIds);
+  if (!selectedIds.length) {
+    return false;
+  }
+  rememberBoardHistory(normalizedBoardIndex);
+  selectedIds.forEach((markerId) => {
+    delete board.markers[markerId];
+    if (recorder.rootMarkerId === markerId) {
+      recorder.rootMarkerId = null;
+      recorder.output = "";
+    }
+  });
+  board.selectedIds = [];
+  if (!board.markers[board.selectedId]) {
+    board.selectedId = null;
+  }
+  renderMarkers();
+  updateMarkerHint();
+  renderRecorderPanel();
+  return true;
+}
+
+function getClientSelectionRect() {
+  return {
+    left: Math.min(marqueeSelection.originClientX, marqueeSelection.currentClientX),
+    right: Math.max(marqueeSelection.originClientX, marqueeSelection.currentClientX),
+    top: Math.min(marqueeSelection.originClientY, marqueeSelection.currentClientY),
+    bottom: Math.max(marqueeSelection.originClientY, marqueeSelection.currentClientY),
+  };
+}
+
+function getSvgSelectionRect() {
+  return {
+    x: Math.min(marqueeSelection.originSvgX, marqueeSelection.currentSvgX),
+    y: Math.min(marqueeSelection.originSvgY, marqueeSelection.currentSvgY),
+    width: Math.abs(marqueeSelection.currentSvgX - marqueeSelection.originSvgX),
+    height: Math.abs(marqueeSelection.currentSvgY - marqueeSelection.originSvgY),
+  };
+}
+
+function clientPointToSvg(svg, clientX, clientY) {
+  const matrix = svg?.getScreenCTM?.();
+  if (!matrix || typeof DOMPoint !== "function") {
+    return { x: 0, y: 0 };
+  }
+  const point = new DOMPoint(clientX, clientY).matrixTransform(matrix.inverse());
+  return { x: point.x, y: point.y };
+}
+
+function getMarkerIdFromClientPoint(svg, clientX, clientY, markerIds = null) {
+  if (!(svg instanceof SVGSVGElement)) {
+    return null;
+  }
+  const allowed = Array.isArray(markerIds) && markerIds.length ? new Set(markerIds) : null;
+  const groups = Array.from(svg.querySelectorAll(".marker-group"));
+  for (const group of groups) {
+    const markerId = group.dataset.id;
+    if (!markerId || (allowed && !allowed.has(markerId))) {
+      continue;
+    }
+    const rect = group.getBoundingClientRect();
+    if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+      return markerId;
+    }
+  }
+  return null;
+}
+
+function renderSelectionMarquee() {
+  const svgs = getFretboardSvgs();
+  svgs.forEach((svg) => svg.querySelectorAll(".selection-marquee").forEach((node) => node.remove()));
+  if (!marqueeSelection.active || !(marqueeSelection.svg instanceof SVGSVGElement)) {
+    return;
+  }
+  const rect = getSvgSelectionRect();
+  const marquee = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  marquee.classList.add("selection-marquee");
+  marquee.setAttribute("x", `${rect.x}`);
+  marquee.setAttribute("y", `${rect.y}`);
+  marquee.setAttribute("width", `${Math.max(rect.width, 1)}`);
+  marquee.setAttribute("height", `${Math.max(rect.height, 1)}`);
+  marqueeSelection.svg.appendChild(marquee);
+}
+
+function updateSelectedMarkersFromMarquee(boardIndex) {
+  const svg = marqueeSelection.svg;
+  if (!(svg instanceof SVGSVGElement)) {
+    return;
+  }
+  const clientRect = getClientSelectionRect();
+  const selectedIds = Array.from(svg.querySelectorAll(".marker-group"))
+    .filter((group) => {
+      const rect = group.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      return (
+        centerX >= clientRect.left &&
+        centerX <= clientRect.right &&
+        centerY >= clientRect.top &&
+        centerY <= clientRect.bottom
+      );
+    })
+    .map((group) => group.dataset.id)
+    .filter(Boolean);
+  const preferredId = selectedIds[selectedIds.length - 1] ?? null;
+  setSelectedMarkerIds(boardIndex, selectedIds, { preferredId });
+  renderMarkers();
+  renderRecorderPanel();
+}
+
+function clearBoardSelection(boardIndex = state.activeBoardIndex, { render = true } = {}) {
+  clearSelectedMarkerIds(boardIndex);
+  if (render) {
+    renderMarkers();
+    renderRecorderPanel();
+  }
+}
+
+function clearMarqueeActivationTimer() {
+  if (marqueeSelection.activationTimer) {
+    clearTimeout(marqueeSelection.activationTimer);
+    marqueeSelection.activationTimer = null;
+  }
+}
+
+function clearPendingSelectedMarkerDrag() {
+  pendingSelectedMarkerDrag = {
+    active: false,
+    boardIndex: 0,
+    pointerId: null,
+    svg: null,
+    markerId: null,
+    originClientX: 0,
+    originClientY: 0,
+  };
+}
+
+function cancelMarqueeSelection({ clearVisual = true } = {}) {
+  clearMarqueeActivationTimer();
+  marqueeSelection.pointerId = null;
+  marqueeSelection.armed = false;
+  marqueeSelection.ready = false;
+  marqueeSelection.active = false;
+  marqueeSelection.svg = null;
+  if (clearVisual) {
+    renderSelectionMarquee();
+  }
+}
+
+function getBoardCellFromSvgPoint(x, y) {
+  const stringCount = getStringCount();
+  const spacing = getStringSpacing();
+  const visualIndex = Math.round((y - DIMENSIONS.boardPadding) / spacing);
+  if (visualIndex < 0 || visualIndex >= stringCount) {
+    return null;
+  }
+  const stringIndex = stringCount - 1 - visualIndex;
+  if (isOpenFretVisible() && x >= getOpenAreaX() && x <= getLeadingAreaWidth()) {
+    return { stringIndex, fret: 0 };
+  }
+  const fretboardStartX = getFretboardAreaX();
+  const fretboardEndX = fretboardStartX + DIMENSIONS.fretSpacing * getVisibleFretCount();
+  if (x < fretboardStartX || x > fretboardEndX) {
+    return null;
+  }
+  const fretOffset = Math.floor((x - fretboardStartX) / DIMENSIONS.fretSpacing);
+  const fret = getVisibleFretStart() + fretOffset;
+  if (!isBoardFretVisible(fret)) {
+    return null;
+  }
+  return { stringIndex, fret };
+}
+
+function getBoardCellFromEvent(event, boardIndex = state.activeBoardIndex) {
+  if (event.target instanceof Element) {
+    const directCell = event.target.closest(".cell");
+    if (directCell instanceof Element) {
+      const stringIndex = Number(directCell.dataset.string);
+      const fret = Number(directCell.dataset.fret);
+      if (!Number.isNaN(stringIndex) && !Number.isNaN(fret)) {
+        return { stringIndex, fret, id: `${stringIndex}-${fret}` };
+      }
+    }
+  }
+  if (Number.isFinite(event.clientX) && Number.isFinite(event.clientY)) {
+    const hitCell = document.elementFromPoint(event.clientX, event.clientY)?.closest?.(".cell");
+    if (hitCell instanceof Element) {
+      const stringIndex = Number(hitCell.dataset.string);
+      const fret = Number(hitCell.dataset.fret);
+      if (!Number.isNaN(stringIndex) && !Number.isNaN(fret)) {
+        return { stringIndex, fret, id: `${stringIndex}-${fret}` };
+      }
+    }
+  }
+  const svg = getSvgForBoardIndex(boardIndex);
+  if (svg instanceof SVGSVGElement && Number.isFinite(event.clientX) && Number.isFinite(event.clientY)) {
+    const point = clientPointToSvg(svg, event.clientX, event.clientY);
+    const cell = getBoardCellFromSvgPoint(point.x, point.y);
+    if (cell) {
+      return { ...cell, id: `${cell.stringIndex}-${cell.fret}` };
+    }
+  }
+  return null;
+}
+
+function updateBoardSelection(boardIndex, markerIds, { preferredId = null, render = true } = {}) {
+  setSelectedMarkerIds(boardIndex, markerIds, { preferredId });
+  if (render) {
+    renderMarkers();
+    renderRecorderPanel();
+  }
+}
+
+function buildDraggedMarkerState(boardIndex, deltaString, deltaFret) {
+  const board = getBoardState(boardIndex);
+  const selectedIds = getExistingMarkerIds({ markers: selectedMarkerDrag.initialMarkers }, selectedMarkerDrag.selectedIds);
+  if (!selectedIds.length) {
+    return null;
+  }
+  const tuning = getActiveTuning();
+  const nonSelectedIds = new Set(Object.keys(selectedMarkerDrag.initialMarkers).filter((id) => !selectedIds.includes(id)));
+  const nextMarkers = cloneBoardMarkers(selectedMarkerDrag.initialMarkers, { maxFret: state.fretCount });
+  selectedIds.forEach((id) => delete nextMarkers[id]);
+  const nextSelectedIds = [];
+  for (const id of selectedIds) {
+    const marker = selectedMarkerDrag.initialMarkers[id];
+    if (!marker) {
+      return null;
+    }
+    const stringIndex = marker.stringIndex + deltaString;
+    const fret = marker.fret + deltaFret;
+    if (
+      stringIndex < 0 ||
+      stringIndex >= getStringCount() ||
+      !Number.isInteger(fret) ||
+      fret < getVisibleMinimumFret() ||
+      fret > state.fretCount ||
+      !isBoardFretVisible(fret)
+    ) {
+      return null;
+    }
+    const nextId = `${stringIndex}-${fret}`;
+    if (nonSelectedIds.has(nextId) || nextSelectedIds.includes(nextId)) {
+      return null;
+    }
+    nextMarkers[nextId] = {
+      ...marker,
+      id: nextId,
+      stringIndex,
+      fret,
+      noteIndex: getPositionNoteIndex(stringIndex, fret, tuning),
+    };
+    nextSelectedIds.push(nextId);
+  }
+  return {
+    markers: nextMarkers,
+    selectedIds: nextSelectedIds,
+    selectedId:
+      selectedIds.includes(board.selectedId)
+        ? nextSelectedIds[selectedIds.indexOf(board.selectedId)] ?? nextSelectedIds[0] ?? null
+        : nextSelectedIds[0] ?? null,
+    rootMarkerId:
+      selectedIds.includes(selectedMarkerDrag.rootMarkerId)
+        ? nextSelectedIds[selectedIds.indexOf(selectedMarkerDrag.rootMarkerId)] ?? null
+        : selectedMarkerDrag.rootMarkerId,
+  };
+}
+
+function startSelectedMarkerDrag(event, boardIndex, markerId) {
+  const svg = event.currentTarget instanceof SVGSVGElement ? event.currentTarget : event.target.closest?.("svg");
+  if (!(svg instanceof SVGSVGElement)) {
+    return false;
+  }
+  const board = getBoardState(boardIndex);
+  const selectedIds = getExistingMarkerIds(board, board.selectedIds);
+  if (!selectedIds.includes(markerId)) {
+    return false;
+  }
+  const anchorMarker = board.markers[markerId];
+  if (!anchorMarker) {
+    return false;
+  }
+  cancelLongPress();
+  clearPendingSvgClick();
+  cancelMarqueeSelection({ clearVisual: true });
+  selectedMarkerDrag = {
+    active: true,
+    boardIndex,
+    pointerId: event.pointerId,
+    svg,
+    anchorMarkerId: markerId,
+    anchorStringIndex: anchorMarker.stringIndex,
+    anchorFret: anchorMarker.fret,
+    selectedIds,
+    initialMarkers: cloneBoardMarkers(board.markers, { maxFret: state.fretCount }),
+    moved: false,
+    historyRecorded: false,
+    rootMarkerId: recorder.rootMarkerId,
+  };
+  svg.setPointerCapture?.(event.pointerId);
+  return true;
+}
+
+function queueSelectedMarkerDrag(event, boardIndex, markerId) {
+  const svg = event.currentTarget instanceof SVGSVGElement ? event.currentTarget : event.target.closest?.("svg");
+  if (!(svg instanceof SVGSVGElement)) {
+    return false;
+  }
+  pendingSelectedMarkerDrag = {
+    active: true,
+    boardIndex,
+    pointerId: event.pointerId,
+    svg,
+    markerId,
+    originClientX: event.clientX,
+    originClientY: event.clientY,
+  };
+  return true;
+}
+
+function activateQueuedSelectedMarkerDrag() {
+  if (!pendingSelectedMarkerDrag.active) {
+    return false;
+  }
+  const { svg, boardIndex, markerId, pointerId } = pendingSelectedMarkerDrag;
+  if (!(svg instanceof SVGSVGElement)) {
+    clearPendingSelectedMarkerDrag();
+    return false;
+  }
+  const board = getBoardState(boardIndex);
+  const selectedIds = getExistingMarkerIds(board, board.selectedIds);
+  const anchorMarker = board.markers[markerId];
+  if (!selectedIds.includes(markerId) || !anchorMarker) {
+    clearPendingSelectedMarkerDrag();
+    return false;
+  }
+  cancelLongPress();
+  clearPendingSvgClick();
+  cancelMarqueeSelection({ clearVisual: true });
+  selectedMarkerDrag = {
+    active: true,
+    boardIndex,
+    pointerId,
+    svg,
+    anchorMarkerId: markerId,
+    anchorStringIndex: anchorMarker.stringIndex,
+    anchorFret: anchorMarker.fret,
+    selectedIds,
+    initialMarkers: cloneBoardMarkers(board.markers, { maxFret: state.fretCount }),
+    moved: false,
+    historyRecorded: false,
+    rootMarkerId: recorder.rootMarkerId,
+  };
+  clearPendingSelectedMarkerDrag();
+  return true;
+}
+
+function handleSelectedMarkerDragMove(event) {
+  if (
+    !selectedMarkerDrag.active &&
+    pendingSelectedMarkerDrag.active &&
+    pendingSelectedMarkerDrag.pointerId === event.pointerId
+  ) {
+    const movedDistance = Math.hypot(
+      event.clientX - pendingSelectedMarkerDrag.originClientX,
+      event.clientY - pendingSelectedMarkerDrag.originClientY
+    );
+    if (movedDistance >= MARQUEE_SELECTION_DRAG_THRESHOLD_PX) {
+      cancelLongPress();
+      activateQueuedSelectedMarkerDrag();
+    }
+  }
+  if (!selectedMarkerDrag.active || selectedMarkerDrag.pointerId !== event.pointerId) {
+    return false;
+  }
+  const svg = selectedMarkerDrag.svg;
+  if (!(svg instanceof SVGSVGElement)) {
+    return false;
+  }
+  const hitTarget =
+    (event.target instanceof Element ? event.target.closest(".cell") : null) ??
+    document.elementFromPoint(event.clientX, event.clientY)?.closest?.(".cell") ??
+    null;
+  let targetCell = null;
+  if (hitTarget instanceof Element) {
+    const stringIndex = Number(hitTarget.dataset.string);
+    const fret = Number(hitTarget.dataset.fret);
+    if (!Number.isNaN(stringIndex) && !Number.isNaN(fret)) {
+      targetCell = { stringIndex, fret };
+    }
+  }
+  if (!targetCell) {
+    const point = clientPointToSvg(svg, event.clientX, event.clientY);
+    targetCell = getBoardCellFromSvgPoint(point.x, point.y);
+  }
+  if (!targetCell) {
+    return true;
+  }
+  const deltaString = targetCell.stringIndex - selectedMarkerDrag.anchorStringIndex;
+  const deltaFret = targetCell.fret - selectedMarkerDrag.anchorFret;
+  const nextState = buildDraggedMarkerState(selectedMarkerDrag.boardIndex, deltaString, deltaFret);
+  if (!nextState) {
+    return true;
+  }
+  const board = getBoardState(selectedMarkerDrag.boardIndex);
+  const currentSignature = selectedMarkerDrag.selectedIds.map((id) => board.markers[id]?.id ?? id).join("|");
+  const nextSignature = nextState.selectedIds.join("|");
+  if (currentSignature === nextSignature) {
+    return true;
+  }
+  if (!selectedMarkerDrag.historyRecorded) {
+    rememberBoardHistory(selectedMarkerDrag.boardIndex);
+    selectedMarkerDrag.historyRecorded = true;
+  }
+  board.markers = nextState.markers;
+  board.selectedIds = nextState.selectedIds;
+  board.selectedId = nextState.selectedId;
+  if (state.activeBoardIndex === selectedMarkerDrag.boardIndex) {
+    recorder.rootMarkerId = board.markers[nextState.rootMarkerId] ? nextState.rootMarkerId : null;
+    recorder.output = "";
+  }
+  selectedMarkerDrag.moved = true;
+  renderMarkers();
+  renderRecorderPanel();
+  return true;
+}
+
+function finishSelectedMarkerDrag(event) {
+  if (!selectedMarkerDrag.active || selectedMarkerDrag.pointerId !== event.pointerId) {
+    return false;
+  }
+  const svg = selectedMarkerDrag.svg;
+  selectionInteractionSuppressedUntil = Date.now() + SELECTION_CLICK_SUPPRESS_MS;
+  selectedMarkerDrag = {
+    active: false,
+    boardIndex: 0,
+    pointerId: null,
+    svg: null,
+    anchorMarkerId: null,
+    anchorStringIndex: 0,
+    anchorFret: 0,
+    selectedIds: [],
+    initialMarkers: {},
+    moved: false,
+    historyRecorded: false,
+    rootMarkerId: null,
+  };
+  clearPendingSelectedMarkerDrag();
+  svg?.releasePointerCapture?.(event.pointerId);
+  return true;
+}
+
+function startMarqueeSelection(event, boardIndex, svgOverride = null) {
+  const svg =
+    svgOverride ??
+    (event.currentTarget instanceof SVGSVGElement
+      ? event.currentTarget
+      : event.target instanceof Element
+        ? event.target.closest(".fretboard-svg")
+        : null) ??
+    getSvgForBoardIndex(boardIndex);
+  if (!(svg instanceof SVGSVGElement)) {
+    return;
+  }
+  cancelLongPress();
+  clearPendingSvgClick();
+  marqueeSelection.boardIndex = boardIndex;
+  marqueeSelection.pointerId = event.pointerId;
+  marqueeSelection.svg = svg;
+  marqueeSelection.armed = true;
+  marqueeSelection.ready = false;
+  marqueeSelection.active = false;
+  marqueeSelection.originClientX = event.clientX;
+  marqueeSelection.originClientY = event.clientY;
+  marqueeSelection.currentClientX = event.clientX;
+  marqueeSelection.currentClientY = event.clientY;
+  const origin = clientPointToSvg(svg, event.clientX, event.clientY);
+  marqueeSelection.originSvgX = origin.x;
+  marqueeSelection.originSvgY = origin.y;
+  marqueeSelection.currentSvgX = origin.x;
+  marqueeSelection.currentSvgY = origin.y;
+  clearMarqueeActivationTimer();
+  marqueeSelection.activationTimer = window.setTimeout(() => {
+    if (!marqueeSelection.armed || marqueeSelection.pointerId !== event.pointerId) {
+      return;
+    }
+    marqueeSelection.ready = true;
+    marqueeSelection.activationTimer = null;
+  }, MARQUEE_SELECTION_LONG_PRESS_MS);
+  svg.setPointerCapture?.(event.pointerId);
+}
+
+function handleMarqueePointerMove(event) {
+  if (!marqueeSelection.armed || marqueeSelection.pointerId !== event.pointerId) {
+    return;
+  }
+  marqueeSelection.currentClientX = event.clientX;
+  marqueeSelection.currentClientY = event.clientY;
+  const svg = marqueeSelection.svg;
+  if (!(svg instanceof SVGSVGElement)) {
+    return;
+  }
+  const current = clientPointToSvg(svg, event.clientX, event.clientY);
+  marqueeSelection.currentSvgX = current.x;
+  marqueeSelection.currentSvgY = current.y;
+  const movedDistance = Math.hypot(
+    marqueeSelection.currentClientX - marqueeSelection.originClientX,
+    marqueeSelection.currentClientY - marqueeSelection.originClientY
+  );
+  if (!marqueeSelection.active && marqueeSelection.ready && movedDistance >= MARQUEE_SELECTION_DRAG_THRESHOLD_PX) {
+    marqueeSelection.active = true;
+  }
+  if (marqueeSelection.active) {
+    renderSelectionMarquee();
+  }
+}
+
+function finishMarqueeSelection(event) {
+  if (!marqueeSelection.armed || marqueeSelection.pointerId !== event.pointerId) {
+    return false;
+  }
+  const boardIndex = marqueeSelection.boardIndex;
+  const wasActive = marqueeSelection.active;
+  if (wasActive) {
+    handleMarqueePointerMove(event);
+    updateSelectedMarkersFromMarquee(boardIndex);
+    selectionInteractionSuppressedUntil = Date.now() + SELECTION_CLICK_SUPPRESS_MS;
+  }
+  const svg = marqueeSelection.svg;
+  cancelMarqueeSelection({ clearVisual: true });
+  clearPendingSelectedMarkerDrag();
+  svg?.releasePointerCapture?.(event.pointerId);
+  return wasActive;
+}
+
 function toggleMarker(boardIndex, stringIndex, fret) {
   const board = getBoardState(boardIndex);
   rememberBoardHistory(boardIndex);
@@ -3846,6 +4818,7 @@ function toggleMarker(boardIndex, stringIndex, fret) {
     if (board.selectedId === id) {
       board.selectedId = null;
     }
+    board.selectedIds = [];
   } else {
     board.markers[id] = {
       id,
@@ -3854,8 +4827,10 @@ function toggleMarker(boardIndex, stringIndex, fret) {
       noteIndex: getPositionNoteIndex(stringIndex, fret, getActiveTuning()),
       interval: "",
       customLabel: null,
+      isRecorderRoot: false,
     };
     board.selectedId = id;
+    board.selectedIds = [];
   }
   renderMarkers();
   updateMarkerHint();
@@ -3878,10 +4853,12 @@ function ensureMarker(boardIndex, stringIndex, fret, { recordHistory = true } = 
       noteIndex: getPositionNoteIndex(stringIndex, fret, getActiveTuning()),
       interval: "",
       customLabel: null,
+      isRecorderRoot: false,
     };
     created = true;
   }
   board.selectedId = id;
+  board.selectedIds = [];
   return {
     id,
     created,
@@ -3891,9 +4868,11 @@ function ensureMarker(boardIndex, stringIndex, fret, { recordHistory = true } = 
 function setRecorderRootMarker(boardIndex, markerId) {
   const normalizedBoardIndex = normalizeBoardIndex(boardIndex);
   const board = getBoardState(normalizedBoardIndex);
-  if (!board.markers[markerId]) {
+  const marker = board.markers[markerId];
+  if (!marker) {
     return false;
   }
+  marker.isRecorderRoot = true;
   recorder.rootMarkerId = markerId;
   recorder.output = "";
   renderMarkers();
@@ -3991,6 +4970,7 @@ function showEnharmonicMenu(markerId, boardIndex) {
   document.body.appendChild(menu);
   menu.style.left = `${longPressPointer.x}px`;
   menu.style.top = `${longPressPointer.y}px`;
+  clearPendingSelectedMarkerDrag();
   enharmonicMenuState = {
     markerId,
     boardIndex: normalizeBoardIndex(boardIndex),
@@ -4090,10 +5070,10 @@ function renderGrid() {
   const fretboardInlays = createFretboardInlays(visibleFretStart, fretCount, width);
 
   const openNoteLabels = showOpenFret ? tuning.map((_, stringIndex) => {
-    const note = getNoteName(getPositionNoteIndex(stringIndex, 0, tuning), state.notePreference);
+    const note = getDisplayLabelForNoteIndex(getPositionNoteIndex(stringIndex, 0, tuning));
     const x = getOpenAreaX(fretCount) + DIMENSIONS.openWidth / 2;
     const y = getStringY(stringIndex) + 5;
-    return `<text class="open-note" x="${x}" y="${y}"${getSvgTextTransformAttr(x, y)}>${note}</text>`;
+    return `<text class="open-note${isMovableDoEnabled() ? " numeric-label" : ""}" x="${x}" y="${y}"${getSvgTextTransformAttr(x, y)}>${note}</text>`;
   }) : [];
 
   const boardMarkup = `
@@ -4346,9 +5326,11 @@ function renderShapeThumbnail(shape) {
       const x = padX + (pos.fret - minFret + 0.5) * colGap;
       const y = padY + getVisualStringIndex(pos.string + (shape.anchorString ?? 0)) * rowGap;
       const isRoot = pos.interval === 0;
-      return `<circle class="shape-thumb__dot${isRoot ? " is-root" : ""}" cx="${x}" cy="${y}" r="${
-        isRoot ? 4.6 : 3.6
-      }"></circle>`;
+      const label = isMovableDoEnabled() ? getMovableDoLabelFromSemitone(pos.interval) : "";
+      return `
+        <circle class="shape-thumb__dot${isRoot ? " is-root" : ""}" cx="${x}" cy="${y}" r="${isRoot ? 7 : 6}"></circle>
+        ${label ? `<text class="shape-thumb__label numeric-label${isRoot ? " is-root" : ""}" x="${x}" y="${y}">${escapeHtml(label)}</text>` : ""}
+      `;
     })
     .join("");
 
@@ -4747,19 +5729,24 @@ const EXPORT_SVG_INLINE_STYLE = `
     font-size: 0.82rem; font-weight: 400; fill: #666; text-anchor: middle;
     font-family: "Patrick Hand","Xiaolai SC","Xiaolai","HanziPen SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",cursive,sans-serif;
   }
+  .numeric-label {
+    font-family: ${NUMERIC_LABEL_FONT_STACK};
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
   .marker-group { pointer-events: none; }
   .marker-dot { fill: #fff; stroke: #111; stroke-width: 2.2; }
   .marker-dot.marker-open { fill: #fff7d1; stroke: #111; stroke-width: 1.5; }
   .marker-dot.marker-recorder-root { fill: #ede3a3; stroke-width: 2.6; }
   .marker-highlight { fill: none; stroke: #111; stroke-width: 2.4; stroke-dasharray: 4 4; }
-  .marker-note { font-size: 0.85rem; font-weight: 600; fill: #111; text-anchor: middle; dominant-baseline: middle; }
+  .marker-note { font-size: 0.92rem; font-weight: 600; fill: #111; text-anchor: middle; dominant-baseline: middle; }
   .marker-interval { font-size: 0.65rem; fill: #777; text-anchor: middle; }
-  .realtime-note-text { fill: #111; font-size: 0.82rem; font-weight: 600; text-anchor: middle; dominant-baseline: middle; }
+  .realtime-note-text { fill: #111; font-size: 0.9rem; font-weight: 600; text-anchor: middle; dominant-baseline: middle; }
   .overlay-group { pointer-events: none; }
   .overlay-dot { fill: #fff; stroke: #111; stroke-width: 2.2; }
   .overlay-root { fill: #ede3a3; stroke: #111; stroke-width: 2; }
   .overlay-note-text {
-    fill: #111; font-size: 0.85rem; font-weight: 600;
+    fill: #111; font-size: 0.92rem; font-weight: 600;
     text-anchor: middle; dominant-baseline: middle; pointer-events: none;
   }
   .overlay-note-text--root { font-weight: 600; }
@@ -5022,7 +6009,7 @@ function resolveShapePlacement(shape, cell) {
   if (placementVariant) {
     const anchorString = placementVariant.anchorString;
     const anchorFret = normalizePlacementAnchorFret(cell.fret, placementVariant.positions);
-    const positions = calculateOverlayPositions({ positions: placementVariant.positions }, anchorString, anchorFret);
+    const positions = calculateStrictOverlayPlacement(placementVariant.positions, anchorString, anchorFret);
     if (!positions.length) {
       return null;
     }
@@ -5036,7 +6023,7 @@ function resolveShapePlacement(shape, cell) {
 
   const anchorString = getLockedAnchorString(shape, cell.stringIndex);
   const anchorFret = normalizePlacementAnchorFret(cell.fret, shape.positions);
-  const positions = calculateOverlayPositions(shape, anchorString, anchorFret);
+  const positions = calculateStrictOverlayPlacement(shape.positions, anchorString, anchorFret);
   if (!positions.length) {
     return null;
   }
@@ -5169,6 +6156,7 @@ function renderMarkers() {
   svgs.forEach((svg) => {
     const boardIndex = getBoardIndexFromSvg(svg);
     const board = getBoardState(boardIndex);
+    const selectedIds = new Set(getExistingMarkerIds(board, board.selectedIds));
     Object.values(board.markers).forEach((marker) => {
       const { stringIndex, fret } = marker;
       if (!isBoardFretVisible(fret)) {
@@ -5176,20 +6164,22 @@ function renderMarkers() {
       }
       const centerX = getMarkerCenterX(fret);
       const centerY = getStringY(stringIndex);
-      const isRecorderRoot =
-        boardIndex === state.activeBoardIndex && recorder.rootMarkerId === marker.id;
+      const isRecorderRoot = Boolean(marker.isRecorderRoot);
       const noteLabel = getMarkerDisplayLabel(marker);
       const noteTransform = getSvgTextTransformAttr(centerX, centerY);
       const intervalLabel = marker.interval
-        ? `<text class="marker-interval" x="${centerX}" y="${centerY + 19}"${getSvgTextTransformAttr(centerX, centerY + 19)}>${marker.interval}</text>`
+        ? `<text class="marker-interval" x="${centerX}" y="${centerY + 22}"${getSvgTextTransformAttr(centerX, centerY + 22)}>${marker.interval}</text>`
         : "";
 
       const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
       group.classList.add("marker-group");
+      if (selectedIds.has(marker.id)) {
+        group.classList.add("is-selected");
+      }
       group.dataset.id = `${stringIndex}-${fret}`;
       group.innerHTML = `
-        <circle class="marker-dot marker-on ${fret === 0 ? "marker-open" : ""} ${isRecorderRoot ? "marker-recorder-root" : ""}" cx="${centerX}" cy="${centerY}" r="16"></circle>
-        <text class="marker-note" x="${centerX}" y="${centerY}"${noteTransform}>${noteLabel}</text>
+        <circle class="marker-dot marker-on ${fret === 0 ? "marker-open" : ""} ${isRecorderRoot ? "marker-recorder-root" : ""}" cx="${centerX}" cy="${centerY}" r="${MARKER_DOT_RADIUS}"></circle>
+        <text class="marker-note${isMovableDoEnabled() ? " numeric-label" : ""}" x="${centerX}" y="${centerY}"${noteTransform}>${noteLabel}</text>
         ${intervalLabel}
       `;
       getBoardContentLayer(svg)?.appendChild(group);
@@ -5197,6 +6187,7 @@ function renderMarkers() {
   });
   renderOverlays();
   renderRealtimeMarkers();
+  renderSelectionMarquee();
 }
 
 function calculateOverlayPositions(shape, anchorString, anchorFret) {
@@ -5215,6 +6206,91 @@ function calculateOverlayPositions(shape, anchorString, anchorFret) {
       return { stringIndex, fret, interval: offset.interval };
     })
     .filter(Boolean);
+}
+
+function calculateStrictOverlayPlacement(positions, anchorString, anchorFret) {
+  const absolute = [];
+  for (const offset of positions ?? []) {
+    const relativeString = Number(offset?.string);
+    const relativeFret = Number(offset?.fret);
+    if (!Number.isInteger(relativeString) || !Number.isFinite(relativeFret)) {
+      return [];
+    }
+    const stringIndex = anchorString + relativeString;
+    const fret = Math.round(anchorFret + relativeFret);
+    if (
+      stringIndex < 0 ||
+      stringIndex >= getStringCount() ||
+      fret < getVisibleMinimumFret() ||
+      fret > state.fretCount ||
+      !isBoardFretVisible(fret)
+    ) {
+      return [];
+    }
+    absolute.push({
+      stringIndex,
+      fret,
+      interval: mod12(offset?.interval ?? 0),
+    });
+  }
+  return absolute;
+}
+
+function chooseClosestVisibleEquivalentFret(baseOffset, preferredFret, minFret, maxFret) {
+  const normalizedBase = mod12(Number(baseOffset) || 0);
+  const preferred = Number(preferredFret) || 0;
+  let bestCandidate = null;
+  let bestScore = Number.POSITIVE_INFINITY;
+  for (let octave = -6; octave <= 12; octave += 1) {
+    const candidate = normalizedBase + octave * 12;
+    if (candidate < minFret || candidate > maxFret) {
+      continue;
+    }
+    const score = Math.abs(candidate - preferred) * 10 + candidate;
+    if (score < bestScore) {
+      bestScore = score;
+      bestCandidate = candidate;
+    }
+  }
+  return Number.isFinite(bestCandidate) ? bestCandidate : null;
+}
+
+function calculateCustomStrictOverlayPlacement(sourcePositions, tuning, anchorString, anchorFret) {
+  if (!Array.isArray(tuning) || !tuning.length) {
+    return [];
+  }
+  const absolute = [];
+  const minFret = getVisibleMinimumFret();
+  const maxFret = state.fretCount;
+
+  for (const pos of sourcePositions ?? []) {
+    const relativeString = Number(pos?.string);
+    const relativeFret = Number(pos?.fret);
+    const sourceNoteIndex = Number.isFinite(pos?.sourceNoteIndex) ? mod12(Number(pos.sourceNoteIndex)) : null;
+    if (!Number.isInteger(relativeString) || !Number.isFinite(relativeFret) || !Number.isFinite(sourceNoteIndex)) {
+      return [];
+    }
+    const stringIndex = anchorString + relativeString;
+    if (stringIndex < 0 || stringIndex >= tuning.length) {
+      return [];
+    }
+    const openNoteIndex = getNoteIndex(tuning[stringIndex]);
+    if (!Number.isFinite(openNoteIndex)) {
+      return [];
+    }
+    const preferredFret = Math.round(anchorFret + relativeFret);
+    const fret = chooseClosestVisibleEquivalentFret(sourceNoteIndex - openNoteIndex, preferredFret, minFret, maxFret);
+    if (!Number.isFinite(fret) || !isBoardFretVisible(fret)) {
+      return [];
+    }
+    absolute.push({
+      stringIndex,
+      fret,
+      interval: mod12(pos?.interval ?? 0),
+    });
+  }
+
+  return absolute;
 }
 
 function getShapeById(shapeId) {
@@ -5408,7 +6484,16 @@ function resolveOverlayRootNoteName(shape, anchorString, anchorFret, positions =
 function getOverlayToneLabel(shape, anchorString, anchorFret, pos, rootNoteName = null) {
   const degreeMap = getOverlayDegreeMap(shape);
   const degreeToken = degreeMap?.[mod12(pos.interval)] ?? `${mod12(pos.interval)}`;
-  const fallbackNoteName = getOverlayPositionNoteName(pos.stringIndex, pos.fret);
+  const fallbackNoteName = getDisplayLabelForNoteIndex(
+    getPositionNoteIndex(pos.stringIndex, pos.fret, getActiveTuning())
+  );
+  if (isMovableDoEnabled()) {
+    return {
+      noteName: fallbackNoteName,
+      degreeLabel: "",
+      degreeToken,
+    };
+  }
   const prefersAbsoluteNoteName = getActiveInstrument()?.id === CUSTOM_INSTRUMENT_ID;
   const spelledByDegree =
     !prefersAbsoluteNoteName && rootNoteName && degreeMap
@@ -5436,7 +6521,7 @@ function appendOverlayDot(
   );
   dot.setAttribute("cx", centerX);
   dot.setAttribute("cy", centerY);
-  dot.setAttribute("r", isRoot ? "17" : "16");
+  dot.setAttribute("r", `${isRoot ? OVERLAY_ROOT_DOT_RADIUS : OVERLAY_DOT_RADIUS}`);
   if (!preview && overlayId) {
     dot.dataset.overlayId = overlayId;
     dot.dataset.string = `${pos.stringIndex}`;
@@ -5448,7 +6533,7 @@ function appendOverlayDot(
   const noteText = document.createElementNS("http://www.w3.org/2000/svg", "text");
   noteText.setAttribute(
     "class",
-    `overlay-note-text${preview ? " overlay-note-text--preview" : ""}${isRoot ? " overlay-note-text--root" : ""}`
+    `overlay-note-text${preview ? " overlay-note-text--preview" : ""}${isRoot ? " overlay-note-text--root" : ""}${isMovableDoEnabled() ? " numeric-label" : ""}`
   );
   noteText.setAttribute("x", `${centerX}`);
   noteText.setAttribute("y", `${centerY + 1}`);
@@ -6068,15 +7153,14 @@ function renderRealtimeMarkers() {
       const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
       group.classList.add("realtime-marker-group");
       group.innerHTML = `
-        ${isOnsetFlash ? `<circle class="realtime-onset-ring" cx="${centerX}" cy="${centerY}" r="21"></circle>` : ""}
+        ${isOnsetFlash ? `<circle class="realtime-onset-ring" cx="${centerX}" cy="${centerY}" r="${REALTIME_ONSET_RING_RADIUS}"></circle>` : ""}
         ${isFxFlash && hasBendFx ? `<path class="realtime-bend-arc" d="M ${centerX + 14} ${centerY + 10} Q ${centerX + 26} ${centerY - 20} ${centerX + 16} ${centerY - 32}"></path>` : ""}
         ${isFxFlash && hasBendFx ? `<path class="realtime-bend-arrow" d="M ${centerX + 16} ${centerY - 32} L ${centerX + 22} ${centerY - 28} L ${centerX + 14} ${centerY - 24}"></path>` : ""}
         ${isFxFlash && hasGlissFx ? `<path class="realtime-gliss-slash" d="M ${centerX - 15} ${centerY + 14} L ${centerX + 15} ${centerY - 14}"></path>` : ""}
-        <circle class="realtime-dot${isOnsetFlash ? " realtime-dot--flash" : ""}" cx="${centerX}" cy="${centerY}" r="19"></circle>
-        <circle class="realtime-dot-core${isOnsetFlash ? " realtime-dot-core--flash" : ""}" cx="${centerX}" cy="${centerY}" r="14"></circle>
-        <text class="realtime-note-text" x="${centerX}" y="${centerY}"${noteTransform}>${getNoteName(
-          getPositionNoteIndex(marker.stringIndex, marker.fret, getActiveTuning()),
-          state.notePreference
+        <circle class="realtime-dot${isOnsetFlash ? " realtime-dot--flash" : ""}" cx="${centerX}" cy="${centerY}" r="${REALTIME_DOT_RADIUS}"></circle>
+        <circle class="realtime-dot-core${isOnsetFlash ? " realtime-dot-core--flash" : ""}" cx="${centerX}" cy="${centerY}" r="${REALTIME_DOT_CORE_RADIUS}"></circle>
+        <text class="realtime-note-text${isMovableDoEnabled() ? " numeric-label" : ""}" x="${centerX}" y="${centerY}"${noteTransform}>${getDisplayLabelForNoteIndex(
+          getPositionNoteIndex(marker.stringIndex, marker.fret, getActiveTuning())
         )}</text>
       `;
       getBoardContentLayer(svg)?.appendChild(group);
@@ -6649,6 +7733,29 @@ async function copyRecordedShapeOutput() {
 function handleMarkerPointerDown(event) {
   const boardIndex = getBoardIndexFromEvent(event);
   setActiveBoard(boardIndex);
+  if (event.button > 0 && event.pointerType !== "touch") {
+    return;
+  }
+  const svg = event.currentTarget instanceof SVGSVGElement ? event.currentTarget : event.target.closest?.("svg");
+  const board = getBoardState(boardIndex);
+  const pointerCell = getBoardCellFromEvent(event, boardIndex);
+  const markerIdFromCell = pointerCell && board.markers[pointerCell.id] ? pointerCell.id : null;
+  const markerIdUnderPointer = markerIdFromCell ?? getMarkerIdFromClientPoint(svg, event.clientX, event.clientY);
+  const selectedMarkerId = markerIdUnderPointer && board.selectedIds?.includes(markerIdUnderPointer) ? markerIdUnderPointer : null;
+  if (selectedMarkerId && queueSelectedMarkerDrag(event, boardIndex, selectedMarkerId)) {
+    event.preventDefault();
+    return;
+  }
+  if (board.selectedIds?.length && markerIdUnderPointer) {
+    event.preventDefault();
+    return;
+  }
+  if (markerIdUnderPointer && board.markers[markerIdUnderPointer]) {
+    clearPendingSelectedMarkerDrag();
+    startLongPress(markerIdUnderPointer, event, boardIndex);
+    event.preventDefault();
+    return;
+  }
   const cell = event.target.closest(".cell");
   if (!cell) {
     cancelLongPress();
@@ -6657,16 +7764,84 @@ function handleMarkerPointerDown(event) {
   const stringIndex = Number(cell.dataset.string);
   const fret = Number(cell.dataset.fret);
   const markerId = `${stringIndex}-${fret}`;
-  const board = getBoardState(boardIndex);
   if (!board.markers[markerId]) {
+    startMarqueeSelection(event, boardIndex);
+    if (event.button <= 0 || event.pointerType === "touch") {
+      previewBoardCellAudio(boardIndex, stringIndex, fret);
+    }
     cancelLongPress();
     return;
   }
+  clearPendingSelectedMarkerDrag();
   startLongPress(markerId, event, boardIndex);
 }
 
-function handlePointerUp() {
+function handleBoardContainerPointerDown(event) {
+  if (event.button > 0 && event.pointerType !== "touch") {
+    return;
+  }
+  if (!(event.target instanceof Element)) {
+    return;
+  }
+  if (event.target.closest(".board-inline-controls, .board-inline-controls-mobile-slot")) {
+    return;
+  }
+  if (event.target.closest(".fretboard-svg")) {
+    return;
+  }
+  const boardIndex = state.activeBoardIndex;
+  const svg = getSvgForBoardIndex(boardIndex);
+  if (!(svg instanceof SVGSVGElement)) {
+    return;
+  }
+  setActiveBoard(boardIndex);
+  clearPendingSelectedMarkerDrag();
+  startMarqueeSelection(event, boardIndex, svg);
+}
+
+function handlePointerUp(event) {
+  if (finishSelectedMarkerDrag(event)) {
+    cancelLongPress();
+    event.preventDefault();
+    return;
+  }
+  if (finishMarqueeSelection(event)) {
+    event.preventDefault();
+  }
+  clearPendingSelectedMarkerDrag();
   cancelLongPress();
+}
+
+function handleSvgPointerMove(event) {
+  if (handleSelectedMarkerDragMove(event)) {
+    event.preventDefault();
+    return;
+  }
+  handleMarqueePointerMove(event);
+  if (longPressTimer && longPressTargetId) {
+    const movedDistance = Math.hypot(event.clientX - longPressPointer.x, event.clientY - longPressPointer.y);
+    if (movedDistance > 10) {
+      cancelLongPress();
+    }
+  }
+}
+
+function handleWindowBoardPointerMove(event) {
+  if (handleSelectedMarkerDragMove(event)) {
+    event.preventDefault();
+    return;
+  }
+  handleMarqueePointerMove(event);
+}
+
+function handleWindowBoardPointerUp(event) {
+  if (finishSelectedMarkerDrag(event)) {
+    event.preventDefault();
+    return;
+  }
+  if (finishMarqueeSelection(event)) {
+    event.preventDefault();
+  }
 }
 
 function updateMarkerHint() {
@@ -6703,25 +7878,35 @@ function runSvgClickAction(key, action) {
 function handleSvgClick(event) {
   const boardIndex = getBoardIndexFromEvent(event);
   setActiveBoard(boardIndex);
+  if (Date.now() < selectionInteractionSuppressedUntil) {
+    return;
+  }
+  const board = getBoardState(boardIndex);
   const overlayDot = event.target.closest?.(".overlay-dot");
   if (overlayDot?.dataset?.overlayId) {
     const stringIndex = Number(overlayDot.dataset.string);
     const fret = Number(overlayDot.dataset.fret);
     if (!Number.isNaN(stringIndex) && !Number.isNaN(fret)) {
-      runSvgClickAction(`overlay:${overlayDot.dataset.overlayId}:${stringIndex}:${fret}`, () => {
-        removeOverlayPosition(overlayDot.dataset.overlayId, stringIndex, fret);
-      });
+      removeOverlayPosition(overlayDot.dataset.overlayId, stringIndex, fret);
       return;
     }
   }
 
-  const target = event.target.closest(".cell");
-  if (!target) {
+  const cell = getBoardCellFromEvent(event, boardIndex);
+  if (!cell) {
+    if (board.selectedIds?.length) {
+      clearBoardSelection(boardIndex);
+    }
     return;
   }
-  const stringIndex = Number(target.dataset.string);
-  const fret = Number(target.dataset.fret);
-  const id = `${stringIndex}-${fret}`;
+  const { stringIndex, fret, id } = cell;
+  if (board.selectedIds?.length) {
+    if (board.selectedIds.includes(id)) {
+      return;
+    }
+    clearBoardSelection(boardIndex);
+    return;
+  }
   if (
     longPressSuppressedId &&
     longPressSuppressedId.boardIndex === boardIndex &&
@@ -6730,28 +7915,27 @@ function handleSvgClick(event) {
     longPressSuppressedId = null;
     return;
   }
-  runSvgClickAction(`cell:${boardIndex}:${id}`, () => {
-    const board = getBoardState(boardIndex);
-    if (!board.markers[id]) {
-      previewBoardCellAudio(boardIndex, stringIndex, fret);
-    }
-    toggleMarker(boardIndex, stringIndex, fret);
-  });
+  if ((event.detail ?? 1) > 1) {
+    return;
+  }
+  if (!board.markers[id] && !consumeRecentBoardCellPreview(boardIndex, stringIndex, fret)) {
+    previewBoardCellAudio(boardIndex, stringIndex, fret);
+  }
+  toggleMarker(boardIndex, stringIndex, fret);
 }
 
 function handleSvgDoubleClick(event) {
+  if (Date.now() < selectionInteractionSuppressedUntil) {
+    return;
+  }
   clearPendingSvgClick();
-  const target = event.target.closest(".cell");
-  if (!target) {
-    return;
-  }
   const boardIndex = getBoardIndexFromEvent(event);
-  setActiveBoard(boardIndex, { resetRecorder: false });
-  const stringIndex = Number(target.dataset.string);
-  const fret = Number(target.dataset.fret);
-  if (Number.isNaN(stringIndex) || Number.isNaN(fret)) {
+  const cell = getBoardCellFromEvent(event, boardIndex);
+  if (!cell) {
     return;
   }
+  setActiveBoard(boardIndex, { resetRecorder: false });
+  const { stringIndex, fret } = cell;
   const markerId = `${stringIndex}-${fret}`;
   const board = getBoardState(boardIndex);
   if (!board.markers[markerId]) {
@@ -6760,7 +7944,9 @@ function handleSvgDoubleClick(event) {
   } else {
     board.selectedId = markerId;
   }
-  previewBoardCellAudio(boardIndex, stringIndex, fret);
+  if (!consumeRecentBoardCellPreview(boardIndex, stringIndex, fret)) {
+    previewBoardCellAudio(boardIndex, stringIndex, fret);
+  }
   setRecorderRootMarker(boardIndex, markerId);
 }
 
@@ -6772,6 +7958,7 @@ function clearMarkers(boardIndex = state.activeBoardIndex, { recordHistory = tru
   }
   board.markers = {};
   board.selectedId = null;
+  board.selectedIds = [];
   if (state.activeBoardIndex === normalizedBoardIndex) {
     recorder.rootMarkerId = null;
     recorder.output = "";
@@ -6785,6 +7972,8 @@ function bindControls() {
   syncBoardInlineControlsPlacement();
   syncFretboardCount();
   syncFretRangeInputs();
+
+  dom.boardFretboard?.addEventListener("pointerdown", handleBoardContainerPointerDown);
 
   dom.boardCountInput?.addEventListener("input", (event) => {
     if (!event?.target) {
@@ -6809,8 +7998,27 @@ function bindControls() {
 
   dom.notePreferenceSelect?.addEventListener("change", (event) => {
     state.notePreference = event.target.value;
-    renderGrid();
-    renderMarkers();
+    refreshDisplayedNoteLabels();
+  });
+
+  dom.labelModeSelect?.addEventListener("change", (event) => {
+    state.labelMode = normalizeLabelMode(event.target.value);
+    try {
+      localStorage.setItem(LABEL_MODE_STORAGE_KEY, state.labelMode);
+    } catch {
+      // ignore storage errors
+    }
+    refreshDisplayedNoteLabels();
+  });
+
+  dom.movableDoRootSelect?.addEventListener("change", (event) => {
+    state.movableDoRoot = normalizeMovableDoRoot(event.target.value);
+    try {
+      localStorage.setItem(MOVABLE_DO_ROOT_STORAGE_KEY, `${state.movableDoRoot}`);
+    } catch {
+      // ignore storage errors
+    }
+    refreshDisplayedNoteLabels();
   });
 
   dom.instrumentSelect?.addEventListener("change", (event) => {
@@ -6954,6 +8162,10 @@ function bindControls() {
     }
     setUiLanguage(button.dataset.uiLang);
   });
+  dom.helpToggleBtn?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleHelpModal();
+  });
 
   dom.paletteToggleBtn?.addEventListener("click", () => {
     togglePalette();
@@ -7059,6 +8271,18 @@ function bindControls() {
   dom.videoGenerateBtn?.addEventListener("click", () => {
     void handleVideoGenerate();
   });
+  dom.helpModalCloseBtn?.addEventListener("click", () => {
+    setHelpModalOpen(false);
+  });
+  dom.helpModalBackdrop?.addEventListener("click", () => {
+    setHelpModalOpen(false);
+  });
+  dom.helpModal?.addEventListener("click", (event) => {
+    if (event.target !== dom.helpModal) {
+      return;
+    }
+    setHelpModalOpen(false);
+  });
   document.addEventListener("click", (event) => {
     if (!state.exportMenuOpen) {
       return;
@@ -7094,7 +8318,11 @@ function bindControls() {
         if (key === "x") {
           event.preventDefault();
           if (copyMarkersToLocalClipboard()) {
-            clearMarkers(state.activeBoardIndex, { recordHistory: true });
+            if (getBoardState(state.activeBoardIndex).selectedIds?.length) {
+              deleteSelectedMarkers(state.activeBoardIndex);
+            } else {
+              clearMarkers(state.activeBoardIndex, { recordHistory: true });
+            }
           }
           return;
         }
@@ -7105,17 +8333,24 @@ function bindControls() {
         }
       }
     }
+    if (event.key === "Escape" && getBoardState(state.activeBoardIndex).selectedIds?.length) {
+      clearBoardSelection(state.activeBoardIndex);
+      return;
+    }
     if (event.key !== "Escape") {
       return;
     }
     if (state.exportMenuOpen) {
       setExportMenuOpen(false);
     }
+    if (state.helpModalOpen) {
+      setHelpModalOpen(false);
+    }
+    if (state.videoModalOpen) {
+      setVideoModalOpen(false);
+    }
     if (state.paletteOpen) {
       setPaletteOpen(false);
-    }
-    if (state.videoModalOpen && !videoRenderer.busy) {
-      setVideoModalOpen(false);
     }
     if (state.customInstrumentModalOpen) {
       closeCustomInstrumentModal();
@@ -7130,6 +8365,9 @@ function bindControls() {
   window.addEventListener("pointermove", handleShapePointerMove, { passive: false });
   window.addEventListener("pointerup", handleShapePointerUp, { passive: false });
   window.addEventListener("pointercancel", handleShapePointerCancel, { passive: false });
+  window.addEventListener("pointermove", handleWindowBoardPointerMove, { passive: false });
+  window.addEventListener("pointerup", handleWindowBoardPointerUp, { passive: false });
+  window.addEventListener("pointercancel", handleWindowBoardPointerUp, { passive: false });
   window.addEventListener("resize", syncBoardInlineControlsPlacement);
   dom.overlayList?.addEventListener("click", handleOverlayListClick);
   dom.clearOverlaysBtn?.addEventListener("click", clearOverlays);
@@ -7172,6 +8410,8 @@ function init() {
   state.instrumentId = getInitialInstrumentId();
   state.customInstrumentConfig = getInitialCustomInstrumentConfig();
   state.guitarTone = getInitialGuitarTone();
+  state.labelMode = getInitialLabelMode();
+  state.movableDoRoot = getInitialMovableDoRoot();
   customInstrumentModal.draftTuning = [...state.customInstrumentConfig.tuning];
   customInstrumentModal.draftIntervals = calculateIntervalsFromTuning(customInstrumentModal.draftTuning);
   if (dom.instrumentSelect) {
@@ -7179,6 +8419,9 @@ function init() {
   }
   if (dom.guitarToneSelect) {
     dom.guitarToneSelect.value = normalizeGuitarTone(state.guitarTone);
+  }
+  if (dom.labelModeSelect) {
+    dom.labelModeSelect.value = normalizeLabelMode(state.labelMode);
   }
   state.isFullAccess = hasFretlabFullAccess();
   syncFretRangeInputs();

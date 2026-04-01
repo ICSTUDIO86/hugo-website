@@ -4,6 +4,12 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Virgil FretLab";
+  src: url("assets/Virgil.woff2") format("woff2");
+  font-display: swap;
+}
+
 :root {
   font-family: "Patrick Hand", "Xiaolai SC", "Xiaolai", "HanziPen SC", "PingFang SC", "Hiragino Sans GB",
     "Microsoft YaHei", cursive, sans-serif;
@@ -138,7 +144,9 @@ textarea {
   grid-area: right;
   position: relative;
   display: inline-flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.42rem;
   justify-self: end;
   z-index: 2;
 }
@@ -281,7 +289,8 @@ textarea {
 
 .palette-launch-btn svg,
 .export-launch-btn svg,
-.video-launch-btn svg {
+.video-launch-btn svg,
+.help-launch-btn svg {
   width: 1.55rem;
   height: 1.45rem;
   overflow: visible;
@@ -292,7 +301,9 @@ textarea {
 .export-launch-btn svg path,
 .export-launch-btn svg circle,
 .video-launch-btn svg path,
-.video-launch-btn svg circle {
+.video-launch-btn svg circle,
+.help-launch-btn svg path,
+.help-launch-btn svg circle {
   fill: none;
   stroke: currentColor;
   stroke-width: 1.55;
@@ -317,16 +328,22 @@ textarea {
   transform: rotate(-0.25deg);
 }
 
+.help-launch-btn {
+  transform: rotate(0.8deg);
+}
+
 .palette-launch-btn:hover,
 .export-launch-btn:hover,
-.video-launch-btn:hover {
+.video-launch-btn:hover,
+.help-launch-btn:hover {
   background: #fff;
   border-color: rgba(17, 17, 17, 0.32);
 }
 
 .palette-launch-btn.is-active,
 .export-launch-btn.is-active,
-.video-launch-btn.is-active {
+.video-launch-btn.is-active,
+.help-launch-btn.is-active {
   background: #ede3a3;
   border-style: solid;
   transform: rotate(0deg);
@@ -334,7 +351,8 @@ textarea {
 
 .palette-launch-btn.is-active::after,
 .export-launch-btn.is-active::after,
-.video-launch-btn.is-active::after {
+.video-launch-btn.is-active::after,
+.help-launch-btn.is-active::after {
   border-color: rgba(17, 17, 17, 0.18);
 }
 
@@ -1002,6 +1020,139 @@ textarea {
   background: #b56f00;
 }
 
+.help-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.24);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease;
+  z-index: 130;
+}
+
+.help-modal-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.help-modal {
+  position: fixed;
+  inset: 0;
+  padding: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease;
+  z-index: 131;
+}
+
+.help-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.help-modal__panel {
+  width: min(540px, calc(100vw - 2rem));
+  max-height: min(78vh, 720px);
+  overflow: auto;
+  border-radius: 24px;
+  border: 2px dashed rgba(17, 17, 17, 0.24);
+  background: rgba(255, 252, 244, 0.98);
+  box-shadow: 0 24px 60px rgba(17, 17, 17, 0.16);
+  padding: 1rem 1rem 1.05rem;
+}
+
+.help-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.7rem;
+}
+
+.help-modal__header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.help-modal__close-btn {
+  border: 1px dashed rgba(17, 17, 17, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.help-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.help-modal__intro {
+  margin: 0;
+  font-size: 0.98rem;
+  color: rgba(17, 17, 17, 0.82);
+}
+
+.help-modal__section {
+  border: 1px dashed rgba(17, 17, 17, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 0.78rem 0.92rem;
+}
+
+.help-modal__section h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1.02rem;
+}
+
+.help-modal__list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.38rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.help-modal__marker-inline {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.help-modal__marker-separator {
+  color: rgba(17, 17, 17, 0.56);
+}
+
+.help-modal__ball {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  border: 2px solid #111;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.help-modal__ball--white {
+  background: #fff;
+}
+
+.help-modal__ball--yellow {
+  background: #ede3a3;
+}
+
 @media (max-width: 640px) {
   .custom-instrument-modal__interval-header {
     flex-direction: column;
@@ -1085,6 +1236,16 @@ textarea {
 #notePreferenceSelect {
   width: 78px;
   min-width: 78px;
+}
+
+#labelModeSelect {
+  width: 90px;
+  min-width: 90px;
+}
+
+#movableDoRootSelect {
+  width: 82px;
+  min-width: 82px;
 }
 
 .board-inline-controls .ghost-btn {
@@ -1496,6 +1657,14 @@ textarea {
 .shape-thumb__dot.is-root {
   fill: #ede3a3;
   stroke-width: 1.8;
+}
+
+.shape-thumb__label {
+  fill: #111;
+  font-size: 0.62rem;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
 }
 
 .shape-thumb--empty {
@@ -1941,6 +2110,20 @@ svg {
   stroke-width: 2.2;
 }
 
+.marker-group.is-selected .marker-dot {
+  stroke: #d58b00;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 0.2rem rgba(213, 139, 0, 0.35));
+}
+
+.selection-marquee {
+  fill: rgba(239, 224, 161, 0.2);
+  stroke: rgba(213, 139, 0, 0.92);
+  stroke-width: 1.6;
+  stroke-dasharray: 7 5;
+  pointer-events: none;
+}
+
 .realtime-marker-group {
   pointer-events: none;
 }
@@ -1978,7 +2161,7 @@ svg {
 
 .realtime-note-text {
   fill: #111;
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   font-weight: 600;
   text-anchor: middle;
   dominant-baseline: middle;
@@ -2061,7 +2244,7 @@ svg {
 
 .overlay-note-text {
   fill: #111;
-  font-size: 0.85rem;
+  font-size: 0.92rem;
   font-weight: 600;
 }
 
@@ -2078,6 +2261,13 @@ svg {
 .overlay-note-text--preview,
 .overlay-degree-text--preview {
   opacity: 0.82;
+}
+
+.numeric-label {
+  font-family: "Virgil FretLab", "Virgil", "Patrick Hand", "Xiaolai SC", "Xiaolai", "HanziPen SC", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", cursive, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
 }
 
 .marker-on {
@@ -2166,7 +2356,7 @@ svg {
 }
 
 .marker-note {
-  font-size: 0.85rem;
+  font-size: 0.92rem;
   font-weight: 600;
   fill: #111;
   text-anchor: middle;

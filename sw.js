@@ -19,6 +19,19 @@ const NO_CACHE_PATH_PREFIXES = [
   '/en/fretlab-tool/'
 ];
 
+function isLocalDevelopmentHost(hostname) {
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '0.0.0.0' ||
+    hostname === '::1' ||
+    hostname === '[::1]' ||
+    /\.localhost$/i.test(hostname)
+  );
+}
+
+const LOCAL_DEVELOPMENT_MODE = isLocalDevelopmentHost(self.location.hostname);
+
 // 需要缓存的静态资源
 const STATIC_ASSETS = [
   '/',
@@ -84,6 +97,11 @@ const CACHE_STRATEGIES = {
 
 // Service Worker 安装事件
 self.addEventListener('install', event => {
+  if (LOCAL_DEVELOPMENT_MODE) {
+    event.waitUntil(self.skipWaiting());
+    return;
+  }
+
   console.log('Service Worker installing...');
   
   event.waitUntil(
@@ -115,6 +133,20 @@ self.addEventListener('install', event => {
 
 // Service Worker 激活事件
 self.addEventListener('activate', event => {
+  if (LOCAL_DEVELOPMENT_MODE) {
+    event.waitUntil((async () => {
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames
+          .filter(cacheName => cacheName.startsWith('ic-studio-'))
+          .map(cacheName => caches.delete(cacheName))
+      );
+      await self.registration.unregister();
+      await self.clients.claim();
+    })());
+    return;
+  }
+
   console.log('Service Worker activating...');
   
   event.waitUntil(
@@ -143,6 +175,10 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);
+
+  if (LOCAL_DEVELOPMENT_MODE) {
+    return;
+  }
   
   // 跳过 Chrome 扩展和非 HTTP(S) 请求
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
