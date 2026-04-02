@@ -12347,8 +12347,8 @@ function ensureChordSamplePlayer() {
                     rootPath: 'assets/samples/piano-ogg-full-boosted-88',
                     sampleMap: (typeof window.buildICFullPiano88SampleMap === 'function') ? window.buildICFullPiano88SampleMap() : undefined,
                     extension: 'ogg',
-                    outputGain: 1.05,
-                    volumeBoost: 1.7
+                    outputGain: 0.72,
+                    volumeBoost: 1
                 });
             }
             window.__icSamplePlayer.load();

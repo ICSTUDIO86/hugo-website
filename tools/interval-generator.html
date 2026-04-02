@@ -147,7 +147,8 @@
         text-align: center;
       }
     </style>
-    <script src="assets/js/sample-player.js?v=6"></script>
+    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
+    <script src="assets/js/sample-player.js?v=7"></script>
     <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
       window.IC_FULL_PIANO_88_SAMPLE_ROOT = 'assets/samples/piano-ogg-full-boosted-88';
@@ -166,8 +167,8 @@
           rootPath: rootPath || window.IC_FULL_PIANO_88_SAMPLE_ROOT,
           sampleMap: window.buildICFullPiano88SampleMap(),
           extension: 'ogg',
-          outputGain: 1.05,
-          volumeBoost: 1.7
+          outputGain: 0.72,
+          volumeBoost: 1
         });
       };
       document.addEventListener('DOMContentLoaded', function(){

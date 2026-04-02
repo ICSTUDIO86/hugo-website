@@ -1,5 +1,7 @@
 (function () {
   const STORAGE_KEY = 'ic_preferred_metronome_settings';
+  const METRONOME_GAIN_HEADROOM = 0.72;
+  const METRONOME_MAX_VOLUME = 0.9;
   const DEFAULTS = Object.freeze({
     sound: 'classic',
     volume: 70
@@ -122,7 +124,10 @@
       : ctx.currentTime;
     const outputNode = options.outputNode || ctx.destination;
     const volumeScale = Number.isFinite(Number(options.volumeScale)) ? Number(options.volumeScale) : 1;
-    const normalizedVolume = Math.max(0, Math.min(1.35, (settings.volume / 100) * volumeScale));
+    const normalizedVolume = Math.max(
+      0,
+      Math.min(METRONOME_MAX_VOLUME, (settings.volume / 100) * volumeScale * METRONOME_GAIN_HEADROOM)
+    );
     const isDownbeat = !!options.isDownbeat;
 
     try {

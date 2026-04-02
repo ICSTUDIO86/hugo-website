@@ -5,7 +5,9 @@
   - Schedules relative to an external AudioContext’s time for seamless integration
 */
 (function(){
-  const DEFAULT_VOLUME_BOOST = 2;
+  const DEFAULT_VOLUME_BOOST = 1;
+  const DEFAULT_OUTPUT_GAIN = 0.72;
+  const MAX_VOICE_GAIN = 0.82;
   class ICSamplePlayer {
     constructor(opts = {}) {
       const meta = (typeof document !== 'undefined') ? document.querySelector('meta[name="ic-sample-root"]') : null;
@@ -22,7 +24,7 @@
       this.ready = false;
       this.volumeBoost = Number.isFinite(Number(opts.volumeBoost)) ? Number(opts.volumeBoost) : DEFAULT_VOLUME_BOOST;
       this.outputGain = this.ctx.createGain();
-      this.outputGain.gain.value = Number.isFinite(Number(opts.outputGain)) ? Number(opts.outputGain) : 0.9;
+      this.outputGain.gain.value = Number.isFinite(Number(opts.outputGain)) ? Number(opts.outputGain) : DEFAULT_OUTPUT_GAIN;
       this.outputGain.connect(this.ctx.destination);
       // 在直接双击打开 HTML (file://) 时，使用 HTMLAudio 元素加载本地样本，避免 fetch 的 CORS 限制
       this.useMediaElement = !!(window.location && window.location.protocol === 'file:');
@@ -75,6 +77,12 @@
 
     getContext(){ return this.ctx; }
 
+    _getTargetGain(gain) {
+      const requested = Number(gain);
+      const safeRequested = Number.isFinite(requested) ? requested : 0.8;
+      return Math.max(0.001, Math.min(MAX_VOICE_GAIN, safeRequested * this.volumeBoost));
+    }
+
     // Schedule against an external AudioContext timeline
     scheduleAtExternalContext(extCtx, extTime, midi, durationSec, gain=0.8) {
       if (!this.ready) return null;
@@ -105,7 +113,7 @@
       // Optimized ADSR envelope for seamless, connected playback (zero gap)
       const a = 0.002;   // Attack: 2ms (快速起音)
       const d = 0.05;    // Decay: 50ms (短衰减到 sustain)
-      const s = gain * this.volumeBoost;    // Sustain level
+      const s = this._getTargetGain(gain);    // Sustain level
       const r = 0.001;   // Release: 1ms (极短平滑过渡，避免 click 但几乎无空白)
 
       const t0 = startTime;
@@ -171,7 +179,7 @@
             this.ctx.resume().catch(()=>{});
             const mediaSource = this.ctx.createMediaElementSource(clone);
             const g = this.ctx.createGain();
-            g.gain.value = Math.max(0.01, gain * this.volumeBoost);
+            g.gain.value = this._getTargetGain(gain);
             mediaSource.connect(g).connect(this.outputGain);
             clone.volume = 1;
             useWebAudio = true;
@@ -180,7 +188,7 @@
           }
         }
         if (!useWebAudio) {
-          clone.volume = Math.max(0.01, Math.min(1, gain * this.volumeBoost));
+          clone.volume = Math.max(0.01, Math.min(1, this._getTargetGain(gain)));
         }
         const start = () => {
           try { clone.currentTime = 0; } catch(_) {}

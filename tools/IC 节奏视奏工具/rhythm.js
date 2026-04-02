@@ -9,6 +9,11 @@
     const DOTTED_EIGHTH_TICKS = Math.round(divisions * 0.75);
     const EIGHTH_TICKS = divisions / 2;
     const SIXTEENTH_TICKS = divisions / 4;
+    const PLAYBACK_OUTPUT_GAIN_VALUE = 0.72;
+    const METRONOME_OUTPUT_GAIN_VALUE = 0.58;
+    const SNARE_NOISE_PEAK_GAIN = 0.78;
+    const SNARE_TONE_PEAK_GAIN = 0.26;
+    const KICK_PEAK_GAIN = 0.88;
     const state = {
         osmd: null,
         metronome: {
@@ -5302,7 +5307,8 @@
             return state.playback.outputGain;
         }
         const gain = ctx.createGain();
-        gain.gain.setValueAtTime(1, ctx.currentTime);
+        gain.__icTargetGain = PLAYBACK_OUTPUT_GAIN_VALUE;
+        gain.gain.setValueAtTime(PLAYBACK_OUTPUT_GAIN_VALUE, ctx.currentTime);
         gain.connect(ctx.destination);
         state.playback.outputGain = gain;
         return gain;
@@ -5314,10 +5320,16 @@
             return state.metronome.outputGain;
         }
         const gain = ctx.createGain();
-        gain.gain.setValueAtTime(1, ctx.currentTime);
+        gain.__icTargetGain = METRONOME_OUTPUT_GAIN_VALUE;
+        gain.gain.setValueAtTime(METRONOME_OUTPUT_GAIN_VALUE, ctx.currentTime);
         gain.connect(ctx.destination);
         state.metronome.outputGain = gain;
         return gain;
+    }
+
+    function getAudioGainTarget(gain) {
+        const target = Number(gain && gain.__icTargetGain);
+        return Number.isFinite(target) ? Math.max(0.0001, target) : 1;
     }
 
     function muteAudioGain(gain, ctx) {
@@ -5337,7 +5349,7 @@
         const now = ctx.currentTime;
         try {
             gain.gain.cancelScheduledValues(now);
-            gain.gain.setValueAtTime(1, now);
+            gain.gain.setValueAtTime(getAudioGainTarget(gain), now);
         } catch (_) {
             // ignore gain restore errors
         }
@@ -5882,7 +5894,7 @@
         noiseFilter.type = 'highpass';
         noiseFilter.frequency.setValueAtTime(900, time);
         const noiseGain = ctx.createGain();
-        noiseGain.gain.setValueAtTime(level * 1.35, time);
+        noiseGain.gain.setValueAtTime(level * SNARE_NOISE_PEAK_GAIN, time);
         noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
         noise.connect(noiseFilter).connect(noiseGain).connect(output);
         noise.start(time);
@@ -5892,7 +5904,7 @@
         tone.type = 'triangle';
         tone.frequency.setValueAtTime(180, time);
         const toneGain = ctx.createGain();
-        toneGain.gain.setValueAtTime(level * 0.5, time);
+        toneGain.gain.setValueAtTime(level * SNARE_TONE_PEAK_GAIN, time);
         toneGain.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
         tone.connect(toneGain).connect(output);
         tone.start(time);
@@ -5910,7 +5922,7 @@
         osc.frequency.setValueAtTime(140, time);
         osc.frequency.exponentialRampToValueAtTime(45, time + 0.14);
         const gain = ctx.createGain();
-        gain.gain.setValueAtTime(level * 1.35, time);
+        gain.gain.setValueAtTime(level * KICK_PEAK_GAIN, time);
         gain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
         osc.connect(gain).connect(output);
         osc.start(time);
@@ -6337,7 +6349,8 @@
         queueRhythmPlaybackRefresh(260);
     }
 
-    function stopPlayback() {
+    function stopPlayback(options = {}) {
+        const userInitiated = !!options.userInitiated;
         if (state.playback.countInTimer) {
             clearTimeout(state.playback.countInTimer);
             state.playback.countInTimer = null;
@@ -6354,7 +6367,9 @@
             state.playback.stopTimer = null;
         }
         stopRhythmPlaybackCursorFollow();
-        if (state.metronome.isRunning && state.metronome.startedByPlayback) {
+        if (userInitiated && state.metronome.isRunning) {
+            stopMetronome();
+        } else if (state.metronome.isRunning && state.metronome.startedByPlayback) {
             stopMetronome();
         } else if (state.playback.restoreMetronomeAfterStop && !state.metronome.isRunning) {
             startMetronome(undefined, false);
@@ -6383,7 +6398,7 @@
 
     window.__icRhythmPlayback = {
         isPlaying: () => !!state.playback.isPlaying,
-        stop: () => stopPlayback()
+        stop: () => stopPlayback({ userInitiated: true })
     };
 
     function startPlaybackAt(startTime, tempoOverride, startTick = 0) {
@@ -6477,11 +6492,11 @@
         const metOutput = getMetronomeOutputGain(ctx);
         if (output) {
             output.gain.cancelScheduledValues(ctx.currentTime);
-            output.gain.setValueAtTime(1, ctx.currentTime);
+            output.gain.setValueAtTime(getAudioGainTarget(output), ctx.currentTime);
         }
         if (metOutput) {
             metOutput.gain.cancelScheduledValues(ctx.currentTime);
-            metOutput.gain.setValueAtTime(1, ctx.currentTime);
+            metOutput.gain.setValueAtTime(getAudioGainTarget(metOutput), ctx.currentTime);
         }
         const settings = state.lastSettings || getSettings();
         const cursorState = getRhythmPlaybackCursorState();
@@ -6551,7 +6566,7 @@
 
     function directPlayTest() {
         if (state.playback.isPlaying) {
-            stopPlayback();
+            stopPlayback({ userInitiated: true });
             return;
         }
         startPlaybackWithCountIn();
@@ -6637,7 +6652,7 @@
         const output = getMetronomeOutputGain(ctx);
         if (output) {
             output.gain.cancelScheduledValues(ctx.currentTime);
-            output.gain.setValueAtTime(1, ctx.currentTime);
+            output.gain.setValueAtTime(getAudioGainTarget(output), ctx.currentTime);
         }
         const startTime = typeof startAtTime === 'number'
             ? startAtTime
