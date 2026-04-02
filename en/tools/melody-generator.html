@@ -8,7 +8,7 @@
       try {
         console.warn('🚫 检测到file://协议，已阻止');
       } catch (e) {}
-      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
+</body></html>';
       document.open();
       document.write(html);
       document.close();
@@ -138,7 +138,6 @@
         text-align: center;
       }
     </style>
-    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
     <script src="assets/js/sample-player.js?v=7"></script>
     <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
@@ -2393,8 +2392,11 @@
         }
 
         // 设置节拍器速度
-        function setMetronomeTempo(bpm) {
-            interruptMelodyTempoSensitiveActivity();
+        function setMetronomeTempo(bpm, options) {
+            const opts = options || {};
+            if (!opts.silent) {
+                interruptMelodyTempoSensitiveActivity();
+            }
             metronomeTempo = Math.max(1, Math.min(999, bpm));
             
             // 同步更新header输入框
@@ -2709,7 +2711,7 @@
                         value = 999;
                     }
                     this.value = String(value);
-                    setMetronomeTempo(value);
+                    setMetronomeTempo(value, { silent: true });
                 });
                 challengeBpmInput.addEventListener('blur', function() {
                     if (isSyncingChallengeBpm) return;
@@ -2720,7 +2722,7 @@
                         value = 999;
                     }
                     this.value = String(value);
-                    setMetronomeTempo(value);
+                    setMetronomeTempo(value, { silent: true });
                 });
                 bindBpmReactGrab(challengeBpmInput, clampTempoValue(headerSpeedInput ? headerSpeedInput.value : 60, 60));
             }
@@ -6155,14 +6157,7 @@
                             break;
                         case 'challengeModal':
                             if (typeof closeChallengeModal === 'function') {
-                                if (typeof cancelChallengeSetup === 'function') {
-                                    cancelChallengeSetup();
-                                } else {
-                                    closeChallengeModal();
-                                    // 复位开关
-                                    const t = document.getElementById('challengeModeToggle');
-                                    if (t) { t.checked = false; updateSwitcherVisual && updateSwitcherVisual(); }
-                                }
+                                closeChallengeModal();
                             }
                             break;
                         case 'metronomePatternModal':
@@ -6276,11 +6271,6 @@
     </script>
 
     <!-- 🛡️ 试用保护系统脚本 -->
-    <script src="/js/trial-limiter.js?v=20250909"></script>
-    <script src="/js/advanced-trial-protection.js?v=20250920"></script>
-    <script src="/js/melody-counter-system.js?v=20250920"></script>
-    <script src="/js/integrated-trial-manager.js?v=20250920"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/ml5@0.12.2/dist/ml5.min.js" crossorigin="anonymous"></script>
 
     <!-- 挑战模式逻辑 -->
@@ -7381,7 +7371,7 @@
                 const calibrationRequested = $('challengeCalibrationToggle') ? $('challengeCalibrationToggle').checked : false;
                 const calibrationEnabled = calibrationRequested && hasAnyJudgeInputConfigured();
                 if (typeof setMetronomeTempo === 'function') {
-                    setMetronomeTempo(bpm);
+                    setMetronomeTempo(bpm, { silent: true });
                 }
                 // 保存设置
                 try{ localStorage.setItem('ic_challenge_settings', JSON.stringify({ prep, bpm, cursor: cursorEnabled, metronome: metronomeEnabled, hide: hideEnabled, calibration: calibrationEnabled })); }catch(e){}
@@ -9532,7 +9522,7 @@ function parseMeasureDurationSec(bpm){
                 if (idx >= totalMeasures){
                     // 结束
                     maskMeasure(totalMeasures-1);
-                    stopChallenge();
+                    completeChallengeCycle();
                     return;
                 }
                 const within = elapsedSec - idx * md;
@@ -9672,7 +9662,7 @@ function parseMeasureDurationSec(bpm){
                 function tick(){
                     if (measureIndex >= totalMeasures){
                         if (totalMeasures > 0) hideMeasureNotes(totalMeasures - 1);
-                        stopChallenge();
+                        completeChallengeCycle();
                         return;
                     }
                     // 进入新小节时才遮盖上一小节，避免提前遮盖当前小节最后一拍
@@ -9854,7 +9844,7 @@ function parseMeasureDurationSec(bpm){
                     refreshMicStatus();
                 }
                 if (typeof setMetronomeTempo === 'function') {
-                    setMetronomeTempo(bpm);
+                    setMetronomeTempo(bpm, { silent: true });
                 } else {
                     const headerInput = document.getElementById('headerMetronomeBpm');
                     if (headerInput) headerInput.value = String(bpm);
@@ -10256,4 +10246,5 @@ function parseMeasureDurationSec(bpm){
     </script>
     <script src="assets/js/midi-input.js?v=1"></script>
 
+<script defer src="/js/tool-access-loader.js?v=1.0.2"></script>
 </body></html>

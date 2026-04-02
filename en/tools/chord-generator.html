@@ -8,7 +8,7 @@
       try {
         console.warn('🚫 检测到file://协议，已阻止');
       } catch (e) {}
-      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,'Helvetica Neue','PingFang SC','Segoe UI',sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
+</body></html>';
       document.open();
       document.write(html);
       document.close();
@@ -144,7 +144,6 @@
         text-align: center;
       }
     </style>
-    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
     <script src="assets/js/sample-player.js?v=7"></script>
     <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
@@ -2811,8 +2810,11 @@
             return interrupted;
         }
 
-        function setMetronomeTempo(bpm) {
-            interruptChordTempoSensitiveActivity();
+        function setMetronomeTempo(bpm, options) {
+            const opts = options || {};
+            if (!opts.silent) {
+                interruptChordTempoSensitiveActivity();
+            }
             metronomeTempo = Math.max(1, Math.min(999, parseInt(bpm, 10) || 60));
             syncHeaderMetronomeInputs(metronomeTempo);
             syncChallengeBpmFromHeader();
@@ -3842,7 +3844,7 @@
                         value = 999;
                     }
                     this.value = String(value);
-                    setMetronomeTempo(value);
+                    setMetronomeTempo(value, { silent: true });
                 });
                 challengeBpmInput.addEventListener('blur', function() {
                     if (isSyncingChallengeBpm) return;
@@ -3853,7 +3855,7 @@
                         value = 999;
                     }
                     this.value = String(value);
-                    setMetronomeTempo(value);
+                    setMetronomeTempo(value, { silent: true });
                 });
                 bindBpmReactGrab(challengeBpmInput, clampTempoValue(bpmInput ? bpmInput.value : 60, 60));
             }
@@ -5748,8 +5750,5 @@
     </script>
 
     <!-- 🛡️ 试用保护系统脚本 -->
-    <script src="/js/trial-limiter.js?v=20250909"></script>
-    <script src="/js/advanced-trial-protection.js?v=20250920"></script>
-    <script src="/js/melody-counter-system.js?v=20250920"></script>
-    <script src="/js/integrated-trial-manager.js?v=20250920"></script>
+    <script defer src="/js/tool-access-loader.js?v=1.0.2"></script>
 </body></html>

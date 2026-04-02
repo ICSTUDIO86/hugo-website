@@ -138,7 +138,6 @@
         text-align: center;
       }
     </style>
-    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
     <script src="assets/js/sample-player.js?v=7"></script>
     <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
@@ -2393,8 +2392,11 @@
         }
 
         // 设置节拍器速度
-        function setMetronomeTempo(bpm) {
-            interruptMelodyTempoSensitiveActivity();
+        function setMetronomeTempo(bpm, options) {
+            const opts = options || {};
+            if (!opts.silent) {
+                interruptMelodyTempoSensitiveActivity();
+            }
             metronomeTempo = Math.max(1, Math.min(999, bpm));
             
             // 同步更新header输入框
@@ -2709,7 +2711,7 @@
                         value = 999;
                     }
                     this.value = String(value);
-                    setMetronomeTempo(value);
+                    setMetronomeTempo(value, { silent: true });
                 });
                 challengeBpmInput.addEventListener('blur', function() {
                     if (isSyncingChallengeBpm) return;
@@ -2720,7 +2722,7 @@
                         value = 999;
                     }
                     this.value = String(value);
-                    setMetronomeTempo(value);
+                    setMetronomeTempo(value, { silent: true });
                 });
                 bindBpmReactGrab(challengeBpmInput, clampTempoValue(headerSpeedInput ? headerSpeedInput.value : 60, 60));
             }
@@ -6155,14 +6157,7 @@
                             break;
                         case 'challengeModal':
                             if (typeof closeChallengeModal === 'function') {
-                                if (typeof cancelChallengeSetup === 'function') {
-                                    cancelChallengeSetup();
-                                } else {
-                                    closeChallengeModal();
-                                    // 复位开关
-                                    const t = document.getElementById('challengeModeToggle');
-                                    if (t) { t.checked = false; updateSwitcherVisual && updateSwitcherVisual(); }
-                                }
+                                closeChallengeModal();
                             }
                             break;
                         case 'metronomePatternModal':
@@ -7376,7 +7371,7 @@
                 const calibrationRequested = $('challengeCalibrationToggle') ? $('challengeCalibrationToggle').checked : false;
                 const calibrationEnabled = calibrationRequested && hasAnyJudgeInputConfigured();
                 if (typeof setMetronomeTempo === 'function') {
-                    setMetronomeTempo(bpm);
+                    setMetronomeTempo(bpm, { silent: true });
                 }
                 // 保存设置
                 try{ localStorage.setItem('ic_challenge_settings', JSON.stringify({ prep, bpm, cursor: cursorEnabled, metronome: metronomeEnabled, hide: hideEnabled, calibration: calibrationEnabled })); }catch(e){}
@@ -9527,7 +9522,7 @@ function parseMeasureDurationSec(bpm){
                 if (idx >= totalMeasures){
                     // 结束
                     maskMeasure(totalMeasures-1);
-                    stopChallenge();
+                    completeChallengeCycle();
                     return;
                 }
                 const within = elapsedSec - idx * md;
@@ -9667,7 +9662,7 @@ function parseMeasureDurationSec(bpm){
                 function tick(){
                     if (measureIndex >= totalMeasures){
                         if (totalMeasures > 0) hideMeasureNotes(totalMeasures - 1);
-                        stopChallenge();
+                        completeChallengeCycle();
                         return;
                     }
                     // 进入新小节时才遮盖上一小节，避免提前遮盖当前小节最后一拍
@@ -9849,7 +9844,7 @@ function parseMeasureDurationSec(bpm){
                     refreshMicStatus();
                 }
                 if (typeof setMetronomeTempo === 'function') {
-                    setMetronomeTempo(bpm);
+                    setMetronomeTempo(bpm, { silent: true });
                 } else {
                     const headerInput = document.getElementById('headerMetronomeBpm');
                     if (headerInput) headerInput.value = String(bpm);

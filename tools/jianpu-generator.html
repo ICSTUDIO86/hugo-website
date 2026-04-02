@@ -153,7 +153,6 @@
         text-align: center;
       }
     </style>
-    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
     <script src="assets/js/sample-player.js?v=7"></script>
     <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
@@ -2780,8 +2779,11 @@
         }
 
         // 设置节拍器速度
-        function setMetronomeTempo(bpm) {
-            interruptJianpuTempoSensitiveActivity();
+        function setMetronomeTempo(bpm, options) {
+            const opts = options || {};
+            if (!opts.silent) {
+                interruptJianpuTempoSensitiveActivity();
+            }
             metronomeTempo = Math.max(1, Math.min(999, bpm));
             
             // 同步更新header输入框
@@ -3103,7 +3105,7 @@
                         value = 999;
                     }
                     this.value = String(value);
-                    setMetronomeTempo(value);
+                    setMetronomeTempo(value, { silent: true });
                 });
                 challengeBpmInput.addEventListener('blur', function() {
                     if (isSyncingChallengeBpm) return;
@@ -3114,7 +3116,7 @@
                         value = 999;
                     }
                     this.value = String(value);
-                    setMetronomeTempo(value);
+                    setMetronomeTempo(value, { silent: true });
                 });
                 bindBpmReactGrab(challengeBpmInput, clampTempoValue(headerSpeedInput ? headerSpeedInput.value : 60, 60));
             }

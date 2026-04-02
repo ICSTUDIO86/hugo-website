@@ -144,7 +144,6 @@
         text-align: center;
       }
     </style>
-    <script src="https://unpkg.com/react-grab/dist/index.global.js" crossorigin="anonymous"></script>
     <script src="assets/js/sample-player.js?v=7"></script>
     <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
@@ -2811,8 +2810,11 @@
             return interrupted;
         }
 
-        function setMetronomeTempo(bpm) {
-            interruptChordTempoSensitiveActivity();
+        function setMetronomeTempo(bpm, options) {
+            const opts = options || {};
+            if (!opts.silent) {
+                interruptChordTempoSensitiveActivity();
+            }
             metronomeTempo = Math.max(1, Math.min(999, parseInt(bpm, 10) || 60));
             syncHeaderMetronomeInputs(metronomeTempo);
             syncChallengeBpmFromHeader();
@@ -3842,7 +3844,7 @@
                         value = 999;
                     }
                     this.value = String(value);
-                    setMetronomeTempo(value);
+                    setMetronomeTempo(value, { silent: true });
                 });
                 challengeBpmInput.addEventListener('blur', function() {
                     if (isSyncingChallengeBpm) return;
@@ -3853,7 +3855,7 @@
                         value = 999;
                     }
                     this.value = String(value);
-                    setMetronomeTempo(value);
+                    setMetronomeTempo(value, { silent: true });
                 });
                 bindBpmReactGrab(challengeBpmInput, clampTempoValue(bpmInput ? bpmInput.value : 60, 60));
             }
