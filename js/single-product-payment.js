@@ -12,10 +12,18 @@
   const STATE = {
     methodOverlay: null,
     loading: null,
-    polling: null
+    polling: null,
+    selectedOption: null
   };
 
   function initSingleProductPayment() {
+    const directOptions = Array.from(document.querySelectorAll('[data-single-product-option]'));
+    const directPayButtons = Array.from(document.querySelectorAll('[data-single-direct-pay]'));
+
+    if (directOptions.length && directPayButtons.length) {
+      initDirectPurchaseLayout(directOptions, directPayButtons);
+    }
+
     const cards = document.querySelectorAll('.single-product-card');
     if (!cards.length) return;
 
@@ -27,6 +35,115 @@
       buyBtn.disabled = !(priceValue && priceValue > 0);
       buyBtn.addEventListener('click', () => openMethodPicker(card));
     });
+  }
+
+  function initDirectPurchaseLayout(options, payButtons) {
+    options.forEach((option) => {
+      const priceValue = parseFloat(option.dataset.productPrice);
+      const available = !!(priceValue && priceValue > 0);
+
+      option.setAttribute('aria-pressed', 'false');
+      option.dataset.available = available ? 'true' : 'false';
+      option.disabled = !available;
+
+      option.addEventListener('click', () => {
+        if (!available) return;
+        selectProduct(option);
+      });
+    });
+
+    payButtons.forEach((button) => {
+      button.disabled = true;
+      button.addEventListener('click', () => {
+        const method = button.getAttribute('data-single-direct-pay');
+        if (!STATE.selectedOption || !method) {
+          showToast(getNoSelectionMessage());
+          return;
+        }
+        startSinglePayment(STATE.selectedOption, method);
+      });
+    });
+
+    updateSelectionSummary(null);
+  }
+
+  function selectProduct(option) {
+    const options = document.querySelectorAll('[data-single-product-option]');
+    options.forEach((item) => {
+      const active = item === option;
+      item.classList.toggle('is-selected', active);
+      item.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    STATE.selectedOption = option;
+    updateSelectionSummary(option);
+
+    const dropdown = option.closest('.single-tool-dropdown');
+    if (dropdown) {
+      dropdown.open = false;
+    }
+  }
+
+  function updateSelectionSummary(option) {
+    const nameNodes = document.querySelectorAll('[data-single-selected-name]');
+    const priceNodes = document.querySelectorAll('[data-single-selected-price]');
+    const noteNodes = document.querySelectorAll('[data-single-selected-note]');
+    const dropdownLabelNodes = document.querySelectorAll('[data-single-dropdown-label]');
+    const dropdownPriceNodes = document.querySelectorAll('[data-single-dropdown-price]');
+    const payButtons = document.querySelectorAll('[data-single-direct-pay]');
+
+    const selectedName = option ? (option.querySelector('[data-single-option-name]')?.textContent || option.dataset.productName || '') : '';
+    const selectedPriceValue = option ? parseFloat(option.dataset.productPrice) : 0;
+    const selectedNote = option ? (option.dataset.productNote || option.querySelector('[data-single-option-note]')?.textContent || '') : '';
+    const hasValidPrice = !!(selectedPriceValue && selectedPriceValue > 0);
+
+    const idleCopy = getSelectionCopy();
+    const nameText = option ? selectedName : idleCopy.name;
+    const priceText = hasValidPrice ? `¥${selectedPriceValue.toFixed(0)}` : idleCopy.price;
+    const noteText = option ? selectedNote : idleCopy.note;
+
+    nameNodes.forEach((node) => {
+      node.textContent = nameText;
+    });
+    priceNodes.forEach((node) => {
+      node.textContent = priceText;
+    });
+    noteNodes.forEach((node) => {
+      node.textContent = noteText;
+    });
+    dropdownLabelNodes.forEach((node) => {
+      node.textContent = nameText;
+    });
+    dropdownPriceNodes.forEach((node) => {
+      node.textContent = priceText;
+    });
+
+    payButtons.forEach((button) => {
+      button.disabled = !option || !hasValidPrice;
+    });
+  }
+
+  function getSelectionCopy() {
+    const lang = (document.documentElement.lang || '').toLowerCase();
+    if (lang.indexOf('zh') === 0) {
+      return {
+        name: '请选择一个工具',
+        price: '--',
+        note: '选择后，下方价格会更新，并直接生成对应的支付按钮。'
+      };
+    }
+    return {
+      name: 'Choose one tool',
+      price: '--',
+      note: 'Pick a tool first. The price and direct checkout buttons will update below.'
+    };
+  }
+
+  function getNoSelectionMessage() {
+    const lang = (document.documentElement.lang || '').toLowerCase();
+    return lang.indexOf('zh') === 0
+      ? '请先选择一个要购买的工具'
+      : 'Select one tool before checkout';
   }
 
   function openMethodPicker(card) {

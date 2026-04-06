@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <body>
+    <pre id="out">waiting</pre>
+    <iframe id="frame" src="/en/fretlab/" style="width:1280px;height:2200px;border:0"></iframe>
+    <script>
+      (function () {
+        var out = document.getElementById('out');
+        var frame = document.getElementById('frame');
+        var clicked = false;
+        function tryClick() {
+          try {
+            var doc = frame.contentWindow.document;
+            var target = doc.querySelector('[data-fretlab-lang-target="zh"]');
+            if (!target) {
+              out.textContent = 'waiting-button';
+              return false;
+            }
+            if (!clicked) {
+              clicked = true;
+              out.textContent = 'clicked-zh';
+              target.click();
+              return false;
+            }
+            out.textContent = frame.contentWindow.location.pathname;
+            return true;
+          } catch (error) {
+            out.textContent = 'error:' + error.message;
+            return true;
+          }
+        }
+        var timer = setInterval(function () {
+          if (tryClick()) clearInterval(timer);
+        }, 300);
+      })();
+    </script>
+  </body>
+</html>

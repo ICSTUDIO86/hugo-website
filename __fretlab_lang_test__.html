@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FretLab Language Toggle Test</title>
+  </head>
+  <body>
+    <pre id="status">boot</pre>
+    <iframe
+      id="frame"
+      src="/en/fretlab/"
+      style="width: 1280px; height: 2400px; border: 0"
+    ></iframe>
+    <script>
+      (function () {
+        var status = document.getElementById('status');
+        var frame = document.getElementById('frame');
+
+        function setStatus(value) {
+          status.textContent = value;
+        }
+
+        function inspectFrame() {
+          try {
+            var win = frame.contentWindow;
+            var doc = win.document;
+            var zhButton = doc.querySelector('[data-fretlab-lang-target="zh"]');
+            var enButton = doc.querySelector('[data-fretlab-lang-target="en"]');
+            var pricingTitle = doc.querySelector('.fretlab-pricing-card--free .fretlab-pricing-title');
+
+            return {
+              path: win.location.pathname,
+              docLang: doc.documentElement.lang,
+              zhActive: !!(zhButton && zhButton.className.indexOf('bg-background') !== -1),
+              enActive: !!(enButton && enButton.className.indexOf('bg-background') !== -1),
+              freeTitle: pricingTitle ? pricingTitle.textContent.trim() : ''
+            };
+          } catch (error) {
+            return { error: String(error) };
+          }
+        }
+
+        function wait(ms) {
+          return new Promise(function (resolve) {
+            setTimeout(resolve, ms);
+          });
+        }
+
+        async function run() {
+          await wait(2500);
+
+          var before = inspectFrame();
+          var doc = frame.contentWindow.document;
+          var zhButton = doc.querySelector('[data-fretlab-lang-target="zh"]');
+          if (!zhButton) {
+            setStatus(JSON.stringify({ error: 'zh button missing', before: before }));
+            return;
+          }
+
+          zhButton.click();
+          await wait(3200);
+
+          var after = inspectFrame();
+          setStatus(JSON.stringify({ before: before, after: after }));
+        }
+
+        frame.addEventListener('load', function () {
+          if (frame.dataset.testStarted === '1') return;
+          frame.dataset.testStarted = '1';
+          run();
+        });
+      })();
+    </script>
+  </body>
+</html>

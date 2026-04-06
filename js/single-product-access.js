@@ -89,8 +89,8 @@
       <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px; box-sizing: border-box;" id="modal-overlay">
         <div style="background: white; padding: 40px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); max-height: 80vh; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;" id="modal-scroll-container">
           <div style="margin-bottom: 30px;">
-            <div style="width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px;">✓</div>
-            <h2 style="color: #333; margin-bottom: 10px;">🎉 访问验证成功！</h2>
+            <div style="width: 80px; height: 80px; background: #79addc; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px; color: white;">✓</div>
+            <h2 style="color: #16324a; margin-bottom: 10px;">访问验证成功！</h2>
             <p style="color: #666; font-size: 16px; margin-bottom: 0;">您的访问码已验证，现在可以使用该工具完整版功能</p>
           </div>
 
@@ -131,18 +131,18 @@
             <p style="font-size: 12px; color: #888; margin-top: 15px;">下载完成后，使用以上访问码激活该工具完整版功能</p>
           </div>
 
-          <div style="display: flex; gap: 15px; justify-content: center;">
+          <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
             <button data-close
-                    style="padding: 15px 30px; background: #f8f9fa; color: #333; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;"
-                    onmouseover="this.style.background='#e2e8f0'"
-                    onmouseout="this.style.background='#f8f9fa'">
+                    style="padding: 15px 30px; background: #f8fbff; color: #16324a; border: 1px solid #d7e8f6; border-radius: 999px; cursor: pointer; font-weight: 700; transition: all 0.3s ease;"
+                    onmouseover="this.style.background='#eef6fc'"
+                    onmouseout="this.style.background='#f8fbff'">
               稍后使用
             </button>
             <button data-open-tool
-                    style="padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); transition: all 0.3s ease;"
-                    onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'"
-                    onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.3)'">
-              开始使用
+                    style="padding: 15px 30px; background: #79addc; color: white; border: none; border-radius: 999px; cursor: pointer; font-weight: 700; box-shadow: 0 10px 24px rgba(121, 173, 220, 0.28); transition: all 0.3s ease;"
+                    onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 14px 28px rgba(121, 173, 220, 0.34)'"
+                    onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 10px 24px rgba(121, 173, 220, 0.28)'">
+              立即使用
             </button>
           </div>
         </div>

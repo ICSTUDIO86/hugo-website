@@ -3,6 +3,7 @@
   <head>
 <script src="/js/url-language-force.js"></script>
 <script src="/js/localhost-sw-reset.js"></script>
+<script src="/js/react-grab-loader.js?v=20260406"></script>
   <base href="/fretlab/">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -64,6 +65,30 @@
       .fretlab-update-log-block-wrap {
         padding: 0;
         transform: none;
+      }
+
+      .fretlab-sketch-panel {
+        position: relative;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none;
+        overflow: visible;
+      }
+
+      .fretlab-sketch-panel::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 709 210' preserveAspectRatio='none'%3E%3Cpath d='M4.116119224458867 2.7422717930143903 C179.6323479047238 -0.5143854880523319 356.7565501563136 -3.7094837719306496 706.1507287421048 1.731152274808703 M1.6914058203615623 1.2094456838084037 C248.1429127452275 -0.02418294381521769 494.8251499066706 -0.40074066216593786 705.0029450161843 3.174367964140232 M707.2635898152614 3.744295159838498 C705.9234240843406 56.73395349294485 709.2284356399151 113.45906453357675 705.4506263277551 206.25820225853616 M704.0045381119229 1.1000582408597006 C707.7737119136377 50.42812500246153 706.7777368494152 100.4411136457796 707.7325823603831 208.4757155420311 M709.4041861036608 208.99658968391456 C498.0246790335386 206.29200410317945 287.64794085726186 210.78747472712102 4.626428543498927 205.87670595150037 M707.3916286250774 205.32278641812186 C448.48627330391593 203.9236393522967 189.6118840986455 205.0266627652337 2.1388374659728904 207.62251547424355 M3.116773690152448 209.43112061077866 C2.2359148737394074 132.12908716233456 2.9374505928780548 56.45612546473622 3.8234496865100776 4.315559423027283 M1.0494486534908527 205.32627301272732 C-0.3958875123342056 154.28412406162787 -1.0926821185844412 102.23795857571683 2.318686065291187 1.1869888732195108' stroke='%23121212' stroke-opacity='0.17' stroke-width='1.3' fill='none' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        background-position: center;
+        pointer-events: none;
+      }
+
+      .fretlab-sketch-panel > * {
+        position: relative;
+        z-index: 1;
       }
 
       .fretlab-update-log-content {
@@ -154,6 +179,191 @@
       .fretlab-update-log-modal::backdrop {
         background: rgba(15, 23, 42, 0.48);
         backdrop-filter: blur(3px);
+      }
+
+      .fretlab-faq-section {
+        width: 100%;
+      }
+
+      .fretlab-faq-heading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .fretlab-faq-heading-inner {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: stretch;
+        width: fit-content;
+        max-width: 100%;
+      }
+
+      .fretlab-faq-heading-mark {
+        width: 100%;
+        height: 10px;
+        margin-top: -6px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 10' fill='none'%3E%3Cpath d='M2 7 C11 3, 20 9, 31 5 C40 2, 51 8, 62 4' stroke='%23d97706' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+      }
+
+      .fretlab-faq-list {
+        display: grid;
+        gap: 14px;
+        width: 100%;
+      }
+
+      .fretlab-faq-item {
+        position: relative;
+        overflow: visible;
+      }
+
+      .fretlab-faq-item::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 709 210' preserveAspectRatio='none'%3E%3Cpath d='M1.7855155365206054 4.068248544631625 C217.64219846230814 0.07815331918900752 432.65785052625106 0.4856461886943472 704.4415101313975 2.839485159358573 M2.9206157349181227 2.380407034169337 C149.7581367652404 2.2957056320105767 297.03791058173303 0.6905975924519404 707.7950275692242 1.8848226578740076 M706.2341987544982 1.3103379161475205 C704.9114953205613 54.085861355017024 705.1744368684381 104.33634069234017 708.9926190522022 205.4602653314836 M708.4318520412419 2.4816642891942406 C709.9434688382319 68.33321617030655 711.0874699122903 134.12955874424475 705.7917724566283 206.84487325119377 M705.2868813141678 207.09268460707335 C555.1352079063403 209.4610309948736 405.59362522159775 204.58453143160667 1.1184211247206543 206.51327708604855 M706.9312440413812 205.10966941746428 C470.53965146893606 206.0771916975292 235.38954835427187 208.54566176886612 3.7145862989352693 208.08576012312042 M3.2108229846568323 208.16487623716887 C0.14229856225839164 152.6656041385769 1.7320478834847523 98.84499601051295 1.3908365852593273 1.3671764284210752 M1.0598425887414549 206.63714637216543 C3.996880987040494 136.9225287158903 3.8651247065775236 67.87491514540351 4.180214610162732 4.842166155142451' stroke='%23121212' stroke-opacity='0.16' stroke-width='1.25' fill='none' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        background-position: center;
+        pointer-events: none;
+      }
+
+      .fretlab-faq-item[open]::before {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 709 210' preserveAspectRatio='none'%3E%3Cpath d='M4.116119224458867 2.7422717930143903 C179.6323479047238 -0.5143854880523319 356.7565501563136 -3.7094837719306496 706.1507287421048 1.731152274808703 M1.6914058203615623 1.2094456838084037 C248.1429127452275 -0.02418294381521769 494.8251499066706 -0.40074066216593786 705.0029450161843 3.174367964140232 M707.2635898152614 3.744295159838498 C705.9234240843406 56.73395349294485 709.2284356399151 113.45906453357675 705.4506263277551 206.25820225853616 M704.0045381119229 1.1000582408597006 C707.7737119136377 50.42812500246153 706.7777368494152 100.4411136457796 707.7325823603831 208.4757155420311 M709.4041861036608 208.99658968391456 C498.0246790335386 206.29200410317945 287.64794085726186 210.78747472712102 4.626428543498927 205.87670595150037 M707.3916286250774 205.32278641812186 C448.48627330391593 203.9236393522967 189.6118840986455 205.0266627652337 2.1388374659728904 207.62251547424355 M3.116773690152448 209.43112061077866 C2.2359148737394074 132.12908716233456 2.9374505928780548 56.45612546473622 3.8234496865100776 4.315559423027283 M1.0494486534908527 205.32627301272732 C-0.3958875123342056 154.28412406162787 -1.0926821185844412 102.23795857571683 2.318686065291187 1.1869888732195108' stroke='%23b45309' stroke-opacity='0.22' stroke-width='1.3' fill='none' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+      }
+
+      .fretlab-faq-question {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px 20px;
+        cursor: pointer;
+        list-style: none;
+      }
+
+      .fretlab-faq-question::-webkit-details-marker {
+        display: none;
+      }
+
+      .fretlab-faq-question::after {
+        content: '';
+        flex: 0 0 auto;
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-self: center;
+        border-radius: 999px;
+        border: 1.5px dashed rgba(18, 18, 18, 0.28);
+        background: transparent;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M12.2 6.2 C11.9 9.5, 11.8 13.9, 12.1 17.7' stroke='%23111827' stroke-width='1.9' stroke-linecap='round'/%3E%3Cpath d='M6.2 12.1 C9.3 11.8, 13.7 11.9, 17.8 12.2' stroke='%23111827' stroke-width='1.9' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 15px 15px;
+      }
+
+      .fretlab-faq-item[open] .fretlab-faq-question::after {
+        background: transparent;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6.2 12.1 C9.3 11.8, 13.7 11.9, 17.8 12.2' stroke='%23111827' stroke-width='1.9' stroke-linecap='round'/%3E%3C/svg%3E");
+      }
+
+      .fretlab-faq-title-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+      }
+
+      .fretlab-faq-title-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 40px;
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+        background: transparent;
+        border: 1px dashed rgba(18, 18, 18, 0.2);
+        color: #1f2937;
+      }
+
+      .fretlab-faq-title-icon svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .fretlab-faq-title {
+        margin: 0;
+        font-size: clamp(20px, 2vw, 24px);
+        line-height: 1.45;
+      }
+
+      .fretlab-faq-answer {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        gap: 14px;
+        padding: 0 20px 20px;
+      }
+
+      .fretlab-faq-answer p,
+      .fretlab-faq-answer li {
+        margin: 0;
+        color: #57534e;
+        line-height: 1.7;
+      }
+
+      .fretlab-faq-answer ul {
+        margin: 0;
+        padding-left: 1.25rem;
+        display: grid;
+        gap: 8px;
+      }
+
+      .fretlab-faq-mini-box {
+        padding: 12px 14px;
+        border: 1px dashed rgba(18, 18, 18, 0.18);
+        border-radius: 16px;
+        background: rgba(250, 250, 249, 0.74);
+      }
+
+      .fretlab-faq-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .fretlab-faq-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 10px 16px;
+        border-radius: 14px;
+        border: 1px dashed rgba(18, 18, 18, 0.28);
+        background: rgba(255, 247, 237, 0.9);
+        color: #1f2937;
+        text-decoration: none;
+      }
+
+      .fretlab-faq-action:hover {
+        background: rgba(254, 243, 199, 0.96);
+      }
+
+      @media (max-width: 640px) {
+        .fretlab-faq-question {
+          padding: 16px;
+          align-items: flex-start;
+        }
+
+        .fretlab-faq-answer {
+          padding: 0 16px 16px;
+        }
       }
 
       .fretlab-update-log-panel {
@@ -434,6 +644,261 @@
         text-decoration-color: rgba(120, 53, 15, 0.38);
       }
 
+      .fretlab-pricing-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .fretlab-pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      .fretlab-pricing-card {
+        position: relative;
+        min-height: 100%;
+        padding: 1.5rem;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none;
+        overflow: visible;
+        isolation: isolate;
+      }
+
+      .fretlab-pricing-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 709 210' preserveAspectRatio='none'%3E%3Cpath d='M4.116119224458867 2.7422717930143903 C179.6323479047238 -0.5143854880523319 356.7565501563136 -3.7094837719306496 706.1507287421048 1.731152274808703 M1.6914058203615623 1.2094456838084037 C248.1429127452275 -0.02418294381521769 494.8251499066706 -0.40074066216593786 705.0029450161843 3.174367964140232 M707.2635898152614 3.744295159838498 C705.9234240843406 56.73395349294485 709.2284356399151 113.45906453357675 705.4506263277551 206.25820225853616 M704.0045381119229 1.1000582408597006 C707.7737119136377 50.42812500246153 706.7777368494152 100.4411136457796 707.7325823603831 208.4757155420311 M709.4041861036608 208.99658968391456 C498.0246790335386 206.29200410317945 287.64794085726186 210.78747472712102 4.626428543498927 205.87670595150037 M707.3916286250774 205.32278641812186 C448.48627330391593 203.9236393522967 189.6118840986455 205.0266627652337 2.1388374659728904 207.62251547424355 M3.116773690152448 209.43112061077866 C2.2359148737394074 132.12908716233456 2.9374505928780548 56.45612546473622 3.8234496865100776 4.315559423027283 M1.0494486534908527 205.32627301272732 C-0.3958875123342056 154.28412406162787 -1.0926821185844412 102.23795857571683 2.318686065291187 1.1869888732195108' stroke='%23121212' stroke-opacity='0.17' stroke-width='1.3' fill='none' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        background-position: center;
+      }
+
+      .fretlab-pricing-card-frame {
+        display: none;
+      }
+
+      .fretlab-pricing-card-body {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-height: 100%;
+      }
+
+      .fretlab-pricing-card[data-bundle-offer] {
+        isolation: isolate;
+      }
+
+      .fretlab-pricing-head {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .fretlab-pricing-badge-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .fretlab-pricing-badge,
+      .fretlab-pricing-tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(120, 53, 15, 0.18);
+        background: rgba(255, 255, 255, 0.8);
+        color: #92400e;
+        font-size: 0.95rem;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .fretlab-pricing-tag {
+        border-style: dashed;
+        background: rgba(254, 243, 199, 0.9);
+        color: #b45309;
+        transform: rotate(4deg);
+      }
+
+      .fretlab-pricing-title {
+        margin: 0;
+        color: #111827;
+        line-height: 1.22;
+        font-size: 1.5rem;
+        text-align: center;
+      }
+
+      .fretlab-pricing-price {
+        margin: 0;
+        color: #111827;
+        text-align: center !important;
+        line-height: 1.06;
+      }
+
+      .fretlab-pricing-price .font-hand {
+        display: inline-block;
+        margin-left: 4px;
+      }
+
+      .fretlab-pricing-copy {
+        margin: 0;
+        color: #6b7280;
+        font-size: 1rem;
+        line-height: 1.7;
+        text-align: left;
+      }
+
+      .fretlab-pricing-divider {
+        display: none;
+      }
+
+      .fretlab-pricing-list {
+        position: relative;
+        z-index: 1;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        color: #6b7280;
+        text-align: left;
+        align-items: flex-start;
+      }
+
+      .fretlab-pricing-list li {
+        position: relative;
+        width: 100%;
+        padding-left: 20px;
+        font-size: 1rem;
+        line-height: 1.7;
+        text-align: left;
+      }
+
+      .fretlab-pricing-list li::before {
+        content: '•';
+        position: absolute;
+        top: 0;
+        left: 4px;
+        color: #d97706;
+      }
+
+      .fretlab-pricing-support-copy {
+        margin: 0;
+        color: #6b7280;
+        text-align: left !important;
+        font-size: 1rem;
+        line-height: 1.7;
+      }
+
+      .fretlab-pricing-actions {
+        position: relative;
+        z-index: 1;
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .fretlab-pricing-button-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+        width: 100%;
+      }
+
+      .fretlab-pricing-button-row > * {
+        width: 100%;
+      }
+
+      .fretlab-pricing-actions .fretlab-gumroad-pay-btn,
+      .fretlab-pricing-actions button,
+      .fretlab-pricing-actions a {
+        width: 100%;
+      }
+
+      .fretlab-pricing-preview-link {
+        display: block;
+        width: 100%;
+      }
+
+      .fretlab-pricing-preview-link > * {
+        width: 100%;
+      }
+
+      .fretlab-pricing-sketch-button {
+        position: relative;
+        display: inline-flex;
+        width: 100%;
+        min-height: 52px;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        padding: 12px 24px;
+        color: #6b7280;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+      }
+
+      .fretlab-pricing-sketch-button:hover {
+        transform: scale(1.02);
+      }
+
+      .fretlab-pricing-sketch-button:active {
+        transform: scale(0.98);
+      }
+
+      .fretlab-pricing-sketch-button svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .fretlab-pricing-sketch-button-label {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .fretlab-pricing-note {
+        margin: 0;
+        color: #78716c;
+        font-size: 1rem;
+        line-height: 1.7;
+        text-align: left;
+      }
+
+      .fretlab-pricing-access-slot > .rounded-xl,
+      .fretlab-pricing-access-slot > div.rounded-xl {
+        margin-top: 0;
+      }
+
+      .fretlab-pricing-access-slot #verify-result {
+        min-height: 20px;
+      }
+
       .fretlab-promo-campaign-wrap {
         padding: 0;
         transform: none;
@@ -507,6 +972,22 @@
       }
 
       @media (max-width: 640px) {
+        .fretlab-pricing-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .fretlab-pricing-card {
+          padding: 20px 16px 16px;
+        }
+
+        .fretlab-pricing-badge-row {
+          flex-wrap: wrap;
+        }
+
+        .fretlab-pricing-button-row {
+          grid-template-columns: 1fr;
+        }
+
         .fretlab-promo-campaign-card {
           flex-direction: column;
           align-items: flex-start;
@@ -1070,6 +1551,9 @@
         };
 
         function getLang() {
+          var path = window.location.pathname || '';
+          if (path.indexOf('/en/fretlab/') === 0) return 'en';
+          if (path.indexOf('/fretlab/') === 0) return 'zh';
           var lang = (document.documentElement.lang || '').toLowerCase();
           return lang.indexOf('en') === 0 ? 'en' : 'zh';
         }
@@ -1181,6 +1665,11 @@
           headerInner.classList.add('fretlab-header-shell');
           brandGroup.classList.add('fretlab-header-brand');
           actionsGroup.classList.add('fretlab-header-actions');
+
+          var langButtons = actionsGroup.querySelectorAll('button');
+          Array.prototype.forEach.call(langButtons, function (button, index) {
+            button.setAttribute('data-fretlab-lang-target', index === 0 ? 'zh' : 'en');
+          });
 
           var nav = document.getElementById('fretlab-header-nav');
           if (!nav) {
@@ -1415,11 +1904,11 @@
             priceModes: {
               standalone: {
                 amount: '¥48',
-                label: '一次购买'
+                label: '买断机制'
               },
               bundle: {
                 amount: '¥148',
-                label: '一次购买',
+                label: '买断机制',
                 oldPrice: '原价 ¥168'
               }
             }
@@ -1440,6 +1929,724 @@
             }
           }
         };
+
+        var FRETLAB_PRICING_CONTENT = {
+          zh: {
+            freeBadge: '免费版',
+            freeTitle: '试用版',
+            freePrice: '¥0',
+            freeDescription: '先直接上手，熟悉 FretLab 的交互方式，再决定要不要完整解锁。',
+            freeFeatures: [
+              '可直接体验基础互动指板',
+              '先熟悉点击、标记与观察流程',
+              '适合先确认自己会不会长期使用'
+            ],
+            freeAction: '立即使用',
+            fullBadge: '最推荐',
+            fullTitle: '完整版',
+            fullPrice: '¥38',
+            fullPriceLabel: '买断机制',
+            fullSupportCopy: '支持 Web 与桌面端使用',
+            fullFeatures: [
+              '解锁 100+ 常用指型',
+              '解锁自定义指板',
+              '支持导出图片',
+              '支持导出动画',
+              '支持桌面端安装'
+            ],
+            fullAlipay: '支付宝支付',
+            fullWechat: '微信支付',
+            gumroadLabel: 'Gumroad 支付',
+            bundleBadge: '套装版',
+            discountTag: '减15%',
+            bundleTitle: 'Cognote + FretLab 套装',
+            bundlePrice: '¥148',
+            bundleOldPrice: '原价 ¥168',
+            bundleDescription: '一个访问码同时解锁 Cognote 与 FretLab，更适合把读谱训练和指板训练一起安排。',
+            bundleFeatures: [
+              'Cognote 完整版全部工具',
+              'FretLab 完整版全部功能',
+              '买断机制，无需订阅付费',
+              '支持 7 天无理由退款'
+            ],
+            bundleAlipay: '支付宝支付',
+            bundleWechat: '微信支付',
+            bundleNote: '套装订单会使用独立的 Bundle 系统，不会和现有单买订单混在一起。',
+            accessTitle: '已经有访问码？',
+            accessPlaceholder: '输入访问码（11-20 位）',
+            accessVerify: '验证'
+          },
+          en: {
+            freeBadge: 'Free',
+            freeTitle: 'Trial',
+            freePrice: '¥0',
+            freeDescription: 'Start with the basics, get used to the interaction model, then decide if you want the full unlock.',
+            freeFeatures: [
+              'Try the interactive fretboard basics',
+              'Get familiar with the core click-and-map workflow',
+              'Best if you want to test the tool before unlocking'
+            ],
+            freeAction: 'Start now',
+            fullBadge: 'Recommended',
+            fullTitle: 'Full Version',
+            fullPrice: '¥38',
+            fullPriceLabel: 'One-time purchase',
+            fullSupportCopy: 'Supports Web and desktop',
+            fullFeatures: [
+              'Unlock 100+ common shapes',
+              'Unlock Custom Fretboard',
+              'Support image export',
+              'Support animation export',
+              'Support desktop app installation'
+            ],
+            fullAlipay: 'Alipay',
+            fullWechat: 'WeChat Pay',
+            gumroadLabel: 'Pay with Gumroad',
+            bundleBadge: 'Bundle',
+            discountTag: '15% off',
+            bundleTitle: 'Cognote + FretLab Bundle',
+            bundlePrice: '¥148',
+            bundleOldPrice: 'Original Price ¥168',
+            bundleDescription: 'One access code unlocks both Cognote and FretLab, which fits a combined reading and fretboard workflow much better.',
+            bundleFeatures: [
+              'All Cognote full-version tools',
+              'All FretLab full-version features',
+              'Lifetime unlock, no subscription',
+              '7-day refund support'
+            ],
+            bundleAlipay: 'Alipay',
+            bundleWechat: 'WeChat Pay',
+            bundleNote: 'Bundle orders use their own access-code flow and stay separate from standalone purchases.',
+            accessTitle: 'Already have a code?',
+            accessPlaceholder: 'Enter access code (11-20 chars)',
+            accessVerify: 'Verify'
+          }
+        };
+
+        var FRETLAB_FAQ_CONTENT = {
+          zh: {
+            title: '常见问题',
+            accent: 'FAQ',
+            items: [
+              {
+                icon: 'suitable',
+                title: '谁适合购买？',
+                paragraphs: ['如果你已经开始认真练习吉他指板，不想只靠背形状来记忆位置，FretLab 会更适合你。'],
+                bullets: [
+                  '适合想系统理解音阶、和弦、琶音和指型关系的人',
+                  '适合上课演示、自己做练习设计，或者平时整理指板思路的人',
+                  '如果你只是想偶尔看看指型，免费版通常已经够你先体验'
+                ]
+              },
+              {
+                icon: 'compare',
+                title: '免费版和完整版有什么区别？',
+                paragraphs: ['免费版适合先熟悉操作方式，完整版才是拿来长期训练和导出的完整工作流。'],
+                bullets: [
+                  '免费版可以先体验基础互动指板',
+                  '完整版会解锁 100+ 常用指型和自定义指板',
+                  '完整版支持图片导出、动画导出和桌面端安装'
+                ]
+              },
+              {
+                icon: 'mobile',
+                title: '有手机版软件吗？',
+                paragraphs: ['暂时还没有开发手机端原生 App 的计划。'],
+                bullets: [
+                  '手机和平板设备都可以直接使用网页版',
+                  '像 iPad 这类设备也可以正常使用',
+                  '整体使用体验和你期待的手机版方式基本是一样的'
+                ]
+              },
+              {
+                icon: 'bundle',
+                title: '谁适合买套装版？',
+                paragraphs: ['如果你想把读谱训练和指板训练放在同一个练习体系里，套装版会更直接。'],
+                bullets: [
+                  '已经在用 Cognote，想把音符阅读和指板映射一起练的人',
+                  '想用一个访问码同时解锁 Cognote 和 FretLab 的人',
+                  '更适合准备长期训练，而不是只先试一个单独工具的人'
+                ]
+              },
+              {
+                icon: 'recover',
+                title: '忘记访问码了怎么办？',
+                paragraphs: ['你可以通过订单号或商家订单号找回访问码。'],
+                noteTitle: '说明',
+                noteLines: [
+                  '订单号或商家订单号可以在支付宝或微信的账单记录里找到',
+                  '如果你用的是套装订单，也可以用对应的订单信息来处理'
+                ],
+                action: {
+                  kind: 'recover',
+                  label: '通过订单号找回'
+                }
+              },
+              {
+                icon: 'refund',
+                title: '如何退款？',
+                paragraphs: ['FretLab 支持 7 天无理由退款，具体以现有退款规则为准。'],
+                noteTitle: '退款规则',
+                noteLines: [
+                  '购买后 7 天内可以申请退款',
+                  '超过 7 天后默认不再支持退款'
+                ],
+                action: {
+                  kind: 'refund',
+                  label: '申请在线退款'
+                }
+              },
+              {
+                icon: 'contact',
+                title: '有其他问题？欢迎联系我',
+                paragraphs: ['如果你在使用过程中遇到问题，可以直接联系我。'],
+                bullets: [
+                  '使用工具时遇到 bug',
+                  '找回访问码不能正常工作',
+                  '退款按钮不能正常工作',
+                  '任何其他关于产品的咨询'
+                ],
+                noteTitle: '联系方式',
+                noteLines: [
+                  '邮箱：service@icstudio.club',
+                  '我会尽量在 48 小时内回复'
+                ],
+                action: {
+                  kind: 'link',
+                  label: '联系页面：点此访问',
+                  href: '/contact/'
+                }
+              }
+            ]
+          },
+          en: {
+            title: 'FAQ',
+            accent: 'FAQ',
+            items: [
+              {
+                icon: 'suitable',
+                title: 'Who is this for?',
+                paragraphs: ['FretLab is most useful if you are serious about understanding the guitar fretboard instead of only memorizing shapes.'],
+                bullets: [
+                  'Great for players who want to understand scales, chords, arpeggios, and shape relationships',
+                  'Useful for teaching demos, self-study, and building your own fretboard practice ideas',
+                  'If you only want a quick look at shapes, the free version is usually enough to start'
+                ]
+              },
+              {
+                icon: 'compare',
+                title: 'What is the difference between Free and Full?',
+                paragraphs: ['The free version is for learning the workflow. The full version is the real long-term training setup.'],
+                bullets: [
+                  'Free lets you try the core interactive fretboard',
+                  'Full unlocks 100+ common shapes and Custom Fretboard',
+                  'Full also adds export features and desktop installation'
+                ]
+              },
+              {
+                icon: 'mobile',
+                title: 'Is there a mobile app on the App Store or Google Play?',
+                paragraphs: ['Not at the moment. We are not planning a native mobile app right now.'],
+                bullets: [
+                  'You can still use the web version on phones and tablets',
+                  'Devices like iPad work well too',
+                  'For most people, the experience is basically the same as using a mobile app'
+                ]
+              },
+              {
+                icon: 'bundle',
+                title: 'Who should buy the bundle?',
+                paragraphs: ['The bundle makes more sense if you want reading practice and fretboard practice in one workflow.'],
+                bullets: [
+                  'Best for people already using Cognote and wanting fretboard mapping too',
+                  'Best if you want one access code to unlock both Cognote and FretLab',
+                  'More suitable for a long-term training setup than trying only one tool first'
+                ]
+              },
+              {
+                icon: 'recover',
+                title: 'What if I forgot my access code?',
+                paragraphs: ['You can recover the access code with your order number or merchant order number.'],
+                noteTitle: 'Notes',
+                noteLines: [
+                  'You can find these numbers in your Alipay or WeChat payment record',
+                  'Bundle orders can also be handled with the matching order information'
+                ],
+                action: {
+                  kind: 'recover',
+                  label: 'Recover with order number'
+                }
+              },
+              {
+                icon: 'refund',
+                title: 'How does refund work?',
+                paragraphs: ['FretLab supports a 7-day refund window based on the current refund policy.'],
+                noteTitle: 'Refund policy',
+                noteLines: [
+                  'You can request a refund within 7 days after purchase',
+                  'Refund is normally not supported after the 7-day window'
+                ],
+                action: {
+                  kind: 'refund',
+                  label: 'Request online refund'
+                }
+              },
+              {
+                icon: 'contact',
+                title: 'Still have other questions?',
+                paragraphs: ['If anything goes wrong while using the product, you can contact me directly.'],
+                bullets: [
+                  'You found a bug while using the tool',
+                  'Access-code recovery is not working properly',
+                  'The refund button is not working properly',
+                  'Any other product-related question'
+                ],
+                noteTitle: 'Contact',
+                noteLines: [
+                  'Email: service@icstudio.club',
+                  'I will try to reply within 48 hours'
+                ],
+                action: {
+                  kind: 'link',
+                  label: 'Open contact page',
+                  href: '/contact/'
+                }
+              }
+            ]
+          }
+        };
+
+        function getFretlabPricingFallbacks(lang) {
+          if (lang === 'en') {
+            return {
+              freeTitle: 'Free Version',
+              freeFeatures: ['Basic fretboard interactions'],
+              fullTitle: 'Full Version',
+              fullFeatures: [
+                'Unlock 100+ common shapes',
+                'Unlock Custom Fretboard',
+                'Support image export',
+                'Support animation export',
+                'Support desktop app installation'
+              ]
+            };
+          }
+
+          return {
+            freeTitle: '免费版',
+            freeFeatures: ['可点击指板进行基础互动'],
+            fullTitle: '完整版',
+            fullFeatures: [
+              '解锁 100+ 常用指型',
+              '解锁自定义指板',
+              '支持导出图片',
+              '支持导出动画',
+              '支持桌面端安装'
+            ]
+          };
+        }
+
+        function getFretlabPricingSource(buySection, lang) {
+          var fallbacks = getFretlabPricingFallbacks(lang);
+          var result = {
+            freeTitle: fallbacks.freeTitle,
+            freeFeatures: fallbacks.freeFeatures.slice(),
+            fullTitle: fallbacks.fullTitle,
+            fullFeatures: fallbacks.fullFeatures.slice()
+          };
+
+          var panels = buySection.querySelectorAll('div.rounded-xl.border.border-border\\/70.bg-card\\/40.p-3');
+          Array.prototype.forEach.call(panels, function (panel) {
+            var titleNode = panel.querySelector('p.font-sketch');
+            var title = titleNode ? (titleNode.textContent || '').replace(/\s+/g, ' ').trim() : '';
+            var items = Array.prototype.map.call(panel.querySelectorAll('li'), function (item) {
+              return (item.textContent || '').replace(/\s+/g, ' ').trim();
+            }).filter(Boolean);
+            if (!title || !items.length) return;
+
+            var normalizedTitle = title.toLowerCase();
+            if (normalizedTitle.indexOf('trial') !== -1 || normalizedTitle.indexOf('free') !== -1 || title.indexOf('试用') !== -1 || title.indexOf('免费') !== -1) {
+              result.freeTitle = title;
+              result.freeFeatures = items;
+              return;
+            }
+
+            if (normalizedTitle.indexOf('full') !== -1 || title.indexOf('完整') !== -1) {
+              result.fullTitle = title;
+              result.fullFeatures = items;
+            }
+          });
+
+          return result;
+        }
+
+        function createFretlabPricingList(items) {
+          var list = document.createElement('ul');
+          list.className = 'fretlab-pricing-list font-hand text-base';
+          (items || []).forEach(function (item) {
+            var li = document.createElement('li');
+            li.textContent = item;
+            list.appendChild(li);
+          });
+          return list;
+        }
+
+        function setPricingActionLabel(node, label) {
+          if (!node || !label) return;
+          var labelNode = node.querySelector('.relative.z-10') || node.querySelector('span') || node;
+          labelNode.textContent = label;
+        }
+
+        function decoratePricingSketchButton(node) {
+          if (!node) return;
+
+          var label = (node.textContent || '').replace(/\s+/g, ' ').trim();
+          node.className = 'fretlab-pricing-sketch-button font-hand text-lg text-muted-foreground';
+          node.innerHTML = ''
+            + '<svg aria-hidden="true" viewBox="0 0 120 52" preserveAspectRatio="none">'
+            + '  <g>'
+            + '    <path d="M3.883136635273695 0.488521296530962 L117.41150484606624 1.150424463301897 L119.33926804587244 51.40784230902791 L1.5560990862548352 49.6589926071465" stroke="none" stroke-width="0" fill="transparent"></path>'
+            + '    <path d="M3.0428975887596605 1.3095070175826549 C25.664873055741193 0.8532292677983642, 49.1605614438653 2.724884374342859, 119.72095480635762 0.6094576887786389 M1.7385310914367438 2.2343147430568933 C37.81208809539676 1.122667571924627, 75.47366046495736 0.6455609888061884, 118.65153476260602 2.634525755420327 M118.1604641981423 0.5673085264861584 C119.20004809719325 20.12562603130937, 119.75451184135676 35.81598012670875, 119.99707320407033 52.32063367888331 M117.36411191485823 3.046242121234536 C117.231632287696 20.834661369398237, 116.42717053432762 38.477991277351975, 118.33696933053434 51.04655422307551 M118.27283137515187 48.64330995604396 C74.83216811157762 50.935930941320954, 38.02366503477096 48.76519865772873, 4.17104392722249 50.06141095682979 M118.7209240462631 49.72463716603816 C92.18053902983665 48.745745355255906, 68.9954301211983 47.69577729142458, 3.1472265150398018 50.17110748626292 M2.7922305651009083 50.161607985943554 C3.110650286197662 31.910478276759385, 3.697564897060394 14.347781642526382, 0.3058796711266041 2.7176049523055554 M1.493281450495124 50.988896850124 C0.2563184154182673 38.89478995986283, 0.3755848419815302 30.587161112204193, 1.5599796559661627 1.7779731426388026" stroke="hsl(0 0% 7% / 0.15)" stroke-width="1.6" fill="none"></path>'
+            + '  </g>'
+            + '</svg>'
+            + '<span class="fretlab-pricing-sketch-button-label">' + label + '</span>';
+        }
+
+        function decoratePricingCardFrame(card, force) {
+          if (!card) return;
+
+          var existingFrame = card.querySelector(':scope > .fretlab-pricing-card-frame');
+          var body = card.querySelector(':scope > .fretlab-pricing-card-body');
+          card.classList.add('fretlab-sketch-panel');
+          if (existingFrame && existingFrame.parentNode === card) {
+            card.removeChild(existingFrame);
+          }
+
+          if (!body) {
+            body = document.createElement('div');
+            body.className = 'fretlab-pricing-card-body';
+            while (card.firstChild) {
+              body.appendChild(card.firstChild);
+            }
+            card.appendChild(body);
+          }
+        }
+
+        function refreshStandalonePricingButtons(layout, pricingCopy) {
+          if (!layout) return;
+
+          var alipay = layout.querySelector('#fretlab-buy-alipay');
+          var wechat = layout.querySelector('#fretlab-buy-wechat');
+          var gumroad = layout.querySelector('#fretlab-buy-gumroad');
+          var previewLink = layout.querySelector('a[href="/fretlab-tool/"],a[href="/fretlab-tool"],a[href="/en/fretlab-tool/"],a[href="/en/fretlab-tool"]');
+
+          if (alipay) {
+            alipay.textContent = pricingCopy.fullAlipay;
+            decoratePricingSketchButton(alipay);
+          }
+          if (wechat) {
+            wechat.textContent = pricingCopy.fullWechat;
+            decoratePricingSketchButton(wechat);
+          }
+          if (gumroad) {
+            gumroad.textContent = pricingCopy.gumroadLabel;
+            decoratePricingSketchButton(gumroad);
+          }
+          if (previewLink) {
+            previewLink.classList.add('fretlab-pricing-preview-link');
+            setPricingActionLabel(previewLink, pricingCopy.freeAction);
+          }
+
+          Array.prototype.forEach.call(layout.querySelectorAll('.fretlab-pricing-card'), function (card) {
+            decoratePricingCardFrame(card, true);
+          });
+        }
+
+        function createStandalonePricingPayButton(label, options) {
+          var node;
+          if (options && options.href) {
+            node = document.createElement('a');
+            node.href = options.href;
+            node.target = options.target || '_blank';
+            node.rel = options.rel || 'noreferrer';
+          } else {
+            node = document.createElement('button');
+            node.type = 'button';
+          }
+
+          node.textContent = label;
+          decoratePricingSketchButton(node);
+
+          if (options && typeof options.onClick === 'function') {
+            node.addEventListener('click', function (event) {
+              event.preventDefault();
+              options.onClick();
+            });
+          }
+
+          return node;
+        }
+
+        function createFretlabBundleCard(lang, copy) {
+          var card = document.createElement('article');
+          card.className = 'fretlab-pricing-card fretlab-pricing-card--bundle';
+          card.setAttribute('data-bundle-offer', '');
+          card.setAttribute('data-bundle-theme', 'fretlab');
+          card.setAttribute('data-bundle-lang', lang);
+          card.setAttribute('data-bundle-name-zh', 'IC Studio 套装（Cognote + FretLab）');
+          card.setAttribute('data-bundle-name-en', 'IC Studio Bundle (Cognote + FretLab)');
+
+          var head = document.createElement('div');
+          head.className = 'fretlab-pricing-head';
+
+          var badgeRow = document.createElement('div');
+          badgeRow.className = 'fretlab-pricing-badge-row';
+
+          var badge = document.createElement('span');
+          badge.className = 'fretlab-pricing-badge font-hand';
+          badge.textContent = copy.bundleBadge;
+          badgeRow.appendChild(badge);
+
+          var tag = document.createElement('span');
+          tag.className = 'fretlab-pricing-tag font-hand';
+          tag.textContent = copy.discountTag;
+          badgeRow.appendChild(tag);
+
+          var title = document.createElement('h3');
+          title.className = 'fretlab-pricing-title font-sketch text-3xl';
+          title.textContent = copy.bundleTitle;
+
+          var price = document.createElement('div');
+          price.className = 'fretlab-pricing-price font-sketch text-4xl';
+          price.innerHTML = copy.bundlePrice + ' <span class="fretlab-buy-mode-price-old font-hand">' + copy.bundleOldPrice + '</span>';
+
+          head.appendChild(badgeRow);
+          head.appendChild(title);
+          head.appendChild(price);
+
+          var divider = document.createElement('div');
+          divider.className = 'fretlab-pricing-divider';
+
+          var actions = document.createElement('div');
+          actions.className = 'fretlab-pricing-actions';
+
+          var payRow = document.createElement('div');
+          payRow.className = 'fretlab-pricing-button-row';
+
+          var alipay = document.createElement('button');
+          alipay.type = 'button';
+          alipay.setAttribute('data-bundle-pay-trigger', 'alipay');
+          alipay.textContent = copy.bundleAlipay;
+          decoratePricingSketchButton(alipay);
+
+          var wechat = document.createElement('button');
+          wechat.type = 'button';
+          wechat.setAttribute('data-bundle-pay-trigger', 'wechat');
+          wechat.textContent = copy.bundleWechat;
+          decoratePricingSketchButton(wechat);
+
+          payRow.appendChild(alipay);
+          payRow.appendChild(wechat);
+
+          var gumroad = document.createElement('a');
+          gumroad.href = getBundleGumroadUrl();
+          gumroad.target = '_blank';
+          gumroad.rel = 'noreferrer';
+          gumroad.textContent = getGumroadButtonText(lang);
+          decoratePricingSketchButton(gumroad);
+
+          actions.appendChild(payRow);
+          actions.appendChild(gumroad);
+
+          card.appendChild(head);
+          card.appendChild(divider);
+          card.appendChild(createFretlabPricingList(copy.bundleFeatures));
+          card.appendChild(actions);
+          decoratePricingCardFrame(card);
+
+          return card;
+        }
+
+        function ensurePricingCardsLayout() {
+          var buySection = document.getElementById('buy');
+          if (!buySection) return;
+
+          var alipayButton = buySection.querySelector('#fretlab-buy-alipay');
+          var wechatButton = buySection.querySelector('#fretlab-buy-wechat');
+          var accessSection = buySection.querySelector('#access-code-input');
+          accessSection = accessSection && accessSection.closest
+            ? accessSection.closest('div.rounded-xl.border.border-border\\/70.bg-background\\/50.p-3') || accessSection.closest('div.rounded-xl')
+            : null;
+          if (!alipayButton || !wechatButton || !accessSection) return;
+
+          var standaloneCard = alipayButton.closest && alipayButton.closest('div.relative.w-full');
+          if (!standaloneCard) return;
+          standaloneCard.id = standaloneCard.id || 'fretlab-buy-standalone-card';
+
+          var standaloneContent = standaloneCard.querySelector(':scope > div.relative.z-10')
+            || standaloneCard.querySelector('div.relative.z-10')
+            || standaloneCard;
+          if (!standaloneContent) return;
+
+          var pricingHost = document.getElementById('fretlab-pricing-host');
+          if (!pricingHost) {
+            pricingHost = document.createElement('div');
+            pricingHost.id = 'fretlab-pricing-host';
+            pricingHost.className = 'w-full';
+          }
+          if (pricingHost.parentNode !== standaloneCard.parentNode || pricingHost.previousElementSibling !== standaloneCard) {
+            standaloneCard.insertAdjacentElement('afterend', pricingHost);
+          }
+
+          var existingLayout = pricingHost.querySelector('#fretlab-pricing-layout');
+
+          var buyModeHost = document.getElementById('fretlab-buy-mode-host');
+          if (buyModeHost && buyModeHost.parentNode) {
+            buyModeHost.parentNode.removeChild(buyModeHost);
+          }
+
+          var bundleBlock = document.getElementById('fretlab-bundle-offer-block');
+          if (bundleBlock && bundleBlock.parentNode) {
+            bundleBlock.parentNode.removeChild(bundleBlock);
+          }
+
+          var lang = getLang();
+          var pricingCopy = FRETLAB_PRICING_CONTENT[lang] || FRETLAB_PRICING_CONTENT.zh;
+          var priceNode = findBuyHeadlinePriceNode(buySection);
+          var legacySummaryBlock = Array.prototype.find.call(
+            standaloneContent.querySelectorAll('div.grid.grid-cols-1.md\\:grid-cols-2.gap-3'),
+            function (node) {
+              var text = (node.textContent || '').replace(/\s+/g, ' ');
+              var hasTrial = text.indexOf('试用版') !== -1 || text.indexOf('免费版') !== -1 || text.indexOf('Trial') !== -1 || text.indexOf('Free Version') !== -1;
+              var hasFull = text.indexOf('完整版') !== -1 || text.indexOf('Full Version') !== -1;
+              return hasTrial && hasFull;
+            }
+          );
+          var payButtonGrid = alipayButton.parentNode;
+          var gumroadButton = document.getElementById('fretlab-buy-gumroad');
+          var previewLink = buySection.querySelector('a[href="/fretlab-tool/"],a[href="/fretlab-tool"],a[href="/en/fretlab-tool/"],a[href="/en/fretlab-tool"]');
+          var stash = document.getElementById('fretlab-pricing-stash');
+
+          if (!stash) {
+            stash = document.createElement('div');
+            stash.id = 'fretlab-pricing-stash';
+            stash.hidden = true;
+            buySection.appendChild(stash);
+          }
+
+          if (legacySummaryBlock && legacySummaryBlock.parentNode) {
+            legacySummaryBlock.parentNode.removeChild(legacySummaryBlock);
+          }
+
+          if (existingLayout && existingLayout.dataset.pricingLang === lang) {
+            refreshStandalonePricingButtons(existingLayout, pricingCopy);
+            return;
+          }
+
+          [payButtonGrid, gumroadButton, accessSection, previewLink, priceNode].forEach(function (node) {
+            if (node && node.parentNode && node.parentNode !== stash) {
+              stash.appendChild(node);
+            }
+          });
+
+          pricingHost.innerHTML = '';
+
+          var layout = document.createElement('div');
+          layout.id = 'fretlab-pricing-layout';
+          layout.className = 'fretlab-pricing-layout';
+          layout.dataset.pricingLang = lang;
+
+          var grid = document.createElement('div');
+          grid.className = 'fretlab-pricing-grid';
+          grid.setAttribute('aria-label', lang === 'en' ? 'Pricing plans' : '购买方案');
+
+          var freeCard = document.createElement('article');
+          freeCard.className = 'fretlab-pricing-card fretlab-pricing-card--free';
+          freeCard.innerHTML = ''
+            + '<div class="fretlab-pricing-head">'
+            + '  <div class="fretlab-pricing-badge-row">'
+            + '    <span class="fretlab-pricing-badge font-hand">' + pricingCopy.freeBadge + '</span>'
+            + '  </div>'
+            + '  <h3 class="fretlab-pricing-title font-sketch text-3xl">' + pricingCopy.freeTitle + '</h3>'
+            + '  <div class="fretlab-pricing-price font-sketch text-4xl">' + pricingCopy.freePrice + '</div>'
+            + '</div>'
+            + '<div class="fretlab-pricing-divider"></div>';
+          freeCard.appendChild(createFretlabPricingList(pricingCopy.freeFeatures));
+          var freeActions = document.createElement('div');
+          freeActions.className = 'fretlab-pricing-actions';
+          if (previewLink) {
+            previewLink.classList.add('fretlab-pricing-preview-link');
+            setPricingActionLabel(previewLink, pricingCopy.freeAction);
+            freeActions.appendChild(previewLink);
+          }
+          freeCard.appendChild(freeActions);
+          decoratePricingCardFrame(freeCard);
+
+          var fullCard = document.createElement('article');
+          fullCard.className = 'fretlab-pricing-card fretlab-pricing-card--featured';
+          var fullHead = document.createElement('div');
+          fullHead.className = 'fretlab-pricing-head';
+          fullHead.innerHTML = ''
+            + '<div class="fretlab-pricing-badge-row">'
+            + '  <span class="fretlab-pricing-badge font-hand">' + pricingCopy.fullBadge + '</span>'
+            + '</div>'
+            + '<h3 class="fretlab-pricing-title font-sketch text-3xl">' + pricingCopy.fullTitle + '</h3>'
+            + '<div class="fretlab-pricing-price font-sketch text-4xl">' + pricingCopy.fullPrice + ' <span class="font-hand text-lg text-muted-foreground">' + pricingCopy.fullPriceLabel + '</span></div>';
+          fullCard.appendChild(fullHead);
+          var fullDivider = document.createElement('div');
+          fullDivider.className = 'fretlab-pricing-divider';
+          fullCard.appendChild(fullDivider);
+          fullCard.appendChild(createFretlabPricingList(pricingCopy.fullFeatures));
+          var fullActions = document.createElement('div');
+          fullActions.className = 'fretlab-pricing-actions';
+          var fullPayRow = document.createElement('div');
+          fullPayRow.className = 'fretlab-pricing-button-row';
+          fullPayRow.appendChild(createStandalonePricingPayButton(pricingCopy.fullAlipay, {
+            onClick: function () {
+              if (alipayButton && typeof alipayButton.click === 'function') {
+                alipayButton.click();
+              }
+            }
+          }));
+          fullPayRow.appendChild(createStandalonePricingPayButton(pricingCopy.fullWechat, {
+            onClick: function () {
+              if (wechatButton && typeof wechatButton.click === 'function') {
+                wechatButton.click();
+              }
+            }
+          }));
+          fullActions.appendChild(fullPayRow);
+          fullActions.appendChild(createStandalonePricingPayButton(pricingCopy.gumroadLabel, {
+            href: (gumroadButton && gumroadButton.href) || 'https://icstudio3.gumroad.com/l/fretlab'
+          }));
+          fullCard.appendChild(fullActions);
+          decoratePricingCardFrame(fullCard);
+
+          grid.appendChild(freeCard);
+          grid.appendChild(fullCard);
+          grid.appendChild(createFretlabBundleCard(lang, pricingCopy));
+
+          var accessSlot = document.createElement('div');
+          accessSlot.className = 'fretlab-pricing-access-slot';
+          var accessTitleNode = accessSection.querySelector('p.font-sketch, p[class*="font-sketch"]');
+          if (accessTitleNode) {
+            accessTitleNode.textContent = pricingCopy.accessTitle;
+          }
+          var accessInput = accessSection.querySelector('#access-code-input');
+          if (accessInput) {
+            accessInput.setAttribute('placeholder', pricingCopy.accessPlaceholder);
+          }
+          var verifyButton = accessSection.querySelector('#verify-btn');
+          if (verifyButton) {
+            verifyButton.textContent = pricingCopy.accessVerify;
+          }
+          accessSection.classList.add('fretlab-sketch-panel');
+          accessSlot.appendChild(accessSection);
+
+          layout.appendChild(grid);
+          layout.appendChild(accessSlot);
+          pricingHost.appendChild(layout);
+        }
 
         function findBuyHeadlinePriceNode(buySection) {
           var exactNode = buySection.querySelector('div.font-sketch.text-4xl.md\\:text-5xl.text-foreground.text-center');
@@ -1603,13 +2810,6 @@
           var payButton = buySection.querySelector('#fretlab-buy-alipay') || buySection.querySelector('#fretlab-buy-wechat');
           var bundleBlock = document.getElementById('fretlab-bundle-offer-block');
           var headlinePriceNode = findBuyHeadlinePriceNode(buySection);
-          var supportNode = Array.prototype.find.call(
-            buySection.querySelectorAll('p.font-hand, p[class*="font-hand"]'),
-            function (node) {
-              var text = (node.textContent || '').replace(/\s+/g, ' ').trim();
-              return text.indexOf('支持 Web 与桌面端') !== -1 || text.indexOf('Supports Web and desktop') !== -1;
-            }
-          );
           var accessSection = accessInput && accessInput.closest
             ? accessInput.closest('div.rounded-xl.border.border-border\\/70.bg-background\\/50.p-3') || accessInput.closest('div.rounded-xl')
             : null;
@@ -1659,9 +2859,6 @@
             modeHost.appendChild(infoHost);
           }
 
-          if (supportNode && supportNode.parentNode !== infoHost) {
-            infoHost.appendChild(supportNode);
-          }
           if (headlinePriceNode && headlinePriceNode.parentNode !== infoHost) {
             infoHost.appendChild(headlinePriceNode);
           }
@@ -1823,9 +3020,9 @@
 
           var accessInput = buySection.querySelector('#access-code-input');
           var payButton = buySection.querySelector('#fretlab-buy-alipay') || buySection.querySelector('#fretlab-buy-wechat');
-          var anchor = null;
+          var anchor = document.getElementById('fretlab-buy-standalone-card');
           if (accessInput && accessInput.closest) {
-            anchor = accessInput.closest('div.relative.w-full');
+            anchor = anchor || accessInput.closest('div.relative.w-full');
           }
           if (!anchor && payButton && payButton.closest) {
             anchor = payButton.closest('div.relative.w-full');
@@ -1899,7 +3096,7 @@
             block.id = 'fretlab-update-log-block';
             block.className = 'relative w-full fretlab-update-log-block-wrap';
             block.innerHTML = ''
-              + '<div class="rounded-xl border border-border/70 bg-background/50 p-3">'
+              + '<div class="rounded-xl border border-border/70 bg-background/50 p-3 fretlab-sketch-panel">'
               + '  <div class="fretlab-update-log-content">'
               + '    <div class="fretlab-update-log-meta">'
               + '      <p id="fretlab-update-log-banner" class="font-hand text-base text-foreground" style="margin:0;"></p>'
@@ -1910,38 +3107,36 @@
 
           }
           var trialFullBlock = findTrialFullBlock(contentRoot);
-          var previewContainer = findPreviewContainer(contentRoot);
-          var paymentButtonRow = payButton && payButton.parentNode ? payButton.parentNode : null;
-          var accessSection = accessInput && accessInput.closest ? accessInput.closest('div.rounded-xl') : null;
-
-          if (paymentButtonRow && accessSection && paymentButtonRow.parentNode === accessSection.parentNode) {
-            if (promoBlock.parentNode !== paymentButtonRow.parentNode || promoBlock.nextElementSibling !== accessSection) {
-              paymentButtonRow.insertAdjacentElement('afterend', promoBlock);
-            }
-          } else if (previewContainer && previewContainer.parentNode) {
-            var promoParentNode = previewContainer.parentNode;
-            if (promoBlock.parentNode !== promoParentNode || promoBlock.nextElementSibling !== previewContainer) {
-              promoParentNode.insertBefore(promoBlock, previewContainer);
-            }
-          } else if (trialFullBlock && trialFullBlock.parentNode) {
-            if (promoBlock.parentNode !== trialFullBlock.parentNode || promoBlock.previousElementSibling !== trialFullBlock) {
-              trialFullBlock.insertAdjacentElement('afterend', promoBlock);
-            }
+          if (trialFullBlock && trialFullBlock.parentNode) {
+            trialFullBlock.parentNode.removeChild(trialFullBlock);
+          }
+          if (!contentRoot) {
+            return;
           }
 
-          // Preferred position:
-          // directly above Start now.
-          if (previewContainer && previewContainer.parentNode) {
-            var parentNode = previewContainer.parentNode;
-            if (block.parentNode !== parentNode || block.nextElementSibling !== previewContainer) {
-              parentNode.insertBefore(block, previewContainer);
+          if (promoBlock.parentNode !== contentRoot) {
+            contentRoot.appendChild(promoBlock);
+          }
+          var supportActionAnchor = null;
+          var recoverButton = document.getElementById('recover-access-code-btn');
+          var refundButton = document.getElementById('refund-btn');
+          if (recoverButton && recoverButton.closest) {
+            supportActionAnchor = recoverButton.closest('div.grid.grid-cols-1.md\\:grid-cols-2.gap-4.w-full');
+          }
+          if (!supportActionAnchor && refundButton && refundButton.closest) {
+            supportActionAnchor = refundButton.closest('div.grid.grid-cols-1.md\\:grid-cols-2.gap-4.w-full');
+          }
+          var pricingHost = document.getElementById('fretlab-pricing-host');
+          if (supportActionAnchor && supportActionAnchor.parentNode) {
+            if (block.parentNode !== supportActionAnchor.parentNode || block.previousElementSibling !== supportActionAnchor) {
+              supportActionAnchor.insertAdjacentElement('afterend', block);
             }
-          } else if (trialFullBlock && trialFullBlock.parentNode) {
-            if (block.parentNode !== trialFullBlock.parentNode || block.previousElementSibling !== trialFullBlock) {
-              trialFullBlock.insertAdjacentElement('afterend', block);
+          } else if (pricingHost && pricingHost.parentNode) {
+            if (block.parentNode !== pricingHost.parentNode || block.previousElementSibling !== pricingHost) {
+              pricingHost.insertAdjacentElement('afterend', block);
             }
-          } else {
-            return;
+          } else if (block.parentNode !== contentRoot || block.previousElementSibling !== promoBlock) {
+            promoBlock.insertAdjacentElement('afterend', block);
           }
 
           var promoTitleNode = document.getElementById('fretlab-promo-campaign-title');
@@ -2184,6 +3379,141 @@
           }
         }
 
+        function getFretlabFaqIconSvg(icon) {
+          var icons = {
+            suitable: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="7.2" r="2.4" stroke="currentColor" stroke-width="1.6"/><path d="M7.8 18.6 C8.4 14.7, 10 12.6, 12 12.6 C14 12.6, 15.6 14.7, 16.2 18.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M9 13.9 L6.4 16.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M15 13.9 L17.6 16.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+            compare: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 6 H11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 12 H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M13 18 H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="13" cy="6" r="1.8" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="18" r="1.8" stroke="currentColor" stroke-width="1.5"/></svg>',
+            mobile: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="7.3" y="3.8" width="9.4" height="16.4" rx="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M10.2 6.6 H13.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="17.3" r="0.9" fill="currentColor"/><path d="M4.8 8.7 C5.6 7.8, 6.1 7.4, 6.9 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M19.2 8.7 C18.4 7.8, 17.9 7.4, 17.1 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+            bundle: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="6" width="7" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="13" y="8" width="7" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M10 11 C11 10, 12 10, 13 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+            recover: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 10 C8 7.8, 9.8 6, 12.1 6 C14.4 6, 16 7.5, 16 9.8 C16 12.8, 12 12.8, 12 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8.5 9.5 L6 9.5 L6 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="18.2" r="1.1" fill="currentColor"/></svg>',
+            refund: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 8 C16.5 6.5, 14.6 5.8, 12.2 5.8 C8.5 5.8, 5.6 8.7, 5.6 12.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6 7.5 L6 12 L10.5 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.4 12.1 C18.4 15.8, 15.5 18.7, 11.8 18.7 C9.7 18.7, 7.9 17.9, 6.6 16.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+            contact: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 7.5 L12 13 L19.5 7.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="6" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/></svg>'
+          };
+          return icons[icon] || icons.contact;
+        }
+
+        function ensureFaqAccordion() {
+          var faqSection = document.getElementById('faq');
+          if (!faqSection) return;
+
+          var lang = getLang();
+          var content = FRETLAB_FAQ_CONTENT[lang] || FRETLAB_FAQ_CONTENT.zh;
+          if (faqSection.dataset.faqAccordionLang === lang) {
+            return;
+          }
+
+          faqSection.className = 'flex flex-col gap-6 fretlab-faq-section';
+          faqSection.innerHTML = '';
+          faqSection.style.scrollMarginTop = '107px';
+
+          var heading = document.createElement('div');
+          heading.className = 'fretlab-faq-heading';
+          heading.innerHTML = ''
+            + '<div class="fretlab-faq-heading-inner">'
+            + '  <h2 class="font-sketch text-3xl md:text-5xl leading-tight tracking-tight text-foreground">'
+            + content.title + ' <span class="text-foreground/90">' + content.accent + '</span>'
+            + '  </h2>'
+            + '  <div class="fretlab-faq-heading-mark" aria-hidden="true"></div>'
+            + '</div>';
+
+          var list = document.createElement('div');
+          list.className = 'fretlab-faq-list';
+
+          (content.items || []).forEach(function (item, index) {
+            var details = document.createElement('details');
+            details.className = 'fretlab-faq-item';
+            if (index === 0) details.open = true;
+
+            var summary = document.createElement('summary');
+            summary.className = 'fretlab-faq-question';
+            summary.innerHTML = ''
+              + '<div class="fretlab-faq-title-row">'
+              + '  <span class="fretlab-faq-title-icon">' + getFretlabFaqIconSvg(item.icon) + '</span>'
+              + '  <h3 class="fretlab-faq-title font-sketch text-2xl text-foreground">' + item.title + '</h3>'
+              + '</div>';
+
+            var answer = document.createElement('div');
+            answer.className = 'fretlab-faq-answer';
+
+            (item.paragraphs || []).forEach(function (paragraph) {
+              var p = document.createElement('p');
+              p.className = 'font-hand text-base';
+              p.textContent = paragraph;
+              answer.appendChild(p);
+            });
+
+            if (item.bullets && item.bullets.length) {
+              var ul = document.createElement('ul');
+              ul.className = 'font-hand text-base';
+              item.bullets.forEach(function (bullet) {
+                var li = document.createElement('li');
+                li.textContent = bullet;
+                ul.appendChild(li);
+              });
+              answer.appendChild(ul);
+            }
+
+            if (item.noteTitle || (item.noteLines && item.noteLines.length)) {
+              var noteBox = document.createElement('div');
+              noteBox.className = 'fretlab-faq-mini-box';
+              if (item.noteTitle) {
+                var noteTitle = document.createElement('p');
+                noteTitle.className = 'font-hand text-base text-foreground';
+                noteTitle.textContent = item.noteTitle;
+                noteBox.appendChild(noteTitle);
+              }
+              (item.noteLines || []).forEach(function (line) {
+                var lineNode = document.createElement('p');
+                lineNode.className = 'font-hand text-base';
+                lineNode.textContent = line;
+                noteBox.appendChild(lineNode);
+              });
+              answer.appendChild(noteBox);
+            }
+
+            if (item.action) {
+              var actions = document.createElement('div');
+              actions.className = 'fretlab-faq-actions';
+              var actionNode;
+
+              if (item.action.kind === 'link') {
+                actionNode = document.createElement('a');
+                actionNode.href = item.action.href;
+                actionNode.className = 'fretlab-faq-action font-hand text-base';
+                actionNode.textContent = item.action.label;
+              } else {
+                actionNode = document.createElement('button');
+                actionNode.type = 'button';
+                actionNode.className = 'fretlab-faq-action font-hand text-base';
+                actionNode.textContent = item.action.label;
+                actionNode.addEventListener('click', function () {
+                  var targetId = item.action.kind === 'recover' ? 'recover-access-code-btn' : 'refund-btn';
+                  var target = document.getElementById(targetId);
+                  if (target && typeof target.click === 'function') {
+                    target.click();
+                  } else {
+                    var buySection = document.getElementById('buy');
+                    if (buySection && typeof buySection.scrollIntoView === 'function') {
+                      buySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }
+                });
+              }
+
+              actions.appendChild(actionNode);
+              answer.appendChild(actions);
+            }
+
+            details.appendChild(summary);
+            details.appendChild(answer);
+            list.appendChild(details);
+          });
+
+          faqSection.appendChild(heading);
+          faqSection.appendChild(list);
+          faqSection.dataset.faqAccordionLang = lang;
+        }
+
         function ensureBuyPreviewRemoved() {
           var buySection = document.getElementById('buy');
           if (!buySection) return;
@@ -2195,6 +3525,27 @@
           if (previewRow && previewRow.parentNode) {
             previewRow.parentNode.removeChild(previewRow);
           }
+        }
+
+        function ensureSupportActionCardsRemoved() {
+          var buySection = document.getElementById('buy');
+          if (!buySection) return;
+
+          var supportGrid = null;
+          var recoverButton = document.getElementById('recover-access-code-btn');
+          var refundButton = document.getElementById('refund-btn');
+
+          if (recoverButton && recoverButton.closest) {
+            supportGrid = recoverButton.closest('div.grid.grid-cols-1.md\\:grid-cols-2.gap-4.w-full');
+          }
+          if (!supportGrid && refundButton && refundButton.closest) {
+            supportGrid = refundButton.closest('div.grid.grid-cols-1.md\\:grid-cols-2.gap-4.w-full');
+          }
+          if (!supportGrid) return;
+
+          supportGrid.style.display = 'none';
+          supportGrid.setAttribute('aria-hidden', 'true');
+          supportGrid.dataset.fretlabSupportCardsHidden = '1';
         }
 
         function setPreferredFretlabLanguage(lang) {
@@ -2224,18 +3575,20 @@
           if (document.documentElement.dataset.fretlabLangRedirectBound === '1') return;
 
           document.addEventListener('click', function (event) {
-            var target = event.target && event.target.closest ? event.target.closest('button') : null;
+            var target = event.target && event.target.closest ? event.target.closest('[data-fretlab-lang-target], button') : null;
             if (!target) return;
 
             var header = target.closest('#root header');
             if (!header) return;
 
-            var label = (target.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
-            var targetLang = null;
-            if (label === 'en') {
-              targetLang = 'en';
-            } else if (label === '中文' || label === '简体中文' || label === 'zh') {
-              targetLang = 'zh';
+            var targetLang = target.getAttribute('data-fretlab-lang-target');
+            if (!targetLang) {
+              var label = (target.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+              if (label === 'en') {
+                targetLang = 'en';
+              } else if (label === '中文' || label === '简体中文' || label === 'zh') {
+                targetLang = 'zh';
+              }
             }
             if (!targetLang) return;
 
@@ -2255,6 +3608,40 @@
           document.documentElement.dataset.fretlabLangRedirectBound = '1';
         }
 
+        function ensureFretlabPageLanguageState() {
+          var expectedLang = window.location.pathname.indexOf('/en/fretlab/') === 0 ? 'en' : 'zh';
+          var root = document.getElementById('root');
+          if (!root) return;
+
+          var targetButton = root.querySelector('.fretlab-header-actions [data-fretlab-lang-target="' + expectedLang + '"]');
+          if (!targetButton) return;
+
+          var currentDocLang = (document.documentElement.lang || '').toLowerCase();
+          var languageAligned = expectedLang === 'en'
+            ? currentDocLang.indexOf('en') === 0
+            : currentDocLang.indexOf('zh') === 0;
+          var buttonActive = (targetButton.className || '').indexOf('bg-background') !== -1;
+          if (languageAligned && buttonActive) {
+            document.documentElement.dataset.fretlabUiLangSyncPending = '';
+            return;
+          }
+
+          if (document.documentElement.dataset.fretlabUiLangSyncPending === expectedLang) return;
+          document.documentElement.dataset.fretlabUiLangSyncPending = expectedLang;
+
+          requestAnimationFrame(function () {
+            var latestButton = document.querySelector('.fretlab-header-actions [data-fretlab-lang-target="' + expectedLang + '"]');
+            if (!latestButton) {
+              document.documentElement.dataset.fretlabUiLangSyncPending = '';
+              return;
+            }
+            latestButton.click();
+            setTimeout(function () {
+              document.documentElement.dataset.fretlabUiLangSyncPending = '';
+            }, 240);
+          });
+        }
+
         var runtimeEnhancersStarted = false;
         function startRuntimeEnhancers() {
           if (runtimeEnhancersStarted) return;
@@ -2265,15 +3652,16 @@
             if (tick) cancelAnimationFrame(tick);
             tick = requestAnimationFrame(function () {
               ensureHeaderNav();
+              ensureFretlabPageLanguageState();
               ensureSectionOffsets();
               ensureMenuBarContent();
               ensureSmoothBuyScroll();
               ensureGumroadPayButton();
               ensureStandardFooter();
-              ensureBundleOfferBlock();
-              ensureBuyModeToggle();
+              ensurePricingCardsLayout();
               ensureUpdateLogBlock();
-              ensureBuyPreviewRemoved();
+              ensureFaqAccordion();
+              ensureSupportActionCardsRemoved();
             });
           }
 

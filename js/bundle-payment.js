@@ -67,14 +67,16 @@
       purchaseTimeLabel: '购买时间',
       copied: '已复制',
       copy: '复制',
+      useNow: '立即使用',
+      useLater: '稍后使用',
       downloadTitle: '下载安装',
       downloadTip: '点击上方切换即可查看 Cognote 与 FretLab 各自的桌面版安装包。',
       downloadToolCognote: 'Cognote',
       downloadToolFretlab: 'FretLab',
-      downloadWindows: '💻 Windows 安装版',
-      downloadMacApple: '🍎 macOS Apple Silicon',
-      downloadMacIntel: '🍎 macOS Intel',
-      downloadLinux: '🐧 Linux AMD64 DEB',
+      downloadWindows: 'Windows 安装版',
+      downloadMacApple: 'macOS Apple Silicon',
+      downloadMacIntel: 'macOS Intel',
+      downloadLinux: 'Linux AMD64 DEB',
       downloadStarted: '已开始下载，请查看浏览器下载列表。',
       downloadUnavailable: '当前设备暂无可用安装包，请稍后到工具页面下载。',
       mockBadge: '前端预览模式',
@@ -110,14 +112,16 @@
       purchaseTimeLabel: 'Purchase time',
       copied: 'Copied',
       copy: 'Copy',
+      useNow: 'Use now',
+      useLater: 'Later',
       downloadTitle: 'Downloads',
       downloadTip: 'Use the switcher above to view Cognote and FretLab desktop installers separately.',
       downloadToolCognote: 'Cognote',
       downloadToolFretlab: 'FretLab',
-      downloadWindows: '💻 Windows Installer',
-      downloadMacApple: '🍎 macOS Apple Silicon',
-      downloadMacIntel: '🍎 macOS Intel',
-      downloadLinux: '🐧 Linux AMD64 DEB',
+      downloadWindows: 'Windows Installer',
+      downloadMacApple: 'macOS Apple Silicon',
+      downloadMacIntel: 'macOS Intel',
+      downloadLinux: 'Linux AMD64 DEB',
       downloadStarted: 'Download started. Check your browser downloads.',
       downloadUnavailable: 'No installer is available for this device yet. Please download it later from the tool page.',
       mockBadge: 'Frontend preview mode',
@@ -129,11 +133,11 @@
 
   const THEMES = {
     cognote: {
-      accent: '#2563eb',
-      accentAlt: '#1d4ed8',
+      accent: '#79addc',
+      accentAlt: '#5f93bf',
       surface: '#ffffff',
       surfaceAlt: '#f8fafc',
-      border: '#dbeafe',
+      border: '#d7e8f6',
       overlay: 'rgba(15, 23, 42, 0.58)',
       toastText: '#eff6ff'
     },
@@ -700,11 +704,42 @@
 
   function getDownloadPlatforms(text) {
     return [
-      { key: 'windows_x64', label: text.downloadWindows },
-      { key: 'mac_arm64', label: text.downloadMacApple },
-      { key: 'mac_x64', label: text.downloadMacIntel },
-      { key: 'linux_amd64', label: text.downloadLinux }
+      { key: 'windows_x64', icon: 'windows', label: text.downloadWindows },
+      { key: 'mac_arm64', icon: 'apple', label: text.downloadMacApple },
+      { key: 'mac_x64', icon: 'apple', label: text.downloadMacIntel },
+      { key: 'linux_amd64', icon: 'linux', label: text.downloadLinux }
     ];
+  }
+
+  function getDownloadPlatformIcon(name, color, dimmed) {
+    const stroke = dimmed ? 'rgba(148,163,184,.72)' : (color || '#79addc');
+    const common = 'width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"';
+    if (name === 'apple') {
+      return ''
+        + '<svg ' + common + '>'
+        + '  <path d="M14.65 4.2c.56-.69.93-1.63.83-2.58-.82.04-1.84.55-2.42 1.24-.53.62-.98 1.58-.86 2.5.92.07 1.86-.46 2.45-1.16Z" fill="' + stroke + '"/>'
+        + '  <path d="M18.44 12.97c.02-2.17 1.78-3.21 1.86-3.25-.99-1.45-2.54-1.65-3.08-1.67-1.31-.14-2.56.77-3.23.77-.67 0-1.7-.75-2.79-.73-1.44.02-2.77.83-3.51 2.12-1.5 2.6-.38 6.46 1.08 8.57.71 1.02 1.56 2.17 2.67 2.13 1.07-.04 1.47-.69 2.77-.69 1.3 0 1.66.69 2.79.66 1.15-.02 1.88-1.05 2.58-2.08.82-1.19 1.16-2.34 1.18-2.4-.03-.01-2.27-.87-2.32-3.43Z" fill="' + stroke + '"/>'
+        + '</svg>';
+    }
+    if (name === 'linux') {
+      return ''
+        + '<svg ' + common + '>'
+        + '  <path d="M9.1 6.2C9.42 4.64 10.48 3.5 12 3.5c1.52 0 2.58 1.14 2.9 2.7.18.89.2 1.92.08 3.08-.16 1.45-.04 2.3.76 3.52.84 1.28 1.42 2.78 1.42 4.12 0 2.11-1.11 3.36-2.74 3.36-.84 0-1.27-.33-2.42-.33s-1.58.33-2.42.33c-1.63 0-2.74-1.25-2.74-3.36 0-1.34.58-2.84 1.42-4.12.8-1.22.92-2.07.76-3.52-.12-1.16-.1-2.18.08-3.08Z" stroke="' + stroke + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>'
+        + '  <path d="M9.4 7.6c0-.94.61-1.59 1.52-1.59.52 0 .95.16 1.08.45.13-.29.56-.45 1.08-.45.91 0 1.52.65 1.52 1.59 0 .83-.13 1.62-.53 2.48" stroke="' + stroke + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>'
+        + '  <ellipse cx="10.23" cy="8.4" rx="0.72" ry="0.9" fill="' + stroke + '"/>'
+        + '  <ellipse cx="13.77" cy="8.4" rx="0.72" ry="0.9" fill="' + stroke + '"/>'
+        + '  <path d="M10.35 10.78c.59-.55 1.14-.82 1.65-.82s1.06.27 1.65.82c-.47.78-1.03 1.17-1.65 1.17s-1.18-.39-1.65-1.17Z" stroke="' + stroke + '" stroke-width="1.6" stroke-linejoin="round"/>'
+        + '  <path d="M8.25 14.25c-.91.26-1.83.8-2.49 1.56-.35.4-.5.83-.37 1.18.13.35.49.52 1.06.55l-.45 1.78c-.11.42.02.71.33.88.57.31 1.41.1 2.43-.55.78-.49 1.21-.66 1.91-.79" stroke="' + stroke + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>'
+        + '  <path d="M15.75 14.25c.91.26 1.83.8 2.49 1.56.35.4.5.83.37 1.18-.13.35-.49.52-1.06.55l.45 1.78c.11.42-.02.71-.33.88-.57.31-1.41.1-2.43-.55-.78-.49-1.21-.66-1.91-.79" stroke="' + stroke + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>'
+        + '  <path d="M9.7 20.15c.78.22 1.48.35 2.3.35.82 0 1.52-.13 2.3-.35" stroke="' + stroke + '" stroke-width="1.7" stroke-linecap="round"/>'
+        + '</svg>';
+    }
+    return ''
+      + '<svg ' + common + '>'
+      + '  <rect x="4" y="5" width="16" height="11" rx="2.2" stroke="' + stroke + '" stroke-width="1.8"/>'
+      + '  <path d="M9 19h6" stroke="' + stroke + '" stroke-width="1.8" stroke-linecap="round"/>'
+      + '  <path d="M12 16v3" stroke="' + stroke + '" stroke-width="1.8" stroke-linecap="round"/>'
+      + '</svg>';
   }
 
   function renderSuccessDownloadButtons(tool, themeName, text, customDownloads) {
@@ -725,7 +760,10 @@
       return ''
         + '<button type="button" class="bundle-success-download-btn" data-bundle-download-tool="' + escapeHtml(tool) + '" data-url="' + escapeHtml(url) + '"'
         + ' style="' + buttonStyle + (enabled ? enabledStyle : disabledStyle) + '">'
-        + '  <span>' + escapeHtml(platform.label) + '</span>'
+        + '  <span style="display:inline-flex;align-items:center;gap:10px;min-width:0;">'
+        + '    <span style="display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;">' + getDownloadPlatformIcon(platform.icon, isFretlab ? '#111827' : '#79addc', !enabled) + '</span>'
+        + '    <span>' + escapeHtml(platform.label) + '</span>'
+        + '  </span>'
         + '  <span aria-hidden="true" style="opacity:' + (enabled ? '1' : '.45') + ';">↗</span>'
         + '</button>';
     }).join('');
@@ -790,27 +828,28 @@
 
     modal.innerHTML = ''
       + '<div style="width:min(92vw,500px);background:#fff;border-radius:18px;box-shadow:0 24px 52px rgba(15,23,42,.26);overflow:hidden;">'
-      + '  <div style="padding:24px 28px;background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%);color:#fff;text-align:center;">'
+      + '  <div style="padding:24px 28px;background:' + theme.accent + ';color:#fff;text-align:center;">'
       + '    <div style="display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:999px;background:rgba(255,255,255,.16);margin:0 auto 12px;font-size:28px;">✓</div>'
       + '    <h3 style="margin:0;font:700 24px/1.3 Inter, sans-serif;color:#fff;">' + escapeHtml(successTitle) + '</h3>'
       + '  </div>'
       + '  <div style="padding:22px 24px 24px;">'
-      + '    <div style="padding:16px;border-radius:16px;background:#f8fbff;border:1px solid #dbeafe;">'
+      + '    <div style="padding:16px;border-radius:16px;background:#f8fbff;border:1px solid ' + theme.border + ';">'
       + '      <div style="font:700 13px/1.4 Inter, sans-serif;color:#334155;">' + text.accessCodeLabel + '</div>'
       + '      <div style="margin-top:8px;display:flex;align-items:center;gap:10px;">'
-      + '        <div id="bundle-success-code" style="flex:1;min-width:0;padding:12px 14px;border-radius:14px;background:#fff;border:1px solid #dbeafe;font:700 18px/1.4 ui-monospace, monospace;color:#0f172a;letter-spacing:.04em;word-break:break-all;">' + escapeHtml(accessCode) + '</div>'
-      + '        <button type="button" id="bundle-success-copy" style="border:none;background:#2563eb;color:#fff;border-radius:999px;min-width:92px;height:42px;padding:0 16px;font:700 14px/1 Inter, sans-serif;cursor:pointer;">' + text.copy + '</button>'
+      + '        <div id="bundle-success-code" style="flex:1;min-width:0;padding:12px 14px;border-radius:14px;background:#fff;border:1px solid ' + theme.border + ';font:700 18px/1.4 ui-monospace, monospace;color:#0f172a;letter-spacing:.04em;word-break:break-all;">' + escapeHtml(accessCode) + '</div>'
+      + '        <button type="button" id="bundle-success-copy" style="border:none;background:' + theme.accent + ';color:#fff;border-radius:999px;min-width:92px;height:42px;padding:0 16px;font:700 14px/1 Inter, sans-serif;cursor:pointer;">' + text.copy + '</button>'
       + '      </div>'
       + (orderNumber
-          ? '      <div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid #dbeafe;font:600 13px/1.6 Inter, sans-serif;color:#334155;">' + text.orderNoLabel + ': <span style="font-family:ui-monospace, monospace;color:#0f172a;">' + escapeHtml(orderNumber) + '</span></div>'
+          ? '      <div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid ' + theme.border + ';font:600 13px/1.6 Inter, sans-serif;color:#334155;">' + text.orderNoLabel + ': <span style="font-family:ui-monospace, monospace;color:#0f172a;">' + escapeHtml(orderNumber) + '</span></div>'
           : '')
       + (purchaseTime
-          ? '      <div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid #dbeafe;font:600 13px/1.6 Inter, sans-serif;color:#334155;">' + text.purchaseTimeLabel + ': <span style="color:#0f172a;">' + escapeHtml(purchaseTime) + '</span></div>'
+          ? '      <div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff;border:1px solid ' + theme.border + ';font:600 13px/1.6 Inter, sans-serif;color:#334155;">' + text.purchaseTimeLabel + ': <span style="color:#0f172a;">' + escapeHtml(purchaseTime) + '</span></div>'
           : '')
       + '    </div>'
            + buildSuccessDownloadsHtml('cognote', text, 'cognote', settings)
-      + '    <div style="display:flex;justify-content:center;margin-top:18px;">'
-      + '      <button type="button" id="bundle-success-close" style="border:none;background:#f1f5f9;color:#0f172a;border-radius:10px;min-width:120px;height:42px;padding:0 18px;font:700 14px/1 Inter, sans-serif;cursor:pointer;">' + text.close + '</button>'
+      + '    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:18px;">'
+      + '      <button type="button" id="bundle-success-close" style="border:1px solid ' + theme.border + ';background:#f8fbff;color:#0f172a;border-radius:999px;min-width:120px;height:44px;padding:0 18px;font:700 14px/1 Inter, sans-serif;cursor:pointer;">' + text.useLater + '</button>'
+      + '      <button type="button" id="bundle-success-use" style="border:none;background:' + theme.accent + ';color:#fff;border-radius:999px;min-width:120px;height:44px;padding:0 18px;font:700 14px/1 Inter, sans-serif;cursor:pointer;box-shadow:0 10px 24px rgba(121,173,220,.28);">' + text.useNow + '</button>'
       + '    </div>'
       + '  </div>'
       + '</div>';
@@ -996,6 +1035,7 @@
   function bindSuccessModal(root, text, themeName, accessCode, modal) {
     const copyBtn = byId('bundle-success-copy');
     const closeBtn = byId('bundle-success-close');
+    const useBtn = byId('bundle-success-use');
     const switcher = byId('bundle-download-switcher');
     const switchButtons = Array.prototype.slice.call(document.querySelectorAll('.bundle-download-switch-btn'));
     const downloadButtons = Array.prototype.slice.call(document.querySelectorAll('.bundle-success-download-btn'));
@@ -1012,9 +1052,9 @@
           button.style.color = '#111827';
           button.style.borderColor = isActive ? 'rgba(17,24,39,.85)' : 'rgba(17,24,39,.28)';
         } else {
-          button.style.background = isActive ? '#2563eb' : '#fff';
+          button.style.background = isActive ? '#79addc' : '#fff';
           button.style.color = isActive ? '#fff' : '#475569';
-          button.style.borderColor = isActive ? '#2563eb' : '#cbd5e1';
+          button.style.borderColor = isActive ? '#79addc' : '#cbd5e1';
         }
       });
       if (switcher) switcher.dataset.activeTool = activeTool;
@@ -1034,6 +1074,17 @@
     if (closeBtn) {
       closeBtn.addEventListener('click', function() {
         modal.remove();
+      });
+    }
+
+    if (useBtn) {
+      useBtn.addEventListener('click', function() {
+        const lang = getLang(root);
+        const startUrl = themeName === 'fretlab'
+          ? (lang === 'zh' ? '/fretlab-tool/' : '/en/fretlab-tool/')
+          : (lang === 'zh' ? '/tools/melody-generator.html' : '/en/tools/melody-generator.html');
+        modal.remove();
+        window.location.href = startUrl;
       });
     }
 

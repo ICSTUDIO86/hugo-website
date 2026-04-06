@@ -1,26 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<script src="/js/url-language-force.js"></script>
+  <script src="/js/url-language-force.js"></script>
   <script defer src="/js/current-year.js"></script>
+  <script src="/js/react-grab-loader.js?v=20260406"></script>
   <base href="/sight-reading-tool/">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="language" content="en">
-    <meta http-equiv="content-language" content="en">
-  <meta name="description" content="Cognote is a professional sight-reading training system for guitar, piano and more. Generate melody, interval, chord, rhythm and jianpu drills with full control over key, meter and articulation.">
-  <meta name="keywords" content="Cognote,sight reading practice,sight reading generator,music notation practice,melody sight reading,interval training,chord sight reading,rhythm training,jianpu generator,guitar sight reading,piano sight reading,视奏训练,视奏生成器,旋律视奏,音程视奏,和弦视奏,节奏视奏,简谱视奏,五线谱训练,乐谱生成">
+  <meta name="language" content="en">
+  <meta http-equiv="content-language" content="en">
+  <meta name="description"
+    content="Cognote is a professional sight-reading training system for guitar, piano and more. Generate melody, interval, chord, rhythm and jianpu drills with full control over key, meter and articulation.">
+  <meta name="keywords"
+    content="Cognote,sight reading practice,sight reading generator,music notation practice,melody sight reading,interval training,chord sight reading,rhythm training,jianpu generator,guitar sight reading,piano sight reading,视奏训练,视奏生成器,旋律视奏,音程视奏,和弦视奏,节奏视奏,简谱视奏,五线谱训练,乐谱生成">
   <meta name="author" content="Cognote - Igor Chen">
   <meta name="application-name" content="Cognote">
   <meta name="publish_date" property="og:publish_date" content="2024-08-01T00:00:00+08:00">
   <meta name="copyright" content="Cognote © 2024" data-copyright-owner="Cognote" data-copyright-start="2024">
   <meta name="rating" content="general">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-  <meta name="theme-color" content="#667eea">
+  <meta name="theme-color" content="#79addc">
   <title>Cognote - Professional Sight-Reading Training System</title>
-  
-  <!-- Icon -->    
-   
+
+  <!-- Icon -->
+
   <link rel="icon" type="image/png" href="/sight-reading-tool/images/cognote-favicon.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/sight-reading-tool/images/cognote-favicon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/sight-reading-tool/images/cognote-favicon.png">
@@ -29,13 +33,14 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
 
   <!-- Umami Analytics -->
-  <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script> 
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="24f8b47e-5590-49d6-a19e-4c34929d6741"></script>
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://icstudio.club/en/sight-reading-tool/" />
   <meta property="og:title" content="Cognote - Professional Sight-Reading Training" />
-  <meta property="og:description" content="Professional sight-reading generator for melody, interval, chord, rhythm and jianpu training with full parameter control." />
+  <meta property="og:description"
+    content="Professional sight-reading generator for melody, interval, chord, rhythm and jianpu training with full parameter control." />
   <meta property="og:image" content="https://icstudio.club/images/sight-reading-tool.png">
   <meta property="og:image:alt" content="Cognote Sight-Reading Landing Page">
   <meta property="og:image:width" content="1200">
@@ -49,7 +54,8 @@
   <meta name="twitter:site" content="@ICStudio86">
   <meta name="twitter:url" content="https://icstudio.club/en/sight-reading-tool/" />
   <meta name="twitter:title" content="Cognote - Professional Sight-Reading Training" />
-  <meta name="twitter:description" content="Train sight reading with configurable melody, interval, chord, rhythm and jianpu generators." />
+  <meta name="twitter:description"
+    content="Train sight reading with configurable melody, interval, chord, rhythm and jianpu generators." />
   <meta name="twitter:image" content="https://icstudio.club/images/sight-reading-tool.png">
 
   <!-- Canonical & Alternate Language Links -->
@@ -285,11 +291,12 @@
       margin-top: 2rem;
       overflow: hidden;
       padding: 0.375rem 0;
+      background: transparent;
     }
 
     .feedback-loop-mask::before,
     .feedback-loop-mask::after {
-      content: '';
+      content: none;
       position: absolute;
       top: 0;
       bottom: 0;
@@ -300,12 +307,12 @@
 
     .feedback-loop-mask::before {
       left: 0;
-      background: linear-gradient(to right, #f8fafc 8%, rgba(248, 250, 252, 0));
+      background: transparent;
     }
 
     .feedback-loop-mask::after {
       right: 0;
-      background: linear-gradient(to left, #f8fafc 8%, rgba(248, 250, 252, 0));
+      background: transparent;
     }
 
     .feedback-loop-track {
@@ -331,19 +338,20 @@
 
     .feedback-loop-card {
       flex: 0 0 clamp(260px, 30vw, 370px);
-      min-height: 244px;
-      padding: 1.75rem;
+      min-height: 214px;
+      padding: 1.5rem;
     }
 
     .feedback-loop-card .feature-title {
       font-size: 1.05rem;
-      margin-bottom: 0.7rem;
+      margin-bottom: 0.9rem;
     }
 
     .feedback-loop-card .feature-description {
       font-size: 0.98rem;
-      line-height: 1.75;
+      line-height: 1.88;
       color: hsl(var(--foreground));
+      margin: 0;
     }
 
     .feedback-note {
@@ -358,6 +366,7 @@
       from {
         transform: translate3d(0, 0, 0);
       }
+
       to {
         transform: translate3d(calc(-1 * var(--feedback-loop-distance)), 0, 0);
       }
@@ -366,7 +375,7 @@
     @media (max-width: 900px) {
       .feedback-loop-card {
         flex-basis: min(82vw, 350px);
-        min-height: 220px;
+        min-height: 198px;
       }
     }
 
@@ -376,7 +385,8 @@
       }
 
       .feedback-loop-card {
-        padding: 1.3rem;
+        min-height: 188px;
+        padding: 1.2rem;
       }
     }
 
@@ -621,17 +631,1631 @@
       border: 1px solid rgba(15, 23, 42, 0.25);
     }
 
+    .payment-header {
+      display: grid;
+      gap: 14px;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .payment-title {
+      max-width: 760px;
+      margin: 0;
+    }
+
+    .payment-price {
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    .payment-price-line strong {
+      color: #111827;
+    }
+
+    .pricing-cards-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      width: 100%;
+      margin-top: 32px;
+      margin-bottom: 4px;
+    }
+
+    .pricing-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      gap: 16px;
+      min-height: 100%;
+      padding: 24px 22px 22px;
+      border-radius: 30px;
+      border: 1px solid rgba(226, 232, 240, 0.92);
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(14px);
+      cursor: pointer;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+      font-family: inherit;
+      color: #0f172a;
+      outline: none;
+    }
+
+    .pricing-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      border: 1px solid transparent;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.32), rgba(148, 163, 184, 0.12)) border-box;
+      -webkit-mask:
+        linear-gradient(#fff 0 0) padding-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.22s ease;
+      pointer-events: none;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 32px 80px rgba(15, 23, 42, 0.12);
+      border-color: rgba(191, 219, 254, 0.94);
+    }
+
+    .pricing-card:hover::before,
+    .pricing-card.active::before {
+      opacity: 1;
+    }
+
+    .pricing-card.active {
+      transform: translateY(-6px);
+      border-color: rgba(191, 219, 254, 0.96);
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 36px 84px rgba(15, 23, 42, 0.14);
+    }
+
+    .pricing-card-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #2563eb;
+      background: #f8fbff;
+      border: 1px solid rgba(191, 219, 254, 0.86);
+      line-height: 1;
+    }
+
+    .pricing-card-badge--primary {
+      background: rgba(37, 99, 235, 0.1);
+      border-color: rgba(59, 130, 246, 0.12);
+    }
+
+    .pricing-card-head {
+      display: grid;
+      gap: 4px;
+      width: 100%;
+    }
+
+    .pricing-card-name {
+      font-size: clamp(26px, 2.6vw, 34px);
+      font-weight: 800;
+      margin: 0;
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+    }
+
+    .pricing-card-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .pricing-card-copy {
+      display: grid;
+      gap: 12px;
+      width: 100%;
+      min-height: 116px;
+    }
+
+    .pricing-card-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    .pricing-card-desc {
+      font-size: 15px;
+      color: #334155;
+      line-height: 1.7;
+      margin: 0;
+      max-width: 30ch;
+    }
+
+    .pricing-card-actions {
+      display: grid;
+      gap: 10px;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .pricing-card-cta,
+    .pricing-card-cta-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1;
+      transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .pricing-card-cta {
+      background: #111827;
+      color: #ffffff;
+      box-shadow: 0 18px 38px rgba(15, 23, 42, 0.16);
+    }
+
+    .pricing-card:not(.active) .pricing-card-cta {
+      background: #dfe6ee;
+      color: #111827;
+      box-shadow: none;
+    }
+
+    .pricing-card-cta-secondary {
+      background: #edf2f7;
+      color: #475569;
+    }
+
+    .pricing-card-divider,
+    .payment-card-divider {
+      width: 100%;
+      height: 1px;
+      background: rgba(226, 232, 240, 0.96);
+    }
+
+    .pricing-card-features {
+      display: grid;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .pricing-card-feature {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #475569;
+    }
+
+    .pricing-card-feature::before {
+      content: '✓';
+      font-size: 16px;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.2;
+    }
+
     .payment-mode-panel {
       display: none;
-      margin-top: 24px;
+      margin-top: 28px;
     }
 
     .payment-mode-panel.is-active {
       display: block;
     }
 
+    .payment-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .payment-grid--single {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .payment-card,
+    .gumroad-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      min-height: 100%;
+      padding: 28px 24px 24px;
+      border-radius: 30px;
+      border: 1px solid rgba(226, 232, 240, 0.94);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(14px);
+    }
+
+    .payment-card-badge,
+    .gumroad-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 30px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: #f8fbff;
+      border: 1px solid rgba(191, 219, 254, 0.84);
+      color: #2563eb;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .payment-card-head,
+    .gumroad-card-head,
+    .bundle-offer-head {
+      display: grid;
+      gap: 10px;
+      justify-items: start;
+      text-align: left;
+      margin: 0;
+    }
+
+    .payment-card h3,
+    .gumroad-title,
+    .bundle-offer-info h3 {
+      margin: 0;
+      font-size: clamp(28px, 2.8vw, 38px);
+      line-height: 1.12;
+      letter-spacing: -0.03em;
+      color: #0f172a;
+    }
+
+    .payment-plan-price,
+    .bundle-offer-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .payment-plan-price {
+      font-size: clamp(34px, 3vw, 48px);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: #0f172a;
+    }
+
+    .payment-plan-price span {
+      font-size: 14px;
+      font-weight: 500;
+      color: #64748b;
+      letter-spacing: 0;
+    }
+
+    .payment-card>p,
+    .bundle-offer-copy,
+    .gumroad-note {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.7;
+      color: #334155;
+    }
+
+    .promo-campaign-card {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(241, 245, 249, 0.78));
+      border: 1px solid rgba(226, 232, 240, 0.92);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    }
+
+    .promo-campaign-eyebrow-wrap {
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .promo-campaign-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.08);
+      color: #2563eb;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .promo-campaign-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .promo-campaign-copy {
+      display: grid;
+      gap: 8px;
+    }
+
+    .promo-campaign-title {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.65;
+      color: #0f172a;
+    }
+
+    .promo-campaign-trigger {
+      border: none;
+      min-height: 42px;
+      padding: 0 18px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: #111827;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .promo-campaign-trigger:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1);
+      background: #d8e0ea;
+    }
+
+    .payment-buttons {
+      display: grid;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .payment-trial-link,
+    .payment-button,
+    .access-code-button,
+    .single-pay-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 48px;
+      padding: 0 20px;
+      border: none;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .payment-trial-link:hover,
+    .payment-button:hover,
+    .access-code-button:hover,
+    .single-pay-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.14);
+    }
+
+    .payment-trial-link,
+    .payment-button-wechat,
+    .access-code-button,
+    .single-pay-wechat {
+      background: #dfe6ee;
+      color: #111827;
+      box-shadow: none;
+    }
+
+    .payment-button-alipay,
+    .single-pay-alipay,
+    .access-code-button.active {
+      background: #111827;
+      color: #ffffff;
+      box-shadow: 0 20px 42px rgba(15, 23, 42, 0.18);
+    }
+
+    .payment-button-wechat:hover,
+    .payment-trial-link:hover,
+    .access-code-button:hover {
+      background: #d5dee8;
+    }
+
+    .access-code-section {
+      display: grid;
+      gap: 14px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(226, 232, 240, 0.96);
+    }
+
+    .access-code-section h4 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #0f172a;
+    }
+
+    .access-code-input-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .access-code-input {
+      flex: 1 1 auto;
+      min-height: 48px;
+      padding: 0 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(203, 213, 225, 0.96);
+      background: #f8fafc;
+      font-size: 15px;
+      color: #0f172a;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .access-code-input:focus {
+      outline: none;
+      border-color: rgba(59, 130, 246, 0.42);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      background: #ffffff;
+    }
+
+    .access-code-button {
+      flex: 0 0 110px;
+    }
+
+    .verify-result {
+      min-height: 22px;
+      font-size: 14px;
+      color: #475569;
+    }
+
+    .gumroad-wrapper {
+      overflow: hidden;
+      padding: 0;
+      gap: 0;
+    }
+
+    .gumroad-card-head {
+      padding: 28px 24px 0;
+    }
+
+    .gumroad-frame-shell {
+      display: flex;
+      flex: 1 1 auto;
+      padding: 16px 18px 18px;
+    }
+
+    .gumroad-wrapper iframe {
+      width: 100%;
+      min-height: 560px;
+      border: 0;
+      border-radius: 24px;
+      background: #ffffff;
+    }
+
+    .bundle-offer-card {
+      position: relative;
+      overflow: visible;
+      border-color: rgba(191, 219, 254, 0.88);
+      background: #ffffff;
+      box-shadow: 0 26px 62px rgba(37, 99, 235, 0.1);
+    }
+
+    .bundle-offer-head {
+      margin-bottom: 0;
+    }
+
+    .bundle-offer-badge {
+      min-height: 30px;
+      padding: 0.45rem 0.8rem;
+      background: rgba(37, 99, 235, 0.1);
+      color: #2563eb;
+      border: 1px solid rgba(59, 130, 246, 0.14);
+      font-size: 0.92rem;
+      font-weight: 600;
+      border-radius: 999px;
+    }
+
+    .bundle-offer-info {
+      display: grid;
+      gap: 12px;
+      justify-items: start;
+      text-align: left;
+    }
+
+    .bundle-offer-price-old {
+      font-size: 14px;
+    }
+
     .single-products-grid.compact {
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 18px;
+    }
+
+    .single-product-card {
+      gap: 18px;
+      padding: 24px 22px 22px;
+      border-radius: 30px;
+      border-color: rgba(226, 232, 240, 0.92);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+    }
+
+    .single-product-image {
+      width: 72px;
+      height: 72px;
+      aspect-ratio: auto;
+      border-radius: 20px;
+      background: #ffffff;
+    }
+
+    .single-product-image img {
+      width: 64%;
+      height: 64%;
+    }
+
+    .single-product-copy {
+      display: grid;
+      gap: 8px;
+    }
+
+    .single-product-title {
+      font-size: 22px;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .single-product-note {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.65;
+      color: #64748b;
+    }
+
+    .single-product-plan-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+    }
+
+    .single-product-actions {
+      margin-top: auto;
+    }
+
+    .payment-grid--plans {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    .pricing-plan-card {
+      gap: 20px;
+      justify-content: flex-start;
+    }
+
+    .pricing-plan-card--featured {
+      border-color: rgba(191, 219, 254, 0.92);
+      box-shadow: 0 28px 72px rgba(37, 99, 235, 0.12);
+    }
+
+    .payment-plan-price-prefix {
+      font-size: 16px;
+      font-weight: 600;
+      color: #64748b;
+      letter-spacing: 0;
+    }
+
+    .payment-buttons--stack {
+      margin-top: auto;
+    }
+
+    .payment-button[disabled] {
+      opacity: 0.52;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .payment-button[disabled]:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    .payment-button-international {
+      background: #eef2f7;
+      color: #111827;
+    }
+
+    .payment-button-international:hover {
+      background: #e3e8ef;
+    }
+
+    .payment-trial-link--subtle {
+      min-height: 44px;
+      background: transparent;
+      color: #475569;
+      border: 1px solid rgba(203, 213, 225, 0.92);
+      box-shadow: none;
+    }
+
+    .payment-trial-link--subtle:hover {
+      color: #0f172a;
+      background: rgba(248, 250, 252, 0.96);
+      box-shadow: none;
+    }
+
+    .pricing-plan-list {
+      display: grid;
+      gap: 10px;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .pricing-plan-list li {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #475569;
+    }
+
+    .pricing-plan-list li::before {
+      content: '✓';
+      align-self: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.2;
+    }
+
+    .single-tool-dropdown {
+      width: 100%;
+    }
+
+    .single-tool-dropdown[open] .single-tool-dropdown-trigger {
+      border-color: rgba(59, 130, 246, 0.32);
+      background: #ffffff;
+      box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08);
+    }
+
+    .single-tool-dropdown-trigger {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      gap: 14px;
+      width: 100%;
+      min-height: 58px;
+      padding: 0 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(203, 213, 225, 0.96);
+      background: #f8fafc;
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .single-tool-dropdown-trigger::-webkit-details-marker {
+      display: none;
+    }
+
+    .single-tool-dropdown-trigger-label {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+      width: 100%;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .single-tool-dropdown-trigger-title {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: #0f172a;
+    }
+
+    .single-tool-dropdown-trigger-price {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .single-tool-dropdown-caret {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      width: 18px;
+      height: 18px;
+      color: #64748b;
+      transform: translateY(-50%);
+      transition: transform 0.2s ease;
+    }
+
+    .single-tool-dropdown[open] .single-tool-dropdown-caret {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    .single-tool-picker {
+      display: grid;
+      gap: 8px;
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 18px;
+      border: 1px solid rgba(226, 232, 240, 0.96);
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08);
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .single-tool-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 60px;
+      padding: 0 16px;
+      border: 1px solid rgba(203, 213, 225, 0.96);
+      border-radius: 22px;
+      background: #f8fafc;
+      text-align: left;
+      color: #0f172a;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    .single-tool-option:hover {
+      transform: translateY(-1px);
+      border-color: rgba(148, 163, 184, 0.92);
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.08);
+      background: #ffffff;
+    }
+
+    .single-tool-option.is-selected {
+      border-color: #111827;
+      background: #111827;
+      color: #ffffff;
+      box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);
+    }
+
+    .single-tool-option-name {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .single-tool-option-price {
+      flex: 0 0 auto;
+      font-size: 13px;
+      line-height: 1.2;
+      color: #64748b;
+    }
+
+    .single-tool-option.is-selected .single-tool-option-price {
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .single-plan-selection {
+      display: grid;
+      gap: 6px;
+      padding: 18px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(241, 245, 249, 0.86));
+      border: 1px solid rgba(226, 232, 240, 0.96);
+    }
+
+    .single-plan-selection-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .single-plan-selection-name {
+      font-size: 20px;
+      line-height: 1.25;
+      color: #0f172a;
+    }
+
+    .single-plan-selection-note {
+      font-size: 14px;
+      line-height: 1.65;
+      color: #475569;
+    }
+
+    .single-plan-selection-price {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #0f172a;
+    }
+
+    .payment-access-shell {
+      margin-top: 24px;
+      padding: 24px;
+      border-radius: 30px;
+      border: 1px solid rgba(226, 232, 240, 0.94);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(14px);
+    }
+
+    .payment-access-shell .access-code-section {
+      padding-top: 0;
+      border-top: none;
+    }
+
+    .payment-section {
+      position: relative;
+      overflow: hidden;
+      padding: 96px 0 104px;
+      background:
+        radial-gradient(980px 420px at 50% -8%, rgba(59, 130, 246, 0.12), transparent 58%),
+        radial-gradient(620px 280px at 10% 12%, rgba(255, 255, 255, 0.72), transparent 62%),
+        linear-gradient(180deg, #f8fbff 0%, #eef3f8 100%);
+    }
+
+    .payment-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .payment-bg-1,
+    .payment-bg-blob-1,
+    .payment-bg-blob-2 {
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+      filter: blur(18px);
+      opacity: 0.75;
+    }
+
+    .payment-bg-1 {
+      width: 520px;
+      height: 520px;
+      top: -220px;
+      left: -140px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 72%);
+    }
+
+    .payment-bg-blob-1 {
+      width: 380px;
+      height: 380px;
+      top: 120px;
+      right: -140px;
+      background: radial-gradient(circle, rgba(14, 165, 233, 0.14) 0%, rgba(14, 165, 233, 0) 72%);
+    }
+
+    .payment-bg-blob-2 {
+      width: 340px;
+      height: 340px;
+      bottom: 40px;
+      left: -80px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0) 76%);
+    }
+
+    .payment-header {
+      gap: 18px;
+      justify-items: start;
+      text-align: left;
+      margin-bottom: 28px;
+    }
+
+    .payment-title {
+      max-width: 620px;
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1;
+      letter-spacing: -0.055em;
+      color: #0f172a;
+    }
+
+    .payment-title .text-gradient {
+      color: #2563eb;
+    }
+
+    .payment-grid--plans {
+      gap: 24px;
+    }
+
+    .payment-card {
+      overflow: hidden;
+      gap: 22px;
+      padding: 30px 24px 24px;
+      border-radius: 24px;
+      border: 1px solid rgba(226, 232, 240, 0.94);
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 28px 64px rgba(15, 23, 42, 0.1);
+      backdrop-filter: none;
+      color: #0f172a;
+    }
+
+    .payment-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: none;
+      pointer-events: none;
+    }
+
+    .pricing-plan-card--featured {
+      order: 2;
+      border-color: rgba(191, 219, 254, 0.92);
+      box-shadow: 0 28px 64px rgba(37, 99, 235, 0.12);
+    }
+
+    .bundle-offer-card {
+      order: 3;
+      overflow: hidden;
+      border-radius: 24px;
+      border-color: rgba(191, 219, 254, 0.9);
+      background: rgba(250, 245, 255, 0.98);
+      box-shadow: 0 30px 72px rgba(109, 40, 217, 0.12);
+    }
+
+    .bundle-offer-card .payment-card-badge,
+    .bundle-offer-card h3,
+    .bundle-offer-card .payment-plan-price,
+    .bundle-offer-card .payment-plan-price span,
+    .bundle-offer-card .payment-plan-price-prefix,
+    .bundle-offer-card p,
+    .bundle-offer-card li {
+      background: none;
+      -webkit-background-clip: border-box;
+      -webkit-text-fill-color: currentColor;
+    }
+
+    .pricing-plan-card--single {
+      order: 1;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 251, 0.96));
+    }
+
+    .payment-card-badge,
+    .bundle-offer-badge {
+      min-height: 30px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(191, 219, 254, 0.84);
+      background: #f8fbff;
+      color: #2563eb;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .bundle-offer-badge {
+      background: rgba(109, 40, 217, 0.08);
+      border-color: rgba(109, 40, 217, 0.14);
+      color: #6d28d9;
+    }
+
+    .payment-card-head,
+    .bundle-offer-head {
+      gap: 14px;
+    }
+
+    .payment-card h3 {
+      font-size: clamp(24px, 2.5vw, 38px);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+      color: #0f172a;
+    }
+
+    .payment-plan-price,
+    .bundle-offer-price {
+      font-size: clamp(44px, 4.2vw, 64px);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+      color: #0f172a;
+    }
+
+    .payment-plan-price span,
+    .payment-plan-price-prefix,
+    .bundle-offer-price-old {
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .payment-card-head p,
+    .bundle-offer-copy,
+    .gumroad-note {
+      margin: 0;
+      color: #334155;
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 36ch;
+    }
+
+    .promo-campaign-card {
+      gap: 14px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(226, 232, 240, 0.92);
+      background: rgba(248, 250, 252, 0.94);
+      box-shadow: none;
+    }
+
+    .payment-container>.promo-campaign-card {
+      max-width: 780px;
+      margin-bottom: 28px;
+    }
+
+    .promo-campaign-eyebrow {
+      background: rgba(37, 99, 235, 0.08);
+      color: #2563eb;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .promo-campaign-title {
+      color: #0f172a;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .promo-campaign-trigger {
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(203, 213, 225, 0.92);
+      background: #e2e8f0;
+      color: #111827;
+      box-shadow: none;
+    }
+
+    .promo-campaign-trigger:hover {
+      background: #d8e0ea;
+      box-shadow: none;
+    }
+
+    .payment-card-divider {
+      background: rgba(226, 232, 240, 0.96);
+    }
+
+    .payment-button,
+    .access-code-button {
+      min-height: 50px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+      box-shadow: none;
+    }
+
+    .payment-button:hover,
+    .access-code-button:hover {
+      box-shadow: none;
+    }
+
+    .payment-button-alipay,
+    .access-code-button.active {
+      background: #dfe6ee;
+      color: #111827;
+    }
+
+    .payment-button-alipay:hover,
+    .access-code-button.active:hover {
+      background: #d5dee8;
+    }
+
+    .payment-button-wechat,
+    .payment-button-international,
+    .access-code-button {
+      background: #dfe6ee;
+      border-color: transparent;
+      color: #111827;
+    }
+
+    .payment-button-wechat:hover,
+    .payment-button-international:hover,
+    .access-code-button:hover {
+      background: #d5dee8;
+    }
+
+    .bundle-offer-card .payment-button {
+      background: linear-gradient(90deg, #7268ff, #5e57ec);
+      border-color: transparent;
+      color: #ffffff;
+      box-shadow: 0 18px 34px rgba(97, 88, 236, 0.28);
+    }
+
+    .bundle-offer-card .payment-button:hover {
+      background: linear-gradient(90deg, #7b72ff, #655ef3);
+      box-shadow: 0 20px 38px rgba(97, 88, 236, 0.34);
+    }
+
+    .payment-button[disabled] {
+      opacity: 0.4;
+      background: #e7edf4;
+      color: #64748b;
+    }
+
+    .pricing-plan-list {
+      gap: 12px;
+    }
+
+    .pricing-plan-list li {
+      grid-template-columns: 12px minmax(0, 1fr);
+      gap: 12px;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .pricing-plan-list li::before {
+      content: '✓';
+      width: auto;
+      height: auto;
+      margin-top: 0;
+      border-radius: 0;
+      background: none;
+      color: #111827;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .bundle-offer-card .pricing-plan-list li::before {
+      color: #5b4ee5;
+    }
+
+    .single-tool-option {
+      min-height: 88px;
+      border: 1px solid rgba(203, 213, 225, 0.96);
+      background: #f8fafc;
+      color: #0f172a;
+      border-radius: 18px;
+      box-shadow: none;
+    }
+
+    .single-tool-option:hover {
+      border-color: rgba(148, 163, 184, 0.92);
+      background: #ffffff;
+      box-shadow: none;
+    }
+
+    .single-tool-option-price {
+      color: #64748b;
+    }
+
+    .single-tool-option.is-selected {
+      border-color: #111827;
+      background: #111827;
+      color: #ffffff;
+      box-shadow: 0 18px 34px rgba(15, 23, 42, 0.18);
+    }
+
+    .single-tool-option.is-selected .single-tool-option-price {
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .single-plan-selection {
+      border: 1px solid rgba(226, 232, 240, 0.96);
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(241, 245, 249, 0.86));
+    }
+
+    .single-plan-selection-label,
+    .single-plan-selection-note {
+      color: #64748b;
+    }
+
+    .single-plan-selection-name,
+    .single-plan-selection-price {
+      color: #0f172a;
+    }
+
+    .payment-access-shell {
+      margin-top: 26px;
+      padding: 22px;
+      border-radius: 24px;
+      border: 1px solid rgba(226, 232, 240, 0.94);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 24px 54px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(12px);
+    }
+
+    .access-code-input {
+      border: 1px solid rgba(203, 213, 225, 0.96);
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .access-code-input::placeholder {
+      color: #94a3b8;
+    }
+
+    .access-code-input:focus {
+      border-color: rgba(131, 118, 255, 0.7);
+      box-shadow: 0 0 0 4px rgba(104, 92, 231, 0.18);
+      background: #ffffff;
+    }
+
+    .verify-result {
+      color: #475569;
+      text-align: center;
+    }
+
+    .verify-result:empty {
+      display: none;
+    }
+
+    .payment-access-shell .access-code-input-group {
+      justify-content: center;
+      align-items: center;
+    }
+
+    .payment-update-meta {
+      margin-top: 18px;
+      color: #64748b;
+    }
+
+    .payment-update-link {
+      color: #4f46e5;
+    }
+
+    @media (max-width: 980px) {
+      .payment-header {
+        justify-items: center;
+        text-align: center;
+      }
+
+      .promo-campaign-row {
+        flex-direction: column;
+      }
+    }
+
+    .faq-section {
+      position: relative;
+      padding: 96px 0 104px;
+      background: radial-gradient(1200px 520px at 50% 0%, #f8fafc 0%, #f4f7fb 42%, #eef2f7 100%);
+    }
+
+    .faq-container {
+      position: relative;
+      z-index: 1;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .faq-list {
+      display: grid;
+      gap: 16px;
+      margin-top: 2.25rem;
+    }
+
+    .faq-group-label {
+      margin: 0;
+      padding: 0 6px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .faq-item {
+      overflow: hidden;
+      border: 1px solid rgba(203, 213, 225, 0.92);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 22px 54px rgba(15, 23, 42, 0.07);
+      backdrop-filter: blur(10px);
+    }
+
+    .faq-item[open] {
+      border-color: rgba(148, 163, 184, 0.94);
+      box-shadow: 0 26px 58px rgba(15, 23, 42, 0.1);
+    }
+
+    .faq-question {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 22px 24px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .faq-question::-webkit-details-marker {
+      display: none;
+    }
+
+    .faq-question::after {
+      content: '';
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #e2e8f0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f172a' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='7 10 12 15 17 10'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 18px 18px;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+    .faq-item[open] .faq-question::after {
+      background-color: #111827;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='7 10 12 15 17 10'/%3E%3C/svg%3E");
+      transform: rotate(180deg);
+    }
+
+    .faq-title {
+      margin: 0;
+      font-size: clamp(18px, 2vw, 21px);
+      line-height: 1.45;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+    }
+
+    .faq-title-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .faq-title-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 40px;
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      background: #eef2f7;
+      color: #0f172a;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    }
+
+    .faq-title-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+    }
+
+    .faq-answer {
+      display: grid;
+      gap: 16px;
+      padding: 0 24px 24px;
+      border-top: 1px solid rgba(226, 232, 240, 0.96);
+    }
+
+    .faq-answer p,
+    .faq-answer li {
+      font-size: 15px;
+      line-height: 1.75;
+      color: #334155;
+    }
+
+    .faq-answer p {
+      margin: 0;
+    }
+
+    .faq-answer ul {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+
+    .faq-answer ul.faq-plain-list {
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .faq-note-box,
+    .faq-code-box,
+    .faq-contact-box {
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(226, 232, 240, 0.96);
+      background: #f8fafc;
+    }
+
+    .faq-code-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .faq-note-box strong,
+    .faq-contact-box strong,
+    .faq-answer strong {
+      color: #0f172a;
+    }
+
+    .faq-code-box code {
+      display: block;
+      flex: 1;
+      font-family: "SFMono-Regular", "JetBrains Mono", "Menlo", monospace;
+      font-size: 14px;
+      line-height: 1.65;
+      color: #111827;
+      word-break: break-all;
+    }
+
+    .faq-code-copy {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 1px solid rgba(121, 173, 220, 0.24);
+      border-radius: 12px;
+      background: rgba(121, 173, 220, 0.08);
+      color: var(--cognote-accent-strong);
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    }
+
+    .faq-code-copy svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+    }
+
+    .faq-code-copy:hover {
+      background: rgba(121, 173, 220, 0.14);
+      border-color: rgba(121, 173, 220, 0.34);
+      color: var(--cognote-accent-deep);
+      transform: translateY(-1px);
+    }
+
+    .faq-code-copy.is-copied {
+      background: rgba(121, 173, 220, 0.18);
+      border-color: rgba(121, 173, 220, 0.34);
+      color: var(--cognote-accent-deep);
+    }
+
+    .faq-actions {
+      display: flex;
+      justify-content: center;
+      padding-top: 2px;
+    }
+
+    .faq-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 18px;
+      border: none;
+      border-radius: 999px;
+      background: #111827;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.14);
+    }
+
+    .faq-button:hover {
+      transform: translateY(-1px);
+      background: #0f172a;
+      box-shadow: 0 24px 42px rgba(15, 23, 42, 0.18);
+    }
+
+    .faq-link {
+      color: #0f172a;
+      font-weight: 600;
+      text-decoration: underline;
+      text-decoration-color: rgba(15, 23, 42, 0.28);
+      text-underline-offset: 3px;
+    }
+
+    .faq-link:hover {
+      text-decoration-color: rgba(15, 23, 42, 0.6);
+    }
+
+    .faq-heading-accent {
+      color: #475569;
+    }
+
+    @media (max-width: 980px) {
+
+      .pricing-cards-row,
+      .payment-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pricing-card.active {
+        transform: translateY(-2px);
+      }
+
+      .gumroad-frame-shell {
+        padding-top: 12px;
+      }
+
+      .single-tool-dropdown-trigger {
+        min-height: 54px;
+      }
+    }
+
+    @media (max-width: 768px) {
+
+      .pricing-card,
+      .payment-card,
+      .gumroad-wrapper,
+      .single-product-card {
+        padding: 22px 18px 18px;
+        border-radius: 24px;
+      }
+
+      .pricing-card-copy {
+        min-height: auto;
+      }
+
+      .payment-card h3,
+      .gumroad-title,
+      .bundle-offer-info h3 {
+        font-size: 28px;
+      }
+
+      .payment-plan-price {
+        font-size: 34px;
+      }
+
+      .access-code-input-group,
+      .promo-campaign-row {
+        flex-direction: column;
+      }
+
+      .access-code-button {
+        width: 100%;
+        flex-basis: auto;
+      }
+
+      .gumroad-card-head {
+        padding: 22px 18px 0;
+      }
+
+      .faq-container {
+        padding: 0 18px;
+      }
+
+      .faq-question,
+      .faq-answer {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
     }
 
     .single-payment-overlay {
@@ -1020,7 +2644,7 @@
       line-height: 1.7;
     }
 
-    .update-log-list li + li {
+    .update-log-list li+li {
       margin-top: 0.6rem;
     }
 
@@ -1041,7 +2665,7 @@
       padding: 0;
     }
 
-    .update-log-history-entry + .update-log-history-entry {
+    .update-log-history-entry+.update-log-history-entry {
       margin-top: 0.75rem;
     }
 
@@ -1119,6 +2743,1266 @@
         filter: none;
         transform: none;
         transition: none;
+      }
+    }
+  </style>
+
+  <style>
+    :root {
+      --cognote-blue-50: #f7fbfe;
+      --cognote-blue-100: #eef6fc;
+      --cognote-blue-200: #ddebf6;
+      --cognote-blue-300: #c8deef;
+      --cognote-blue-400: #a8cce6;
+      --cognote-blue-500: #79addc;
+      --cognote-blue-600: #5f93bf;
+      --cognote-blue-700: #456f93;
+      --cognote-pink-100: #fff4ec;
+      --cognote-pink-200: #ffe6d7;
+      --cognote-pink-500: #ffc09f;
+      --cognote-pink-600: #cc9678;
+      --cognote-accent: var(--cognote-blue-500);
+      --cognote-accent-strong: var(--cognote-blue-600);
+      --cognote-accent-deep: var(--cognote-blue-700);
+      --cognote-accent-soft: var(--cognote-blue-100);
+      --cognote-pink: var(--cognote-pink-500);
+      --cognote-pink-soft: var(--cognote-pink-100);
+      --cognote-pink-ink: var(--cognote-pink-600);
+      --cognote-ink: #2c4458;
+      --cognote-muted: #6f8292;
+      --cognote-faint: #9aa8b4;
+      --cognote-surface: #ffffff;
+      --cognote-surface-blue: var(--cognote-blue-100);
+      --cognote-surface-pink: var(--cognote-pink-100);
+      --cognote-surface-mist: #fbfdff;
+      --cognote-border: rgba(121, 173, 220, 0.22);
+      --cognote-border-strong: rgba(121, 173, 220, 0.34);
+      --cognote-shadow: 0 18px 40px rgba(69, 111, 147, 0.1);
+      --cognote-shadow-strong: 0 24px 52px rgba(69, 111, 147, 0.14);
+      --font-size-xs: 13px;
+      --font-size-sm: 15px;
+      --font-size-md: 16px;
+      --font-size-lg: 18px;
+      --font-size-xl: 21px;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+      --font-weight-heavy: 800;
+      --line-height-tight: 1.08;
+      --line-height-copy: 1.7;
+      --feedback-bg: var(--cognote-blue-50);
+      --feedback-ink: var(--cognote-ink);
+      --feedback-muted: var(--cognote-muted);
+      --feedback-card-bg: rgba(255, 255, 255, 0.9);
+      --feedback-card-border: var(--cognote-border);
+      --feedback-author: var(--cognote-ink);
+      --single-products-bg: var(--cognote-surface-mist);
+      --single-products-ink: var(--cognote-ink);
+      --single-products-muted: var(--cognote-muted);
+      --single-products-card: rgba(255, 255, 255, 0.92);
+      --single-products-border: var(--cognote-border);
+      --single-products-accent: var(--cognote-accent);
+      --single-products-accent-2: var(--cognote-accent-strong);
+      --single-products-accent-3: var(--cognote-accent-deep);
+    }
+
+    body {
+      background: var(--cognote-surface-mist);
+      color: var(--cognote-ink);
+    }
+
+    header.py-6.border-b {
+      border-color: rgba(121, 173, 220, 0.16);
+      background: rgba(255, 255, 255, 0.84);
+      backdrop-filter: blur(14px);
+    }
+
+    .landing-header-nav a {
+      color: var(--cognote-muted);
+    }
+
+    .landing-header-nav a:hover {
+      color: var(--cognote-accent-strong);
+    }
+
+    .lang-switcher {
+      background: #f2f4fb;
+    }
+
+    .lang-switcher:hover {
+      background: #eceff8;
+    }
+
+    .lang-option {
+      color: var(--cognote-muted);
+    }
+
+    .lang-option:hover:not(.active) {
+      color: var(--cognote-ink);
+      background: rgba(121, 173, 220, 0.08);
+    }
+
+    .lang-option::before {
+      background: var(--cognote-accent-strong);
+    }
+
+    header .toggle-button,
+    header .bg-zinc-100,
+    header .bg-zinc-50,
+    #menu-bar a {
+      background: var(--cognote-surface-blue) !important;
+      border-color: var(--cognote-border) !important;
+      color: var(--cognote-ink) !important;
+    }
+
+    header .toggle-button:hover,
+    #menu-bar a:hover {
+      background: var(--cognote-surface-pink) !important;
+    }
+
+    header .bg-blue-500 {
+      background: var(--cognote-accent) !important;
+    }
+
+    #search-bar input {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: var(--cognote-border);
+      color: var(--cognote-ink);
+    }
+
+    #search-bar input:focus {
+      border-color: var(--cognote-accent);
+      box-shadow: 0 0 0 4px rgba(121, 173, 220, 0.16);
+    }
+
+    .hero {
+      background: #ffffff;
+      border-bottom: none;
+    }
+
+    .hero::before,
+    .hero::after,
+    .hero-bg::before,
+    .hero-bg::after {
+      content: none !important;
+      display: none !important;
+      background: none !important;
+    }
+
+    .hero-bg {
+      background: #ffffff !important;
+      background-image: none !important;
+      box-shadow: none !important;
+    }
+
+    .hero-overlay {
+      background: rgba(255, 255, 255, 0.58) !important;
+    }
+
+    .hero-decoration {
+      background: rgba(255, 192, 159, 0.14) !important;
+    }
+
+    .hero-decoration-2 {
+      background: rgba(121, 173, 220, 0.12) !important;
+    }
+
+    .hero-title,
+    .section-title,
+    .payment-title,
+    .faq-title,
+    .pricing-card-name,
+    .payment-card h3,
+    #features .feature-title {
+      color: var(--cognote-ink);
+    }
+
+    .hero-subtitle,
+    .section-subtitle,
+    .payment-card-head p,
+    .bundle-offer-copy,
+    .promo-campaign-title,
+    .faq-answer p,
+    .faq-answer li,
+    .pricing-card-desc,
+    .pricing-plan-list li,
+    .feedback-note,
+    .pricing-card-subtitle,
+    #features .feature-description,
+    .payment-update-meta,
+    .verify-result {
+      color: var(--cognote-muted);
+      font-size: var(--font-size-sm);
+      line-height: var(--line-height-copy);
+    }
+
+    .hero-gradient-text,
+    .text-gradient,
+    .payment-title .text-gradient {
+      color: var(--cognote-accent-strong) !important;
+      background: none !important;
+      -webkit-text-fill-color: currentColor !important;
+    }
+
+    .hero-highlight {
+      color: var(--cognote-pink-ink) !important;
+      background: none !important;
+      -webkit-text-fill-color: currentColor !important;
+    }
+
+    .hero-pill,
+    .payment-card-badge,
+    .pricing-card-badge,
+    .promo-campaign-eyebrow {
+      background: var(--cognote-surface-blue);
+      color: var(--cognote-accent-strong);
+      border-color: rgba(121, 173, 220, 0.24);
+    }
+
+    .bundle-offer-badge,
+    .bundle-offer-card .payment-card-badge,
+    .pricing-card-badge--primary {
+      background: var(--cognote-surface-blue);
+      color: var(--cognote-accent-strong);
+      border-color: rgba(121, 173, 220, 0.24);
+    }
+
+    .hero-overlay,
+    .hero-decoration,
+    .hero-decoration-1,
+    .hero-decoration-2,
+    .geo-shape,
+    .payment-bg-1,
+    .payment-bg-blob-1,
+    .payment-bg-blob-2 {
+      display: none !important;
+      background: none !important;
+      background-image: none !important;
+    }
+
+    .hero-cards-section {
+      position: relative;
+      background: #ffffff;
+      border-top: 2px solid rgba(121, 173, 220, 0.18);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+      padding-top: var(--space-12);
+    }
+
+    .hero-tool-card,
+    .feature-card,
+    .feedback-loop-card,
+    .pricing-card,
+    .payment-card,
+    .faq-item,
+    .payment-access-shell,
+    .single-tool-option,
+    .promo-campaign-card {
+      border-color: var(--cognote-border);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--cognote-shadow);
+    }
+
+    .hero-tool-card {
+      background: rgba(255, 255, 255, 0.88);
+    }
+
+    #features.features {
+      position: relative;
+      background: #ffffff;
+    }
+
+    .feedback-section::before,
+    .feedback-section::after,
+    .single-products-section::before,
+    .single-products-section::after {
+      content: none !important;
+      display: none !important;
+    }
+
+    .payment-section {
+      background: #ffffff;
+    }
+
+    .payment-grid--plans {
+      align-items: stretch;
+    }
+
+    .faq-section {
+      background: #ffffff;
+    }
+
+    #features.features,
+    .feedback-section,
+    .single-products-section,
+    .payment-section,
+    .faq-section {
+      position: relative;
+      border-top: 2px solid rgba(121, 173, 220, 0.18);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
+    }
+
+    #features.features::before,
+    #features.features::after {
+      content: none !important;
+      display: none !important;
+    }
+
+    .feedback-section {
+      background: #ffffff;
+    }
+
+    .single-products-section {
+      background: #ffffff;
+    }
+
+    .pricing-card::before {
+      background: rgba(121, 173, 220, 0.18) border-box;
+    }
+
+    .pricing-card:hover,
+    .pricing-card.active,
+    #features .feature-card:hover,
+    .single-tool-option:hover,
+    .faq-item[open] {
+      border-color: var(--cognote-border-strong);
+      box-shadow: var(--cognote-shadow-strong);
+    }
+
+    .pricing-plan-card--single {
+      background: rgba(247, 251, 254, 0.72);
+      border-color: rgba(121, 173, 220, 0.14);
+      box-shadow: 0 10px 24px rgba(69, 111, 147, 0.06);
+    }
+
+    .pricing-plan-card--single .payment-card-head {
+      justify-items: start;
+      text-align: left;
+      gap: var(--space-4);
+    }
+
+    .pricing-plan-card--single .payment-plan-price {
+      width: 100%;
+      justify-content: flex-start;
+      align-items: flex-end;
+      gap: var(--space-2);
+      text-align: left;
+    }
+
+    .pricing-plan-card--single .payment-plan-price-prefix,
+    .pricing-plan-card--single .payment-plan-price span {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .pricing-plan-card--single .payment-card-head p {
+      max-width: 26ch;
+      margin-inline: 0;
+      text-align: left;
+      line-height: 1.8;
+    }
+
+    .pricing-plan-card--featured {
+      border-color: rgba(121, 173, 220, 0.28);
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 28px 56px rgba(121, 173, 220, 0.18);
+    }
+
+    .bundle-offer-card {
+      border-color: rgba(121, 173, 220, 0.2);
+      background: rgba(247, 251, 254, 0.82);
+      box-shadow: 0 10px 24px rgba(69, 111, 147, 0.06);
+    }
+
+    .payment-card:not(.pricing-plan-card--featured) {
+      backdrop-filter: none;
+    }
+
+    .payment-card:not(.pricing-plan-card--featured) .payment-card-badge {
+      background: rgba(121, 173, 220, 0.06);
+      color: var(--cognote-muted);
+      border-color: rgba(121, 173, 220, 0.14);
+    }
+
+    .payment-card:not(.pricing-plan-card--featured) h3 {
+      color: #486173;
+    }
+
+    .payment-card:not(.pricing-plan-card--featured) .payment-plan-price {
+      color: #385267;
+    }
+
+    .payment-card:not(.pricing-plan-card--featured) .payment-plan-price span,
+    .payment-card:not(.pricing-plan-card--featured) .payment-plan-price-prefix,
+    .payment-card:not(.pricing-plan-card--featured) .bundle-offer-price-old,
+    .payment-card:not(.pricing-plan-card--featured) p,
+    .payment-card:not(.pricing-plan-card--featured) .pricing-plan-list li {
+      color: #738594;
+    }
+
+    .payment-card:not(.pricing-plan-card--featured) .payment-card-divider {
+      background: rgba(121, 173, 220, 0.12);
+    }
+
+    .payment-card:not(.pricing-plan-card--featured) .pricing-plan-list li::before {
+      color: rgba(95, 147, 191, 0.72);
+    }
+
+    .pricing-plan-card--featured .payment-card-badge {
+      background: rgba(121, 173, 220, 0.12);
+      color: var(--cognote-accent-deep);
+      border-color: rgba(121, 173, 220, 0.24);
+    }
+
+    .feature-icon {
+      border: none;
+      background: transparent !important;
+      color: var(--cognote-accent-strong) !important;
+      box-shadow: none;
+    }
+
+    .feature-icon-purple,
+    .feature-icon-blue,
+    .feature-icon-cyan,
+    .feature-icon-green,
+    .feature-icon-amber,
+    .feature-icon-pink {
+      background: transparent !important;
+      color: var(--cognote-accent-strong) !important;
+    }
+
+    .btn.btn-primary,
+    .pricing-card-cta {
+      background: var(--cognote-accent-strong) !important;
+      color: #ffffff !important;
+      border: 1px solid transparent;
+      box-shadow: 0 16px 34px rgba(121, 173, 220, 0.22);
+    }
+
+    .btn.btn-primary:hover,
+    .pricing-card-cta:hover {
+      box-shadow: 0 20px 38px rgba(121, 173, 220, 0.24);
+    }
+
+    .btn.btn-outline,
+    .pricing-card-cta-secondary {
+      background: rgba(255, 255, 255, 0.88) !important;
+      border: 1px solid rgba(121, 173, 220, 0.28);
+      color: var(--cognote-accent-strong) !important;
+    }
+
+    .btn.btn-outline:hover,
+    .pricing-card-cta-secondary:hover {
+      background: var(--cognote-accent-soft) !important;
+      color: var(--cognote-accent-deep) !important;
+    }
+
+    .payment-card-divider,
+    .pricing-card-divider {
+      background: rgba(121, 173, 220, 0.18);
+    }
+
+    .faq-answer {
+      border-top-color: rgba(121, 173, 220, 0.18);
+    }
+
+    .faq-title-icon {
+      background: var(--cognote-accent-soft);
+      color: var(--cognote-accent-strong);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .faq-question::after {
+      border: 1px solid rgba(121, 173, 220, 0.18);
+      background: var(--cognote-surface-blue);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2379addc' stroke-width='2.3' stroke-linecap='round'%3E%3Cpath d='M12 7v10M7 12h10'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 16px 16px;
+      color: var(--cognote-accent-strong);
+    }
+
+    .faq-item[open] .faq-question::after {
+      background: var(--cognote-accent-strong);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.3' stroke-linecap='round'%3E%3Cpath d='M7 12h10'/%3E%3C/svg%3E");
+      color: #ffffff;
+      transform: none;
+    }
+
+    .single-tool-dropdown-trigger,
+    .access-code-input {
+      background: #fafbff;
+      border-color: var(--cognote-border);
+      color: var(--cognote-ink);
+    }
+
+    .single-tool-dropdown[open] .single-tool-dropdown-trigger,
+    .access-code-input:focus {
+      border-color: rgba(95, 115, 255, 0.36);
+      box-shadow: 0 0 0 4px rgba(121, 173, 220, 0.16);
+      background: #ffffff;
+    }
+
+    .single-tool-option-price,
+    .single-tool-dropdown-trigger-price,
+    .payment-plan-price span,
+    .payment-plan-price-prefix,
+    .bundle-offer-price-old,
+    .payment-price,
+    .faq-group-label {
+      color: var(--cognote-muted);
+    }
+
+    .single-tool-option.is-selected {
+      border-color: rgba(121, 173, 220, 0.34);
+      background: var(--cognote-accent-strong);
+      color: #ffffff;
+      box-shadow: 0 16px 32px rgba(121, 173, 220, 0.24);
+    }
+
+    .single-tool-option.is-selected .single-tool-option-price {
+      color: rgba(255, 255, 255, 0.82);
+    }
+
+    .payment-button,
+    .access-code-button,
+    .promo-campaign-trigger {
+      background: var(--cognote-accent-soft);
+      border-color: rgba(121, 173, 220, 0.22);
+      color: var(--cognote-ink);
+    }
+
+    .payment-button:hover,
+    .access-code-button:hover,
+    .promo-campaign-trigger:hover {
+      background: rgba(121, 173, 220, 0.18);
+      border-color: rgba(121, 173, 220, 0.3);
+      color: var(--cognote-accent-deep);
+    }
+
+    .bundle-offer-card .payment-button {
+      background: var(--cognote-accent-soft);
+      border-color: rgba(121, 173, 220, 0.22);
+      color: var(--cognote-ink);
+      box-shadow: none;
+    }
+
+    .bundle-offer-card .payment-button:hover {
+      background: rgba(121, 173, 220, 0.18);
+      box-shadow: none;
+    }
+
+    .payment-button[disabled] {
+      background: #eef1f6;
+      color: var(--cognote-faint);
+      border-color: transparent;
+    }
+
+    .pricing-plan-list li::before,
+    .pricing-card-feature::before,
+    .payment-update-link {
+      color: var(--cognote-accent-strong);
+    }
+
+    .bundle-offer-card .pricing-plan-list li::before {
+      color: var(--cognote-accent-strong);
+    }
+
+    .feedback-loop-card .feature-title {
+      color: var(--cognote-accent-strong) !important;
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-semibold);
+      line-height: 1.35;
+    }
+
+    .feedback-loop-card .feature-description {
+      color: var(--cognote-muted);
+      font-size: var(--font-size-sm);
+      line-height: var(--line-height-copy);
+    }
+
+    :root {
+      /* Spacing scale: compact at the low end, roomier at the high end. */
+      --space-1: 4px;
+      --space-2: 6px;
+      --space-3: 8px;
+      --space-4: 12px;
+      --space-5: 16px;
+      --space-6: 24px;
+      --space-7: 32px;
+      --space-8: 40px;
+      --space-9: 48px;
+      --space-10: 64px;
+      --space-11: 80px;
+      --space-12: 96px;
+      --radius-sm: 12px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
+      --radius-pill: 999px;
+      --control-md: 48px;
+      --control-lg: 56px;
+    }
+
+    .landing-header-bar {
+      gap: var(--space-5);
+    }
+
+    .landing-header-nav {
+      gap: var(--space-9);
+    }
+
+    .landing-header-actions {
+      gap: var(--space-3);
+    }
+
+    .lang-switcher {
+      border-radius: var(--radius-md);
+      padding: var(--space-1);
+    }
+
+    .lang-option {
+      padding: var(--space-3) var(--space-5);
+      border-radius: var(--radius-sm);
+    }
+
+    .section-header,
+    .single-products-header,
+    .payment-header {
+      gap: var(--space-5);
+    }
+
+    .feedback-section .section-title {
+      display: inline-flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 0;
+      white-space: nowrap;
+      font-size: 0;
+    }
+
+    .feedback-section .section-title span {
+      display: inline-block;
+      margin: 0;
+      padding: 0;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1;
+      letter-spacing: inherit;
+    }
+
+    .payment-header {
+      justify-items: center;
+      text-align: center;
+      margin-inline: auto;
+    }
+
+    .feedback-section,
+    .single-products-section,
+    .payment-section,
+    .faq-section {
+      padding: var(--space-12) 0;
+    }
+
+    .payment-container,
+    .faq-container,
+    .single-products-container {
+      padding: 0 var(--space-6);
+    }
+
+    .payment-container {
+      max-width: 72rem;
+    }
+
+    .faq-container {
+      max-width: 64rem;
+    }
+
+    .payment-title,
+    .feedback-note {
+      max-width: 40rem;
+    }
+
+    .features-grid,
+    .single-products-grid,
+    .pricing-cards-row,
+    .payment-grid--plans,
+    .faq-list {
+      gap: var(--space-6);
+    }
+
+    .hero-tool-card,
+    .feature-card,
+    .pricing-card,
+    .payment-card,
+    .faq-item,
+    .payment-access-shell,
+    .promo-campaign-card {
+      border-radius: var(--radius-lg);
+    }
+
+    .feature-card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+      padding: var(--space-7);
+    }
+
+    #features .feature-card {
+      position: relative;
+      justify-content: center;
+      min-height: 220px;
+      gap: var(--space-4);
+      padding: var(--space-8);
+      cursor: pointer;
+    }
+
+    #features .feature-card::after {
+      content: '';
+      position: absolute;
+      bottom: var(--space-6);
+      right: var(--space-6);
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid rgba(121, 173, 220, 0.18);
+      background: var(--cognote-surface-blue);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2379addc' stroke-width='2.3' stroke-linecap='round'%3E%3Cpath d='M12 7v10M7 12h10'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 16px 16px;
+    }
+
+    #features .feature-title {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+      margin: 0;
+      padding: 0 var(--space-10);
+      text-align: center;
+      font-size: clamp(1.32rem, 1.8vw, 1.58rem);
+      line-height: 1.18;
+      letter-spacing: -0.03em;
+      white-space: normal;
+      flex-wrap: wrap;
+    }
+
+    #features .feature-title .feature-icon {
+      display: inline-flex;
+      flex: 0 0 auto;
+      margin: 0;
+      width: 3rem;
+      height: 3rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #features .feature-title .feature-icon svg {
+      width: 2.4rem;
+      height: 2.4rem;
+    }
+
+    #features .feature-title span:last-child {
+      display: block;
+      min-width: 0;
+      white-space: normal;
+    }
+
+    #features .feature-description {
+      display: none;
+      margin: 0;
+      padding-top: var(--space-5);
+      border-top: 1px solid rgba(121, 173, 220, 0.16);
+      text-align: left;
+      line-height: 1.9;
+    }
+
+    #features .feature-card.is-expanded {
+      justify-content: flex-start;
+    }
+
+    #features .feature-card.is-expanded .feature-title {
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      gap: var(--space-2);
+      padding-right: calc(var(--space-9) + 1.25rem);
+      text-align: left;
+      font-size: clamp(1.08rem, 1.45vw, 1.22rem);
+      line-height: 1.2;
+    }
+
+    #features .feature-card.is-expanded .feature-title .feature-icon {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    #features .feature-card.is-expanded .feature-title .feature-icon svg {
+      width: 1.55rem;
+      height: 1.55rem;
+    }
+
+    #features .feature-card.is-expanded::after {
+      background: var(--cognote-accent-strong);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.3' stroke-linecap='round'%3E%3Cpath d='M7 12h10'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 16px 16px;
+    }
+
+    #features .feature-card.is-expanded .feature-description {
+      display: block;
+      width: 100%;
+    }
+
+    .pricing-card,
+    .payment-card {
+      gap: var(--space-6);
+      padding: var(--space-7) var(--space-6) var(--space-6);
+    }
+
+    .pricing-card-head,
+    .payment-card-head {
+      gap: var(--space-4);
+    }
+
+    .payment-card-head {
+      gap: var(--space-5);
+    }
+
+    .payment-card h3 {
+      line-height: 1.16;
+    }
+
+    .payment-plan-price {
+      row-gap: var(--space-3);
+      line-height: 1.08;
+    }
+
+    .payment-plan-price span,
+    .payment-plan-price-prefix,
+    .bundle-offer-price-old {
+      line-height: 1.5;
+    }
+
+    .payment-card-head p {
+      max-width: 30ch;
+      line-height: 1.78;
+    }
+
+    .pricing-card-copy {
+      gap: var(--space-4);
+      min-height: auto;
+    }
+
+    .hero-title-line-2 {
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+
+    .hero-title > span {
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+
+    .hero-content {
+      row-gap: var(--space-7);
+    }
+
+    .hero-copy {
+      display: grid;
+      gap: var(--space-6);
+      justify-items: center;
+    }
+
+    .hero-title {
+      display: grid;
+      justify-items: center;
+      gap: var(--space-5);
+      margin: 0;
+      max-width: 12ch;
+      font-size: 5.9rem;
+      line-height: 0.98;
+      letter-spacing: -0.055em;
+      text-align: center;
+      text-wrap: balance;
+    }
+
+    .hero-subtitle {
+      margin: 0;
+      max-width: 34rem;
+      font-size: clamp(1.02rem, 1.5vw, 1.14rem);
+      line-height: 1.82;
+      text-align: center;
+    }
+
+    .hero-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      margin-top: var(--space-4);
+    }
+
+    .hero-pill {
+      margin-top: calc(var(--space-3) * -1);
+    }
+
+    .hero-cards-section .section-header {
+      padding-top: 0 !important;
+      margin-bottom: var(--space-4);
+    }
+
+    .hero-cards-section .hero-cards-content {
+      margin-top: 0;
+    }
+
+    .pricing-card-actions,
+    .pricing-card-features,
+    .pricing-plan-list {
+      gap: var(--space-4);
+    }
+
+    .payment-card .pricing-plan-list {
+      justify-items: stretch;
+      text-align: left;
+    }
+
+    .payment-card .pricing-plan-list li {
+      justify-self: stretch;
+      text-align: left;
+    }
+
+    .pricing-card-badge,
+    .payment-card-badge,
+    .bundle-offer-badge,
+    .promo-campaign-eyebrow {
+      min-height: var(--space-7);
+      padding: 0 var(--space-4);
+      border-radius: var(--radius-pill);
+    }
+
+    .btn.btn-primary,
+    .btn.btn-outline,
+    .pricing-card-cta,
+    .pricing-card-cta-secondary,
+    .payment-button,
+    .access-code-button,
+    .promo-campaign-trigger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: var(--control-md);
+      padding: 0 var(--space-6);
+      border-radius: var(--radius-pill);
+      text-align: center;
+    }
+
+    .hero-buttons .btn {
+      min-height: var(--control-lg);
+      padding: 0 var(--space-7);
+      font-size: 1rem;
+    }
+
+    .promo-campaign-card {
+      gap: var(--space-4);
+      padding: var(--space-5);
+      width: min(100%, 62rem);
+      margin-inline: auto;
+    }
+
+    .payment-container>.promo-campaign-card {
+      max-width: none;
+      margin-bottom: var(--space-7);
+    }
+
+    .promo-campaign-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+    }
+
+    .promo-campaign-copy {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .promo-campaign-title {
+      margin: 0;
+    }
+
+    .promo-campaign-trigger {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .payment-access-shell {
+      margin-top: var(--space-6);
+      padding: var(--space-6);
+    }
+
+    .payment-access-shell .access-code-section {
+      width: 100%;
+    }
+
+    .payment-access-shell .access-code-input-group {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      width: 100%;
+      align-items: center;
+      justify-content: stretch;
+    }
+
+    .payment-access-shell .access-code-input {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .single-tool-dropdown-trigger {
+      min-height: var(--control-lg);
+      padding: var(--space-5);
+      border-radius: var(--radius-md);
+      gap: var(--space-4);
+    }
+
+    .payment-button {
+      border-radius: var(--radius-md);
+    }
+
+    .single-tool-dropdown-trigger-title {
+      color: var(--cognote-ink);
+      font-weight: 700;
+    }
+
+    .single-tool-option {
+      min-height: 50px;
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+    }
+
+    .faq-question {
+      gap: var(--space-4);
+      padding: var(--space-5) var(--space-6);
+    }
+
+    .faq-answer {
+      gap: var(--space-6);
+      padding: var(--space-5) var(--space-6) var(--space-7);
+    }
+
+    .faq-answer.faq-answer--compact-bottom {
+      padding-bottom: var(--space-5);
+    }
+
+    .faq-title-row {
+      gap: var(--space-3);
+    }
+
+    .faq-title-icon {
+      width: var(--space-8);
+      height: var(--space-8);
+      flex-basis: var(--space-8);
+      border-radius: var(--radius-md);
+    }
+
+    @media (max-width: 980px) {
+
+      .hero-content {
+        row-gap: var(--space-8);
+      }
+
+      .hero-copy {
+        gap: var(--space-7);
+      }
+
+      .hero-title {
+        font-size: 5.3rem;
+      }
+
+      .hero-subtitle {
+        max-width: 32rem;
+      }
+
+      .feedback-section,
+      .single-products-section,
+      .payment-section,
+      .faq-section {
+        padding: var(--space-11) 0;
+      }
+    }
+
+    @media (max-width: 768px) {
+
+      .hero-content {
+        row-gap: var(--space-8);
+      }
+
+      .hero-copy {
+        gap: var(--space-7);
+      }
+
+      .hero-title {
+        width: 100%;
+        max-width: 100%;
+        font-size: 4.55rem;
+        line-height: 1.03;
+      }
+
+      .hero-subtitle {
+        max-width: 24rem;
+        font-size: 1rem;
+        line-height: 1.9;
+      }
+
+      .hero-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: min(100%, 24rem);
+        gap: var(--space-3);
+        margin-top: var(--space-4);
+      }
+
+      .payment-container,
+      .faq-container,
+      .single-products-container {
+        padding: 0 var(--space-5);
+      }
+
+      .pricing-card,
+      .payment-card,
+      .payment-access-shell,
+      .promo-campaign-card {
+        padding: var(--space-6);
+      }
+
+      .feature-card {
+        gap: var(--space-4);
+        padding: var(--space-6);
+      }
+
+      #features .feature-title {
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        padding: 0 var(--space-4);
+        font-size: 1.16rem;
+      }
+
+      #features .feature-title .feature-icon {
+        width: 2.6rem;
+        height: 2.6rem;
+      }
+
+      #features .feature-title .feature-icon svg {
+        width: 2.1rem;
+        height: 2.1rem;
+      }
+
+      #features .feature-card.is-expanded .feature-title {
+        gap: var(--space-2);
+        padding-right: calc(var(--space-7) + 1rem);
+        font-size: 1.02rem;
+      }
+
+      #features .feature-card.is-expanded .feature-title .feature-icon {
+        width: 1.8rem;
+        height: 1.8rem;
+      }
+
+      #features .feature-card.is-expanded .feature-title .feature-icon svg {
+        width: 1.4rem;
+        height: 1.4rem;
+      }
+
+      #features .feature-card.is-expanded .feature-description {
+        margin-top: var(--space-1);
+        padding-top: var(--space-4);
+      }
+
+      #features .feature-card {
+        min-height: 0;
+        gap: var(--space-3);
+        padding: var(--space-6);
+        padding-top: calc(var(--space-6) + 0.2rem);
+        padding-right: calc(var(--space-6) + 2.75rem);
+      }
+
+      #features .feature-card::after {
+        bottom: var(--space-5);
+        right: var(--space-5);
+        width: 32px;
+        height: 32px;
+      }
+
+      .hero-buttons .btn {
+        min-height: var(--control-md);
+        padding: 0 var(--space-6);
+        width: 100%;
+        white-space: nowrap;
+      }
+
+      .hero-pill {
+        margin-top: calc(var(--space-2) * -1);
+      }
+
+      .faq-question {
+        padding: var(--space-4) var(--space-5);
+      }
+
+      .faq-answer {
+        gap: var(--space-5);
+        padding: var(--space-5) var(--space-5) var(--space-6);
+      }
+
+      .faq-answer.faq-answer--compact-bottom {
+        padding-bottom: var(--space-5);
+      }
+
+      .promo-campaign-row {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .promo-campaign-trigger {
+        width: 100%;
+      }
+
+      .faq-code-box {
+        flex-wrap: wrap;
+      }
+
+      .faq-code-copy {
+        width: 38px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero-title {
+        font-size: 3.85rem;
+        line-height: 1.05;
+      }
+
+      .hero-subtitle {
+        max-width: 22rem;
+        line-height: 1.86;
+      }
+
+      .hero-buttons {
+        width: min(100%, 24rem);
+      }
+
+      .hero-buttons .btn {
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-title {
+        font-size: 3.25rem;
       }
     }
   </style>
@@ -1271,6 +4155,7 @@
   }
   </script>
 </head>
+
 <body>
 
   <!-- ==================== Header ==================== -->
@@ -1278,21 +4163,28 @@
     <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 flex flex-col">
       <div class="landing-header-bar">
         <div class="flex items-center">
-          <button class="flex items-center space-x-2 rounded-full border py-1 pr-[5px] pl-3 group bg-zinc-100 hover:bg-zinc-200 toggle-button" onclick="toggleMenu()">
+          <button
+            class="flex items-center space-x-2 rounded-full border py-1 pr-[5px] pl-3 group bg-zinc-100 hover:bg-zinc-200 toggle-button"
+            onclick="toggleMenu()">
             <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"></path>
+              <path fill-rule="evenodd"
+                d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z">
+              </path>
             </svg>
             <span class="bg-blue-500 fill-white rounded-full p-1.5">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="group-hover:animate-spin bi bi-egg-fried fill-white" viewBox="0 0 16 16">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="group-hover:animate-spin bi bi-egg-fried fill-white" viewBox="0 0 16 16">
                 <ellipse cx="8" cy="8" rx="6.8" ry="6.8" stroke="#FFFFFF" fill="none" stroke-width="2"></ellipse>
-                <path d="M7.5 8.3c.47.03 1.48-.05 2.15-.01.3.01.47.12.54.14.71.31 1.17 1.19.93 1.96-.09.3-.34.72-.68.94-.4.26-.98.27-1.86.27-.35-.01-.52.08-1.09-.12-1.27-.44-1.79-1.28-1.91-2.31-.08-.65.11-1.28.44-1.81 1.15-1.66 2.78-1.1 4.56-1.23.63-.08.96-.4 1.11-.78.14-.35.13-.72.12-1.05-.02-.9-.43-1.39-1.23-1.49-.13-.02-.43.02-.43.02-.09.06-.22-.03-.59.33-.23.23-.35.37-.43.64-.06.2-.03 3.1-.03 3.2-.01.3-.03 3.58-.01 3.78.05.36-.04 1.01.01 1.62.1.81-.03 1.53-1 1.59-.52.03-.8-.4-.88-.76-.01-.06-.02-.12-.02-.18"
-                  transform="translate(0.8, 1) scale(0.8)"
-                  stroke="#FFFFFF" fill="none" stroke-width="0.96"></path>
+                <path
+                  d="M7.5 8.3c.47.03 1.48-.05 2.15-.01.3.01.47.12.54.14.71.31 1.17 1.19.93 1.96-.09.3-.34.72-.68.94-.4.26-.98.27-1.86.27-.35-.01-.52.08-1.09-.12-1.27-.44-1.79-1.28-1.91-2.31-.08-.65.11-1.28.44-1.81 1.15-1.66 2.78-1.1 4.56-1.23.63-.08.96-.4 1.11-.78.14-.35.13-.72.12-1.05-.02-.9-.43-1.39-1.23-1.49-.13-.02-.43.02-.43.02-.09.06-.22-.03-.59.33-.23.23-.35.37-.43.64-.06.2-.03 3.1-.03 3.2-.01.3-.03 3.58-.01 3.78.05.36-.04 1.01.01 1.62.1.81-.03 1.53-1 1.59-.52.03-.8-.4-.88-.76-.01-.06-.02-.12-.02-.18"
+                  transform="translate(0.8, 1) scale(0.8)" stroke="#FFFFFF" fill="none" stroke-width="0.96"></path>
               </svg>
             </span>
           </button>
           <div class="relative rounded-full py-1.5 px-6 bg-zinc-100 hover:bg-zinc-200 text-xl font-bold uppercase mx-2">
-            <h2><a class="before:content-[''] before:z-10 before:top-0 before:right-0 before:left-0 before:bottom-0 before:absolute before:pointer-events-auto" href="/">Cognote</a></h2>
+            <h2><a
+                class="before:content-[''] before:z-10 before:top-0 before:right-0 before:left-0 before:bottom-0 before:absolute before:pointer-events-auto"
+                href="/">Cognote</a></h2>
           </div>
         </div>
         <nav class="landing-header-nav">
@@ -1303,27 +4195,34 @@
         </nav>
         <div class="landing-header-actions">
           <div class="lang-switcher" role="navigation" aria-label="Language switcher">
-            <button class="lang-option" data-lang="zh-CN" onclick="window.i18n && window.i18n.switchLanguage('zh-CN')" aria-label="Switch to Chinese">
+            <button class="lang-option" data-lang="zh-CN" onclick="window.i18n && window.i18n.switchLanguage('zh-CN')"
+              aria-label="Switch to Chinese">
               <span class="lang-full">中文</span>
               <span class="lang-short">中</span>
             </button>
-            <button class="lang-option active" data-lang="en" onclick="window.i18n && window.i18n.switchLanguage('en')" aria-label="Switch to English">
+            <button class="lang-option active" data-lang="en" onclick="window.i18n && window.i18n.switchLanguage('en')"
+              aria-label="Switch to English">
               <span class="lang-full">EN</span>
               <span class="lang-short">EN</span>
             </button>
           </div>
 
-          <button class="flex items-center rounded-full p-3 bg-zinc-100 hover:bg-zinc-200 toggle-button" onclick="toggleSearch()">
+          <button class="flex items-center rounded-full p-3 bg-zinc-100 hover:bg-zinc-200 toggle-button"
+            onclick="toggleSearch()">
             <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-              <path id="search-icon" class="transition-all ease-linear" d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"></path>
-              <path id="close-icon" class="transition-all ease-linear hidden" d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"></path>
+              <path id="search-icon" class="transition-all ease-linear"
+                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z">
+              </path>
+              <path id="close-icon" class="transition-all ease-linear hidden"
+                d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z">
+              </path>
             </svg>
           </button>
         </div>
       </div>
 
       <!-- Navigation Menu -->
-          <nav id="menu-bar" class="mt-3 menu-collapse menu-collapse-closed hidden" aria-hidden="true">
+      <nav id="menu-bar" class="mt-3 menu-collapse menu-collapse-closed hidden" aria-hidden="true">
         <ul class="flex items-center justify-center flex-nowrap whitespace-nowrap overflow-x-auto space-x-4">
           <li class="my-2">
             <a href="/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">Home</a>
@@ -1335,7 +4234,9 @@
             <a href="/products/" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200">Products</a>
           </li>
           <li class="my-2">
-            <a href="/en/tools/melody-generator.html" class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200 border-zinc-400">Sight-Reading Tools</a>
+            <a href="/en/tools/melody-generator.html"
+              class="rounded-full border px-6 py-2 bg-zinc-100 hover:bg-zinc-200 border-zinc-400">Sight-Reading
+              Tools</a>
           </li>
         </ul>
       </nav>
@@ -1343,7 +4244,8 @@
       <!-- Search Bar -->
       <div id="search-bar" class="mt-3 hidden">
         <div class="relative">
-          <input type="text" placeholder="Search..." class="w-full px-4 py-2 border rounded-full bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <input type="text" placeholder="Search..."
+            class="w-full px-4 py-2 border rounded-full bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
       </div>
     </div>
@@ -1384,494 +4286,482 @@
   <!-- ==================== 主要内容区域 ==================== -->
   <main id="main-content">
 
-  <!-- ==================== Hero 区域 ==================== -->
-  <section class="hero">
-    <!-- 背景 -->
-    <div class="hero-bg"></div>
-    <div class="hero-overlay"></div>
+    <!-- ==================== Hero 区域 ==================== -->
+    <section class="hero">
+      <!-- 背景 -->
+      <div class="hero-bg"></div>
+      <div class="hero-overlay"></div>
 
-    <!-- 几何装饰 -->
-    <div class="hero-decoration"></div>
-    <div class="hero-decoration-2"></div>
+      <!-- 几何装饰 -->
+      <div class="hero-decoration"></div>
+      <div class="hero-decoration-2"></div>
 
-    <!-- 内容 -->
-    <div class="hero-content">
-      <div class="hero-layout">
-        <div class="hero-copy">
-          <h1 class="hero-title">
-            <span data-i18n="hero.titleLine1">真正掌握</span>
-            <span class="hero-gradient-text hero-title-line-2" data-i18n="hero.titleLine2">看到的每一个音</span>
-          </h1>
+      <!-- 内容 -->
+      <div class="hero-content">
+        <div class="hero-layout">
+          <div class="hero-copy">
+            <h1 class="hero-title">
+              <span data-i18n="hero.titleLine1">Customizable</span>
+              <span class="hero-gradient-text hero-title-line-2" data-i18n="hero.titleLine2">Sight-Reading Tools</span>
+            </h1>
 
-          <p class="hero-subtitle">
-            <span data-i18n="hero.subtitle">专业级视奏训练系统</span>
-            <br>
-            <span class="hero-highlight" data-i18n="hero.featureHighlight">为认真练习的音乐人打造</span>
-          </p>
+            <p class="hero-subtitle">
+              <span data-i18n="hero.subtitle">Covers melody, interval, chord, jianpu, and rhythm training.</span>
+            </p>
 
-          <div class="hero-buttons">
-            <a href="/en/sight-reading-tool/#payment-section" class="btn btn-primary" data-i18n="hero.btnPurchase">立即购买</a>
-            <a href="/en/tools/melody-generator.html" target="_blank" class="btn btn-outline" data-i18n="hero.btnTry">立即试用</a>
-          </div>
+            <div class="hero-buttons">
+              <a href="/en/sight-reading-tool/#payment-section" class="btn btn-primary" data-i18n="hero.btnPurchase">Buy
+                Now</a>
+              <a href="/en/tools/melody-generator.html" target="_blank" class="btn btn-outline"
+                data-i18n="hero.btnTry">Free Trial</a>
+            </div>
 
-          <div class="hero-pill" data-i18n="hero.pill">Cognote</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="hero-cards-section" aria-label="Tools Showcase">
-    <div class="hero-cards-content">
-      <div class="hero-tools">
-        <div class="hero-card-swap" data-card-swap data-layout="bounce">
-          <article class="hero-tool-card" data-stack="0" data-product-url="/en/tools/melody-generator.html">
-            <figure class="hero-tool-media">
-              <img
-                class="hero-tool-image"
-                src="/images/hero-melody-zh.png"
-                data-src-zh="/images/hero-melody-zh.png"
-                data-src-en="/images/hero-melody-en.png"
-                data-fallback-src="/images/product-melody.png"
-                data-alt-zh="旋律视奏生成器"
-                data-alt-en="Melody Sight-Reading Generator"
-                alt="旋律视奏生成器"
-                loading="eager"
-                decoding="async"
-                fetchpriority="high"
-              >
-            </figure>
-          </article>
-
-          <article class="hero-tool-card" data-stack="1" data-product-url="/en/tools/jianpu-generator.html">
-            <figure class="hero-tool-media">
-              <img
-                class="hero-tool-image"
-                src="/images/hero-jianpu-zh.png"
-                data-src-zh="/images/hero-jianpu-zh.png"
-                data-src-en="/images/hero-jianpu-en.png"
-                data-fallback-src="/images/product-jianpu.png"
-                data-alt-zh="简谱视奏生成器"
-                data-alt-en="Jianpu Sight-Reading Generator"
-                alt="简谱视奏生成器"
-                loading="eager"
-                decoding="async"
-                fetchpriority="high"
-              >
-            </figure>
-          </article>
-
-          <article class="hero-tool-card" data-stack="2" data-product-url="/en/tools/rhythm.html">
-            <figure class="hero-tool-media">
-              <img
-                class="hero-tool-image"
-                src="/images/hero-rhythm-zh.png"
-                data-src-zh="/images/hero-rhythm-zh.png"
-                data-src-en="/images/hero-rhythm-en.png"
-                data-fallback-src="/images/product-rhythm.png"
-                data-alt-zh="节奏视奏生成器"
-                data-alt-en="Rhythm Sight-Reading Generator"
-                alt="节奏视奏生成器"
-                loading="eager"
-                decoding="async"
-                fetchpriority="auto"
-              >
-            </figure>
-          </article>
-
-          <article class="hero-tool-card" data-stack="3" data-product-url="/en/tools/chord-generator.html">
-            <figure class="hero-tool-media">
-              <img
-                class="hero-tool-image"
-                src="/images/hero-chord-zh.png"
-                data-src-zh="/images/hero-chord-zh.png"
-                data-src-en="/images/hero-chord-en.png"
-                data-fallback-src="/images/product-chord.png"
-                data-alt-zh="和弦视奏生成器"
-                data-alt-en="Chord Sight-Reading Generator"
-                alt="和弦视奏生成器"
-                loading="eager"
-                decoding="async"
-                fetchpriority="low"
-              >
-            </figure>
-          </article>
-
-          <article class="hero-tool-card" data-stack="4" data-product-url="/en/tools/interval-generator.html">
-            <figure class="hero-tool-media">
-              <img
-                class="hero-tool-image"
-                src="/images/hero-interval-zh.png"
-                data-src-zh="/images/hero-interval-zh.png"
-                data-src-en="/images/hero-interval-en.png"
-                data-fallback-src="/images/product-interval.png"
-                data-alt-zh="音程视奏生成器"
-                data-alt-en="Interval Sight-Reading Generator"
-                alt="音程视奏生成器"
-                loading="eager"
-                decoding="async"
-                fetchpriority="low"
-              >
-            </figure>
-          </article>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== User Feedback 区域 ==================== -->
-  <section id="feedback-section" class="feedback-section">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title" data-i18n="feedback.title">用户反馈</h2>
-        <p class="section-subtitle" data-i18n="feedback.subtitle">真实练习体验，来自正在使用 Cognote 的音乐学习者</p>
-      </div>
-
-      <div class="feedback-loop-mask">
-        <div class="feedback-loop-track">
-          <div class="feedback-loop-group">
-            <article class="feature-card feedback-loop-card">
-              <h3 class="feature-title" data-i18n="feedback.items.yuxian.author">雨の弦</h3>
-              <p class="feature-description" data-i18n="feedback.items.yuxian.quote">每天练半小时，把位音的印象明显加深。随机节奏有点挑战性，但练下来很有帮助。</p>
-            </article>
-
-            <article class="feature-card feedback-loop-card">
-              <h3 class="feature-title" data-i18n="feedback.items.imagonx.author">iMaGonX</h3>
-              <p class="feature-description" data-i18n="feedback.items.imagonx.quote">五线谱阅读速度明显提高，现在基本可以快速说出某个音在指板上的位置。我会用琶音配合口述音名来强化记忆，固定把位练视奏也很有效。</p>
-            </article>
-
-            <article class="feature-card feedback-loop-card">
-              <h3 class="feature-title" data-i18n="feedback.items.niukuier.author">牛奎尔</h3>
-              <p class="feature-description" data-i18n="feedback.items.niukuier.quote">我就用那个旋律视奏，感觉识谱比以前快了，然后指板上的音程记得也比以前好了。</p>
-            </article>
-
-            <article class="feature-card feedback-loop-card">
-              <h3 class="feature-title" data-i18n="feedback.items.daniel.author">Daniel</h3>
-              <p class="feature-description" data-i18n="feedback.items.daniel.quote">很棒的音乐练习软件，像是一本圣典一般，而我才缓缓地打开它的序章，相信坚持下去，一定能靠它走进音乐的圣堂，非常推荐给喜欢音乐的朋友！</p>
-            </article>
-
-            <article class="feature-card feedback-loop-card">
-              <h3 class="feature-title" data-i18n="feedback.items.xiaobo.author">骁博Hpa</h3>
-              <p class="feature-description" data-i18n="feedback.items.xiaobo.quote">练了一段时间之后，五线谱阅读速度明显变快。工具打开就能用，很方便。生成内容有一定挑战性，如果以后能加入级数相关训练会更完善。</p>
-            </article>
-
-            <article class="feature-card feedback-loop-card">
-              <h3 class="feature-title" data-i18n="feedback.items.ati9700m20.author">ati9700m20</h3>
-              <p class="feature-description" data-i18n="feedback.items.ati9700m20.quote">五线谱的阅读方面，对于音符的识别，比以前快多了。对于复杂节奏，有进步，但还不能做到每次都一遍顺。指板方面，也有明显进步，目前简单节奏慢速基本全指板可以掌控。</p>
-            </article>
-          </div>
-
-          <div class="feedback-loop-group" aria-hidden="true">
-            <article class="feature-card feedback-loop-card">
-              <h3 class="feature-title" data-i18n="feedback.items.yuxian.author">雨の弦</h3>
-              <p class="feature-description" data-i18n="feedback.items.yuxian.quote">每天练半小时，把位音的印象明显加深。随机节奏有点挑战性，但练下来很有帮助。</p>
-            </article>
-
-            <article class="feature-card feedback-loop-card">
-              <h3 class="feature-title" data-i18n="feedback.items.imagonx.author">iMaGonX</h3>
-              <p class="feature-description" data-i18n="feedback.items.imagonx.quote">五线谱阅读速度明显提高，现在基本可以快速说出某个音在指板上的位置。我会用琶音配合口述音名来强化记忆，固定把位练视奏也很有效。</p>
-            </article>
-
-            <article class="feature-card feedback-loop-card">
-              <h3 class="feature-title" data-i18n="feedback.items.niukuier.author">牛奎尔</h3>
-              <p class="feature-description" data-i18n="feedback.items.niukuier.quote">我就用那个旋律视奏，感觉识谱比以前快了，然后指板上的音程记得也比以前好了。</p>
-            </article>
-
-            <article class="feature-card feedback-loop-card">
-              <h3 class="feature-title" data-i18n="feedback.items.daniel.author">Daniel</h3>
-              <p class="feature-description" data-i18n="feedback.items.daniel.quote">很棒的音乐练习软件，像是一本圣典一般，而我才缓缓地打开它的序章，相信坚持下去，一定能靠它走进音乐的圣堂，非常推荐给喜欢音乐的朋友！</p>
-            </article>
-
-            <article class="feature-card feedback-loop-card">
-              <h3 class="feature-title" data-i18n="feedback.items.xiaobo.author">骁博Hpa</h3>
-              <p class="feature-description" data-i18n="feedback.items.xiaobo.quote">练了一段时间之后，五线谱阅读速度明显变快。工具打开就能用，很方便。生成内容有一定挑战性，如果以后能加入级数相关训练会更完善。</p>
-            </article>
-
-            <article class="feature-card feedback-loop-card">
-              <h3 class="feature-title" data-i18n="feedback.items.ati9700m20.author">ati9700m20</h3>
-              <p class="feature-description" data-i18n="feedback.items.ati9700m20.quote">五线谱的阅读方面，对于音符的识别，比以前快多了。对于复杂节奏，有进步，但还不能做到每次都一遍顺。指板方面，也有明显进步，目前简单节奏慢速基本全指板可以掌控。</p>
-            </article>
+            <div class="hero-pill" data-i18n="hero.pill">Cognote</div>
           </div>
         </div>
       </div>
-      <p class="feedback-note" data-i18n="feedback.note">以上反馈均来自真实用户练习后的体验分享。</p>
-    </div>
-  </section>
+    </section>
 
-  <!-- ==================== Features 区域 ==================== -->
-  <section id="features" class="features">
-    <!-- 几何装饰元素 -->
-    <div class="geo-shape geo-features-1"></div>
-    <div class="geo-shape geo-features-2"></div>
-    <div class="geo-shape geo-features-3"></div>
-
-    <div class="container">
+    <section class="hero-cards-section" aria-label="Tools Showcase">
       <div class="section-header">
         <h2 class="section-title">
-          <span data-i18n="features.title">强大的</span>
-          <span class="text-gradient" data-i18n="features.titleHighlight">功能特性</span>
+          <span>Five</span>
+          <span class="text-gradient">Core Tools</span>
         </h2>
-        <p class="section-subtitle" data-i18n="features.subtitle">
-          专业级功能，助你达到新的音乐高度
-        </p>
+        <p class="section-subtitle" data-i18n="showcase.subtitle">旋律 · 简谱 · 音程 · 和弦 · 节奏</p>
       </div>
+      <div class="hero-cards-content">
+        <div class="hero-tools">
+          <div class="hero-card-swap" data-card-swap data-layout="bounce">
+            <article class="hero-tool-card" data-stack="0" data-product-url="/en/tools/melody-generator.html">
+              <figure class="hero-tool-media">
+                <img class="hero-tool-image" src="/images/hero-melody-zh.png" data-src-zh="/images/hero-melody-zh.png"
+                  data-src-en="/images/hero-melody-en.png" data-fallback-src="/images/product-melody.png"
+                  data-alt-zh="旋律视奏生成器" data-alt-en="Melody Sight-Reading Generator" alt="旋律视奏生成器" loading="eager"
+                  decoding="async" fetchpriority="high">
+              </figure>
+            </article>
 
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon feature-icon-purple">⚙️</div>
-          <h3 class="feature-title" data-i18n="features.customize.title">完全自定义生成</h3>
-          <p class="feature-description" data-i18n="features.customize.description">
-            自由选择调号、拍号、音符时值、自定义频率，打造完全符合你需求的练习内容。
+            <article class="hero-tool-card" data-stack="1" data-product-url="/en/tools/jianpu-generator.html">
+              <figure class="hero-tool-media">
+                <img class="hero-tool-image" src="/images/hero-jianpu-zh.png" data-src-zh="/images/hero-jianpu-zh.png"
+                  data-src-en="/images/hero-jianpu-en.png" data-fallback-src="/images/product-jianpu.png"
+                  data-alt-zh="简谱视奏生成器" data-alt-en="Jianpu Sight-Reading Generator" alt="简谱视奏生成器" loading="eager"
+                  decoding="async" fetchpriority="high">
+              </figure>
+            </article>
+
+            <article class="hero-tool-card" data-stack="2" data-product-url="/en/tools/rhythm.html">
+              <figure class="hero-tool-media">
+                <img class="hero-tool-image" src="/images/hero-rhythm-zh.png" data-src-zh="/images/hero-rhythm-zh.png"
+                  data-src-en="/images/hero-rhythm-en.png" data-fallback-src="/images/product-rhythm.png"
+                  data-alt-zh="节奏视奏生成器" data-alt-en="Rhythm Sight-Reading Generator" alt="节奏视奏生成器" loading="eager"
+                  decoding="async" fetchpriority="auto">
+              </figure>
+            </article>
+
+            <article class="hero-tool-card" data-stack="3" data-product-url="/en/tools/chord-generator.html">
+              <figure class="hero-tool-media">
+                <img class="hero-tool-image" src="/images/hero-chord-zh.png" data-src-zh="/images/hero-chord-zh.png"
+                  data-src-en="/images/hero-chord-en.png" data-fallback-src="/images/product-chord.png"
+                  data-alt-zh="和弦视奏生成器" data-alt-en="Chord Sight-Reading Generator" alt="和弦视奏生成器" loading="eager"
+                  decoding="async" fetchpriority="low">
+              </figure>
+            </article>
+
+            <article class="hero-tool-card" data-stack="4" data-product-url="/en/tools/interval-generator.html">
+              <figure class="hero-tool-media">
+                <img class="hero-tool-image" src="/images/hero-interval-zh.png"
+                  data-src-zh="/images/hero-interval-zh.png" data-src-en="/images/hero-interval-en.png"
+                  data-fallback-src="/images/product-interval.png" data-alt-zh="音程视奏生成器"
+                  data-alt-en="Interval Sight-Reading Generator" alt="音程视奏生成器" loading="eager" decoding="async"
+                  fetchpriority="low">
+              </figure>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== Features 区域 ==================== -->
+    <section id="features" class="features">
+      <!-- 几何装饰元素 -->
+      <div class="geo-shape geo-features-1"></div>
+      <div class="geo-shape geo-features-2"></div>
+      <div class="geo-shape geo-features-3"></div>
+
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span data-i18n="features.title">强大的</span>
+            <span class="text-gradient" data-i18n="features.titleHighlight">功能特性</span>
+          </h2>
+          <p class="section-subtitle" data-i18n="features.subtitle">
+            专业级功能，助你达到新的音乐高度
           </p>
         </div>
 
-        <div class="feature-card">
-          <div class="feature-icon feature-icon-blue">🎸</div>
-          <h3 class="feature-title" data-i18n="features.guitarVoicing.title">吉他专属功能</h3>
-            <p class="feature-description" data-i18n="features.guitarVoicing.description">
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3 class="feature-title"><span class="feature-icon feature-icon-purple"><svg width="24" height="24"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  viewBox="0 0 24 24">
+                  <path
+                    d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg></span><span data-i18n="features.customize.title">Fully Customizable</span></h3>
+            <p class="feature-description" data-i18n="features.customize.description">
+              自由选择调号、拍号、音符时值、自定义频率，打造完全符合你需求的练习内容。
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <h3 class="feature-title"><span class="feature-icon feature-icon-blue"><svg width="24" height="24"
+                  fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"
+                  viewBox="0 0 256 256">
+                  <line x1="204" y1="12" x2="244" y2="52" />
+                  <line x1="176" y1="56" x2="200" y2="80" />
+                  <path
+                    d="M60.07,112a16.23,16.23,0,0,0,14.72-10A34.21,34.21,0,0,1,82.4,90.4c17.23-17.23,49.82-12.57,72.8,10.4s27.63,55.57,10.4,72.8a34.21,34.21,0,0,1-11.66,7.61,16.23,16.23,0,0,0-10,14.72C143.56,208,139.39,219,131.2,227.2,110,248.4,69.88,242.67,41.6,214.4S7.6,146,28.8,124.8C37,116.61,48,112.44,60.07,112Z" />
+                  <line x1="56" y1="168" x2="88" y2="200" />
+                  <circle cx="112" cy="144" r="24" />
+                  <line x1="112" y1="120" x2="212" y2="20" />
+                  <line x1="136" y1="144" x2="236" y2="44" />
+                </svg></span><span data-i18n="features.guitarVoicing.title">Guitar Exclusive Features</span></h3>
+            <p class="feature-description" data-i18n="features.guitarVoicing.description" data-i18n-html>
               提供吉他专属<strong>和声配置</strong>（Drop2、Drop3、Shell Voicing、Close Voicing）
-            <br>
+              <br>
               提供吉他专属<strong>演奏技巧</strong>（断奏、连音、重音等）
             </p>
-        </div>
+          </div>
 
-        <div class="feature-card">
-          <div class="feature-icon feature-icon-green">💻</div>
-          <h3 class="feature-title" data-i18n="features.articulations.title">多设备适配</h3>
-          <p class="feature-description" data-i18n="features.articulations.description">
-            为电脑、iPad 与手机专门设计界面。软件版目前支持 macOS、Windows 和 Linux 电脑端系统，移动端可通过 PWA 安装使用。
-          </p>
-        </div>
+          <div class="feature-card">
+            <h3 class="feature-title"><span class="feature-icon feature-icon-green"><svg width="24" height="24"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg></span><span data-i18n="features.challengeMode.title">挑战模式</span></h3>
+            <p class="feature-description" data-i18n="features.challengeMode.description">
+              更接近真实演奏压力。支持准备时间、BPM、光标、隐藏前小节等设置，帮助你从"看得懂"过渡到"来得及反应"。
+            </p>
+          </div>
 
-        <div class="feature-card">
-          <div class="feature-icon feature-icon-amber">🎵</div>
-          <h3 class="feature-title" data-i18n="features.multiInstrument.title">适用多个乐器</h3>
-          <p class="feature-description" data-i18n="features.multiInstrument.description">
-            适用于吉他、钢琴、小提琴、贝斯等各种乐器，满足不同演奏者的需求。
-          </p>
-        </div>
+          <div class="feature-card">
+            <h3 class="feature-title"><span class="feature-icon feature-icon-amber"><svg width="24" height="24"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  viewBox="0 0 24 24">
+                  <path d="M9 18V5l12-2v13" />
+                  <circle cx="6" cy="18" r="3" />
+                  <circle cx="18" cy="16" r="3" />
+                </svg></span><span data-i18n="features.multiInstrument.title">适用多个乐器</span></h3>
+            <p class="feature-description" data-i18n="features.multiInstrument.description">
+              适用于吉他、钢琴、小提琴、贝斯等各种乐器，满足不同演奏者的需求。
+            </p>
+          </div>
 
-        <div class="feature-card">
-          <div class="feature-icon feature-icon-pink">🎲</div>
-          <h3 class="feature-title" data-i18n="features.randomOrTonal.title">智能生成/遵循音乐性</h3>
-          <p class="feature-description" data-i18n="features.randomOrTonal.description">
-            音符虽为随机生成，却遵循音乐逻辑，确保练习既具挑战又贴近真实演奏场景。
-          </p>
-        </div>
+          <div class="feature-card">
+            <h3 class="feature-title"><span class="feature-icon feature-icon-pink"><svg width="24" height="24"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  viewBox="0 0 24 24">
+                  <path
+                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
+                  <polyline points="7.5 19.79 7.5 14.6 3 12" />
+                  <polyline points="21 12 16.5 14.6 16.5 19.79" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg></span><span data-i18n="features.randomOrTonal.title">Musical</span></h3>
+            <p class="feature-description" data-i18n="features.randomOrTonal.description">
+              音符虽为随机生成，却遵循音乐逻辑，确保练习既具挑战又贴近真实演奏场景。
+            </p>
+          </div>
 
-        <div class="feature-card">
-          <div class="feature-icon feature-icon-cyan">🎹</div>
-          <h3 class="feature-title" data-i18n="features.affordable.title">支持 MIDI 输入与校准</h3>
-          <p class="feature-description" data-i18n="features.affordable.description">
-            连接 MIDI 键盘即可输入练习；支持延迟与力度校准，提升识别准确度与跟手感。
-          </p>
+          <div class="feature-card">
+            <h3 class="feature-title"><span class="feature-icon feature-icon-cyan"><svg width="24" height="24"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  viewBox="0 0 24 24">
+                  <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                  <path d="M5 18V9"></path>
+                  <path d="M8 18V13"></path>
+                  <path d="M11 18V9"></path>
+                  <path d="M14 18V13"></path>
+                  <path d="M17 18V9"></path>
+                  <path d="M20 18V13"></path>
+                </svg></span><span data-i18n="features.affordable.title">MIDI Input</span></h3>
+            <p class="feature-description" data-i18n="features.affordable.description">
+              连接 MIDI 键盘即可输入练习；支持延迟与力度校准，提升识别准确度与跟手感。
+            </p>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ==================== Payment & CTA 区域 ==================== -->
-  <section id="payment-section" class="payment-section">
-    <div class="payment-bg-1"></div>
-    <div class="payment-bg-blob-1"></div>
-    <div class="payment-bg-blob-2"></div>
+    <!-- ==================== User Feedback 区域 ==================== -->
+    <section id="feedback-section" class="feedback-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span>User</span>
+            <span class="text-gradient">Feedback</span>
+          </h2>
+          <p class="section-subtitle" data-i18n="feedback.note">All feedback below comes from real users after practice.</p>
+        </div>
 
-    <div class="payment-container">
-      <div class="payment-wrapper">
+        <div class="feedback-loop-mask">
+          <div class="feedback-loop-track">
+            <div class="feedback-loop-group">
+              <article class="feature-card feedback-loop-card">
+                <h3 class="feature-title" data-i18n="feedback.items.yuxian.author">雨の弦</h3>
+                <p class="feature-description" data-i18n="feedback.items.yuxian.quote">
+                  每天练半小时，把位音的印象明显加深。随机节奏有点挑战性，但练下来很有帮助。</p>
+              </article>
+
+              <article class="feature-card feedback-loop-card">
+                <h3 class="feature-title" data-i18n="feedback.items.imagonx.author">iMaGonX</h3>
+                <p class="feature-description" data-i18n="feedback.items.imagonx.quote">
+                  五线谱阅读速度明显提高，现在基本可以快速说出某个音在指板上的位置。我会用琶音配合口述音名来强化记忆，固定把位练视奏也很有效。</p>
+              </article>
+
+              <article class="feature-card feedback-loop-card">
+                <h3 class="feature-title" data-i18n="feedback.items.niukuier.author">牛奎尔</h3>
+                <p class="feature-description" data-i18n="feedback.items.niukuier.quote">
+                  我就用那个旋律视奏，感觉识谱比以前快了，然后指板上的音程记得也比以前好了。</p>
+              </article>
+
+              <article class="feature-card feedback-loop-card">
+                <h3 class="feature-title" data-i18n="feedback.items.daniel.author">Daniel</h3>
+                <p class="feature-description" data-i18n="feedback.items.daniel.quote">
+                  很棒的音乐练习软件，像是一本圣典一般，而我才缓缓地打开它的序章，相信坚持下去，一定能靠它走进音乐的圣堂，非常推荐给喜欢音乐的朋友！</p>
+              </article>
+
+              <article class="feature-card feedback-loop-card">
+                <h3 class="feature-title" data-i18n="feedback.items.xiaobo.author">骁博Hpa</h3>
+                <p class="feature-description" data-i18n="feedback.items.xiaobo.quote">
+                  练了一段时间之后，五线谱阅读速度明显变快。工具打开就能用，很方便。生成内容有一定挑战性，如果以后能加入级数相关训练会更完善。</p>
+              </article>
+
+              <article class="feature-card feedback-loop-card">
+                <h3 class="feature-title" data-i18n="feedback.items.ati9700m20.author">ati9700m20</h3>
+                <p class="feature-description" data-i18n="feedback.items.ati9700m20.quote">
+                  五线谱的阅读方面，对于音符的识别，比以前快多了。对于复杂节奏，有进步，但还不能做到每次都一遍顺。指板方面，也有明显进步，目前简单节奏慢速基本全指板可以掌控。</p>
+              </article>
+            </div>
+
+            <div class="feedback-loop-group" aria-hidden="true">
+              <article class="feature-card feedback-loop-card">
+                <h3 class="feature-title" data-i18n="feedback.items.yuxian.author">雨の弦</h3>
+                <p class="feature-description" data-i18n="feedback.items.yuxian.quote">
+                  每天练半小时，把位音的印象明显加深。随机节奏有点挑战性，但练下来很有帮助。</p>
+              </article>
+
+              <article class="feature-card feedback-loop-card">
+                <h3 class="feature-title" data-i18n="feedback.items.imagonx.author">iMaGonX</h3>
+                <p class="feature-description" data-i18n="feedback.items.imagonx.quote">
+                  五线谱阅读速度明显提高，现在基本可以快速说出某个音在指板上的位置。我会用琶音配合口述音名来强化记忆，固定把位练视奏也很有效。</p>
+              </article>
+
+              <article class="feature-card feedback-loop-card">
+                <h3 class="feature-title" data-i18n="feedback.items.niukuier.author">牛奎尔</h3>
+                <p class="feature-description" data-i18n="feedback.items.niukuier.quote">
+                  我就用那个旋律视奏，感觉识谱比以前快了，然后指板上的音程记得也比以前好了。</p>
+              </article>
+
+              <article class="feature-card feedback-loop-card">
+                <h3 class="feature-title" data-i18n="feedback.items.daniel.author">Daniel</h3>
+                <p class="feature-description" data-i18n="feedback.items.daniel.quote">
+                  很棒的音乐练习软件，像是一本圣典一般，而我才缓缓地打开它的序章，相信坚持下去，一定能靠它走进音乐的圣堂，非常推荐给喜欢音乐的朋友！</p>
+              </article>
+
+              <article class="feature-card feedback-loop-card">
+                <h3 class="feature-title" data-i18n="feedback.items.xiaobo.author">骁博Hpa</h3>
+                <p class="feature-description" data-i18n="feedback.items.xiaobo.quote">
+                  练了一段时间之后，五线谱阅读速度明显变快。工具打开就能用，很方便。生成内容有一定挑战性，如果以后能加入级数相关训练会更完善。</p>
+              </article>
+
+              <article class="feature-card feedback-loop-card">
+                <h3 class="feature-title" data-i18n="feedback.items.ati9700m20.author">ati9700m20</h3>
+                <p class="feature-description" data-i18n="feedback.items.ati9700m20.quote">
+                  五线谱的阅读方面，对于音符的识别，比以前快多了。对于复杂节奏，有进步，但还不能做到每次都一遍顺。指板方面，也有明显进步，目前简单节奏慢速基本全指板可以掌控。</p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== Payment & CTA 区域 ==================== -->
+    <section id="payment-section" class="payment-section">
+      <div class="payment-bg-1"></div>
+      <div class="payment-bg-blob-1"></div>
+      <div class="payment-bg-blob-2"></div>
+
+      <div class="payment-container">
         <div class="payment-header">
           <h2 class="payment-title">
             <span data-i18n="payment.title">开始你的</span>
             <span class="text-gradient" data-i18n="payment.titleHighlight">视奏提升</span>
             <span data-i18n="payment.titleSuffix">之旅</span>
           </h2>
-          <div class="payment-price">
-            <span class="payment-price-line" data-payment-price-line>⚡ <strong data-i18n="payment.price">128.00¥</strong> —— <span data-i18n="payment.priceText">一次购买，终身受用</span></span>
-          </div>
-          <div class="payment-mode-toggle" role="tablist" aria-label="购买方式选择">
-            <button type="button" class="active" data-payment-mode="full">Full Version</button>
-            <button type="button" data-payment-mode="bundle">Bundle</button>
-            <button type="button" data-payment-mode="single" data-i18n="payment.mode.single">单件购买</button>
+        </div>
+
+        <div class="promo-campaign-card">
+          <div class="promo-campaign-row">
+            <div class="promo-campaign-eyebrow">Limited Offer</div>
+            <div class="promo-campaign-copy">
+              <h4 class="promo-campaign-title">Buy the Cognote full version between March 14, 2026 and April 14, 2026,
+                and you also get the full version of FretLab.</h4>
+            </div>
+            <button type="button" class="promo-campaign-trigger" id="open-promo-offer">Read details</button>
           </div>
         </div>
 
-        <div class="payment-mode-panel is-active" data-payment-panel="full">
-          <div class="payment-grid">
-            <!-- 左侧：支付选项 -->
-            <div class="payment-card">
-              <h3 data-i18n="payment.cardTitle">解锁你的音乐潜能</h3>
-              <p data-i18n="payment.refundPolicy">支持 7 天无理由退款</p>
-              <div class="promo-campaign-card">
-                <div class="promo-campaign-eyebrow-wrap">
-                  <div class="promo-campaign-eyebrow">Limited Offer</div>
-                </div>
-                <div class="promo-campaign-row">
-                  <div class="promo-campaign-copy">
-                    <h4 class="promo-campaign-title">Buy the Cognote full version between March 14, 2026 and April 14, 2026, and you also get the full version of FretLab.</h4>
-                  </div>
-                  <button type="button" class="promo-campaign-trigger" id="open-promo-offer">Read details</button>
-                </div>
-              </div>
+        <div class="payment-grid payment-grid--plans" aria-label="Purchase options">
+          <article class="payment-card pricing-plan-card pricing-plan-card--featured" data-full-offer>
+            <div class="payment-card-head">
+              <h3>Full version</h3>
+              <div class="payment-plan-price">¥128 <span>one-time purchase</span></div>
+            </div>
 
-              <a href="/en/tools/melody-generator.html" target="_blank" class="btn btn-outline" style="display: block; margin-bottom: 1.25rem; text-align: center; font-size: 0.9375rem; padding: 0.875rem;" data-i18n="payment.btnFreeTrial">
-                免费试用
+            <div class="payment-card-divider"></div>
+            <ul class="pricing-plan-list" aria-hidden="true">
+              <li>Melody Sight-Reading Generator</li>
+              <li>Jianpu Sight-Reading Generator</li>
+              <li>Rhythm Sight-Reading Generator</li>
+              <li>Chord Sight-Reading Generator</li>
+              <li>Interval Sight-Reading Generator</li>
+              <li>One-time purchase, no subscription required</li>
+              <li>The 7-day refund policy remains unchanged</li>
+            </ul>
+
+            <div class="payment-buttons payment-buttons--stack">
+              <button id="zpay-btn" onclick="window.createZPayment()" class="payment-button payment-button-alipay">
+                Alipay
+              </button>
+              <button id="wxpay-btn" onclick="window.createWxPayment()" class="payment-button payment-button-wechat">
+                WeChat Pay
+              </button>
+              <a href="https://icstudio3.gumroad.com/l/sight-reading-tools" target="_blank" rel="noopener noreferrer"
+                class="payment-button payment-button-wechat payment-button-international">
+                Card / Gumroad
               </a>
+            </div>
+          </article>
 
-              <div class="payment-buttons">
-                <button id="zpay-btn" onclick="window.createZPayment()" class="payment-button payment-button-alipay" data-i18n="payment.btnAlipay">
-                  支付宝支付
-                </button>
-                <button id="wxpay-btn" onclick="window.createWxPayment()" class="payment-button payment-button-wechat" data-i18n="payment.btnWechat">
-                  微信支付
-                </button>
+          <article class="payment-card pricing-plan-card bundle-offer-card" data-bundle-offer
+            data-bundle-theme="cognote" data-bundle-lang="en" data-bundle-name-zh="IC Studio 套装（Cognote + FretLab）"
+            data-bundle-name-en="IC Studio Bundle (Cognote + FretLab)">
+            <div class="payment-card-head">
+              <h3>Bundle</h3>
+              <div class="payment-plan-price">
+                ¥148 <span class="bundle-offer-price-old">Original price ¥168</span>
               </div>
-              <div class="access-code-section">
-                <h4 data-i18n="payment.accessCodeTitle">🔑 已有访问码？立即使用</h4>
-                <div class="access-code-input-group">
-                  <input
-                    type="text"
-                    id="access-code-input"
-                    class="access-code-input"
-                    placeholder="Enter Access Code"
-                    data-i18n-placeholder="payment.accessCodePlaceholder"
-                    oninput="handleInputChange()"
-                    onkeyup="handleInputChange()"
-                  >
-                  <button
-                    id="verify-btn"
-                    class="access-code-button"
-                    onclick="handleVerifyClick()"
-                    data-i18n="payment.btnVerify"
-                  >
-                    验证
+            </div>
+
+            <div class="payment-card-divider"></div>
+            <ul class="pricing-plan-list" aria-hidden="true">
+              <li>Melody Sight-Reading Generator</li>
+              <li>Jianpu Sight-Reading Generator</li>
+              <li>Rhythm Sight-Reading Generator</li>
+              <li>Chord Sight-Reading Generator</li>
+              <li>Interval Sight-Reading Generator</li>
+              <li><strong>FretLab Full Version</strong></li>
+              <li>One-time purchase, no subscription required</li>
+              <li>The 7-day refund policy remains unchanged</li>
+            </ul>
+
+            <div class="payment-buttons payment-buttons--stack">
+              <button type="button" class="payment-button payment-button-alipay" data-bundle-pay-trigger="alipay">
+                Alipay
+              </button>
+              <button type="button" class="payment-button payment-button-wechat" data-bundle-pay-trigger="wechat">
+                WeChat Pay
+              </button>
+            </div>
+          </article>
+
+          <article class="payment-card pricing-plan-card pricing-plan-card--single" data-single-plan-card>
+            <div class="payment-card-head">
+              <h3>Pick one tool</h3>
+              <div class="payment-plan-price"><span class="payment-plan-price-prefix">From</span> ¥38 <span>and
+                  up</span></div>
+            </div>
+
+            <div class="payment-card-divider"></div>
+            <ul class="pricing-plan-list" aria-hidden="true">
+              <li>Buy as needed, ideal for users with a clear goal</li>
+              <li>One-time purchase, no subscription required</li>
+              <li>The 7-day refund policy remains unchanged</li>
+            </ul>
+
+            <div class="payment-buttons payment-buttons--stack">
+              <details class="single-tool-dropdown">
+                <summary class="single-tool-dropdown-trigger">
+                  <span class="single-tool-dropdown-trigger-label">
+                    <span class="single-tool-dropdown-trigger-title" data-single-dropdown-label>Choose one tool</span>
+                  </span>
+                  <svg class="single-tool-dropdown-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </summary>
+                <div class="single-tool-picker" aria-label="Choose a single tool">
+                  <button type="button" class="single-tool-option" data-single-product-option data-product-id="melody"
+                    data-product-name="Cognote Melody Tool" data-product-price="68"
+                    data-product-note="Focused on melody sight-reading practice.">
+                    <span class="single-tool-option-name" data-single-option-name>Melody Tool</span>
+                    <span class="single-tool-option-price">¥68</span>
+                  </button>
+                  <button type="button" class="single-tool-option" data-single-product-option data-product-id="jianpu"
+                    data-product-name="Cognote Jianpu Tool" data-product-price="58"
+                    data-product-note="Focused on numbered-notation reading practice.">
+                    <span class="single-tool-option-name" data-single-option-name>Jianpu Tool</span>
+                    <span class="single-tool-option-price">¥58</span>
+                  </button>
+                  <button type="button" class="single-tool-option" data-single-product-option data-product-id="rhythm"
+                    data-product-name="Cognote Rhythm Tool" data-product-price="38"
+                    data-product-note="Focused on rhythm reading and timing drills.">
+                    <span class="single-tool-option-name" data-single-option-name>Rhythm Tool</span>
+                    <span class="single-tool-option-price">¥38</span>
+                  </button>
+                  <button type="button" class="single-tool-option" data-single-product-option data-product-id="chord"
+                    data-product-name="Cognote Chord Tool" data-product-price="48"
+                    data-product-note="Focused on chord reading and voicing drills.">
+                    <span class="single-tool-option-name" data-single-option-name>Chord Tool</span>
+                    <span class="single-tool-option-price">¥48</span>
+                  </button>
+                  <button type="button" class="single-tool-option" data-single-product-option data-product-id="interval"
+                    data-product-name="Cognote Interval Tool" data-product-price="48"
+                    data-product-note="Focused on interval reading and recognition drills.">
+                    <span class="single-tool-option-name" data-single-option-name>Interval Tool</span>
+                    <span class="single-tool-option-price">¥48</span>
                   </button>
                 </div>
-                <div id="verify-result" class="verify-result"></div>
-              </div>
-            </div>
+              </details>
 
-            <div class="gumroad-wrapper">
-              <iframe
-                src="https://icstudio3.gumroad.com/l/sight-reading-tools"
-                frameborder="0"
-                width="100%"
-                height="100%"
-                style="border: 0; min-height: 500px;">
-              </iframe>
+              <button type="button" class="payment-button payment-button-alipay" data-single-direct-pay="alipay"
+                disabled>
+                Alipay
+              </button>
+              <button type="button" class="payment-button payment-button-wechat" data-single-direct-pay="wechat"
+                disabled>
+                WeChat Pay
+              </button>
             </div>
-
-          </div>
+          </article>
         </div>
 
-        <div class="payment-mode-panel" data-payment-panel="bundle">
-          <div class="payment-grid">
-            <div
-              class="payment-card bundle-offer-card"
-              data-bundle-offer
-              data-bundle-theme="cognote"
-              data-bundle-lang="en"
-              data-bundle-name-zh="IC Studio 套装（Cognote + FretLab）"
-              data-bundle-name-en="IC Studio Bundle (Cognote + FretLab)"
-            >
-              <div class="bundle-offer-head">
-                <span class="bundle-offer-badge">Cognote + FretLab</span>
-              </div>
-
-              <div class="bundle-offer-info">
-                <div class="bundle-offer-price-row">
-                  <div class="bundle-offer-price">¥148</div>
-                  <div class="bundle-offer-price-old">Original Price ¥168</div>
-                </div>
-                <h3>Unlock Cognote and FretLab at once</h3>
-              </div>
-
-              <div class="payment-buttons">
-                <button type="button" class="payment-button payment-button-alipay" data-bundle-pay-trigger="alipay">
-                  Alipay
-                </button>
-                <button type="button" class="payment-button payment-button-wechat" data-bundle-pay-trigger="wechat">
-                  WeChat Pay
-                </button>
-              </div>
-
-              <div class="access-code-section bundle-access-section">
-                <h4>🔑 Already have a bundle access code?</h4>
-                <div class="access-code-input-group">
-                  <input
-                    type="text"
-                    class="access-code-input"
-                    data-bundle-access-input
-                    placeholder="Enter Bundle Access Code"
-                  >
-                  <button
-                    type="button"
-                    class="access-code-button active"
-                    data-bundle-verify-btn
-                  >
-                    Verify
-                  </button>
-                </div>
-                <div class="verify-result" data-bundle-verify-result></div>
-              </div>
+        <div class="payment-access-shell">
+          <div class="access-code-section">
+            <div class="access-code-input-group">
+              <input type="text" id="access-code-input" class="access-code-input" placeholder="Enter Access Code"
+                data-i18n-placeholder="payment.accessCodePlaceholder" oninput="handleInputChange()"
+                onkeyup="handleInputChange()">
+              <button id="verify-btn" class="access-code-button" onclick="handleVerifyClick()">
+                Verify
+              </button>
             </div>
-
-          </div>
-        </div>
-
-        <div class="payment-mode-panel" data-payment-panel="single">
-          <div class="single-products-grid compact">
-            <article class="single-product-card" data-product-id="melody" data-product-name="Cognote 旋律视奏" data-product-price="68">
-              <div class="single-product-image">
-                <img src="/tools/assets/icon/cognote.png" alt="Cognote">
-              </div>
-              <h3 class="single-product-title" data-i18n="payment.singleProducts.melody">Cognote 旋律视奏</h3>
-              <span class="single-product-price" data-price-label style="display:none;">价格待定</span>
-              <div class="single-product-actions">
-                <button class="single-pay-btn single-pay-alipay" data-pay-type="buy">购买</button>
-              </div>
-            </article>
-
-            <article class="single-product-card" data-product-id="jianpu" data-product-name="Cognote 简谱视奏" data-product-price="58">
-              <div class="single-product-image">
-                <img src="/tools/assets/icon/cognote.png" alt="Cognote">
-              </div>
-              <h3 class="single-product-title" data-i18n="payment.singleProducts.jianpu">Cognote 简谱视奏</h3>
-              <span class="single-product-price" data-price-label style="display:none;">价格待定</span>
-              <div class="single-product-actions">
-                <button class="single-pay-btn single-pay-alipay" data-pay-type="buy">购买</button>
-              </div>
-            </article>
-
-            <article class="single-product-card" data-product-id="rhythm" data-product-name="Cognote 节奏视奏" data-product-price="38">
-              <div class="single-product-image">
-                <img src="/tools/assets/icon/cognote.png" alt="Cognote">
-              </div>
-              <h3 class="single-product-title" data-i18n="payment.singleProducts.rhythm">Cognote 节奏视奏</h3>
-              <span class="single-product-price" data-price-label style="display:none;">价格待定</span>
-              <div class="single-product-actions">
-                <button class="single-pay-btn single-pay-alipay" data-pay-type="buy">购买</button>
-              </div>
-            </article>
-
-            <article class="single-product-card" data-product-id="chord" data-product-name="Cognote 和弦视奏" data-product-price="48">
-              <div class="single-product-image">
-                <img src="/tools/assets/icon/cognote.png" alt="Cognote">
-              </div>
-              <h3 class="single-product-title" data-i18n="payment.singleProducts.chord">Cognote 和弦视奏</h3>
-              <span class="single-product-price" data-price-label style="display:none;">价格待定</span>
-              <div class="single-product-actions">
-                <button class="single-pay-btn single-pay-alipay" data-pay-type="buy">购买</button>
-              </div>
-            </article>
-
-            <article class="single-product-card" data-product-id="interval" data-product-name="Cognote 音程视奏" data-product-price="48">
-              <div class="single-product-image">
-                <img src="/tools/assets/icon/cognote.png" alt="Cognote">
-              </div>
-              <h3 class="single-product-title" data-i18n="payment.singleProducts.interval">Cognote 音程视奏</h3>
-              <span class="single-product-price" data-price-label style="display:none;">价格待定</span>
-              <div class="single-product-actions">
-                <button class="single-pay-btn single-pay-alipay" data-pay-type="buy">购买</button>
-              </div>
-            </article>
+            <div id="verify-result" class="verify-result"></div>
           </div>
         </div>
 
@@ -1880,194 +4770,397 @@
           <button type="button" class="payment-update-link" id="open-update-log">View details</button>
         </div>
       </div>
-    </div>
 
-    <div class="update-log-modal" id="update-log-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="update-log-title">
-      <div class="update-log-panel">
-        <button type="button" class="update-log-close" id="close-update-log" aria-label="Close">×</button>
-        <h3 class="update-log-title" id="update-log-title">Update Log</h3>
+      <div class="update-log-modal" id="update-log-modal" aria-hidden="true" role="dialog" aria-modal="true"
+        aria-labelledby="update-log-title">
+        <div class="update-log-panel">
+          <button type="button" class="update-log-close" id="close-update-log" aria-label="Close">×</button>
+          <h3 class="update-log-title" id="update-log-title">Update Log</h3>
 
-        <section class="update-log-block">
-          <h4 class="update-log-heading">Current Version</h4>
-          <p style="margin:0 0 0.7rem;color:#0f172a;"><strong>v2.0.1 (March 29, 2026)</strong></p>
-          <ul class="update-log-list">
-            <li>
-              <strong>Metronome sound and volume controls are now unified across all five tools</strong>
-              <p>Melody, Jianpu, Interval, Chord, and Rhythm now share the same metronome sound and volume settings, including a new woodblock sound; changing it in one tool also updates challenge mode and count-in across the suite.</p>
-            </li>
-            <li>
-              <strong>BPM changes now stop playback, challenge mode, and count-in immediately</strong>
-              <p>If the user changes the metronome tempo while playback, challenge mode, or count-in is in progress, the current run now stops right away so the beat grid cannot drift out of sync mid-session.</p>
-            </li>
-            <li>
-              <strong>88-key piano sampling and release resources were refined further</strong>
-              <p>Melody, Jianpu, Interval, and Chord now share the fuller 88-key piano sample set, with additional BPM sync fixes in Chord; this sync also refreshes the web tools and installer resources for the current 2.0.1 release.</p>
-            </li>
-          </ul>
-        </section>
+          <section class="update-log-block">
+            <h4 class="update-log-heading">Current Version</h4>
+            <p style="margin:0 0 0.7rem;color:#0f172a;"><strong>v2.0.1 (March 29, 2026)</strong></p>
+            <ul class="update-log-list">
+              <li>
+                <strong>Metronome sound and volume controls are now unified across all five tools</strong>
+                <p>Melody, Jianpu, Interval, Chord, and Rhythm now share the same metronome sound and volume settings,
+                  including a new woodblock sound; changing it in one tool also updates challenge mode and count-in
+                  across the suite.</p>
+              </li>
+              <li>
+                <strong>BPM changes now stop playback, challenge mode, and count-in immediately</strong>
+                <p>If the user changes the metronome tempo while playback, challenge mode, or count-in is in progress,
+                  the current run now stops right away so the beat grid cannot drift out of sync mid-session.</p>
+              </li>
+              <li>
+                <strong>88-key piano sampling and release resources were refined further</strong>
+                <p>Melody, Jianpu, Interval, and Chord now share the fuller 88-key piano sample set, with additional BPM
+                  sync fixes in Chord; this sync also refreshes the web tools and installer resources for the current
+                  2.0.1 release.</p>
+              </li>
+            </ul>
+          </section>
 
-        <section class="update-log-block">
-          <h4 class="update-log-heading">History</h4>
-          <ul class="update-log-list" style="list-style:none;padding-left:0;">
-            <li class="update-log-history-entry">
-              <details>
-                <summary class="update-log-history-toggle">
-                  <strong>v2.0.0</strong>
-                  <span class="update-log-history-badge">View details</span>
-                </summary>
-                <div class="update-log-history-detail">
-                  <p style="margin:0;color:#0f172a;"><strong>v2.0.0 (March 2, 2026)</strong></p>
-                  <ul class="update-log-list" style="margin-top:0.45rem;">
-                    <li>Completed metronome synchronization across the tool flow and challenge flow.</li>
-                    <li>Added Save Parameters, Import Parameters, and Reset Parameters buttons in Settings.</li>
-                  </ul>
-                </div>
-              </details>
-            </li>
-          </ul>
-          <p class="update-log-history-empty">Note: this version is the starting point of the website update log, not the first product release; earlier iterations were not logged here.</p>
-        </section>
-      </div>
-    </div>
-
-    <div class="promo-offer-modal" id="promo-offer-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="promo-offer-title">
-      <div class="promo-offer-panel">
-        <button type="button" class="promo-offer-close" id="close-promo-offer" aria-label="Close">×</button>
-        <h3 class="promo-offer-title" id="promo-offer-title">Offer details</h3>
-
-        <section class="promo-offer-block">
-          <h4 class="promo-offer-heading">What this offer includes</h4>
-          <p class="promo-offer-text">If you buy the Cognote full version between March 14, 2026 00:00:00 and April 14, 2026 23:59:59, Beijing time, you also receive full access to FretLab.</p>
-        </section>
-
-        <section class="promo-offer-block">
-          <h4 class="promo-offer-heading">Eligibility</h4>
-          <ul class="promo-offer-list">
-            <li>This offer applies only to Cognote full-version orders, not single-product purchases.</li>
-            <li>The included bonus is full FretLab access at no extra cost.</li>
-            <li>After payment, you can use the same Cognote full-version access code to unlock FretLab.</li>
-          </ul>
-        </section>
-
-        <section class="promo-offer-block">
-          <h4 class="promo-offer-heading">Notes</h4>
-          <ul class="promo-offer-list">
-            <li>The FretLab access-code verification area is in the FretLab purchase section.</li>
-            <li>If the qualifying Cognote order is refunded later, the gifted FretLab entitlement will also be revoked.</li>
-          </ul>
-          <p class="promo-offer-note">If you purchased the Cognote full version during the offer period but FretLab is still not unlocked, <a href="/contact/">contact me</a> and I can help verify the order.</p>
-        </section>
-      </div>
-    </div>
-
-  </section>
-
-  <!-- ==================== FAQ 区域 ==================== -->
-  <section id="faq-section" class="faq-section">
-    <!-- 几何装饰元素 -->
-    <div class="geo-shape geo-faq-1"></div>
-    <div class="geo-shape geo-faq-2"></div>
-    <div class="geo-shape geo-faq-3"></div>
-
-    <div class="faq-container">
-      <div class="section-header">
-        <h2 class="section-title">
-          <span data-i18n="faq.title">❓ 常见问题</span> <span class="text-gradient" data-i18n="faq.titleHighlight">FAQ</span>
-        </h2>
-      </div>
-
-      <!-- FAQ 1: 忘记访问码 -->
-    <div class="faq-item" style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-left-color: #ff9800;">
-      <h3 class="faq-title" style="color: #e65100; font-size: 1.25rem;" data-i18n="faq.forgotCode.title">🔑 忘记访问码了怎么办？</h3>
-      <div class="faq-content">
-        <p style="color: #5d4037; margin-bottom: 1.25rem;" data-i18n="faq.forgotCode.description">
-          如果您忘记了访问码，可以通过您的订单号找回：
-        </p>
-        <div style="text-align: center; margin: 1.5rem 0;">
-          <button id="recover-access-code-btn" class="faq-button faq-button-blue" data-i18n="faq.forgotCode.btnRecover">
-            🔍 通过订单号找回访问码
-          </button>
-        </div>
-        <div style="background: rgba(255, 255, 255, 0.7); padding: 1rem; border-radius: 0.5rem; font-size: 0.9375rem; color: #5d4037;">
-          <p style="margin-bottom: 0.5rem;"><strong data-i18n="faq.forgotCode.noteTitle">💡 说明：</strong></p>
-          <ul style="margin: 0; padding-left: 1.5rem; list-style-type: disc;">
-            <li data-i18n="faq.forgotCode.note1" data-i18n-html>订单号或者商家订单号可在支付宝或者微信的<strong>账单记录</strong>里找到。</li>
-            <li data-i18n="faq.forgotCode.note2" data-i18n-html><strong>商家订单号</strong>格式如 <code style="background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;">IC17575395673154298</code></li>
-            <li data-i18n="faq.forgotCode.note3" data-i18n-html><strong>订单号</strong>格式如 <code style="background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;">2025097832001480241441480505</code></li>
-          </ul>
+          <section class="update-log-block">
+            <h4 class="update-log-heading">History</h4>
+            <ul class="update-log-list" style="list-style:none;padding-left:0;">
+              <li class="update-log-history-entry">
+                <details>
+                  <summary class="update-log-history-toggle">
+                    <strong>v2.0.0</strong>
+                    <span class="update-log-history-badge">View details</span>
+                  </summary>
+                  <div class="update-log-history-detail">
+                    <p style="margin:0;color:#0f172a;"><strong>v2.0.0 (March 2, 2026)</strong></p>
+                    <ul class="update-log-list" style="margin-top:0.45rem;">
+                      <li>Completed metronome synchronization across the tool flow and challenge flow.</li>
+                      <li>Added Save Parameters, Import Parameters, and Reset Parameters buttons in Settings.</li>
+                    </ul>
+                  </div>
+                </details>
+              </li>
+            </ul>
+            <p class="update-log-history-empty">Note: this version is the starting point of the website update log, not
+              the first product release; earlier iterations were not logged here.</p>
+          </section>
         </div>
       </div>
-    </div>
 
-    <!-- FAQ 2: 访问码不能工作 -->
-    <div class="faq-item" style="background: linear-gradient(135deg, #efe7f2 0%, #f3e5f5 100%); border-left-color: #9c27b0;">
-      <h3 class="faq-title" style="color: #6a1b9a;" data-i18n="faq.codeNotWorking.title">⚙️ 访问码不能正常工作？</h3>
-      <p class="faq-content" style="color: #4a148c;" data-i18n="faq.codeNotWorking.description">
-        如果在输入验证码之后工具还是处于试用版本的话，只要多刷新一下页面就好了。如果问题依然存在，请联系我们的客服支持。
-      </p>
-    </div>
+      <div class="promo-offer-modal" id="promo-offer-modal" aria-hidden="true" role="dialog" aria-modal="true"
+        aria-labelledby="promo-offer-title">
+        <div class="promo-offer-panel">
+          <button type="button" class="promo-offer-close" id="close-promo-offer" aria-label="Close">×</button>
+          <h3 class="promo-offer-title" id="promo-offer-title">Offer details</h3>
 
-    <!-- FAQ 3: M 芯片 Mac 安装提示 -->
-    <div class="faq-item" style="background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); border-left-color: #f44336;">
-      <h3 class="faq-title" style="color: #b71c1c;" data-i18n="faq.macDamaged.title">🍎 M 芯片 Mac 提示“软件以损坏，无法打开”？</h3>
-      <div class="faq-content">
-        <p style="color: #b71c1c; margin-bottom: 0.75rem;" data-i18n="faq.macDamaged.description">
-          M 芯片的 Mac 下载软件时会出现“软件以损坏，无法打开”的弹窗，这时候只需要在终端机（Terminal）里输入下面命令即可：
-        </p>
-        <div style="background: rgba(255, 255, 255, 0.7); padding: 0.75rem 1rem; border-radius: 0.5rem; font-family: monospace; color: #b71c1c;">
-          <code>xattr -cr "/Applications/Cognote.app"</code>
+          <section class="promo-offer-block">
+            <h4 class="promo-offer-heading">What this offer includes</h4>
+            <p class="promo-offer-text">If you buy the Cognote full version between March 14, 2026 00:00:00 and April
+              14, 2026 23:59:59, Beijing time, you also receive full access to FretLab.</p>
+          </section>
+
+          <section class="promo-offer-block">
+            <h4 class="promo-offer-heading">Eligibility</h4>
+            <ul class="promo-offer-list">
+              <li>This offer applies only to Cognote full-version orders, not single-product purchases.</li>
+              <li>The included bonus is full FretLab access at no extra cost.</li>
+              <li>After payment, you can use the same Cognote full-version access code to unlock FretLab.</li>
+            </ul>
+          </section>
+
+          <section class="promo-offer-block">
+            <h4 class="promo-offer-heading">Notes</h4>
+            <ul class="promo-offer-list">
+              <li>The FretLab access-code verification area is in the FretLab purchase section.</li>
+              <li>If the qualifying Cognote order is refunded later, the gifted FretLab entitlement will also be
+                revoked.</li>
+            </ul>
+            <p class="promo-offer-note">If you purchased the Cognote full version during the offer period but FretLab is
+              still not unlocked, <a href="/contact/">contact me</a> and I can help verify the order.</p>
+          </section>
         </div>
       </div>
-    </div>
 
-    <!-- FAQ 4: 如何退款 -->
-    <div class="faq-item" style="background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%); border-left-color: #4caf50;">
-      <h3 class="faq-title" style="color: #2e7d32; font-size: 1.25rem;" data-i18n="faq.refund.title">💰 如何退款？</h3>
-      <div class="faq-content">
-        <p style="color: #1b5e20; margin-bottom: 1rem;" data-i18n="faq.refund.description">
-          我们理解您可能会遇到各种情况，因此提供 <strong>7天无理由退款政策</strong>：
-        </p>
-        <div style="background: rgba(255, 255, 255, 0.7); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem; color: #1b5e20;">
-          <p style="margin-bottom: 0.5rem;"><strong data-i18n="faq.refund.conditionsTitle">📋 退款条件：</strong></p>
-          <ul style="margin: 0; padding-left: 1.5rem; list-style-type: disc;">
-            <li data-i18n="faq.refund.condition1">购买后7天内可申请退款</li>
-            <li data-i18n="faq.refund.condition2">超过7天不支持退款</li>
-          </ul>
+    </section>
+
+    <!-- ==================== FAQ 区域 ==================== -->
+    <section id="faq-section" class="faq-section">
+      <div class="faq-container">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span data-i18n="faq.title">常见问题</span> <span class="faq-heading-accent text-gradient"
+              data-i18n="faq.titleHighlight">FAQ</span>
+          </h2>
         </div>
-        <p style="font-weight: 600; color: #2e7d32; margin-bottom: 1rem;" data-i18n="faq.refund.onlineRefund">在线退款：</p>
-        <div style="text-align: center;">
-          <button id="refund-btn" class="faq-button faq-button-red" data-i18n="faq.refund.btnRefund">
-            申请在线退款
-          </button>
+
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary class="faq-question">
+              <div class="faq-title-row">
+                <span class="faq-title-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9.5" cy="7" r="4"></circle>
+                    <path d="M20 8v6"></path>
+                    <path d="M23 11h-6"></path>
+                  </svg>
+                </span>
+                <h3 class="faq-title" data-i18n="faq.prePurchase.suitable.title">适合哪些人？</h3>
+              </div>
+            </summary>
+            <div class="faq-answer faq-answer--compact-bottom">
+              <p data-i18n="faq.prePurchase.suitable.description">
+                如果你想提升读谱速度、反应能力和演奏稳定性，这套工具会很适合你。
+              </p>
+              <ul>
+                <li data-i18n="faq.prePurchase.suitable.point1">特别适合想系统训练视奏能力的音乐学习者。</li>
+                <li data-i18n="faq.prePurchase.suitable.point2">对吉他用户尤其友好，也同样适合钢琴、小提琴、贝斯等乐器。</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">
+              <div class="faq-title-row">
+                <span class="faq-title-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="7" y="2.5" width="10" height="19" rx="2.5"></rect>
+                    <path d="M10 5.5h4"></path>
+                    <circle cx="12" cy="18" r=".7" fill="currentColor" stroke="none"></circle>
+                  </svg>
+                </span>
+                <h3 class="faq-title" data-i18n="faq.prePurchase.mobileApp.title">Is there a mobile app?</h3>
+              </div>
+            </summary>
+            <div class="faq-answer">
+              <p data-i18n="faq.prePurchase.mobileApp.description">
+                There are no current plans for a native mobile app, but you can just use the web version on your phone or tablet and the experience is basically the same.
+              </p>
+              <ul>
+                <li data-i18n="faq.prePurchase.mobileApp.point1">The web tools work well on phones and tablets, including iPad.</li>
+                <li data-i18n="faq.prePurchase.mobileApp.point2">If you prefer practicing on a mobile device, you can simply open the webpage and start right away without installing anything extra.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">
+              <div class="faq-title-row">
+                <span class="faq-title-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="4" width="7" height="16" rx="2"></rect>
+                    <rect x="14" y="4" width="7" height="16" rx="2"></rect>
+                  </svg>
+                </span>
+                <h3 class="faq-title" data-i18n="faq.prePurchase.bundleOrSingle.title">应该购买完整版还是单项？</h3>
+              </div>
+            </summary>
+            <div class="faq-answer">
+              <p data-i18n="faq.prePurchase.bundleOrSingle.description">
+                如果你想把视奏能力系统练起来，我会更推荐直接上完整版。
+              </p>
+              <ul>
+                <li data-i18n="faq.prePurchase.bundleOrSingle.point1">完整版更适合做长期、成体系的训练。</li>
+                <li data-i18n="faq.prePurchase.bundleOrSingle.point2">如果你现在只想先突破某一个薄弱点，也可以先从单项开始。</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">
+              <div class="faq-title-row">
+                <span class="faq-title-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="12" rx="2"></rect>
+                    <path d="M8 20h8"></path>
+                    <path d="M12 16v4"></path>
+                  </svg>
+                </span>
+                <h3 class="faq-title" data-i18n="faq.prePurchase.webVsApp.title">网页版和软件版有什么区别？</h3>
+              </div>
+            </summary>
+            <div class="faq-answer">
+              <p data-i18n="faq.prePurchase.webVsApp.description">
+                两个版本的训练思路是一样的，主要区别在使用场景。
+              </p>
+              <ul>
+                <li data-i18n="faq.prePurchase.webVsApp.point1">网页版适合快速开始和日常练习，打开就能用。</li>
+                <li data-i18n="faq.prePurchase.webVsApp.point2">软件版更适合长期稳定使用，练习体验也会更完整一些。</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">
+              <div class="faq-title-row">
+                <span class="faq-title-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M12 3l1.9 3.9L18 8.2l-3 3 .7 4.3-3.7-2-3.7 2 .7-4.3-3-3 4.1-1.3L12 3z"></path>
+                    <path d="M19 17l1 2"></path>
+                    <path d="M4 19l1-2"></path>
+                  </svg>
+                </span>
+                <h3 class="faq-title" data-i18n="faq.prePurchase.whyEffective.title">为什么它比传统练习更有效？</h3>
+              </div>
+            </summary>
+            <div class="faq-answer">
+              <p data-i18n="faq.prePurchase.whyEffective.description">
+                传统练习当然也有用，但反复练固定谱例，练久了很容易变成熟题。
+              </p>
+              <ul>
+                <li data-i18n="faq.prePurchase.whyEffective.point1">Cognote 可以持续生成新的训练内容，不容易“背题”。</li>
+                <li data-i18n="faq.prePurchase.whyEffective.point2">还可以按你的训练目标调整内容，更适合长期、针对性的视奏训练。</li>
+              </ul>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">
+              <div class="faq-title-row">
+                <span class="faq-title-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="8" cy="15" r="4"></circle>
+                    <path d="M12 15h9"></path>
+                    <path d="M18 12v6"></path>
+                  </svg>
+                </span>
+                <h3 class="faq-title" data-i18n="faq.forgotCode.title">忘记访问码了怎么办？</h3>
+              </div>
+            </summary>
+            <div class="faq-answer">
+              <p data-i18n="faq.forgotCode.description">
+                如果您忘记了访问码，可以通过您的订单号找回：
+              </p>
+              <div class="faq-note-box">
+                <p><strong data-i18n="faq.forgotCode.noteTitle">说明：</strong></p>
+                <ul>
+                  <li data-i18n="faq.forgotCode.note1" data-i18n-html>订单号或者商家订单号可在支付宝或者微信的<strong>账单记录</strong>里找到。</li>
+                  <li data-i18n="faq.forgotCode.note2" data-i18n-html><strong>商家订单号</strong>格式如
+                    <code>IC17575395673154298</code>
+                  </li>
+                  <li data-i18n="faq.forgotCode.note3" data-i18n-html><strong>订单号</strong>格式如
+                    <code>2025097832001480241441480505</code>
+                  </li>
+                </ul>
+              </div>
+              <div class="faq-actions">
+                <button id="recover-access-code-btn" class="faq-button" data-i18n="faq.forgotCode.btnRecover">
+                  通过订单号找回访问码
+                </button>
+              </div>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">
+              <div class="faq-title-row">
+                <span class="faq-title-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M10.3 3.3L4.6 6.6v6.6l5.7 3.3 5.7-3.3V6.6l-5.7-3.3z"></path>
+                    <path d="M12 10v3"></path>
+                    <circle cx="12" cy="16.5" r=".6" fill="currentColor" stroke="none"></circle>
+                  </svg>
+                </span>
+                <h3 class="faq-title" data-i18n="faq.codeNotWorking.title">访问码不能正常工作？</h3>
+              </div>
+            </summary>
+            <div class="faq-answer">
+              <p data-i18n="faq.codeNotWorking.description">
+                如果在输入验证码之后工具还是处于试用版本的话，只要多刷新一下页面就好了。如果问题依然存在，请联系我们的客服支持。
+              </p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">
+              <div class="faq-title-row">
+                <span class="faq-title-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="5" y="3" width="14" height="18" rx="3"></rect>
+                    <path d="M9 7h6"></path>
+                    <path d="M12 17h.01"></path>
+                  </svg>
+                </span>
+                <h3 class="faq-title" data-i18n="faq.macDamaged.title">M 芯片 Mac 提示“软件已损坏，无法打开”？</h3>
+              </div>
+            </summary>
+            <div class="faq-answer">
+              <p data-i18n="faq.macDamaged.description">
+                M 芯片的 Mac 下载软件时会出现“软件以损坏，无法打开”的弹窗，这时候只需要在终端机（Terminal）里输入下面命令即可：
+              </p>
+              <div class="faq-code-box">
+                <code>xattr -cr "/Applications/Cognote.app"</code>
+                <button type="button" class="faq-code-copy"
+                  onclick="copyFaqCode(this, 'xattr -cr &quot;/Applications/Cognote.app&quot;')"
+                  data-default-label="Copy" data-copied-label="Copied" aria-label="Copy command" title="Copy command">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <rect x="9" y="9" width="10" height="10" rx="2"></rect>
+                    <path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">
+              <div class="faq-title-row">
+                <span class="faq-title-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M3 7h15a3 3 0 0 1 3 3v7a2 2 0 0 1-2 2H6a3 3 0 0 1-3-3V7z"></path>
+                    <path d="M16 11h2"></path>
+                    <path d="M7 3v4"></path>
+                  </svg>
+                </span>
+                <h3 class="faq-title" data-i18n="faq.refund.title">如何退款？</h3>
+              </div>
+            </summary>
+            <div class="faq-answer">
+              <p data-i18n="faq.refund.description">
+                我们理解您可能会遇到各种情况，因此提供 <strong>7天无理由退款政策</strong>：
+              </p>
+              <div class="faq-note-box">
+                <p><strong data-i18n="faq.refund.conditionsTitle">退款条件：</strong></p>
+                <ul>
+                  <li data-i18n="faq.refund.condition1">购买后7天内可申请退款</li>
+                  <li data-i18n="faq.refund.condition2">超过7天不支持退款</li>
+                </ul>
+              </div>
+              <div class="faq-actions">
+                <button id="refund-btn" class="faq-button" data-i18n="faq.refund.btnRefund">
+                  申请在线退款
+                </button>
+              </div>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">
+              <div class="faq-title-row">
+                <span class="faq-title-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M4 6h16v10H7l-3 3V6z"></path>
+                    <path d="M8 10h8"></path>
+                    <path d="M8 13h5"></path>
+                  </svg>
+                </span>
+                <h3 class="faq-title" data-i18n="faq.contact.title">有其他问题？欢迎联系我！</h3>
+              </div>
+            </summary>
+            <div class="faq-answer">
+              <p data-i18n="faq.contact.description">
+                如果您在使用过程中遇到以下任何问题，欢迎通过下面的联系方式联系我，我会尽快为您解决：
+              </p>
+              <ul>
+                <li data-i18n="faq.contact.issue1">使用工具时有遇到 bug</li>
+                <li data-i18n="faq.contact.issue2">找回访问码不能正常工作</li>
+                <li data-i18n="faq.contact.issue3">退款按钮不能正常工作</li>
+                <li data-i18n="faq.contact.issue4">任何其他关于产品的咨询</li>
+              </ul>
+              <div class="faq-contact-box">
+                <p><strong data-i18n="faq.contact.contactInfoTitle">联系方式：</strong></p>
+                <ul class="faq-plain-list">
+                  <li><span data-i18n="faq.contact.email">邮箱：</span><strong>service@icstudio.club</strong></li>
+                  <li><span data-i18n="faq.contact.contactPage">联系页面：</span><a href="/contact/" class="faq-link"
+                      data-i18n="faq.contact.clickVisit">点此访问</a></li>
+                  <li><span data-i18n="faq.contact.responseTime">所有信息尽量在最多 48 小时内回复</span></li>
+                </ul>
+              </div>
+            </div>
+          </details>
         </div>
       </div>
-    </div>
-
-    <!-- FAQ 5: 联系方式 -->
-    <div class="faq-item" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-left-color: #2196f3;">
-      <h3 class="faq-title" style="color: #0d47a1; font-size: 1.25rem;" data-i18n="faq.contact.title">📬 有其他问题？欢迎联系我！</h3>
-      <div class="faq-content">
-        <p style="color: #1565c0; margin-bottom: 1rem;" data-i18n="faq.contact.description">
-          如果您在使用过程中遇到以下任何问题，欢迎通过下面的联系方式联系我，我会尽快为您解决：
-        </p>
-        <ul style="color: #1565c0; margin-bottom: 1.25rem; padding-left: 1.5rem; list-style-type: disc;">
-          <li data-i18n="faq.contact.issue1">使用工具时有遇到 bug</li>
-          <li data-i18n="faq.contact.issue2">找回访问码不能正常工作</li>
-          <li data-i18n="faq.contact.issue3">退款按钮不能正常工作</li>
-          <li data-i18n="faq.contact.issue4">任何其他关于产品的咨询</li>
-        </ul>
-        <div style="background: rgba(255, 255, 255, 0.7); padding: 1.25rem; border-radius: 0.5rem;">
-          <p style="font-weight: 600; color: #0d47a1; margin-bottom: 0.75rem;" data-i18n="faq.contact.contactInfoTitle">📧 联系方式：</p>
-          <ul style="color: #1565c0; margin: 0; padding-left: 1.5rem; list-style-type: none;">
-            <li style="margin-bottom: 0.5rem;"><span data-i18n="faq.contact.email">✉️ 邮箱：</span><strong>service@icstudio.club</strong></li>
-            <li style="margin-bottom: 0.5rem;"><span data-i18n="faq.contact.contactPage">🌐 联系页面：</span><a href="/contact/" style="color: #1976d2; font-weight: 600; text-decoration: underline;" data-i18n="faq.contact.clickVisit">点此访问</a></li>
-            <li><span data-i18n="faq.contact.responseTime">⏰ 所有信息尽量在最多 48 小时内回复</span></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    </div>
-  </section>
+    </section>
 
   </main>
   <!-- ==================== 主要内容区域结束 ==================== -->
@@ -2078,13 +5171,16 @@
       <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
         <div class="md:col-span-4 flex flex-col space-y-3">
           <a class="flex items-center group w-fit" href="https://icstudio.club/">
-            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="mr-2 group-hover:animate-spin" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M13.75 2C13.75 1.58579 13.4142 1.25 13 1.25C12.5858 1.25 12.25 1.58579 12.25 2V14.5359C11.4003 13.7384 10.2572 13.25 9 13.25C6.37665 13.25 4.25 15.3766 4.25 18C4.25 20.6234 6.37665 22.75 9 22.75C11.6234 22.75 13.75 20.6234 13.75 18V6.243C14.9875 7.77225 16.8795 8.75 19 8.75C19.4142 8.75 19.75 8.41421 19.75 8C19.75 7.58579 19.4142 7.25 19 7.25C16.1005 7.25 13.75 4.8995 13.75 2Z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
+              class="mr-2 group-hover:animate-spin" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M13.75 2C13.75 1.58579 13.4142 1.25 13 1.25C12.5858 1.25 12.25 1.58579 12.25 2V14.5359C11.4003 13.7384 10.2572 13.25 9 13.25C6.37665 13.25 4.25 15.3766 4.25 18C4.25 20.6234 6.37665 22.75 9 22.75C11.6234 22.75 13.75 20.6234 13.75 18V6.243C14.9875 7.77225 16.8795 8.75 19 8.75C19.4142 8.75 19.75 8.41421 19.75 8C19.75 7.58579 19.4142 7.25 19 7.25C16.1005 7.25 13.75 4.8995 13.75 2Z" />
             </svg>
             <span class="text-2xl font-semibold uppercase">IC STUDIO</span>
           </a>
           <p class="font-semibold text-zinc-700">Keep moving forward on the path of music.</p>
-          <p class="text-sm text-zinc-500">Music learning, tool building, and creative thinking continue to grow here.</p>
+          <p class="text-sm text-zinc-500">Music learning, tool building, and creative thinking continue to grow here.
+          </p>
         </div>
 
         <div class="md:col-span-5">
@@ -2095,7 +5191,8 @@
               <ul class="space-y-2 text-sm text-zinc-600">
                 <li><a class="hover:text-zinc-900" href="https://icstudio.club/">Home</a></li>
                 <li><a class="hover:text-zinc-900" href="https://icstudio.club/blog/">Blog</a></li>
-                <li><a class="hover:text-zinc-900" href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/">Music Content</a></li>
+                <li><a class="hover:text-zinc-900"
+                    href="https://icstudio.club/%E9%9F%B3%E4%B9%90%E5%86%85%E5%AE%B9/">Music Content</a></li>
                 <li><a class="hover:text-zinc-900" href="https://icstudio.club/contact/">Contact</a></li>
               </ul>
             </div>
@@ -2104,7 +5201,9 @@
               <ul class="space-y-2 text-sm text-zinc-600">
                 <li><a class="hover:text-zinc-900" href="https://icstudio.club/en/sight-reading-tool/">Cognote</a></li>
                 <li><a class="hover:text-zinc-900" href="https://icstudio.club/en/fretlab/">FretLab</a></li>
-                <li><a class="hover:text-zinc-900" href="https://icstudio.club/just-intonation/harmonic_lattice_dualmode.html">Harmonic Lattice</a></li>
+                <li><a class="hover:text-zinc-900"
+                    href="https://icstudio.club/just-intonation/harmonic_lattice_dualmode.html">Harmonic Lattice</a>
+                </li>
               </ul>
             </div>
           </div>
@@ -2114,16 +5213,24 @@
           <h3 class="text-lg font-semibold mb-3">Follow</h3>
           <ul id="social-media" class="flex items-center justify-start space-x-4 w-full">
             <li>
-              <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2" href="https://www.youtube.com/@ICStudio86#" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M23.498 6.186a2.91 2.91 0 0 0-2.049-2.048C19.653 3.5 12 3.5 12 3.5s-7.653 0-9.449.638A2.91 2.91 0 0 0 .502 6.186C0 8.01 0 12 0 12s0 3.99.502 5.814a2.91 2.91 0 0 0 2.049 2.048C4.347 20.5 12 20.5 12 20.5s7.653 0 9.449-.638a2.91 2.91 0 0 0 2.049-2.048C24 15.99 24 12 24 12s0-3.99-.502-5.814ZM9.75 15.568V8.432L15.568 12Z"/>
+              <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2"
+                href="https://www.youtube.com/@ICStudio86#" target="_blank" rel="noopener noreferrer"
+                aria-label="YouTube">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24"
+                  aria-hidden="true">
+                  <path
+                    d="M23.498 6.186a2.91 2.91 0 0 0-2.049-2.048C19.653 3.5 12 3.5 12 3.5s-7.653 0-9.449.638A2.91 2.91 0 0 0 .502 6.186C0 8.01 0 12 0 12s0 3.99.502 5.814a2.91 2.91 0 0 0 2.049 2.048C4.347 20.5 12 20.5 12 20.5s7.653 0 9.449-.638a2.91 2.91 0 0 0 2.049-2.048C24 15.99 24 12 24 12s0-3.99-.502-5.814ZM9.75 15.568V8.432L15.568 12Z" />
                 </svg>
               </a>
             </li>
             <li>
-              <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2" href="https://space.bilibili.com/376362605" target="_blank" rel="noopener noreferrer" aria-label="Bilibili">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 1024 1024" aria-hidden="true">
-                  <path d="M800 192h-72.3l59.9-128.7c4.6-10-0.2-21.7-10.2-26.3-10-4.6-21.7 0.2-26.3 10.2L683.8 192H340.2L272.9 47.2c-4.6-10-16.3-14.8-26.3-10.2s-14.8 16.3-10.2 26.3L296.3 192H224c-70.7 0-128 57.3-128 128v448c0 70.7 57.3 128 128 128h576c70.7 0 128-57.3 128-128V320c0-70.7-57.3-128-128-128zM896 768c0 53-43 96-96 96H224c-53 0-96-43-96-96V320c0-53 43-96 96-96h576c53 0 96 43 96 96v448zM384 640c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32zm256 0c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32z"/>
+              <a class="w-12 h-12 rounded-full bg-white hover:bg-zinc-200 flex items-center justify-center p-2"
+                href="https://space.bilibili.com/376362605" target="_blank" rel="noopener noreferrer"
+                aria-label="Bilibili">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
+                  viewBox="0 0 1024 1024" aria-hidden="true">
+                  <path
+                    d="M800 192h-72.3l59.9-128.7c4.6-10-0.2-21.7-10.2-26.3-10-4.6-21.7 0.2-26.3 10.2L683.8 192H340.2L272.9 47.2c-4.6-10-16.3-14.8-26.3-10.2s-14.8 16.3-10.2 26.3L296.3 192H224c-70.7 0-128 57.3-128 128v448c0 70.7 57.3 128 128 128h576c70.7 0 128-57.3 128-128V320c0-70.7-57.3-128-128-128zM896 768c0 53-43 96-96 96H224c-53 0-96-43-96-96V320c0-53 43-96 96-96h576c53 0 96 43 96 96v448zM384 640c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32zm256 0c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32s-32 14.3-32 32v192c0 17.7 14.3 32 32 32z" />
                 </svg>
               </a>
             </li>
@@ -2134,7 +5241,8 @@
       <div class="border-t mt-8 pt-4 flex items-center justify-center">
         <p class="text-sm text-zinc-600">
           Copyright © <span data-current-year>2026</span>. All rights reserved.
-          <a class="hover:text-zinc-900" href="https://icstudio.club" target="_blank" rel="noopener">Igor Chen - icstudio.club</a>
+          <a class="hover:text-zinc-900" href="https://icstudio.club" target="_blank" rel="noopener">Igor Chen -
+            icstudio.club</a>
         </p>
       </div>
     </div>
@@ -2162,12 +5270,12 @@
 
   <!-- 内联 JavaScript 函数 -->
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       if (typeof window.performAlipayLookup !== 'function') return;
 
       const originalPerform = window.performAlipayLookup;
 
-      window.performAlipayLookup = async function() {
+      window.performAlipayLookup = async function () {
         const input = document.getElementById('alipay-account-input');
         const resultDiv = document.getElementById('alipay-lookup-result');
 
@@ -2311,7 +5419,7 @@
       };
     });
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const removeMaxLength = () => {
         const refundInput = document.getElementById('refund-access-code-input');
         if (refundInput) {
@@ -2367,7 +5475,7 @@
 
       button.disabled = true;
       button.style.opacity = '0.5';
-      resultDiv.innerHTML = '<span style="color: #3498db;">🔄 正在验证访问码...</span>';
+      resultDiv.innerHTML = '<span style="color: #3498db;">正在验证访问码...</span>';
 
       try {
         if (!window.paymentManager) {
@@ -2383,7 +5491,7 @@
         }
 
         console.log('🔍 使用 PaymentStateManager 验证访问码:', code);
-        resultDiv.innerHTML = '<span style="color: #3498db;">🔄 正在服务器验证...</span>';
+        resultDiv.innerHTML = '<span style="color: #3498db;">正在服务器验证...</span>';
 
         const result = await window.paymentManager.verifyAccessCode(code, true);
 
@@ -2393,7 +5501,7 @@
           localStorage.setItem('ic_verified_from_access_page', 'true');
           localStorage.setItem('ic_verified_timestamp', Date.now().toString());
 
-          resultDiv.innerHTML = '<span style="color: #27ae60;">✅ 访问码验证成功！</span>';
+          resultDiv.innerHTML = '<span style="color: #27ae60;">访问码验证成功！</span>';
           button.disabled = false;
           button.style.opacity = '1';
 
@@ -2410,7 +5518,7 @@
             }
             if (window.BundlePayment && typeof window.BundlePayment.showProductSuccessModal === 'function') {
               console.log('🎉 显示 Cognote full-version verify success modal');
-              const fullRoot = document.querySelector('[data-payment-panel="full"] .payment-card') || document.body;
+              const fullRoot = document.querySelector('[data-full-offer]') || document.querySelector('[data-payment-panel="full"] .payment-card') || document.body;
               window.BundlePayment.showProductSuccessModal(
                 fullRoot,
                 document.documentElement.lang && document.documentElement.lang.indexOf('zh') === 0 ? 'zh' : 'en',
@@ -2453,16 +5561,16 @@
         <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;" id="modal-overlay">
           <div style="background: white; padding: 40px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); max-height: 80vh; overflow-y: auto;">
             <div style="margin-bottom: 30px;">
-              <div style="width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px;">✓</div>
-              <h2 style="color: #333; margin-bottom: 10px;">🎉 访问验证成功！</h2>
+              <div style="width: 80px; height: 80px; background: #79addc; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px; color: white;">✓</div>
+              <h2 style="color: #16324a; margin-bottom: 10px;">Access code verified!</h2>
               <p style="color: #666; font-size: 16px;">您的访问码已验证，现在可以使用完整版功能</p>
             </div>
-            <div style="margin-bottom: 30px;">
-              <button onclick="goToSightReadingTool()" style="padding: 15px 30px; background: linear-gradient(135deg, #1a8cff 0%, #0066cc 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                开始使用
+            <div style="margin-bottom: 30px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+              <button onclick="goToSightReadingTool()" style="padding: 15px 30px; background: #79addc; color: white; border: none; border-radius: 999px; cursor: pointer; font-weight: 700; box-shadow: 0 10px 24px rgba(121, 173, 220, 0.28);">
+                Use now
               </button>
-              <button onclick="closeSuccessPopup()" style="margin-left: 15px; padding: 15px 30px; background: #f8f9fa; color: #333; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                稍后使用
+              <button onclick="closeSuccessPopup()" style="padding: 15px 30px; background: #f8fbff; color: #16324a; border: 1px solid #d7e8f6; border-radius: 999px; cursor: pointer; font-weight: 700;">
+                Later
               </button>
             </div>
           </div>
@@ -2485,7 +5593,7 @@
     }
 
     // ========== 页面加载完成 ==========
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       console.log('✅ Cognote 视奏工具页面已加载');
       handleInputChange();
       syncHeroToolImagesWithLanguage();
@@ -2495,6 +5603,8 @@
       initPaymentModeToggle();
       initUpdateLogModal();
       initPromoOfferModal();
+      initFaqAccordions();
+      initFeatureCardsAccordion();
       initAnimatedContentCards();
     });
 
@@ -2517,8 +5627,10 @@
         });
       });
 
-      const clearCardInlineStyles = () => {
-        swapRoot.classList.remove('is-ready');
+      const clearCardInlineStyles = (preserveReady = false) => {
+        if (!preserveReady) {
+          swapRoot.classList.remove('is-ready');
+        }
         cards.forEach((card) => {
           card.style.removeProperty('display');
           card.style.removeProperty('transform');
@@ -2541,7 +5653,7 @@
 
       const setupBounceMode = () => {
         swapRoot.dataset.layout = 'bounce';
-        clearCardInlineStyles();
+        clearCardInlineStyles(introPlayed);
         const vw = window.innerWidth;
         const mobileMode = isMobileViewport();
         const nearOffset = mobileMode
@@ -2581,7 +5693,7 @@
           swapRoot.classList.add('is-ready');
           introPlayed = true;
           return () => {
-            clearCardInlineStyles();
+            clearCardInlineStyles(true);
           };
         }
 
@@ -2615,11 +5727,11 @@
 
         return () => {
           if (introObserver) introObserver.disconnect();
-          clearCardInlineStyles();
+          clearCardInlineStyles(introPlayed);
         };
       };
 
-      let cleanupMode = () => {};
+      let cleanupMode = () => { };
 
       const rebuild = () => {
         cleanupMode();
@@ -2754,14 +5866,7 @@
       if (!feedbackSection) return;
 
       const palette = [
-        'hsl(210 100% 55%)',
-        'hsl(195 100% 60%)',
-        'hsl(190 90% 50%)',
-        'hsl(170 75% 42%)',
-        'hsl(140 80% 46%)',
-        'hsl(38 92% 50%)',
-        'hsl(28 92% 52%)',
-        'hsl(330 80% 60%)'
+        '#79addc'
       ];
 
       const colorCache = new Map();
@@ -2942,9 +6047,61 @@
       });
     }
 
+    function initFaqAccordions() {
+      const items = Array.from(document.querySelectorAll('.faq-list .faq-item'));
+      if (!items.length) return;
+
+      items.forEach((item) => {
+        item.addEventListener('toggle', () => {
+          if (!item.open) return;
+          items.forEach((other) => {
+            if (other !== item) {
+              other.open = false;
+            }
+          });
+        });
+      });
+    }
+
+    function initFeatureCardsAccordion() {
+      const section = document.getElementById('features');
+      if (!section) return;
+
+      const cards = Array.from(section.querySelectorAll('.feature-card'));
+      if (!cards.length) return;
+
+      const syncState = () => {
+        cards.forEach((card) => {
+          card.setAttribute('role', 'button');
+          card.setAttribute('tabindex', '0');
+          card.setAttribute('aria-expanded', card.classList.contains('is-expanded') ? 'true' : 'false');
+        });
+      };
+
+      const toggleCard = (targetCard) => {
+        const willExpand = !targetCard.classList.contains('is-expanded');
+        cards.forEach((card) => {
+          const isActive = card === targetCard && willExpand;
+          card.classList.toggle('is-expanded', isActive);
+          card.setAttribute('aria-expanded', isActive ? 'true' : 'false');
+        });
+      };
+
+      cards.forEach((card) => {
+        card.addEventListener('click', () => toggleCard(card));
+        card.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          toggleCard(card);
+        });
+      });
+
+      syncState();
+    }
+
     function initAnimatedContentCards() {
       const animationGroups = [
-        { selector: '#payment-section .payment-wrapper', step: 0, distance: 18 },
+        { selector: '#payment-section .payment-header', step: 0, distance: 18 },
         { selector: '.feedback-section .feedback-loop-group:first-child .feedback-loop-card', step: 80, distance: 24 },
         { selector: '#features .feature-card', step: 90, distance: 26 },
         { selector: '#payment-section .payment-update-meta', step: 0, distance: 18 },
@@ -3056,10 +6213,50 @@
         closeIcon.classList.add('hidden');
       }
     }
+
+    function copyFaqCode(button, text) {
+      const defaultLabel = button.getAttribute('data-default-label') || 'Copy';
+      const copiedLabel = button.getAttribute('data-copied-label') || 'Copied';
+      const copyIcon = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="10" height="10" rx="2"></rect><path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>';
+      const copiedIcon = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>';
+      const onSuccess = () => {
+        button.classList.add('is-copied');
+        button.innerHTML = copiedIcon;
+        button.setAttribute('aria-label', copiedLabel);
+        button.setAttribute('title', copiedLabel);
+        window.setTimeout(() => {
+          button.classList.remove('is-copied');
+          button.innerHTML = copyIcon;
+          button.setAttribute('aria-label', defaultLabel);
+          button.setAttribute('title', defaultLabel);
+        }, 1800);
+      };
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(onSuccess).catch(() => { });
+        return;
+      }
+
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'absolute';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      try {
+        document.execCommand('copy');
+        onSuccess();
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    }
   </script>
 
   <!-- 国际化系统 - 延迟加载 -->
   <script defer src="/sight-reading-tool/js/i18n.js"></script>
 
 </body>
+
 </html>

@@ -1,10 +1,10 @@
 {
   "hero": {
-    "titleLine1": "真正掌握",
-    "titleLine2": "看到的每一个音",
+    "titleLine1": "可自定义的",
+    "titleLine2": "专业视奏训练工具",
     "titleLine3": "",
     "titleHighlight": "真正同步",
-    "subtitle": "专业级视奏训练系统",
+    "subtitle": "覆盖旋律、音程、和弦、简谱、节奏五大模块",
     "featureHighlight": "为认真练习的音乐人打造",
     "toolPanelTitle": "五大核心工具",
     "toolBadge": "核心工具",
@@ -17,7 +17,7 @@
     },
     "openTool": "打开工具 →",
     "btnPurchase": "立即购买",
-    "btnTry": "立即试用",
+    "btnTry": "免费试用",
     "pill": "Cognote"
   },
 
@@ -63,7 +63,7 @@
   "feedback": {
     "title": "用户反馈",
     "subtitle": "真实练习体验，来自正在使用 Cognote 的音乐学习者",
-    "note": "以上反馈均来自真实用户练习后的体验分享。",
+    "note": "以下反馈均来自真实用户练习后的体验分享。",
     "items": {
       "yuxian": {
         "author": "雨の弦",
@@ -99,14 +99,14 @@
 
     "customize": {
       "icon": "⚙️",
-      "title": "完全自定义生成",
+      "title": "完全自定义",
       "description": "自由选择调号、拍号、音符时值、自定义频率，打造完全符合你需求的练习内容。"
     },
 
     "guitarVoicing": {
       "icon": "🎸",
-      "title": "吉他友好",
-      "description": "提供吉他专属和声配置与 articulations 控制。"
+      "title": "吉他专属功能",
+      "description": "提供吉他专属<strong>和声配置</strong>（Drop2、Drop3、Shell Voicing、Close Voicing）<br>提供吉他专属<strong>演奏技巧</strong>（断奏、连音、重音等）"
     },
 
     "articulations": {
@@ -123,13 +123,13 @@
 
     "randomOrTonal": {
       "icon": "🎲",
-      "title": "智能生成/遵循音乐性",
+      "title": "遵循音乐性",
       "description": "音符虽为随机生成，却遵循音乐逻辑，确保练习既具挑战又贴近真实演奏场景。"
     },
 
     "affordable": {
       "icon": "🎹",
-      "title": "支持 MIDI 输入与校准",
+      "title": "支持 MIDI 输入",
       "description": "连接 MIDI 键盘即可输入练习；支持延迟与力度校准，提升识别准确度与跟手感。"
     }
   },
@@ -164,33 +164,67 @@
   },
 
   "faq": {
-    "title": "❓ 常见问题",
+    "title": "常见问题",
     "titleHighlight": "FAQ",
 
+    "prePurchase": {
+      "label": "购买前常见问题",
+      "suitable": {
+        "title": "适合哪些人？",
+        "description": "如果你想提升读谱速度、反应能力和演奏稳定性，这套工具会很适合你。",
+        "point1": "特别适合想系统训练视奏能力的音乐学习者。",
+        "point2": "对吉他用户尤其友好，也同样适合钢琴、小提琴、贝斯等乐器。"
+      },
+      "bundleOrSingle": {
+        "title": "应该购买完整版还是单项？",
+        "description": "如果你想把视奏能力系统练起来，我会更推荐直接上完整版。",
+        "point1": "完整版更适合做长期、成体系的训练。",
+        "point2": "如果你现在只想先突破某一个薄弱点，也可以先从单项开始。"
+      },
+      "webVsApp": {
+        "title": "网页版和软件版有什么区别？",
+        "description": "两个版本的训练思路是一样的，主要区别在使用场景。",
+        "point1": "网页版适合快速开始和日常练习，打开就能用。",
+        "point2": "软件版更适合长期稳定使用，练习体验也会更完整一些。"
+      },
+      "mobileApp": {
+        "title": "有手机版软件吗？",
+        "description": "目前还没有开发手机端原生软件的打算，不过你可以直接用网页版来练，体验其实是一样的。",
+        "point1": "手机和平板设备（包括 iPad）都可以正常使用网页版工具。",
+        "point2": "如果你更习惯在移动设备上练习，直接打开网页就可以开始，不需要额外下载安装。"
+      },
+      "whyEffective": {
+        "title": "为什么它比传统练习更有效？",
+        "description": "传统练习当然也有用，但反复练固定谱例，练久了很容易变成熟题。",
+        "point1": "Cognote 可以持续生成新的训练内容，不容易“背题”。",
+        "point2": "还可以按你的训练目标调整内容，更适合长期、针对性的视奏训练。"
+      }
+    },
+
     "forgotCode": {
-      "title": "🔑 忘记访问码了怎么办？",
+      "title": "忘记访问码了怎么办？",
       "description": "如果您忘记了访问码，可以通过您的订单号找回：",
-      "btnRecover": "🔍 通过订单号找回访问码",
-      "noteTitle": "💡 说明：",
+      "btnRecover": "通过订单号找回访问码",
+      "noteTitle": "说明：",
       "note1": "订单号或者商家订单号可在支付宝或者微信的<strong>账单记录</strong>里找到。",
       "note2": "<strong>商家订单号</strong>格式如 <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IC17575395673154298</code>",
       "note3": "<strong>订单号</strong>格式如 <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">2025097832001480241441480505</code>"
     },
 
     "codeNotWorking": {
-      "title": "⚙️ 访问码不能正常工作？",
+      "title": "访问码不能正常工作？",
       "description": "如果在输入验证码之后工具还是处于试用版本的话，只要多刷新一下页面就好了。如果问题依然存在，请联系我们的客服支持。"
     },
 
     "macDamaged": {
-      "title": "🍎 M 芯片 Mac 提示“软件以损坏，无法打开”？",
+      "title": "M 芯片 Mac 提示“软件以损坏，无法打开”？",
       "description": "M 芯片的 Mac 下载软件时会出现“软件以损坏，无法打开”的弹窗，这时候只需要在终端机（Terminal）里输入下面命令即可："
     },
 
     "refund": {
-      "title": "💰 如何退款？",
+      "title": "如何退款？",
       "description": "我们理解您可能会遇到各种情况，因此提供 7天无理由退款政策：",
-      "conditionsTitle": "📋 退款条件：",
+      "conditionsTitle": "退款条件：",
       "condition1": "购买后7天内可申请退款",
       "condition2": "超过7天不支持退款",
       "onlineRefund": "在线退款：",
@@ -198,17 +232,17 @@
     },
 
     "contact": {
-      "title": "📬 有其他问题？欢迎联系我！",
+      "title": "有其他问题？欢迎联系我！",
       "description": "如果您在使用过程中遇到以下任何问题，欢迎通过下面的联系方式联系我，我会尽快为您解决：",
       "issue1": "使用工具时有遇到 bug",
       "issue2": "找回访问码不能正常工作",
       "issue3": "退款按钮不能正常工作",
       "issue4": "任何其他关于产品的咨询",
-      "contactInfoTitle": "📧 联系方式：",
-      "email": "✉️ 邮箱：",
-      "contactPage": "🌐 联系页面：",
+      "contactInfoTitle": "联系方式：",
+      "email": "邮箱：",
+      "contactPage": "联系页面：",
       "clickVisit": "点此访问",
-      "responseTime": "⏰ 所有信息尽量在最多 48 小时内回复"
+      "responseTime": "所有信息尽量在最多 48 小时内回复"
     }
   },
 

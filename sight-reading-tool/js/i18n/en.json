@@ -1,10 +1,10 @@
 {
   "hero": {
-    "titleLine1": "Truly Master",
-    "titleLine2": "Every Note You See",
+    "titleLine1": "Customizable",
+    "titleLine2": "Sight-Reading Tools",
     "titleLine3": "",
     "titleHighlight": "Stay in Sync",
-    "subtitle": "Professional Sight-Reading Training System",
+    "subtitle": "Covers melody, interval, chord, jianpu, and rhythm training.",
     "featureHighlight": "Built for Musicians Who Practice Seriously",
     "toolPanelTitle": "Five Core Tools",
     "toolBadge": "Core Tool",
@@ -18,7 +18,7 @@
     "openTool": "Open Tool →",
     "featureText": "Practice Experience",
     "btnPurchase": "Buy Now",
-    "btnTry": "Try Now",
+    "btnTry": "Free Trial",
     "pill": "Cognote"
   },
 
@@ -100,14 +100,14 @@
 
     "customize": {
       "icon": "⚙️",
-      "title": "Fully Customizable Generation",
+      "title": "Fully Customizable",
       "description": "Freely choose key signatures, time signatures, note values, and note-frequency."
     },
 
     "guitarVoicing": {
-      "icon": "🎵",
-      "title": "Guitar friendly",
-      "description": "Provides guitar-specific voicing and articulations."
+      "icon": "🎸",
+      "title": "Guitar Exclusive Features",
+      "description": "Provides guitar-specific <strong>voicings</strong> (Drop2, Drop3, Shell Voicing, Close Voicing)<br>Provides guitar-specific <strong>articulations</strong> (staccato, legato, accents, etc.)"
     },
 
     "articulations": {
@@ -124,13 +124,13 @@
 
     "randomOrTonal": {
       "icon": "🎲",
-      "title": "Smart Generation / Musical Coherence",
+      "title": "Musical",
       "description": "Notes are randomly generated yet musically coherent, making every exercise both challenging and realistic."
     },
 
     "affordable": {
       "icon": "🎹",
-      "title": "MIDI Input & Calibration",
+      "title": "MIDI Input",
       "description": "Connect a MIDI keyboard for input, with latency and velocity calibration to improve accuracy and feel."
     }
   },
@@ -165,33 +165,67 @@
   },
 
   "faq": {
-    "title": "❓ Frequently Asked",
+    "title": "Frequently Asked",
     "titleHighlight": "Questions",
 
+    "prePurchase": {
+      "label": "Before You Buy",
+      "suitable": {
+        "title": "Who is this for?",
+        "description": "If you want to read faster, react quicker, and play more steadily, this will probably fit you really well.",
+        "point1": "Especially helpful for music learners who want to build sight-reading in a more systematic way.",
+        "point2": "It is particularly great for guitar players, but it also works well for piano, violin, bass, and other instruments."
+      },
+      "bundleOrSingle": {
+        "title": "Should I get the complete edition or a single tool?",
+        "description": "If you want a more complete and structured sight-reading routine, I would start with the complete edition.",
+        "point1": "The complete edition is better for long-term, well-rounded training.",
+        "point2": "If you only want to fix one specific weak spot first, starting with a single tool is totally fine too."
+      },
+      "webVsApp": {
+        "title": "What is the difference between the web version and the app version?",
+        "description": "The training idea is the same in both. The main difference is how you want to use it.",
+        "point1": "The web version is great for getting started quickly and fitting practice into your day.",
+        "point2": "The app version is better for long-term, stable use and generally feels a bit more complete."
+      },
+      "mobileApp": {
+        "title": "Is there a mobile app?",
+        "description": "There are no current plans for a native mobile app, but you can just use the web version on your phone or tablet and the experience is basically the same.",
+        "point1": "The web tools work well on phones and tablets, including iPad.",
+        "point2": "If you prefer practicing on a mobile device, you can simply open the webpage and start right away without installing anything extra."
+      },
+      "whyEffective": {
+        "title": "Why is this more effective than traditional practice?",
+        "description": "Traditional practice can still help, but repeating the same examples for too long often turns them into familiar answers.",
+        "point1": "Cognote keeps generating fresh material, so you are not just memorizing the same questions.",
+        "point2": "It can also adapt to your training goal, which makes it much better for long-term, targeted sight-reading practice."
+      }
+    },
+
     "forgotCode": {
-      "title": "🔑 Forgot Your Access Code?",
+      "title": "Forgot Your Access Code?",
       "description": "If you forgot your access code, you can retrieve it using your order number:",
-      "btnRecover": "🔍 Retrieve Access Code with Order Number",
-      "noteTitle": "💡 Note:",
+      "btnRecover": "Retrieve Access Code with Order Number",
+      "noteTitle": "Note:",
       "note1": "Order number or merchant order number can be found in your Alipay or WeChat <strong>payment history</strong>.",
       "note2": "<strong>Merchant order number</strong> format: <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IC17575395673154298</code>",
       "note3": "<strong>Order number</strong> format: <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">2025097832001480241441480505</code>"
     },
 
     "codeNotWorking": {
-      "title": "⚙️ Access Code Not Working?",
+      "title": "Access Code Not Working?",
       "description": "If the tool is still in trial mode after entering the verification code, just refresh the page a few times. If the problem persists, please contact our customer support."
     },
 
     "macDamaged": {
-      "title": "🍎 M-chip Mac Says \"App Is Damaged and Can't Be Opened\"?",
+      "title": "M-chip Mac Says \"App Is Damaged and Can't Be Opened\"?",
       "description": "On Apple silicon Macs, you may see the \"App is damaged and can't be opened\" alert. Just run the following command in Terminal:"
     },
 
     "refund": {
-      "title": "💰 How to Get a Refund?",
+      "title": "How to Get a Refund?",
       "description": "We understand various situations may arise, so we offer a 7-day no-questions-asked refund policy:",
-      "conditionsTitle": "📋 Refund Conditions:",
+      "conditionsTitle": "Refund Conditions:",
       "condition1": "Refund can be requested within 7 days of purchase",
       "condition2": "No refunds after 7 days",
       "onlineRefund": "Online Refund:",
@@ -199,17 +233,17 @@
     },
 
     "contact": {
-      "title": "📬 Have Other Questions? Feel Free to Contact Me!",
+      "title": "Have Other Questions? Feel Free to Contact Me!",
       "description": "If you encounter any of the following issues while using the tool, feel free to contact me through the methods below, and I'll help resolve them as soon as possible:",
       "issue1": "Encountering bugs while using the tool",
       "issue2": "Access code recovery not working properly",
       "issue3": "Refund button not working properly",
       "issue4": "Any other product inquiries",
-      "contactInfoTitle": "📧 Contact Information:",
-      "email": "✉️ Email:",
-      "contactPage": "🌐 Contact Page:",
+      "contactInfoTitle": "Contact Information:",
+      "email": "Email:",
+      "contactPage": "Contact Page:",
       "clickVisit": "Click to Visit",
-      "responseTime": "⏰ All messages will be replied within 48 hours"
+      "responseTime": "All messages will be replied within 48 hours"
     }
   },
 
