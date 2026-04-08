@@ -11,50 +11,238 @@ function showAlipayLookupDialog() {
     const dialog = document.createElement('div');
     dialog.id = 'alipay-lookup-dialog';
     dialog.innerHTML = `
-        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 0; margin: 0; box-sizing: border-box;" id="alipay-modal-overlay">
-            <div style="width: 100%; max-width: 500px; max-height: 100vh; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; padding: 20px; box-sizing: border-box; margin: 20px;" id="alipay-modal-scroll-container">
-                <div style="background: white; padding: 40px; border-radius: 16px; width: 100%; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); box-sizing: border-box; min-height: min-content;">
-                <div style="margin-bottom: 30px; text-align: center;">
-                    <h1 style="color: #333; margin-bottom: 10px;">🔍 通过订单号找回访问码</h1>
-                </div>
-                
-                <div style="margin-bottom: 30px;">
-                    <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 600;">订单号</label>
-                    <input type="text" id="alipay-account-input" placeholder="请输入订单号或商家订单号" 
-                           style="width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; transition: border-color 0.3s ease;"
-                </div>
-                
-                <div id="alipay-lookup-result" style="margin-bottom: 20px; min-height: 20px;"></div>
-                
-                <div style="display: flex; gap: 15px; justify-content: center;">
-                    <button onclick="closeAlipayLookupDialog()" 
-                            style="padding: 15px 30px; background: #f8f9fa; color: #333; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;"
-                            onmouseover="this.style.background='#e2e8f0'" 
-                            onmouseout="this.style.background='#f8f9fa'">
-                        取消
-                    </button>
-                    <button onclick="performAlipayLookup()" 
-                            style="padding: 15px 30px; background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3); transition: all 0.3s ease;"
-                            onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 20px rgba(33, 150, 243, 0.4)'" 
-                            onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(33, 150, 243, 0.3)'">
-                        🔍 查找访问码
-                    </button>
-                </div>
-                
-                <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee; background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px -10px 0;">
-                    <p style="color: #666; font-size: 13px; margin: 0; line-height: 1.5;">
-                        <strong>📋 使用说明：</strong><br/>
-                        • <strong>商家订单号</strong>：在支付宝账单中的条维码下方，如 IC17575395673115298<br/>
-                        • <strong>订单号</strong>：在支付宝账单中，如 2025091122001480241441480505<br/>
-                        • 任意一种订单号都可以找回对应的访问码
-                    </p>
-                </div>
+        <div id="alipay-modal-overlay">
+            <div id="alipay-modal-scroll-container">
+                <div id="alipay-lookup-modal">
+                    <div id="alipay-lookup-header">
+                        <h1 id="alipay-lookup-title">
+                            <span class="alipay-lookup-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="7"></circle>
+                                    <path d="m20 20-3.5-3.5"></path>
+                                </svg>
+                            </span>
+                            <span>通过订单号找回访问码</span>
+                        </h1>
+                    </div>
+
+                    <div id="alipay-lookup-body">
+                        <div class="alipay-field">
+                            <input type="text" id="alipay-account-input" placeholder="请输入订单号或商家订单号" />
+                        </div>
+
+                        <div id="alipay-lookup-result"></div>
+
+                        <div class="alipay-actions">
+                            <button id="alipay-lookup-cancel-btn" type="button" onclick="closeAlipayLookupDialog()">
+                                取消
+                            </button>
+                            <button id="alipay-lookup-submit-btn" type="button" onclick="performAlipayLookup()">
+                                <span class="alipay-lookup-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="7"></circle>
+                                        <path d="m20 20-3.5-3.5"></path>
+                                    </svg>
+                                </span>
+                                <span>查找访问码</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     `;
 
     document.body.appendChild(dialog);
+
+    const style = document.createElement('style');
+    style.id = 'alipay-lookup-dialog-style';
+    style.textContent = `
+        #alipay-modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            box-sizing: border-box;
+            background: rgba(15, 23, 42, 0.52);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+        }
+
+        #alipay-modal-scroll-container {
+            width: min(100%, 520px);
+            max-height: calc(100vh - 48px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            touch-action: pan-y;
+            box-sizing: border-box;
+        }
+
+        #alipay-lookup-modal {
+            background: #ffffff;
+            border: 1px solid rgba(64, 137, 227, 0.16);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(15, 23, 42, 0.22);
+            animation: alipayLookupAppear 0.3s ease-out;
+        }
+
+        #alipay-lookup-header {
+            padding: 28px 30px 22px;
+            background: #f8fbff;
+            border-bottom: 1px solid rgba(64, 137, 227, 0.12);
+        }
+
+        #alipay-lookup-title {
+            margin: 0;
+            color: #0f172a;
+            font-size: 28px;
+            line-height: 1.15;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alipay-lookup-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.15em;
+            height: 1.15em;
+            color: currentColor;
+            flex: 0 0 auto;
+        }
+
+        .alipay-lookup-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        #alipay-lookup-body {
+            padding: 24px 30px 30px;
+        }
+
+        .alipay-field {
+            margin-bottom: 22px;
+        }
+
+        #alipay-account-input {
+            width: 100%;
+            min-height: 52px;
+            padding: 0 16px;
+            border: 1.5px solid rgba(64, 137, 227, 0.2);
+            background: #ffffff;
+            border-radius: 16px;
+            font-size: 16px;
+            box-sizing: border-box;
+            color: #0f172a;
+            transition: all 0.2s ease;
+        }
+
+        #alipay-account-input:focus {
+            border-color: #4089e3;
+            box-shadow: 0 0 0 4px rgba(64, 137, 227, 0.12);
+            outline: none;
+        }
+
+        #alipay-lookup-result:empty {
+            display: none;
+        }
+
+        #alipay-lookup-result:not(:empty) {
+            margin-bottom: 20px;
+        }
+
+        .alipay-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        #alipay-lookup-cancel-btn,
+        #alipay-lookup-submit-btn {
+            border-radius: 999px;
+            min-height: 48px;
+            padding: 0 22px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #alipay-lookup-cancel-btn {
+            flex: 1;
+            border: 1px solid rgba(64, 137, 227, 0.16);
+            background: #ffffff;
+            color: #1457a5;
+            box-shadow: 0 14px 30px rgba(64, 137, 227, 0.08);
+        }
+
+        #alipay-lookup-cancel-btn:hover {
+            border-color: rgba(64, 137, 227, 0.24);
+            background: #f8fbff;
+            transform: translateY(-1px);
+            box-shadow: 0 18px 36px rgba(64, 137, 227, 0.12);
+        }
+
+        #alipay-lookup-submit-btn {
+            flex: 2;
+            border: none;
+            background: #1a7be8;
+            color: #ffffff;
+            box-shadow: 0 18px 36px rgba(26, 123, 232, 0.24);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        #alipay-lookup-submit-btn:hover {
+            transform: translateY(-2px);
+            background: #1457a5;
+            box-shadow: 0 24px 42px rgba(20, 87, 165, 0.28);
+        }
+
+        @keyframes alipayLookupAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.96) translateY(14px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @media (max-width: 640px) {
+            #alipay-modal-overlay {
+                padding: 16px;
+            }
+
+            #alipay-lookup-modal {
+                border-radius: 24px;
+            }
+
+            #alipay-lookup-header {
+                padding: 24px 22px 18px;
+            }
+
+            #alipay-lookup-body {
+                padding: 20px 22px 24px;
+            }
+
+            #alipay-lookup-title {
+                font-size: 24px;
+            }
+        }
+    `;
+    document.head.appendChild(style);
 
     // 专用移动端滚动事件处理 - 适用于所有移动浏览器
     const modalOverlay = dialog.querySelector('#alipay-modal-overlay');
@@ -100,8 +288,12 @@ function showAlipayLookupDialog() {
 // 关闭查找对话框
 function closeAlipayLookupDialog() {
     const dialog = document.getElementById('alipay-lookup-dialog');
+    const style = document.getElementById('alipay-lookup-dialog-style');
     if (dialog) {
         dialog.remove();
+    }
+    if (style) {
+        style.remove();
     }
 }
 
@@ -138,7 +330,7 @@ async function performAlipayLookup() {
     const orderNumber = input.value.trim();
     
     if (!orderNumber) {
-        resultDiv.innerHTML = '<div style="color: #e74c3c; padding: 10px; background: #ffeaa7; border-radius: 8px; font-size: 14px;">❌ 请输入订单号</div>';
+        resultDiv.innerHTML = '<div style="color: #9a3412; padding: 12px 14px; background: #fff7ed; border: 1px solid rgba(249, 115, 22, 0.24); border-radius: 16px; font-size: 14px; line-height: 1.6;">请输入订单号</div>';
         return;
     }
     
@@ -147,12 +339,12 @@ async function performAlipayLookup() {
     const isAlipayTrade = /^\d{28}$/.test(orderNumber);     // 支付宝交易号格式
     
     if (!isMerchantOrder && !isAlipayTrade) {
-        resultDiv.innerHTML = '<div style="color: #e74c3c; padding: 10px; background: #ffeaa7; border-radius: 8px; font-size: 14px;">❌ 请输入有效的订单号格式<br><small>商家订单号：IC/ICS/IBD开头的号码；支付宝交易号：28位数字</small></div>';
+        resultDiv.innerHTML = '<div style="color: #9a3412; padding: 12px 14px; background: #fff7ed; border: 1px solid rgba(249, 115, 22, 0.24); border-radius: 16px; font-size: 14px; line-height: 1.6;">请输入有效的订单号格式<br><small>商家订单号：IC/ICS/IBD开头的号码；支付宝交易号：28位数字</small></div>';
         return;
     }
     
     // 显示加载状态
-    resultDiv.innerHTML = '<div style="color: #3498db; padding: 15px; background: #f0f9ff; border-radius: 8px; text-align: center; font-size: 14px;">🔄 正在查找相关记录...</div>';
+    resultDiv.innerHTML = '<div style="color: #1457a5; padding: 14px 16px; background: #f8fbff; border: 1px solid rgba(64, 137, 227, 0.16); border-radius: 16px; text-align: center; font-size: 14px; font-weight: 600;">正在查找相关记录...</div>';
     
     try {
         // 调用CloudBase函数
@@ -205,39 +397,39 @@ async function performAlipayLookup() {
             const tradeNo = getLookupTradeNo(orderInfo);
             
             const resultHtml = `
-                <div style="background: #f0fff4; border: 1px solid #9ae6b4; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                <div style="background: #f8fbff; border: 1px solid rgba(64, 137, 227, 0.16); padding: 18px; border-radius: 18px; margin-bottom: 10px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-weight: 600; color: #2f855a;">访问码信息</span>
-                        <span style="font-size: 12px; color: #666;">${new Date(orderInfo.created_time).toLocaleDateString()}</span>
+                        <span style="font-weight: 700; color: #1457a5;">访问码信息</span>
+                        <span style="font-size: 12px; color: #6b7a90;">${new Date(orderInfo.created_time).toLocaleDateString()}</span>
                     </div>
                     <div style="margin-bottom: 8px;">
-                        <strong style="color: #333;">访问码：</strong>
-                        <span style="font-family: monospace; background: #e6fffa; padding: 4px 8px; border-radius: 4px; border: 1px solid #81e6d9;">${accessCode}</span>
-                        <button onclick="copyToClipboard('${accessCode}')" style="margin-left: 8px; background: #38a169; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">复制</button>
+                        <strong style="color: #0f172a;">访问码：</strong>
+                        <span style="font-family: monospace; background: #ffffff; padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(64, 137, 227, 0.16); color: #1457a5;">${accessCode}</span>
+                        <button onclick="copyToClipboard('${accessCode}')" style="margin-left: 8px; background: #1a7be8; color: white; border: none; padding: 7px 10px; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 700; box-shadow: 0 10px 22px rgba(26, 123, 232, 0.2);">复制</button>
                     </div>
-                    <div style="margin-bottom: 5px;">
+                    <div style="margin-bottom: 5px; color: #334155;">
                         <strong>产品：</strong>${orderInfo.product_name}
                     </div>
-                    <div style="margin-bottom: 5px;">
+                    <div style="margin-bottom: 5px; color: #334155;">
                         <strong>金额：</strong>¥${orderInfo.amount}
                     </div>
-                    <div style="margin-bottom: 5px;">
+                    <div style="margin-bottom: 5px; color: #334155;">
                         <strong>支付时间：</strong>${new Date(orderInfo.payment_time).toLocaleString()}
                     </div>
-                    <div style="margin-bottom: 5px;">
+                    <div style="margin-bottom: 5px; color: #334155;">
                         <strong>商家订单号：</strong><span style="font-family: monospace; font-size: 12px;">${orderInfo.merchant_order_no}</span>
                     </div>
-                    ${tradeNo ? `<div style="margin-bottom: 5px;"><strong>订单号：</strong><span style="font-family: monospace; font-size: 12px;">${tradeNo}</span></div>` : ''}
+                    ${tradeNo ? `<div style="margin-bottom: 5px; color: #334155;"><strong>订单号：</strong><span style="font-family: monospace; font-size: 12px;">${tradeNo}</span></div>` : ''}
                 </div>
             `;
             
             resultDiv.innerHTML = `
-                <div style="color: #22c55e; padding: 15px; background: #f0fff4; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: 600;">
-                    🎉 访问码找回成功
+                <div style="color: #1457a5; padding: 15px; background: #f8fbff; border: 1px solid rgba(64, 137, 227, 0.16); border-radius: 16px; margin-bottom: 15px; text-align: center; font-weight: 700;">
+                    访问码找回成功
                 </div>
                 ${resultHtml}
-                <div style="margin-top: 15px; padding: 15px; background: #e6fffa; border-radius: 8px; border: 1px solid #81e6d9; text-align: center;">
-                    <p style="margin: 0; color: #2d3748; font-size: 14px;">${actualResult.result.usage_tip}</p>
+                <div style="margin-top: 15px; padding: 15px; background: #eef5fc; border-radius: 16px; border: 1px solid rgba(64, 137, 227, 0.14); text-align: center;">
+                    <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6;">${actualResult.result.usage_tip}</p>
                 </div>
             `;
             
@@ -245,18 +437,17 @@ async function performAlipayLookup() {
             // 未找到记录
             const errorMessage = actualResult.error || '未找到相关记录';
             resultDiv.innerHTML = `
-                <div style="color: #f59e0b; padding: 20px; background: #fffbeb; border: 1px solid #fbbf24; border-radius: 8px; text-align: center;">
-                    <div style="margin-bottom: 15px; font-size: 48px;">😔</div>
-                    <div style="font-weight: 600; margin-bottom: 10px;">${errorMessage}</div>
-                    <div style="font-size: 14px; color: #92400e; line-height: 1.5;">
+                <div style="color: #9a3412; padding: 18px; background: #fff7ed; border: 1px solid rgba(249, 115, 22, 0.24); border-radius: 18px; text-align: center;">
+                    <div style="font-weight: 700; margin-bottom: 10px;">${errorMessage}</div>
+                    <div style="font-size: 14px; color: #9a3412; line-height: 1.6;">
                         可能的原因：<br/>
                         • 订单号输入有误<br/>
                         • 订单不存在或已退款<br/>
                         • 订单状态异常
                     </div>
-                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #fbbf24;">
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(249, 115, 22, 0.2); color: #7c2d12;">
                         <strong>联系客服：</strong><br/>
-                        📧 service@icstudio.club
+                        service@icstudio.club
                     </div>
                 </div>
             `;
@@ -265,9 +456,9 @@ async function performAlipayLookup() {
     } catch (error) {
         console.error('查找失败:', error);
         resultDiv.innerHTML = `
-            <div style="color: #e74c3c; padding: 15px; background: #fee; border: 1px solid #fecaca; border-radius: 8px; text-align: center;">
-                ❌ 查找失败，请稍后重试<br/>
-                <small style="color: #666;">错误信息：${error.message}</small>
+            <div style="color: #9a3412; padding: 15px; background: #fff7ed; border: 1px solid rgba(249, 115, 22, 0.24); border-radius: 16px; text-align: center; line-height: 1.6;">
+                查找失败，请稍后重试<br/>
+                <small style="color: #7c2d12;">错误信息：${error.message}</small>
             </div>
         `;
     }
@@ -282,16 +473,16 @@ function copyToClipboard(text) {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: #22c55e;
+            background: #1a7be8;
             color: white;
             padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border-radius: 16px;
+            box-shadow: 0 18px 36px rgba(26, 123, 232, 0.24);
             z-index: 10001;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 700;
         `;
-        notification.innerHTML = `📋 访问码已复制`;
+        notification.textContent = '访问码已复制';
         document.body.appendChild(notification);
         
         setTimeout(() => {

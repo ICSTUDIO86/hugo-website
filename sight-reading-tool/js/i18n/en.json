@@ -110,6 +110,12 @@
       "description": "Provides guitar-specific <strong>voicings</strong> (Drop2, Drop3, Shell Voicing, Close Voicing)<br>Provides guitar-specific <strong>articulations</strong> (staccato, legato, accents, etc.)"
     },
 
+    "challengeMode": {
+      "icon": "⏱️",
+      "title": "Challenge Mode",
+      "description": "Closer to real performance pressure. Adjust prep time, BPM, cursor behavior, and hidden pickup bars to move from understanding to reacting in time."
+    },
+
     "articulations": {
     "icon": "💻",
     "title": "Multi-Device Support",

@@ -774,7 +774,7 @@
     const isFretlab = themeName === 'fretlab';
     const sectionBg = isFretlab ? '#fffbeb' : '#f8fbff';
     const sectionBorder = isFretlab ? 'rgba(217,119,6,.24)' : '#dbeafe';
-    const titleColor = isFretlab ? '#92400e' : '#1d4ed8';
+    const titleColor = isFretlab ? '#92400e' : '#79addc';
     const onlyTool = settings.toolOnly === 'cognote' || settings.toolOnly === 'fretlab'
       ? settings.toolOnly
       : '';

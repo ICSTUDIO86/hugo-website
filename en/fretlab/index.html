@@ -195,15 +195,23 @@
       .fretlab-faq-heading-inner {
         display: inline-flex;
         flex-direction: column;
-        align-items: stretch;
+        align-items: center;
         width: fit-content;
         max-width: 100%;
       }
 
+      .fretlab-faq-heading-inner > h2 {
+        display: inline-block;
+        width: fit-content;
+        max-width: 100%;
+        margin: 0 auto;
+      }
+
       .fretlab-faq-heading-mark {
-        width: 100%;
+        width: calc(100% + 18px);
         height: 10px;
         margin-top: -6px;
+        margin-left: -9px;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 10' fill='none'%3E%3Cpath d='M2 7 C11 3, 20 9, 31 5 C40 2, 51 8, 62 4' stroke='%23d97706' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-size: 100% 100%;
@@ -320,9 +328,28 @@
 
       .fretlab-faq-answer ul {
         margin: 0;
-        padding-left: 1.25rem;
+        padding-left: 0;
+        list-style: none;
         display: grid;
         gap: 8px;
+      }
+
+      .fretlab-faq-answer li {
+        position: relative;
+        padding-left: 1.75rem;
+      }
+
+      .fretlab-faq-answer li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.38rem;
+        width: 1rem;
+        height: 1rem;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M4.2 12.4 C5.8 8.7, 9.3 6.7, 12.7 7.1 C15.9 7.5, 18.2 9.7, 19.6 12.1 C18.1 14.8, 15.8 16.9, 12.6 17.2 C9.1 17.6, 5.9 15.8, 4.2 12.4 Z' stroke='%23d97706' stroke-width='1.65' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M8.4 12.3 C9.7 13.2, 10.9 14, 12.1 15.2 C13.6 12.8, 14.8 11.1, 16.1 9.8' stroke='%23121212' stroke-width='1.55' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        background-position: center;
       }
 
       .fretlab-faq-mini-box {
@@ -733,6 +760,19 @@
         background: rgba(254, 243, 199, 0.9);
         color: #b45309;
         transform: rotate(4deg);
+      }
+
+      .fretlab-pricing-card--bundle .fretlab-pricing-badge-row {
+        position: absolute;
+        top: -2px;
+        right: 0;
+        width: auto;
+        justify-content: flex-end;
+        pointer-events: none;
+      }
+
+      .fretlab-pricing-card--bundle .fretlab-pricing-tag {
+        margin-left: auto;
       }
 
       .fretlab-pricing-title {
@@ -1933,7 +1973,7 @@
         var FRETLAB_PRICING_CONTENT = {
           zh: {
             freeBadge: '免费版',
-            freeTitle: '试用版',
+            freeTitle: '免费版',
             freePrice: '¥0',
             freeDescription: '先直接上手，熟悉 FretLab 的交互方式，再决定要不要完整解锁。',
             freeFeatures: [
@@ -1952,7 +1992,7 @@
               '解锁自定义指板',
               '支持导出图片',
               '支持导出动画',
-              '支持桌面端安装'
+              '支持桌面端与网页版'
             ],
             fullAlipay: '支付宝支付',
             fullWechat: '微信支付',
@@ -1997,7 +2037,7 @@
               'Unlock Custom Fretboard',
               'Support image export',
               'Support animation export',
-              'Support desktop app installation'
+              'Support desktop and web versions'
             ],
             fullAlipay: 'Alipay',
             fullWechat: 'WeChat Pay',
@@ -2026,7 +2066,7 @@
         var FRETLAB_FAQ_CONTENT = {
           zh: {
             title: '常见问题',
-            accent: 'FAQ',
+            accent: '',
             items: [
               {
                 icon: 'suitable',
@@ -2121,7 +2161,7 @@
           },
           en: {
             title: 'FAQ',
-            accent: 'FAQ',
+            accent: '',
             items: [
               {
                 icon: 'suitable',
@@ -2227,7 +2267,7 @@
                 'Unlock Custom Fretboard',
                 'Support image export',
                 'Support animation export',
-                'Support desktop app installation'
+                'Support desktop and web versions'
               ]
             };
           }
@@ -2241,7 +2281,7 @@
               '解锁自定义指板',
               '支持导出图片',
               '支持导出动画',
-              '支持桌面端安装'
+              '支持桌面端与网页版'
             ]
           };
         }
@@ -2337,7 +2377,7 @@
 
           var alipay = layout.querySelector('#fretlab-buy-alipay');
           var wechat = layout.querySelector('#fretlab-buy-wechat');
-          var gumroad = layout.querySelector('#fretlab-buy-gumroad');
+          var gumroad = layout.querySelector('[data-fretlab-full-gumroad]');
           var previewLink = layout.querySelector('a[href="/fretlab-tool/"],a[href="/fretlab-tool"],a[href="/en/fretlab-tool/"],a[href="/en/fretlab-tool"]');
 
           if (alipay) {
@@ -2350,6 +2390,7 @@
           }
           if (gumroad) {
             gumroad.textContent = pricingCopy.gumroadLabel;
+            gumroad.href = 'https://icstudio3.gumroad.com/l/fretlab';
             decoratePricingSketchButton(gumroad);
           }
           if (previewLink) {
@@ -2387,6 +2428,21 @@
           return node;
         }
 
+        function removeLegacyBuySupportCopy(buySection) {
+          if (!buySection) return;
+          Array.prototype.forEach.call(
+            buySection.querySelectorAll('p.font-hand, p[class*="font-hand"]'),
+            function (node) {
+              var text = (node.textContent || '').replace(/\s+/g, ' ').trim();
+              var isLegacySupportCopy = text.indexOf('支持 Web 与桌面端') !== -1 || text.indexOf('Supports Web and desktop') !== -1;
+              var isEmptyTopMeta = !text && node.classList.contains('text-center') && node.classList.contains('text-lg');
+              if (isLegacySupportCopy || isEmptyTopMeta) {
+                node.remove();
+              }
+            }
+          );
+        }
+
         function createFretlabBundleCard(lang, copy) {
           var card = document.createElement('article');
           card.className = 'fretlab-pricing-card fretlab-pricing-card--bundle';
@@ -2402,16 +2458,6 @@
           var badgeRow = document.createElement('div');
           badgeRow.className = 'fretlab-pricing-badge-row';
 
-          var badge = document.createElement('span');
-          badge.className = 'fretlab-pricing-badge font-hand';
-          badge.textContent = copy.bundleBadge;
-          badgeRow.appendChild(badge);
-
-          var tag = document.createElement('span');
-          tag.className = 'fretlab-pricing-tag font-hand';
-          tag.textContent = copy.discountTag;
-          badgeRow.appendChild(tag);
-
           var title = document.createElement('h3');
           title.className = 'fretlab-pricing-title font-sketch text-3xl';
           title.textContent = copy.bundleTitle;
@@ -2420,7 +2466,6 @@
           price.className = 'fretlab-pricing-price font-sketch text-4xl';
           price.innerHTML = copy.bundlePrice + ' <span class="fretlab-buy-mode-price-old font-hand">' + copy.bundleOldPrice + '</span>';
 
-          head.appendChild(badgeRow);
           head.appendChild(title);
           head.appendChild(price);
 
@@ -2448,15 +2493,7 @@
           payRow.appendChild(alipay);
           payRow.appendChild(wechat);
 
-          var gumroad = document.createElement('a');
-          gumroad.href = getBundleGumroadUrl();
-          gumroad.target = '_blank';
-          gumroad.rel = 'noreferrer';
-          gumroad.textContent = getGumroadButtonText(lang);
-          decoratePricingSketchButton(gumroad);
-
           actions.appendChild(payRow);
-          actions.appendChild(gumroad);
 
           card.appendChild(head);
           card.appendChild(divider);
@@ -2470,6 +2507,7 @@
         function ensurePricingCardsLayout() {
           var buySection = document.getElementById('buy');
           if (!buySection) return;
+          removeLegacyBuySupportCopy(buySection);
 
           var alipayButton = buySection.querySelector('#fretlab-buy-alipay');
           var wechatButton = buySection.querySelector('#fretlab-buy-wechat');
@@ -2523,7 +2561,6 @@
             }
           );
           var payButtonGrid = alipayButton.parentNode;
-          var gumroadButton = document.getElementById('fretlab-buy-gumroad');
           var previewLink = buySection.querySelector('a[href="/fretlab-tool/"],a[href="/fretlab-tool"],a[href="/en/fretlab-tool/"],a[href="/en/fretlab-tool"]');
           var stash = document.getElementById('fretlab-pricing-stash');
 
@@ -2543,7 +2580,7 @@
             return;
           }
 
-          [payButtonGrid, gumroadButton, accessSection, previewLink, priceNode].forEach(function (node) {
+          [payButtonGrid, accessSection, previewLink, priceNode].forEach(function (node) {
             if (node && node.parentNode && node.parentNode !== stash) {
               stash.appendChild(node);
             }
@@ -2564,9 +2601,6 @@
           freeCard.className = 'fretlab-pricing-card fretlab-pricing-card--free';
           freeCard.innerHTML = ''
             + '<div class="fretlab-pricing-head">'
-            + '  <div class="fretlab-pricing-badge-row">'
-            + '    <span class="fretlab-pricing-badge font-hand">' + pricingCopy.freeBadge + '</span>'
-            + '  </div>'
             + '  <h3 class="fretlab-pricing-title font-sketch text-3xl">' + pricingCopy.freeTitle + '</h3>'
             + '  <div class="fretlab-pricing-price font-sketch text-4xl">' + pricingCopy.freePrice + '</div>'
             + '</div>'
@@ -2587,9 +2621,6 @@
           var fullHead = document.createElement('div');
           fullHead.className = 'fretlab-pricing-head';
           fullHead.innerHTML = ''
-            + '<div class="fretlab-pricing-badge-row">'
-            + '  <span class="fretlab-pricing-badge font-hand">' + pricingCopy.fullBadge + '</span>'
-            + '</div>'
             + '<h3 class="fretlab-pricing-title font-sketch text-3xl">' + pricingCopy.fullTitle + '</h3>'
             + '<div class="fretlab-pricing-price font-sketch text-4xl">' + pricingCopy.fullPrice + ' <span class="font-hand text-lg text-muted-foreground">' + pricingCopy.fullPriceLabel + '</span></div>';
           fullCard.appendChild(fullHead);
@@ -2616,9 +2647,11 @@
             }
           }));
           fullActions.appendChild(fullPayRow);
-          fullActions.appendChild(createStandalonePricingPayButton(pricingCopy.gumroadLabel, {
-            href: (gumroadButton && gumroadButton.href) || 'https://icstudio3.gumroad.com/l/fretlab'
-          }));
+          var fullGumroad = createStandalonePricingPayButton(pricingCopy.gumroadLabel, {
+            href: 'https://icstudio3.gumroad.com/l/fretlab'
+          });
+          fullGumroad.setAttribute('data-fretlab-full-gumroad', '');
+          fullActions.appendChild(fullGumroad);
           fullCard.appendChild(fullActions);
           decoratePricingCardFrame(fullCard);
 
@@ -2668,31 +2701,9 @@
         }
 
         function ensureGumroadPayButton() {
-          var buySection = document.getElementById('buy');
-          if (!buySection) return;
-
-          var alipayButton = buySection.querySelector('#fretlab-buy-alipay');
-          var wechatButton = buySection.querySelector('#fretlab-buy-wechat');
-          if (!alipayButton || !wechatButton) return;
-
-          var buttonGrid = alipayButton.parentNode;
-          if (!buttonGrid || buttonGrid !== wechatButton.parentNode) return;
-
-          var lang = getLang();
           var button = document.getElementById('fretlab-buy-gumroad');
-          if (!button) {
-            button = document.createElement('a');
-            button.id = 'fretlab-buy-gumroad';
-            button.className = 'fretlab-gumroad-pay-btn font-hand rounded-xl border border-border bg-card px-4 py-3 text-lg hover:bg-zinc-100';
-            button.href = 'https://icstudio3.gumroad.com/l/fretlab';
-            button.target = '_blank';
-            button.rel = 'noreferrer';
-          }
-
-          button.textContent = getGumroadButtonText(lang);
-
-          if (button.parentNode !== buttonGrid.parentNode || button.previousElementSibling !== buttonGrid) {
-            buttonGrid.insertAdjacentElement('afterend', button);
+          if (button && button.parentNode) {
+            button.parentNode.removeChild(button);
           }
         }
 
@@ -2767,7 +2778,6 @@
               + '    <button type="button" class="fretlab-bundle-offer-pay font-hand rounded-xl border border-border bg-card px-4 py-3 text-lg hover:bg-zinc-100" data-bundle-pay-trigger="alipay" id="fretlab-bundle-offer-alipay"></button>'
               + '    <button type="button" class="fretlab-bundle-offer-pay font-hand rounded-xl border border-border bg-card px-4 py-3 text-lg hover:bg-zinc-100" data-bundle-pay-trigger="wechat" id="fretlab-bundle-offer-wechat"></button>'
               + '  </div>'
-              + '  <a id="fretlab-bundle-offer-gumroad" class="fretlab-gumroad-pay-btn fretlab-bundle-offer-gumroad font-hand rounded-xl border border-border bg-card px-4 py-3 text-lg hover:bg-zinc-100" target="_blank" rel="noreferrer"></a>'
               + '</div>';
           }
 
@@ -2789,22 +2799,18 @@
           var titleNode = document.getElementById('fretlab-bundle-offer-title');
           var alipayNode = document.getElementById('fretlab-bundle-offer-alipay');
           var wechatNode = document.getElementById('fretlab-bundle-offer-wechat');
-          var gumroadNode = document.getElementById('fretlab-bundle-offer-gumroad');
 
           if (badgeNode) badgeNode.textContent = text.badge;
           if (discountNode) discountNode.textContent = text.discountTag;
           if (titleNode) titleNode.innerHTML = text.title;
           if (alipayNode) alipayNode.textContent = text.alipay;
           if (wechatNode) wechatNode.textContent = text.wechat;
-          if (gumroadNode) {
-            gumroadNode.textContent = getGumroadButtonText(lang);
-            gumroadNode.href = getBundleGumroadUrl();
-          }
         }
 
         function ensureBuyModeToggle() {
           var buySection = document.getElementById('buy');
           if (!buySection) return;
+          removeLegacyBuySupportCopy(buySection);
 
           var accessInput = buySection.querySelector('#access-code-input');
           var payButton = buySection.querySelector('#fretlab-buy-alipay') || buySection.querySelector('#fretlab-buy-wechat');
@@ -3392,6 +3398,25 @@
           return icons[icon] || icons.contact;
         }
 
+        function syncFretlabFaqHeadingMarkWidth(faqSection, lang) {
+          if (!faqSection || lang !== 'zh') return;
+
+          var titleNode = faqSection.querySelector('.fretlab-faq-heading h2');
+          var markNode = faqSection.querySelector('.fretlab-faq-heading-mark');
+          if (!titleNode || !markNode) return;
+
+          var applyWidth = function () {
+            var titleWidth = Math.ceil(titleNode.getBoundingClientRect().width || titleNode.scrollWidth || 0);
+            if (!titleWidth) return;
+            var extra = 14;
+            markNode.style.width = (titleWidth + extra) + 'px';
+            markNode.style.marginLeft = (-extra / 2) + 'px';
+          };
+
+          applyWidth();
+          window.requestAnimationFrame(applyWidth);
+        }
+
         function ensureFaqAccordion() {
           var faqSection = document.getElementById('faq');
           if (!faqSection) return;
@@ -3408,10 +3433,13 @@
 
           var heading = document.createElement('div');
           heading.className = 'fretlab-faq-heading';
+          var accentMarkup = content.accent
+            ? ' <span class="text-foreground/90">' + content.accent + '</span>'
+            : '';
           heading.innerHTML = ''
             + '<div class="fretlab-faq-heading-inner">'
             + '  <h2 class="font-sketch text-3xl md:text-5xl leading-tight tracking-tight text-foreground">'
-            + content.title + ' <span class="text-foreground/90">' + content.accent + '</span>'
+            + content.title + accentMarkup
             + '  </h2>'
             + '  <div class="fretlab-faq-heading-mark" aria-hidden="true"></div>'
             + '</div>';
@@ -3511,6 +3539,7 @@
 
           faqSection.appendChild(heading);
           faqSection.appendChild(list);
+          syncFretlabFaqHeadingMarkWidth(faqSection, lang);
           faqSection.dataset.faqAccordionLang = lang;
         }
 
