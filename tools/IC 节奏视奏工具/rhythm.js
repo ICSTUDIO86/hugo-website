@@ -95,7 +95,7 @@
     const translations = {
         'zh-CN': {
             'app.title': 'Cognote - 节奏视奏生成器',
-            'app.subtitle': '专业级节奏视奏与时间控制训练工具',
+            'app.subtitle': '专业级视奏工具与乐谱渲染',
             'app.footer': ' - 专业级节奏视奏训练模块',
             'app.melodyMode': '旋律视奏',
             'app.jianpuMode': '简谱视奏',
@@ -161,6 +161,7 @@
             'controls.frequencyDesc': '调整各节奏单位在节奏中的出现频率',
             'controls.secondaryDensity': '第二声部密度',
             'controls.mode': '模式',
+            'controls.challengeMode': '挑战模式',
             'mode.free': '自由',
             'mode.challenge': '挑战',
             'controls.generate': '生成节奏',
@@ -271,7 +272,7 @@
         },
         'zh-TW': {
             'app.title': 'Cognote - 節奏視奏生成器',
-            'app.subtitle': '專業級節奏視奏與時間控制訓練工具',
+            'app.subtitle': '專業級視奏工具與樂譜渲染',
             'app.footer': ' - 專業級節奏視奏訓練模組',
             'app.melodyMode': '旋律視奏',
             'app.jianpuMode': '簡譜視奏',
@@ -337,6 +338,7 @@
             'controls.frequencyDesc': '調整各節奏單位在節奏中的出現頻率',
             'controls.secondaryDensity': '第二聲部密度',
             'controls.mode': '模式',
+            'controls.challengeMode': '挑戰模式',
             'mode.free': '自由',
             'mode.challenge': '挑戰',
             'controls.generate': '生成節奏',
@@ -447,7 +449,7 @@
         },
         'en': {
             'app.title': 'Cognote - Rhythm Sight Reading Generator',
-            'app.subtitle': 'Professional rhythm sight-reading and timing control tool',
+            'app.subtitle': 'Professional Sight-Reading Tool & Score Rendering',
             'app.footer': ' - Professional rhythm sight-reading module',
             'app.melodyMode': 'Melody',
             'app.jianpuMode': 'Jianpu',
@@ -513,6 +515,7 @@
             'controls.frequencyDesc': 'Adjust how often each rhythm value appears',
             'controls.secondaryDensity': 'Secondary Density',
             'controls.mode': 'Mode',
+            'controls.challengeMode': 'Challenge Mode',
             'mode.free': 'Free',
             'mode.challenge': 'Challenge',
             'controls.generate': 'Generate Rhythm',
@@ -1991,6 +1994,13 @@
         customRadio.value = String(clamped);
     }
 
+    function updateCustomMeasureVisibility() {
+        const panel = document.getElementById('measure-custom-panel');
+        const customRadio = document.getElementById('measure-custom');
+        if (!panel || !customRadio) return;
+        panel.style.display = customRadio.checked ? 'block' : 'none';
+    }
+
     function getSelectedMeasureCountInput() {
         return document.querySelector('input[name="measureCount"]:checked');
     }
@@ -2011,15 +2021,18 @@
         if (key === 'custom') {
             const custom = document.getElementById('measure-custom');
             if (custom) custom.checked = true;
+            updateCustomMeasureVisibility();
             return;
         }
         const target = document.querySelector(`input[name="measureCount"][value="${key}"]`);
         if (target) {
             target.checked = true;
+            updateCustomMeasureVisibility();
             return;
         }
         const fallback = document.getElementById('measure-4');
         if (fallback) fallback.checked = true;
+        updateCustomMeasureVisibility();
     }
 
     function getSelectedMeasureConfig() {
@@ -2045,6 +2058,7 @@
 
     function openMeasureSettings() {
         syncCustomMeasureValue();
+        updateCustomMeasureVisibility();
         previousMeasureCountSelection = getSelectedMeasureCountSelectionKey();
         const customInput = document.getElementById('measure-custom-value');
         previousCustomMeasureCount = customInput ? customInput.value : previousCustomMeasureCount;
@@ -2067,6 +2081,7 @@
 
     function saveMeasureSettings() {
         syncCustomMeasureValue();
+        updateCustomMeasureVisibility();
         previousMeasureCountSelection = getSelectedMeasureCountSelectionKey();
         const customInput = document.getElementById('measure-custom-value');
         previousCustomMeasureCount = customInput ? customInput.value : previousCustomMeasureCount;
@@ -6645,6 +6660,14 @@
         }
     }
 
+    function syncMetronomeButtonState() {
+        const button = document.getElementById('metronomeToggleBtn');
+        if (!button) return;
+        const active = !!state.metronome.isRunning;
+        button.classList.toggle('active', active);
+        button.title = active ? '停止节拍器' : '开始/停止节拍器';
+    }
+
     function startMetronome(startAtTime, startedByPlayback = false, beatOffset = 0) {
         const settings = getSettings();
         const beatsPerMeasure = settings.beats;
@@ -6666,6 +6689,7 @@
         state.metronome.stepIndex = 0;
         state.metronome.isRunning = true;
         state.metronome.startedByPlayback = !!startedByPlayback;
+        syncMetronomeButtonState();
         if (typeof startAtTime === 'number' && isFinite(startAtTime)) {
             const patternInfo = getMetronomePatternInfo(currentTempo, !!startedByPlayback);
             const stepDuration = patternInfo.stepDuration || secondsPerBeat;
@@ -6718,6 +6742,7 @@
         state.metronome.beatIndex = 0;
         state.metronome.nextTime = 0;
         state.metronome.startedByPlayback = false;
+        syncMetronomeButtonState();
         muteAudioGain(state.metronome.outputGain, state.metronome.audioCtx);
         const indicator = document.getElementById('metronomeBeatIndicator');
         if (indicator) {
@@ -6894,6 +6919,7 @@
         generateBtn.addEventListener('click', triggerGenerate);
         if (previousBtn) previousBtn.addEventListener('click', previousRhythm);
         if (nextBtn) nextBtn.addEventListener('click', nextRhythm);
+        syncMetronomeButtonState();
         metronomeBtn.addEventListener('click', toggleMetronome);
         if (metronomeBpmInput) bindBpmReactGrab(metronomeBpmInput);
         if (challengeBpmInput) bindBpmReactGrab(challengeBpmInput);
@@ -7052,6 +7078,7 @@
     window.openMeasureSettings = openMeasureSettings;
     window.closeMeasureSettings = closeMeasureSettings;
     window.saveMeasureSettings = saveMeasureSettings;
+    window.updateCustomMeasureVisibility = updateCustomMeasureVisibility;
     window.openVoiceSettings = openVoiceSettings;
     window.closeVoiceSettings = closeVoiceSettings;
     window.saveVoiceSettings = saveVoiceSettings;

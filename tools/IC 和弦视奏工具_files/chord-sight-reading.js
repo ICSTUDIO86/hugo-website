@@ -13387,7 +13387,9 @@ function toggleMelodyVisibility() {
             });
         }
         if (visibilityBtn) {
-            visibilityBtn.innerHTML = '👂';
+            if (typeof setChordUiIcon === 'function') {
+                setChordUiIcon(visibilityBtn, 'eyeOff');
+            }
             visibilityBtn.title = '显示和弦';
             visibilityBtn.classList.add('hidden-state');
         }
@@ -13404,7 +13406,9 @@ function toggleMelodyVisibility() {
             });
         }
         if (visibilityBtn) {
-            visibilityBtn.innerHTML = '👀';
+            if (typeof setChordUiIcon === 'function') {
+                setChordUiIcon(visibilityBtn, 'eye');
+            }
             visibilityBtn.title = '隐藏和弦';
             visibilityBtn.classList.remove('hidden-state');
         }
@@ -13451,7 +13455,9 @@ function toggleMetronome() {
         startMetronome();
         metronomeIsPlaying = true;
         btn.classList.add('playing');
-        btn.textContent = '🎵';
+        if (typeof setChordUiIcon === 'function') {
+            setChordUiIcon(btn, 'note');
+        }
         btn.title = '停止节拍器';
         console.log('▶️ 节拍器开始');
     }
@@ -13470,7 +13476,9 @@ function stopMetronome() {
     metronomeIsPlaying = false;
     if (btn) {
         btn.classList.remove('playing');
-        btn.textContent = '🎵';
+        if (typeof setChordUiIcon === 'function') {
+            setChordUiIcon(btn, 'note');
+        }
         btn.title = '开始节拍器';
     }
     console.log('⏹️ 节拍器停止');

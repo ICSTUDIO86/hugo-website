@@ -91,9 +91,7 @@ const dom = {
   videoModalBackdrop: document.getElementById("videoModalBackdrop"),
   videoModalCloseBtn: document.getElementById("videoModalCloseBtn"),
   videoDropZone: document.getElementById("videoDropZone"),
-  videoUploadBtn: document.getElementById("videoUploadBtn"),
   videoUploadInput: document.getElementById("videoUploadInput"),
-  videoUploadFileName: document.getElementById("videoUploadFileName"),
   videoProgressWrap: document.getElementById("videoProgressWrap"),
   videoProgressBar: document.getElementById("videoProgressBar"),
   videoProgressText: document.getElementById("videoProgressText"),
@@ -2482,14 +2480,8 @@ function finishVideoProgress(success) {
 }
 
 function syncVideoRendererUi() {
-  if (dom.videoUploadFileName) {
-    dom.videoUploadFileName.textContent = videoRenderer.file?.name || t("video.file.none");
-  }
   if (dom.videoGenerateBtn) {
     dom.videoGenerateBtn.disabled = !videoRenderer.file || Boolean(videoRenderer.fileValidationErrorKey) || videoRenderer.busy;
-  }
-  if (dom.videoUploadBtn) {
-    dom.videoUploadBtn.disabled = videoRenderer.busy;
   }
   if (dom.videoModalCloseBtn) {
     dom.videoModalCloseBtn.disabled = videoRenderer.busy;
@@ -5296,8 +5288,8 @@ function renderShapeThumbnail(shape) {
   }
 
   const width = 146;
-  const height = 72;
-  const padX = 12;
+  const height = 78;
+  const padX = 13;
   const padY = 10;
   const strings = getStringCount();
   const rowGap = (height - padY * 2) / (strings - 1);
@@ -5310,6 +5302,11 @@ function renderShapeThumbnail(shape) {
   const cellCount = Math.max(2, maxFret - minFret + 1);
   const lineCount = cellCount + 1;
   const colGap = (width - padX * 2) / cellCount;
+  const dotRadius = Math.min(5.1, Math.max(3.4, Math.min(rowGap * 0.42, colGap * 0.32)));
+  const rootDotRadius = Math.max(
+    dotRadius,
+    Math.min(5.8, rowGap * 0.46, colGap * 0.36, dotRadius + 0.55)
+  );
 
   const stringLines = Array.from({ length: strings }, (_, visualIndex) => {
     const y = padY + visualIndex * rowGap;
@@ -5328,7 +5325,7 @@ function renderShapeThumbnail(shape) {
       const isRoot = pos.interval === 0;
       const label = isMovableDoEnabled() ? getMovableDoLabelFromSemitone(pos.interval) : "";
       return `
-        <circle class="shape-thumb__dot${isRoot ? " is-root" : ""}" cx="${x}" cy="${y}" r="${isRoot ? 7 : 6}"></circle>
+        <circle class="shape-thumb__dot${isRoot ? " is-root" : ""}" cx="${x}" cy="${y}" r="${isRoot ? rootDotRadius : dotRadius}"></circle>
         ${label ? `<text class="shape-thumb__label numeric-label${isRoot ? " is-root" : ""}" x="${x}" y="${y}">${escapeHtml(label)}</text>` : ""}
       `;
     })
@@ -8233,13 +8230,6 @@ function bindControls() {
       return;
     }
     event.preventDefault();
-    dom.videoUploadInput?.click();
-  });
-  dom.videoUploadBtn?.addEventListener("click", (event) => {
-    event.stopPropagation();
-    if (videoRenderer.busy) {
-      return;
-    }
     dom.videoUploadInput?.click();
   });
   ["dragenter", "dragover"].forEach((eventName) => {

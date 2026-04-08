@@ -27012,6 +27012,29 @@ function selectAllClefs() {
 function updateButtonDisplay(buttonId, selectedItems, category) {
     const button = document.getElementById(buttonId);
     if (!button) return;
+
+    const fixedLabelKeyMap = {
+        'keySettingsBtn': 'controls.keySettings',
+        'timeSignatureSettingsBtn': 'controls.timeSettings',
+        'clefSettingsBtn': 'controls.clefSettings'
+    };
+    const fixedLabelKey = fixedLabelKeyMap[buttonId];
+    if (fixedLabelKey) {
+        const translatedLabel = (
+            (typeof translations !== 'undefined' &&
+                typeof currentLanguage !== 'undefined' &&
+                translations[currentLanguage] &&
+                translations[currentLanguage][fixedLabelKey]) ||
+            (typeof translations !== 'undefined' &&
+                translations['zh-CN'] &&
+                translations['zh-CN'][fixedLabelKey]) ||
+            button.dataset.fixedLabel ||
+            button.textContent.trim()
+        );
+        button.dataset.fixedLabel = translatedLabel;
+        button.textContent = translatedLabel;
+        return;
+    }
     
     let displayText;
     if (selectedItems.length === 1) {

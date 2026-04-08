@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="zh-Hans">
   <head>
-    <script src="/js/localhost-sw-reset.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IC Fretboard Lab</title>
@@ -319,7 +318,14 @@
             </button>
           </div>
 
-          <div id="videoDropZone" class="video-modal__dropzone" role="button" tabindex="0" aria-describedby="videoDropHint">
+          <div
+            id="videoDropZone"
+            class="video-modal__dropzone"
+            role="button"
+            tabindex="0"
+            data-i18n-aria-label="video.modal.upload"
+            aria-label="选择文件"
+          >
             <div class="video-modal__drop-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24">
                 <path d="M7 4.5h7l3.5 3.5V19a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1Z" />
@@ -328,12 +334,6 @@
                 <path d="m10.2 13.1 1.8-1.9 1.8 1.9" />
               </svg>
             </div>
-            <p id="videoDropHint" class="video-modal__drop-hint">
-              <span data-i18n="video.modal.drop.hint">Drag and drop file here or</span>
-              <button id="videoUploadBtn" type="button" class="video-modal__choose-link" data-i18n="video.modal.upload">
-                Choose File
-              </button>
-            </p>
             <input id="videoUploadInput" type="file" accept=".mscz,.mscx,.gp5" hidden />
           </div>
 
@@ -341,8 +341,6 @@
             <span data-i18n="video.modal.support">支持格式：MuseScore（.mscz / .mscx）与 Guitar Pro 5（.gp5）</span>
             <span data-i18n="video.modal.maxSize">最大文件：25MB</span>
           </div>
-
-          <div id="videoUploadFileName" class="video-modal__file-name" data-i18n="video.file.none">尚未选择文件</div>
 
           <p class="video-modal__tip" data-i18n="video.modal.tip">
             最佳效果建议：MuseScore 文件里请包含吉他 Tab。若仅有五线谱，指板位置可能出现偏差。
