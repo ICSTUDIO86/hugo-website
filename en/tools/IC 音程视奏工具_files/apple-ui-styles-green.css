@@ -142,8 +142,8 @@ body {
 
 .header h1 {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, 'Microsoft YaHei', sans-serif;
-    font-size: 3.2rem;
-    margin-bottom: 12px;
+    font-size: 3.5rem;
+    margin-bottom: 10px;
     font-weight: 400;
     letter-spacing: -0.03em;
     line-height: 1.1;
@@ -194,6 +194,283 @@ body {
     color: #1d1d1f;
     font-size: 1rem;
     letter-spacing: 0.01em;
+}
+
+.controls #rangeMin,
+.controls #rangeMax {
+    margin-top: 32px;
+}
+
+.control-row.inline-control-row {
+    gap: 16px;
+    align-items: flex-end;
+}
+
+.control-row.inline-control-row .control-group {
+    flex: 0 0 auto;
+    min-width: 0;
+}
+
+.control-row.inline-control-row .range-control-group {
+    width: 112px;
+}
+
+.control-row.inline-control-row .range-control-group select {
+    width: 100%;
+}
+
+.control-row.inline-control-row .metronome-group {
+    width: 148px !important;
+    margin-left: 0 !important;
+}
+
+.control-row.inline-control-row .metronome-control {
+    width: 100%;
+    justify-content: space-between;
+}
+
+.melody-secondary-row {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 24px;
+    align-items: start;
+}
+
+.melody-primary-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    align-items: stretch;
+}
+
+.melody-primary-row .control-group {
+    min-width: 0;
+}
+
+.melody-primary-row-five {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.melody-secondary-cell {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.melody-primary-row .btn-secondary,
+.melody-secondary-row .btn-secondary {
+    width: 100%;
+    min-width: 0 !important;
+    min-height: 52px;
+    height: 52px;
+    padding: 0 8px !important;
+    flex: 0 0 auto !important;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    color: #1d1d1f;
+    background: #f2f2f7;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 2px 8px var(--card-shadow);
+    transition: all 0.2s ease;
+}
+
+.melody-primary-row .btn-secondary:hover,
+.melody-secondary-row .btn-secondary:hover {
+    background: var(--neutral-light);
+    border-color: var(--border-color-medium);
+    color: #1d1d1f;
+    transform: translateY(-1px) scale(1.05);
+    box-shadow: 0 4px 16px var(--card-shadow-hover);
+}
+
+.melody-primary-row .btn-secondary:active,
+.melody-secondary-row .btn-secondary:active {
+    background: var(--neutral-light);
+    color: #1d1d1f;
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 8px var(--card-shadow);
+}
+
+.melody-secondary-row #rangeMin,
+.melody-secondary-row #rangeMax {
+    width: 100%;
+    min-height: 52px;
+    margin-top: 0;
+    box-shadow: 0 2px 8px var(--card-shadow);
+}
+
+.melody-secondary-row #rangeMin:hover,
+.melody-secondary-row #rangeMax:hover {
+    box-shadow: 0 4px 16px var(--card-shadow-hover);
+}
+
+.melody-secondary-card {
+    min-height: 52px;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color-soft);
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow:
+        0 2px 8px var(--card-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.melody-secondary-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1d1d1f;
+    line-height: 1.2;
+}
+
+.melody-accidental-card .melody-secondary-label {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.melody-accidental-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 52px;
+    box-sizing: border-box;
+    padding: 0 14px;
+}
+
+.melody-accidental-row {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 8px;
+}
+
+.melody-accidental-row input[type="range"] {
+    flex: 1 1 0%;
+    min-width: 0;
+    height: 4px;
+}
+
+.melody-accidental-row span {
+    min-width: 30px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.control-toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.melody-toggle-stack {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+.melody-secondary-row .control-toggle-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 52px !important;
+    padding: 0 8px !important;
+    flex: 0 0 auto !important;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1;
+}
+
+.control-toggle-btn .control-toggle-btn-text {
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    line-height: 1;
+    font-family: inherit;
+}
+
+.melody-visibility-btn.control-toggle-btn.is-active {
+    background: var(--primary-green) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-green) !important;
+}
+
+.melody-visibility-btn.control-toggle-btn.is-active:hover {
+    background: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+.melody-metronome-card .metronome-control {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 10px;
+}
+
+.melody-metronome-card .bpm-input-control {
+    width: 100%;
+    min-width: 0;
+    height: 38px;
+    padding: 0 10px;
+    border-radius: 10px;
+    font-size: 18px;
+    line-height: 38px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.melody-metronome-card .metronome-settings-btn {
+    width: 100%;
+    height: 38px;
+    padding: 0;
+    border-radius: 10px;
+}
+
+.melody-metronome-card .metronome-settings-btn .ui-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.metronome-play-btn .ui-icon {
+    width: 26px;
+    height: 26px;
+}
+
+.toolbar-metronome-card {
+    min-height: 54px;
+    padding: 8px 12px;
+    width: 164px;
+    box-sizing: border-box;
+}
+
+.buttons .toolbar-metronome-card {
+    flex: 0 0 auto;
+}
+
+@media (max-width: 1200px) {
+    .melody-secondary-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 820px) {
+    .melody-secondary-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .melody-secondary-row {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Apple-style form controls */
@@ -532,37 +809,43 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .metronome-play-btn {
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    background: var(--primary-green);
-    border: none;
-    border-radius: 50%;
-    color: #FFFFFF;
-    font-size: 12px;
+    width: 50px;
+    height: 50px;
+    padding: 12px;
+    background: #f2f2f7;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    color: #1d1d1f;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
+    box-shadow: 0 2px 8px var(--card-shadow);
 }
 
 .metronome-play-btn:hover {
-    background: #28A745;
-    transform: scale(1.05);
+    background: var(--neutral-light);
+    border-color: var(--border-color-medium);
+    transform: translateY(-1px) scale(1.05);
+    box-shadow: 0 4px 16px var(--card-shadow-hover);
 }
 
 .metronome-play-btn:active {
-    transform: scale(0.95);
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 8px var(--card-shadow);
 }
 
 .metronome-play-btn.active {
-    background: var(--accent-orange);
-    animation: header-metronome-pulse 0.6s ease-in-out infinite alternate;
+    background: var(--primary-green) !important;
+    color: #FFFFFF !important;
+    border-color: var(--primary-green) !important;
+    animation: none;
 }
 
 .metronome-play-btn.active:hover {
-    background: #E6850E;
+    background: #28A745 !important;
+    border-color: #28A745 !important;
 }
 
 .metronome-settings-btn {
@@ -640,16 +923,20 @@ input[type="range"]::-moz-range-thumb {
 }
 
 [data-theme="dark"] .metronome-play-btn {
-    background: var(--primary-green) !important;
-    color: #FFFFFF !important;
+    background: var(--neutral-light) !important;
+    border-color: var(--border-color) !important;
+    color: var(--neutral-black) !important;
 }
 
 [data-theme="dark"] .metronome-play-btn:hover {
-    background: #32D74B !important;
+    background: var(--neutral-medium) !important;
+    border-color: var(--border-color-medium) !important;
 }
 
 [data-theme="dark"] .metronome-play-btn.active {
-    background: var(--accent-orange) !important;
+    background: #32D74B !important;
+    color: #FFFFFF !important;
+    border-color: #32D74B !important;
 }
 
 [data-theme="dark"] .metronome-settings-btn {
@@ -808,6 +1095,11 @@ input[type="range"]::-moz-range-thumb {
     box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
+[data-theme="dark"] .switch .slider,
+[data-theme="dark"] #challengeModal .switch .slider {
+    background-color: #48484a !important;
+}
+
 [data-theme="dark"] .toggle-button {
     background: #1f1f22;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
@@ -889,16 +1181,69 @@ input[type="range"]::-moz-range-thumb {
 /* Apple-style buttons */
 .buttons {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
 }
 
+.toolbar-main-actions,
+.toolbar-utility-group {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.toolbar-metronome-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .button-group {
     display: flex;
-    gap: 12px;
+    gap: 16px;
     align-items: center;
+}
+
+#challengeCountdownUI {
+    margin-right: 0 !important;
+}
+
+.toolbar-main-actions .btn-secondary,
+.buttons > .button-group > .btn-secondary {
+    min-width: 0;
+    height: 52px;
+    min-width: 96px;
+    padding: 0 24px !important;
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    color: #1d1d1f;
+    background: #f2f2f7;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 2px 8px var(--card-shadow);
+    transition: all 0.2s ease;
+}
+
+.toolbar-main-actions .btn-secondary:hover,
+.buttons > .button-group > .btn-secondary:hover {
+    background: var(--neutral-light);
+    border-color: var(--border-color-medium);
+    color: #1d1d1f;
+    transform: translateY(-1px) scale(1.05);
+    box-shadow: 0 4px 16px var(--card-shadow-hover);
+}
+
+.toolbar-main-actions .btn-secondary:active,
+.buttons > .button-group > .btn-secondary:active {
+    background: var(--neutral-light);
+    color: #1d1d1f;
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 8px var(--card-shadow);
 }
 
 /* Melody Visibility Button */
@@ -908,8 +1253,7 @@ input[type="range"]::-moz-range-thumb {
     padding: 0;
     background: #f2f2f7;
     border: 1px solid var(--border-color);
-    border-radius: 50%;
-    font-size: 20px;
+    border-radius: 14px;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
@@ -1163,13 +1507,15 @@ button {
 
 .modal-content {
     background: #ffffff !important;
-    border-radius: 16px !important;
+    border-radius: 28px !important;
     max-width: 600px !important;
     width: 90% !important;
     max-height: 90vh !important;
-    overflow: visible !important;
-    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.15) !important;
-    border: 1px solid var(--border-color-soft) !important;
+    overflow: hidden !important;
+    box-shadow:
+        0 24px 72px rgba(15, 23, 42, 0.18),
+        0 8px 24px rgba(0, 122, 255, 0.08) !important;
+    border: none !important;
     transform: scale(1) !important;
     transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative !important;
@@ -1184,7 +1530,7 @@ button {
 .modal-header {
     background: #ffffff !important;
     color: #1d1d1f;
-    padding: 28px 32px !important;
+    padding: 30px 32px 24px !important;
     border-bottom: 1px solid #d2d2d7;
     display: flex !important;
     justify-content: space-between !important;
@@ -1241,7 +1587,7 @@ button {
 }
 
 .modal-body {
-    padding: 32px !important;
+    padding: 28px 32px 32px !important;
     max-height: calc(90vh - 120px) !important;
     overflow-y: auto !important;
     position: relative !important;
@@ -1551,6 +1897,14 @@ button {
     transform: translateY(0);
 }
 
+#settingsModal .settings-menu {
+    position: static !important;
+    min-width: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
 .settings-section {
     padding: 0 0 14px;
 }
@@ -1562,15 +1916,15 @@ button {
 
 .settings-section-title {
     margin: 0 0 12px;
-    padding: 12px 18px;
-    font-size: 12px;
+    padding: 0;
+    font-size: 11px;
     font-weight: 700;
-    color: #FFFFFF;
+    color: var(--neutral-dark);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    background: #34c75983;
-    border-radius: 14px;
-    box-shadow: 0 8px 20px rgba(52, 199, 89, 0.1);
+    letter-spacing: 0.14em;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .theme-options,
@@ -1626,6 +1980,7 @@ button {
     background: #28A745;
     color: #FFFFFF;
 }
+
 
 .theme-icon {
     font-size: 16px;
@@ -1720,8 +2075,8 @@ button {
 }
 
 [data-theme="dark"] .settings-section-title {
-    background: #34c75983 !important;
-    color: #FFFFFF !important;
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.58) !important;
 }
 
 [data-theme="dark"] .theme-option 
@@ -1741,6 +2096,7 @@ button {
     background: #28A745 !important;
     color: #FFFFFF !important;
 }
+
 
 /* Dark mode styles for all UI elements */
 [data-theme="dark"] .container {
@@ -1775,6 +2131,20 @@ button {
     background: var(--neutral-medium) !important;
 }
 
+[data-theme="dark"] .toolbar-main-actions .btn-secondary,
+[data-theme="dark"] .buttons > .button-group > .btn-secondary {
+    background: var(--neutral-light) !important;
+    color: var(--neutral-black) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .toolbar-main-actions .btn-secondary:hover,
+[data-theme="dark"] .buttons > .button-group > .btn-secondary:hover {
+    background: var(--neutral-medium) !important;
+    border-color: var(--border-color-medium) !important;
+    color: var(--neutral-black) !important;
+}
+
 /* Dark mode melody visibility button */
 [data-theme="dark"] .melody-visibility-btn {
     background: var(--neutral-light) !important;
@@ -1799,15 +2169,23 @@ button {
 }
 
 /* Dark mode form elements */
-[data-theme="dark"] select {
+[data-theme="dark"] select,
+[data-theme="dark"] input[type="number"] {
     background: var(--neutral-light) !important;
     color: var(--neutral-black) !important;
     border-color: var(--border-color) !important;
 }
 
-[data-theme="dark"] select:hover {
+[data-theme="dark"] select:hover,
+[data-theme="dark"] input[type="number"]:hover {
     background: var(--neutral-medium) !important;
     border-color: var(--border-color-medium) !important;
+}
+
+[data-theme="dark"] input[type="number"]:focus {
+    background: var(--neutral-light) !important;
+    color: var(--neutral-black) !important;
+    border-color: var(--primary-green) !important;
 }
 
 [data-theme="dark"] input[type="range"] {
@@ -1845,8 +2223,10 @@ button {
 
 [data-theme="dark"] .modal-content {
     background: var(--neutral-white) !important;
-    border-color: var(--border-color) !important;
-    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.8) !important;
+    border: none !important;
+    box-shadow:
+        0 28px 80px rgba(0, 0, 0, 0.5),
+        0 10px 28px rgba(10, 132, 255, 0.12) !important;
 }
 
 [data-theme="dark"] .modal-header {
@@ -2049,6 +2429,10 @@ button {
         text-align: center;
         order: 2;
     }
+
+    .header-text p[data-i18n="app.subtitle"] {
+        display: none;
+    }
     
     .header-controls {
         position: static;
@@ -2202,52 +2586,74 @@ button {
 .practice-counter {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 4px 8px;
+    gap: 14px;
+    min-height: 52px;
+    padding: 8px 14px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background: none;
+    border-radius: 12px;
+    background: #ffffff;
     color: var(--text-color);
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px var(--card-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.practice-counter label {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.2;
 }
 
 .practice-counter-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .practice-counter-actions .btn-secondary {
-    padding: 4px 12px;
+    width: 36px;
     min-width: 36px;
-    border-radius: 6px;
-    background: none;
+    height: 36px;
+    padding: 0;
+    border-radius: 8px;
+    background: #ffffff;
     border: 1px solid var(--border-color);
-    box-shadow: none;
+    box-shadow: 0 2px 8px var(--card-shadow);
     font-weight: 700;
+    font-size: 18px;
+    line-height: 1;
+    transition: all 0.2s ease;
 }
 
 .practice-counter-actions .btn-secondary:hover {
     background: var(--neutral-light);
+    transform: translateY(-1px) scale(1.05);
+    box-shadow: 0 4px 16px var(--card-shadow-hover);
 }
 
 [data-theme="dark"] .practice-counter-actions .btn-secondary {
+    background: var(--neutral-light) !important;
     border-color: rgba(255, 255, 255, 0.2);
     color: #f0f0f0;
+    box-shadow: 0 2px 8px var(--card-shadow);
 }
 
 [data-theme="dark"] .practice-counter-actions .btn-secondary:hover {
     background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 4px 16px var(--card-shadow-hover);
 }
 
 .practice-counter-actions span {
-    min-width: 32px;
+    min-width: 34px;
     text-align: center;
     font-weight: 700;
+    font-size: 18px;
+    line-height: 1;
 }
 
 [data-theme="dark"] .practice-counter {
-    background: none;
+    background: var(--neutral-light);
     border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 2px 8px var(--card-shadow);
 }
 
 /* Smooth animations and micro-interactions */
@@ -2294,28 +2700,109 @@ select, input, .radio-item, .checkbox-item {
     }
 
     .header {
-        padding: 8px 4px;
+        padding: 14px 12px 12px;
+    }
+
+    .header-content {
+        display: block;
+        position: relative;
+        min-height: 48px;
+    }
+
+    .header-text {
+        width: 100%;
+        padding: 0 160px;
+        text-align: center;
     }
 
     .header h1 {
-        font-size: 1.4rem;
+        font-size: 1.9rem;
+        line-height: 1.05;
+        margin-bottom: 0;
+    }
+
+    .header-text p[data-i18n="app.subtitle"] {
+        display: none;
+    }
+
+    .header-controls {
+        position: absolute;
+        inset: 0;
+        transform: none;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: nowrap;
+        padding: 0 4px;
+    }
+
+    .function-btn {
+        min-width: 132px;
+        padding: 10px 18px;
+        font-size: 15px;
+    }
+
+    .settings-btn {
+        min-width: 108px;
+        padding: 10px 16px;
+        font-size: 15px;
     }
 
     .controls {
         padding: 6px;
     }
 
+    .buttons {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .toolbar-main-actions,
+    .toolbar-utility-group {
+        width: 100%;
+        justify-content: center;
+        gap: 12px;
+        row-gap: 10px;
+    }
+
+    .toolbar-utility-group {
+        order: 1;
+        flex-wrap: wrap;
+    }
+
+    .toolbar-main-actions {
+        order: 2;
+        flex-wrap: wrap;
+    }
+
+    .toolbar-nav-group {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .practice-counter {
+        flex: 0 1 auto;
+        min-width: 0;
+    }
+
+    .melody-secondary-row {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 16px;
+    }
+
     .score-container {
-        padding: 0;
+        padding: 24px;
     }
 
     #score {
-        min-height: 160px;
+        min-height: calc(100svh - 56px);
         max-width: calc(100vw - 8px);
         width: calc(100vw - 8px);
         padding: 3px;
         margin: 0;
-        border-radius: 4px;
+        border-radius: 16px;
     }
 
     /* 横屏时旋律可以更大 */
@@ -2346,6 +2833,69 @@ select, input, .radio-item, .checkbox-item {
     .btn-primary {
         padding: 6px 12px;
         font-size: 0.85rem;
+    }
+
+    .toolbar-main-actions > .btn-primary {
+        min-height: 52px;
+        min-width: 116px;
+        padding: 0 24px;
+        font-size: 1.05rem;
+        line-height: 1;
+        flex: 0 0 auto;
+    }
+}
+
+@media (max-width: 599px) {
+    body {
+        padding: 8px;
+    }
+
+    .header {
+        padding: 28px 16px 24px;
+    }
+
+    .header-content {
+        width: 100%;
+        gap: 16px;
+    }
+
+    .header h1 {
+        font-size: 2.2rem;
+        line-height: 1.06;
+        margin-bottom: 0;
+    }
+
+    .header-text {
+        width: 100%;
+    }
+
+    .header-controls {
+        width: 100%;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: nowrap;
+    }
+
+    .function-selector {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .settings-dropdown {
+        flex: 0 0 auto;
+    }
+
+    .function-btn {
+        min-width: 0;
+        width: 100%;
+        padding: 12px 18px;
+        font-size: 15px;
+    }
+
+    .settings-btn {
+        min-width: 128px;
+        padding: 12px 18px;
+        font-size: 15px;
     }
 }
 
@@ -2519,4 +3069,420 @@ body::before {
 [data-theme="dark"] #rhythmAdvancedSettings span,
 [data-theme="dark"] #articulationAdvancedSettings span {
     color: var(--primary-green) !important;
+}
+
+/* Melody-sync UI overrides */
+.melody-visibility-btn {
+    border-radius: 14px;
+}
+
+.melody-visibility-btn.hidden-state {
+    background: var(--primary-green);
+    color: #FFFFFF;
+    border-color: var(--primary-green);
+}
+
+.melody-visibility-btn.hidden-state:hover {
+    background: #28A745;
+    border-color: #28A745;
+}
+
+[data-theme="dark"] .melody-visibility-btn.hidden-state {
+    background: var(--primary-green) !important;
+    color: #FFFFFF !important;
+    border-color: var(--primary-green) !important;
+}
+
+[data-theme="dark"] .melody-visibility-btn.hidden-state:hover {
+    background: #64D37A !important;
+    border-color: #64D37A !important;
+}
+
+.theme-icon {
+    width: 18px;
+    height: 18px;
+    color: currentColor;
+}
+
+.ui-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    line-height: 0;
+    color: currentColor;
+}
+
+.ui-icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.metronome-settings-btn .ui-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.melody-visibility-btn .ui-icon {
+    width: 20px;
+    height: 20px;
+}
+
+#settingsModal .settings-section {
+    padding: 22px 20px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border-color-soft);
+    border-radius: 20px;
+    background: var(--neutral-light);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78), 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+#settingsModal .settings-section:not(:last-child) {
+    border-bottom: 1px solid var(--border-color-soft);
+    margin-bottom: 16px;
+}
+
+#settingsModal .settings-section-title {
+    margin: 0 0 18px;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    color: var(--neutral-dark);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+}
+
+#settingsModal .theme-options,
+#settingsModal .language-options {
+    display: grid;
+    gap: 8px;
+    padding: 0;
+}
+
+#settingsModal .theme-option,
+#settingsModal .language-option,
+#settingsModal .midi-settings-row,
+#settingsModal .midi-status {
+    margin: 0;
+    border: 1px solid var(--border-color-soft);
+    border-radius: 14px;
+    background: var(--neutral-white);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+#settingsModal .theme-option,
+#settingsModal .language-option {
+    padding: 13px 14px;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--neutral-black);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+#settingsModal .theme-option:hover,
+#settingsModal .language-option:hover {
+    background: rgba(52, 199, 89, 0.08);
+    border-color: rgba(52, 199, 89, 0.24);
+    color: var(--neutral-black);
+    transform: translateY(-1px);
+}
+
+#settingsModal .theme-option:active,
+#settingsModal .language-option:active {
+    background: rgba(52, 199, 89, 0.14);
+    border-color: rgba(52, 199, 89, 0.3);
+    color: var(--neutral-black);
+    transform: translateY(0);
+}
+
+#settingsModal .midi-settings-row {
+    padding: 15px 16px;
+}
+
+#settingsModal .settings-section .midi-settings-row,
+#settingsModal .settings-section .midi-status {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+#settingsModal .settings-section .midi-settings-row + .midi-settings-row {
+    margin-top: 12px;
+}
+
+#settingsModal .midi-settings-row label {
+    margin-bottom: 8px;
+}
+
+#settingsModal .midi-settings-row > div {
+    gap: 14px !important;
+}
+
+#settingsModal .midi-select {
+    min-height: 44px;
+    padding: 10px 12px;
+}
+
+#settingsModal .midi-status {
+    margin-top: 14px;
+    padding: 12px 16px;
+}
+
+#settingsModal #parameterExchangeSection {
+    padding: 16px;
+}
+
+#settingsModal #parameterExchangeSection > div {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+#settingsModal #parameterExchangeSection .btn-secondary {
+    min-height: 34px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 10px;
+    box-shadow: none;
+}
+
+[data-theme="dark"] #settingsModal .settings-section {
+    background: var(--neutral-light);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme="dark"] #settingsModal .settings-section-title {
+    color: rgba(255, 255, 255, 0.58);
+}
+
+[data-theme="dark"] #settingsModal .midi-settings-row,
+[data-theme="dark"] #settingsModal .midi-status,
+[data-theme="dark"] #settingsModal .theme-option,
+[data-theme="dark"] #settingsModal .language-option {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+}
+
+#settingsModal #metronomeVolumeSlider {
+    box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] #settingsModal #metronomeVolumeSlider {
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.18);
+}
+
+.modal .checkbox-item input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    display: inline-grid;
+    place-content: center;
+    box-sizing: border-box;
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px;
+    min-height: 24px;
+    padding: 0 !important;
+    margin: 0;
+    flex: 0 0 24px;
+    cursor: pointer;
+    border: 1.5px solid #c7c7cc;
+    border-radius: 50% !important;
+    background: #ffffff !important;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.modal .checkbox-item input[type="checkbox"]:hover {
+    border-color: var(--primary-green);
+    background: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(52, 199, 89, 0.12) !important;
+    transform: none !important;
+}
+
+.modal .checkbox-item input[type="checkbox"]::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--primary-green);
+    transform: scale(0);
+    transition: transform 0.18s ease;
+}
+
+.modal .checkbox-item input[type="checkbox"]:checked {
+    border-color: var(--primary-green);
+    background: #ffffff !important;
+}
+
+.modal .checkbox-item input[type="checkbox"]:checked::before {
+    transform: scale(1);
+}
+
+.modal .checkbox-item input[type="checkbox"]:focus,
+.modal .checkbox-item input[type="checkbox"]:focus-visible {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(52, 199, 89, 0.16) !important;
+    transform: none !important;
+}
+
+[data-theme="dark"] .modal .checkbox-item input[type="checkbox"] {
+    background: var(--neutral-white) !important;
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+[data-theme="dark"] .modal .checkbox-item input[type="checkbox"]:checked {
+    border-color: var(--primary-green);
+    background: var(--neutral-white) !important;
+}
+
+[data-theme="dark"] .modal .checkbox-item input[type="checkbox"]:hover,
+[data-theme="dark"] .modal .checkbox-item input[type="checkbox"]:focus,
+[data-theme="dark"] .modal .checkbox-item input[type="checkbox"]:focus-visible {
+    background: var(--neutral-white) !important;
+}
+
+.melody-visibility-btn {
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px;
+    padding: 12px !important;
+    flex: 0 0 50px;
+    border-radius: 14px !important;
+}
+
+.melody-visibility-btn .ui-icon {
+    width: 24px !important;
+    height: 24px !important;
+}
+
+/* Dark mode consistency */
+[data-theme="dark"] .melody-secondary-card,
+[data-theme="dark"] .chord-toggle-card {
+    background: var(--neutral-light) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 0 2px 8px var(--card-shadow) !important;
+}
+
+[data-theme="dark"] .melody-secondary-label,
+[data-theme="dark"] .melody-accidental-row span,
+[data-theme="dark"] .chord-toggle-card-value,
+[data-theme="dark"] .chord-toggle-card-text,
+[data-theme="dark"] .melody-metronome-card {
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] #settingsModal .modal-header,
+[data-theme="dark"] #settingsModal .modal-header h3,
+[data-theme="dark"] #settingsModal .close-btn,
+[data-theme="dark"] #settingsModal .modal-body,
+[data-theme="dark"] #settingsModal .modal-body label,
+[data-theme="dark"] #settingsModal .modal-body span,
+[data-theme="dark"] #settingsModal .modal-body p,
+[data-theme="dark"] #settingsModal .theme-option,
+[data-theme="dark"] #settingsModal .language-option,
+[data-theme="dark"] #settingsModal .midi-settings-row,
+[data-theme="dark"] #settingsModal .midi-settings-row label,
+[data-theme="dark"] #settingsModal .midi-select {
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] #settingsModal .settings-section-title {
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.58) !important;
+}
+
+@media (orientation: landscape) and (max-height: 599px) {
+    .score-container {
+        padding: 24px !important;
+    }
+
+    #score {
+        min-height: calc(100svh - 56px) !important;
+        max-width: calc(100vw - 8px) !important;
+        width: calc(100vw - 8px) !important;
+        padding: 3px !important;
+        margin: 0 !important;
+        border-radius: 16px !important;
+    }
+
+    #score svg {
+        max-width: 100% !important;
+        width: auto !important;
+        height: auto !important;
+        min-width: 300px !important;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    #score .osmd-container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+    }
+}
+
+/* Final visibility button color overrides */
+.melody-visibility-btn:not(.hidden-state):not(.is-active) {
+    color: #1d1d1f !important;
+}
+
+#challengeModeToggleBtn.melody-visibility-btn.control-toggle-btn:not(.is-active) {
+    color: var(--primary-green) !important;
+}
+
+[data-theme="dark"] .melody-visibility-btn:not(.hidden-state):not(.is-active) {
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] #challengeModeToggleBtn.melody-visibility-btn.control-toggle-btn:not(.is-active) {
+    color: var(--primary-green) !important;
+}
+
+@media (max-width: 599px) and (orientation: portrait) {
+    .control-row.melody-primary-row.melody-primary-row-five {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .control-row.melody-primary-row.melody-primary-row-five > .control-group {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .controls {
+        padding: 12px !important;
+    }
+
+    .controls > .control-row {
+        gap: 12px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .controls > .control-row:last-of-type {
+        margin-bottom: 0 !important;
+    }
+
+    .controls .buttons,
+    .controls .toolbar-main-actions,
+    .controls .toolbar-utility-group,
+    .controls .toolbar-nav-group,
+    .controls .melody-range-pair {
+        gap: 12px !important;
+        row-gap: 12px !important;
+    }
 }

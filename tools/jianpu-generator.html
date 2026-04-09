@@ -147,8 +147,7 @@
         width: 100%;
         text-align: center;
       }
-    </style>
-    <script src="assets/js/sample-player.js?v=7"></script>
+    </style>    <script src="assets/js/sample-player.js?v=7"></script>
     <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
       window.IC_FULL_PIANO_88_SAMPLE_ROOT = 'assets/samples/piano-ogg-full-boosted-88';
@@ -625,10 +624,15 @@
             </div>
 
             <div class="control-row melody-secondary-row">
+                <input type="checkbox" id="jianpuToggle" class="control-toggle-input" hidden aria-hidden="true" tabindex="-1" checked="">
+                <input type="checkbox" id="englishNameToggle" class="control-toggle-input" hidden aria-hidden="true" tabindex="-1">
+                <input type="checkbox" id="challengeModeToggle" class="control-toggle-input" hidden aria-hidden="true" tabindex="-1">
+
                 <div class="melody-secondary-cell">
-                    <input type="checkbox" id="jianpuToggle" class="control-toggle-input" hidden aria-hidden="true" tabindex="-1" checked="">
-                    <input type="checkbox" id="englishNameToggle" class="control-toggle-input" hidden aria-hidden="true" tabindex="-1">
-                    <input type="checkbox" id="challengeModeToggle" class="control-toggle-input" hidden aria-hidden="true" tabindex="-1">
+                    <button class="btn-secondary" onclick="openRhythmSettings()" data-i18n="controls.rhythm">节奏设置</button>
+                </div>
+
+                <div class="melody-secondary-cell">
                     <div class="melody-range-pair">
                         <select id="rangeMin" aria-label="最低音">
                             <option value="33">A1</option>
@@ -694,10 +698,6 @@
                             <span id="accidentalRateValue">0%</span>
                         </div>
                     </div>
-                </div>
-
-                <div class="melody-secondary-cell">
-                    <button class="btn-secondary" onclick="openRhythmSettings()" data-i18n="controls.rhythm">节奏设置</button>
                 </div>
 
                 <div class="melody-secondary-cell">

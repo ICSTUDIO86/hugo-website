@@ -132,8 +132,7 @@
         width: 100%;
         text-align: center;
       }
-    </style>
-    <script src="assets/js/sample-player.js?v=7"></script>
+    </style>    <script src="assets/js/sample-player.js?v=7"></script>
     <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
       window.MELODY_BOOSTED_FULL_SAMPLE_ROOT = 'assets/samples/piano-ogg-full-boosted-88';
@@ -319,11 +318,11 @@
                     <input type="checkbox" id="jianpuToggle" class="control-toggle-input" hidden aria-hidden="true" tabindex="-1">
                     <input type="checkbox" id="englishNameToggle" class="control-toggle-input" hidden aria-hidden="true" tabindex="-1">
                     <div class="melody-display-pair">
-                        <button type="button" class="melody-visibility-btn control-toggle-btn" id="jianpuToggleBtn" onclick="toggleDisplayOption('jianpuToggle')" title="简谱显示" aria-pressed="false">
-                            <span class="control-toggle-btn-text">简谱</span>
+                        <button type="button" class="melody-visibility-btn control-toggle-btn" id="jianpuToggleBtn" onclick="toggleDisplayOption('jianpuToggle')" title="简谱显示" data-i18n-title="controls.jianpuDisplay" aria-pressed="false">
+                            <span class="control-toggle-btn-text" data-i18n="controls.jianpu">简谱</span>
                         </button>
-                        <button type="button" class="melody-visibility-btn control-toggle-btn" id="englishNameToggleBtn" onclick="toggleDisplayOption('englishNameToggle')" title="音名显示" aria-pressed="false">
-                            <span class="control-toggle-btn-text">音名</span>
+                        <button type="button" class="melody-visibility-btn control-toggle-btn" id="englishNameToggleBtn" onclick="toggleDisplayOption('englishNameToggle')" title="音名显示" data-i18n-title="controls.noteNamesDisplay" aria-pressed="false">
+                            <span class="control-toggle-btn-text" data-i18n="controls.noteNames">音名</span>
                         </button>
                     </div>
                 </div>
@@ -3500,6 +3499,7 @@
         // 应用翻译
         function applyTranslations() {
             const elements = document.querySelectorAll('[data-i18n]');
+            const titleElements = document.querySelectorAll('[data-i18n-title]');
             const currentTranslations = translations[currentLanguage] || translations['zh-CN'];
 
             elements.forEach(element => {
@@ -3533,6 +3533,13 @@
                             element.textContent = currentTranslations[key];
                         }
                     }
+                }
+            });
+
+            titleElements.forEach(element => {
+                const key = element.getAttribute('data-i18n-title');
+                if (currentTranslations[key]) {
+                    element.setAttribute('title', currentTranslations[key]);
                 }
             });
             if (window.__icMidi && typeof window.__icMidi.refreshStatus === 'function') {

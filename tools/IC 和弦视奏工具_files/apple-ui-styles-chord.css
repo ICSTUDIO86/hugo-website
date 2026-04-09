@@ -629,6 +629,15 @@ body {
     .chord-range-split {
         grid-template-columns: 1fr;
     }
+
+    .chord-display-stack {
+        flex-direction: column;
+    }
+
+    .chord-display-stack > .melody-visibility-btn,
+    .chord-display-stack > .chord-jianpu-group {
+        flex: 0 0 auto;
+    }
 }
 
 /* Apple-style form controls */
@@ -4350,5 +4359,55 @@ svg.melody-hidden {
         padding: 0 !important;
         margin: 0 !important;
         border: none !important;
+    }
+}
+
+/* Final visibility button color overrides */
+.melody-visibility-btn:not(.hidden-state):not(.is-active) {
+    color: #1d1d1f !important;
+}
+
+#challengeModeToggleBtn.melody-visibility-btn.control-toggle-btn:not(.is-active) {
+    color: var(--primary-orange) !important;
+}
+
+[data-theme="dark"] .melody-visibility-btn:not(.hidden-state):not(.is-active) {
+    color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] #challengeModeToggleBtn.melody-visibility-btn.control-toggle-btn:not(.is-active) {
+    color: var(--primary-orange) !important;
+}
+
+@media (max-width: 599px) and (orientation: portrait) {
+    .metronome-play-btn {
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
+        padding: 12px !important;
+        flex: 0 0 50px !important;
+        font-size: 14.4px !important;
+    }
+
+    .controls {
+        padding: 12px !important;
+    }
+
+    .controls > .control-row {
+        gap: 12px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .controls > .control-row:last-of-type {
+        margin-bottom: 0 !important;
+    }
+
+    .controls .buttons,
+    .controls .toolbar-main-actions,
+    .controls .toolbar-utility-group,
+    .controls .toolbar-nav-group,
+    .controls .melody-range-pair {
+        gap: 12px !important;
+        row-gap: 12px !important;
     }
 }

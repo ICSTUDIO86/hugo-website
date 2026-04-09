@@ -20,7 +20,7 @@
       try {
         console.warn('🚫 检测到file://协议，已阻止');
       } catch (e) {}
-</body></html>';
+      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,"Helvetica Neue","PingFang SC","Segoe UI",sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
       document.open();
       document.write(html);
       document.close();
@@ -60,13 +60,12 @@
         text-align: center;
       }
       .settings-section-title {
-        background: rgba(255, 79, 163, 0.5) !important;
-        color: #FFFFFF !important;
-        border-radius: 14px;
-        box-shadow: 0 8px 20px rgba(255, 79, 163, 0.1);
+        background: transparent;
+        color: var(--neutral-dark);
+        border-radius: 0;
+        box-shadow: none;
       }
-    </style>
-    <script src="assets/js/metronome-audio.js?v=1" defer></script>
+    </style>    <script src="assets/js/metronome-audio.js?v=1" defer></script>
     <script src="IC 节奏视奏工具/rhythm.js?v=20260203" defer></script>
     <script src="assets/js/midi-input.js?v=1" defer></script>
     <script src="assets/js/rhythm-challenge-mode.js" defer></script>
@@ -77,7 +76,7 @@
             <div class="header-content">
                 <div class="header-text">
                     <h1 data-i18n="app.title">Cognote - 节奏视奏生成器</h1>
-                    <p data-i18n="app.subtitle">专业级节奏视奏与时间控制训练工具</p>
+                    <p data-i18n="app.subtitle">专业级视奏工具与乐谱渲染</p>
                 </div>
                 <div class="header-controls">
                     <div class="function-selector">
@@ -112,54 +111,27 @@
         </div>
 
         <div class="controls">
-            <div class="control-row">
+            <div class="control-row melody-primary-row rhythm-settings-row-three">
                 <div class="control-group" style="min-width: 160px;">
-                    <label data-i18n="controls.time">拍号</label>
                     <button class="btn-secondary" onclick="openTimeSignatureSettings()" id="timeSignatureSettingsBtn" data-i18n="controls.timeSettings">拍号设置</button>
                 </div>
                 <div class="control-group" style="min-width: 160px;">
-                    <label data-i18n="controls.measures">小节数</label>
                     <button class="btn-secondary" onclick="openMeasureSettings()" id="measureSettingsBtn" data-i18n="controls.measuresSettings">小节设置</button>
                 </div>
-                
                 <div class="control-group" style="min-width: 200px;">
-                    <label data-i18n="controls.mode">模式</label>
-                    <div class="mode-toggle" style="display: flex; align-items: center; gap: 10px;">
-                        <span id="modeLabelFree" data-i18n="mode.free" style="font-size: 14px; opacity: 0.8;">自由</span>
-                        <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                            <input type="checkbox" id="challengeModeToggle" style="opacity: 0; width: 0; height: 0;">
-                            <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
-                                <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
-                            </span>
-                        </label>
-                        <span id="modeLabelChallenge" data-i18n="mode.challenge" style="font-size: 14px; opacity: 0.8;">挑战</span>
-                    </div>
+                    <button class="btn-secondary" onclick="openVoiceSettings()" id="voiceSettingsBtn" data-i18n="controls.voiceSettings">声部设置</button>
                 </div>
             </div>
 
-            <div class="control-row">
+            <div class="control-row melody-primary-row rhythm-settings-row-two">
                 <div class="control-group" style="min-width: 180px;">
-                    <label data-i18n="controls.rhythm">节奏设置</label>
                     <button class="btn-secondary" onclick="openRhythmSettings()" id="rhythmSettingsBtn" data-i18n="controls.rhythm">节奏设置</button>
                 </div>
-                <div class="control-group" style="min-width: 200px;">
-                    <label data-i18n="controls.voices">声部模式</label>
-                    <button class="btn-secondary" onclick="openVoiceSettings()" id="voiceSettingsBtn" data-i18n="controls.voiceSettings">声部设置</button>
-                </div>
-                <div class="control-group metronome-group" style="flex: none; width: 160px;">
-                    <div class="metronome-label-row">
-                        <button class="metronome-settings-btn" id="metronomePatternBtn" onclick="openMetronomePatternSettings()" title="节拍器节奏设置" aria-label="节拍器节奏设置">
-                            ⚙️
-                        </button>
-                        <label for="metronomeBpm" data-i18n="controls.metronome">节拍器</label>
-                    </div>
-                    <div class="metronome-control">
-                        <input type="number" id="metronomeBpm" min="1" max="999" value="80" class="bpm-input-control">
-                        <button class="metronome-play-btn" id="metronomeToggleBtn" title="开始/停止节拍器">
-                            🎵
-                        </button>
-                        <div class="metronome-beat-indicator" id="metronomeBeatIndicator"></div>
-                    </div>
+                <div class="control-group rhythm-mode-group" style="min-width: 160px;">
+                    <input type="checkbox" id="challengeModeToggle" class="control-toggle-input" hidden aria-hidden="true" tabindex="-1">
+                    <button type="button" class="melody-visibility-btn control-toggle-btn" id="challengeModeToggleBtn" onclick="toggleRhythmChallengeModeButton()" title="挑战模式" aria-pressed="false">
+                        <span class="control-toggle-btn-text" data-i18n="controls.challengeMode">挑战模式</span>
+                    </button>
                 </div>
             </div>
 
@@ -170,23 +142,68 @@
                         <strong id="challengeCountdownValue">10</strong>
                         <span data-i18n="challenge.seconds" style="opacity:0.7;">秒</span>
                     </div>
-                    <button class="btn-primary" id="generateBtn" data-i18n="controls.generate">生成节奏</button>
-                    <div id="melody-counter-status"></div>
-                    <div class="button-group">
-                        <button class="btn-secondary" id="previousBtn" data-i18n="controls.previous">上一条</button>
-                        <button class="btn-secondary" id="nextBtn" data-i18n="controls.next">下一条</button>
-                    </div>
-                    <div class="button-group">
-                        <button class="btn-secondary" id="playRhythmBtn" onclick="directPlayTest()" data-i18n="controls.play">播放</button>
-                    </div>
-                    <div class="practice-counter">
-                        <label for="practiceCountValue" data-i18n="controls.practiceCounter">练习计数</label>
-                        <div class="practice-counter-actions">
-                            <span id="practiceCountValue">0</span>
-                            <button class="btn-secondary" id="practiceCountBtn" onclick="incrementPracticeCount()" data-i18n="controls.practiceAdd">+</button>
-                            <button class="btn-secondary" id="practiceResetBtn" onclick="decrementPracticeCount()" data-i18n="controls.practiceReset">-</button>
+                    <div class="toolbar-main-actions">
+                        <button class="btn-primary" id="generateBtn" data-i18n="controls.generate">生成节奏</button>
+                        <div id="melody-counter-status"></div>
+                        <div class="button-group toolbar-nav-group">
+                            <button class="btn-secondary" id="previousBtn" data-i18n="controls.previous">上一条</button>
+                            <button class="btn-secondary" id="nextBtn" data-i18n="controls.next">下一条</button>
+                            <button class="btn-secondary" id="playRhythmBtn" onclick="directPlayTest()" data-i18n="controls.play">播放</button>
                         </div>
                     </div>
+                    <div class="toolbar-utility-group">
+                        <button class="melody-visibility-btn" id="rhythmVisibilityBtn" onclick="toggleRhythmVisibility()" title="隐藏节奏">
+                            <span class="ui-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M2.75 12C4.78 8.24 8.08 6.25 12 6.25C15.92 6.25 19.22 8.24 21.25 12C19.22 15.76 15.92 17.75 12 17.75C8.08 17.75 4.78 15.76 2.75 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/>
+                                </svg>
+                            </span>
+                        </button>
+                        <div class="toolbar-metronome-group">
+                            <button class="metronome-play-btn" id="metronomeToggleBtn" title="开始/停止节拍器">
+                                <span class="ui-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M5.75 19.5L8.15 4.5H15.85L18.25 19.5H5.75Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                        <path d="M7.3 13.5H16.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <path d="M12 7V15.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <path d="M12.1 15.2L17.1 10.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <circle cx="18.35" cy="8.95" r="1.55" stroke="currentColor" stroke-width="1.8"/>
+                                        <path d="M7.9 19.8V21.3M16.1 19.8V21.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                            <div class="melody-secondary-card melody-metronome-card toolbar-metronome-card">
+                                <div class="metronome-control">
+                                    <input type="number" id="metronomeBpm" min="1" max="999" value="80" class="bpm-input-control">
+                                    <button class="metronome-settings-btn" id="metronomePatternBtn" onclick="openMetronomePatternSettings()" title="节拍器节奏设置" aria-label="节拍器节奏设置">
+                                        <span class="ui-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="none">
+                                                <path d="M12 8.25A3.75 3.75 0 1 0 12 15.75A3.75 3.75 0 1 0 12 8.25Z" stroke="currentColor" stroke-width="1.8"/>
+                                                <path d="M12 3.5V5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                                <path d="M12 18.5V20.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                                <path d="M4.93 6.34L6.34 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                                <path d="M17.66 19.07L19.07 20.48" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                                <path d="M3.5 12H5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                                <path d="M18.5 12H20.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                                <path d="M4.93 17.66L6.34 16.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                                <path d="M17.66 4.93L19.07 3.52" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="practice-counter">
+                            <label for="practiceCountValue" data-i18n="controls.practiceCounter">练习计数</label>
+                            <div class="practice-counter-actions">
+                                <span id="practiceCountValue">0</span>
+                                <button class="btn-secondary" id="practiceCountBtn" onclick="incrementPracticeCount()" data-i18n="controls.practiceAdd">+</button>
+                                <button class="btn-secondary" id="practiceResetBtn" onclick="decrementPracticeCount()" data-i18n="controls.practiceReset">-</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metronome-beat-indicator" id="metronomeBeatIndicator" style="display:none;"></div>
                 </div>
             </div>
         </div>
@@ -241,11 +258,20 @@
                         <div class="settings-section-title" data-i18n="settings.theme">主题</div>
                         <div class="theme-options">
                             <div class="theme-option" onclick="setTheme('light')">
-                                <span class="theme-icon">☀️</span>
+                                <span class="theme-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <circle cx="12" cy="12" r="4.25" stroke="currentColor" stroke-width="1.8"/>
+                                        <path d="M12 2.75V5.25M12 18.75V21.25M21.25 12H18.75M5.25 12H2.75M18.54 5.46L16.77 7.23M7.23 16.77L5.46 18.54M18.54 18.54L16.77 16.77M7.23 7.23L5.46 5.46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    </svg>
+                                </span>
                                 <span data-i18n="settings.lightMode">浅色模式</span>
                             </div>
                             <div class="theme-option" onclick="setTheme('dark')">
-                                <span class="theme-icon">🌙</span>
+                                <span class="theme-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M15.4 3.55C12.17 4.11 9.72 6.92 9.72 10.31C9.72 14.1 12.79 17.17 16.58 17.17C17.14 17.17 17.68 17.1 18.2 16.96C17.12 19.25 14.79 20.83 12.08 20.83C8.35 20.83 5.33 17.81 5.33 14.08C5.33 9.96 8.94 6.63 13.05 6.96C13.47 5.73 14.28 4.67 15.4 3.55Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
                                 <span data-i18n="settings.darkMode">深色模式</span>
                             </div>
                         </div>
@@ -262,7 +288,6 @@
                     <div class="settings-section">
                         <div class="settings-section-title" data-i18n="settings.metronome">节拍器</div>
                         <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
-                            <label for="metronomeSoundSelect" data-i18n="settings.metronomeSound">音色</label>
                             <select id="metronomeSoundSelect" class="midi-select">
                                 <option value="classic" data-i18n="settings.metronomeSound.classic">电子</option>
                                 <option value="woodblock" data-i18n="settings.metronomeSound.woodblock">木鱼</option>
@@ -287,12 +312,10 @@
                             </label>
                         </div>
                         <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
-                            <label for="midiDeviceSelect" data-i18n="midi.device">设备</label>
                             <select id="midiDeviceSelect" class="midi-select" disabled>
                                 <option value="">-</option>
                             </select>
                         </div>
-                        <div class="midi-status" id="midiStatusText" data-i18n="midi.status.disabled">MIDI 已关闭</div>
                     </div>
                     <div class="settings-section" id="parameterExchangeSection">
                         <div style="display: flex; gap: 8px; width: 100%;">
@@ -337,8 +360,6 @@
                         <input type="checkbox" id="allowDottedNotes" value="dotted" checked>
                         <span data-i18n="rhythm.allowDotted">允许附点音符 (根据已选节奏自动生成附点版本)</span>
                     </label>
-                    <p style="font-size: 0.85rem; color: var(--neutral-dark); margin: 8px 0 0;" data-i18n="rhythm.dottedDesc">勾选后将自动为已选择的节奏类型生成附点版本</p>
-                    <p style="font-size: 0.85rem; color: var(--neutral-dark); margin: 4px 0 0;" data-i18n="rhythm.dottedExample">例如：勾选四分音符+附点音符 → 可生成四分音符和附点四分音符</p>
                 </div>
                 <div class="rhythm-section" style="margin-top: 18px;">
                     <h4 data-i18n="controls.advancedSettings">高级设置</h4>
@@ -510,31 +531,31 @@
                     <h4 data-i18n="modal.measure.selection">选择小节数</h4>
                     <div class="checkbox-grid">
                         <label class="checkbox-item">
-                            <input type="radio" id="measure-2" name="measureCount" value="2">
+                            <input type="radio" id="measure-2" name="measureCount" value="2" onchange="updateCustomMeasureVisibility()">
                             <span data-i18n="controls.measures2">2小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measure-4" name="measureCount" value="4" checked>
+                            <input type="radio" id="measure-4" name="measureCount" value="4" checked onchange="updateCustomMeasureVisibility()">
                             <span data-i18n="controls.measures4">4小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measure-8" name="measureCount" value="8">
+                            <input type="radio" id="measure-8" name="measureCount" value="8" onchange="updateCustomMeasureVisibility()">
                             <span data-i18n="controls.measures8">8小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measure-12" name="measureCount" value="12">
+                            <input type="radio" id="measure-12" name="measureCount" value="12" onchange="updateCustomMeasureVisibility()">
                             <span data-i18n="controls.measures12">12小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measure-16" name="measureCount" value="16">
+                            <input type="radio" id="measure-16" name="measureCount" value="16" onchange="updateCustomMeasureVisibility()">
                             <span data-i18n="controls.measures16">16小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measure-custom" name="measureCount" value="10">
+                            <input type="radio" id="measure-custom" name="measureCount" value="10" onchange="updateCustomMeasureVisibility()">
                             <span data-i18n="controls.measuresCustom">自定义小节数</span>
                         </label>
                     </div>
-                    <div style="margin-top: 12px; padding: 12px; border: 1px dashed var(--border-color); border-radius: 10px; background: var(--neutral-white);">
+                    <div id="measure-custom-panel" style="display: none; margin-top: 12px; padding: 12px; border: 1px dashed var(--border-color); border-radius: 10px; background: var(--neutral-white);">
                         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                             <label for="measure-custom-value" style="min-width: 88px;" data-i18n="controls.measuresCustomInput">自定义</label>
                             <input type="number" id="measure-custom-value" min="1" max="32" step="1" value="10" style="width: 90px;" oninput="syncCustomMeasureValue()">
@@ -764,6 +785,64 @@
         </div>
     </div>
 
-    <script defer src="/js/tool-access-loader.js?v=1.0.2"></script>
+    <script>
+      (function() {
+        function syncRhythmChallengeModeButton() {
+          const input = document.getElementById('challengeModeToggle');
+          const button = document.getElementById('challengeModeToggleBtn');
+          if (!input || !button) return;
+          const active = !!input.checked;
+          button.classList.toggle('is-active', active);
+          button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        }
+
+        function toggleRhythmChallengeModeButton() {
+          const input = document.getElementById('challengeModeToggle');
+          if (!input) return;
+          input.checked = !input.checked;
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          syncRhythmChallengeModeButton();
+        }
+
+        window.syncRhythmChallengeModeButton = syncRhythmChallengeModeButton;
+        window.toggleRhythmChallengeModeButton = toggleRhythmChallengeModeButton;
+
+        document.addEventListener('DOMContentLoaded', function() {
+          const input = document.getElementById('challengeModeToggle');
+          if (input) input.addEventListener('change', syncRhythmChallengeModeButton);
+          syncRhythmChallengeModeButton();
+
+          if (typeof window.cancelChallengeSetup === 'function') {
+            const originalCancel = window.cancelChallengeSetup;
+            window.cancelChallengeSetup = function() {
+              const result = originalCancel.apply(this, arguments);
+              syncRhythmChallengeModeButton();
+              return result;
+            };
+          }
+
+          if (typeof window.closeChallengeModal === 'function') {
+            const originalClose = window.closeChallengeModal;
+            window.closeChallengeModal = function() {
+              const result = originalClose.apply(this, arguments);
+              syncRhythmChallengeModeButton();
+              return result;
+            };
+          }
+
+          const challengeModal = document.getElementById('challengeModal');
+          if (challengeModal && challengeModal.dataset.dismissSyncBound !== 'true') {
+            challengeModal.dataset.dismissSyncBound = 'true';
+            challengeModal.addEventListener('click', function(event) {
+              if (event.target !== challengeModal || typeof window.cancelChallengeSetup !== 'function') return;
+              event.preventDefault();
+              event.stopImmediatePropagation();
+              window.cancelChallengeSetup();
+            }, true);
+          }
+        });
+      })();
+    </script>
+<script defer src="/js/tool-access-loader.js?v=1.0.2"></script>
 </body>
 </html>

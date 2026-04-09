@@ -141,8 +141,7 @@
         width: 100%;
         text-align: center;
       }
-    </style>
-    <script src="assets/js/sample-player.js?v=7"></script>
+    </style>    <script src="assets/js/sample-player.js?v=7"></script>
     <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
       window.IC_FULL_PIANO_88_SAMPLE_ROOT = 'assets/samples/piano-ogg-full-boosted-88';
@@ -241,6 +240,10 @@
 
             <div class="control-row melody-secondary-row">
                 <div class="melody-secondary-cell">
+                    <button class="btn-secondary" onclick="openRhythmSettings()" data-i18n="controls.rhythm">节奏设置</button>
+                </div>
+
+                <div class="melody-secondary-cell">
                     <select id="rangeMin" aria-label="最低音">
                         <option value="33">A1</option>
                         <option value="35">B1</option>
@@ -258,14 +261,14 @@
                         <option value="55">G3</option>
                         <option value="57">A3</option>
                         <option value="59">B3</option>
-                        <option value="60" selected="">C4</option>
+                        <option value="60">C4</option>
                         <option value="62">D4</option>
                         <option value="64">E4</option>
                         <option value="65">F4</option>
                         <option value="67">G4</option>
                         <option value="69">A4</option>
                         <option value="71">B4</option>
-                        <option value="72">C5</option>
+                        <option value="72" selected="">C5</option>
                     </select>
                 </div>
 
@@ -285,7 +288,7 @@
                         <option value="67">G4</option>
                         <option value="69">A4</option>
                         <option value="71">B4</option>
-                        <option value="72" selected="">C5</option>
+                        <option value="72">C5</option>
                         <option value="74">D5</option>
                         <option value="76">E5</option>
                         <option value="77">F5</option>
@@ -306,10 +309,6 @@
                             <span id="accidentalRateValue">0%</span>
                         </div>
                     </div>
-                </div>
-
-                <div class="melody-secondary-cell">
-                    <button class="btn-secondary" onclick="openRhythmSettings()" data-i18n="controls.rhythm">节奏设置</button>
                 </div>
 
                 <div class="melody-secondary-cell">

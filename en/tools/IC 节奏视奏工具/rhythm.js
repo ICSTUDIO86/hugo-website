@@ -53,7 +53,8 @@
         lastSettings: null,
         lastVoices: null,
         customTimeSignature: null,
-        allowedTimeSignatures: ['4/4']
+        allowedTimeSignatures: ['4/4'],
+        isRhythmHidden: false
     };
     const rhythmHistory = [];
     let currentHistoryIndex = -1;
@@ -92,10 +93,15 @@
         lastVoice: '1'
     };
 
+    const rhythmUiIcons = Object.freeze({
+        eye: '<span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M2.75 12C4.78 8.24 8.08 6.25 12 6.25C15.92 6.25 19.22 8.24 21.25 12C19.22 15.76 15.92 17.75 12 17.75C8.08 17.75 4.78 15.76 2.75 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg></span>',
+        eyeOff: '<span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 3.5L20.5 20.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10.58 6.38C11.04 6.3 11.51 6.25 12 6.25C15.92 6.25 19.22 8.24 21.25 12C20.54 13.31 19.67 14.41 18.65 15.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.12 14.12C13.58 14.66 12.82 15 12 15C10.34 15 9 13.66 9 12C9 11.18 9.34 10.42 9.88 9.88" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7.18 7.18C5.51 8.15 4.01 9.72 2.75 12C4.78 15.76 8.08 17.75 12 17.75C13.42 17.75 14.76 17.49 16 17.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+    });
+
     const translations = {
         'zh-CN': {
             'app.title': 'Cognote - 节奏视奏生成器',
-            'app.subtitle': '专业级节奏视奏与时间控制训练工具',
+            'app.subtitle': '专业级视奏工具与乐谱渲染',
             'app.footer': ' - 专业级节奏视奏训练模块',
             'app.melodyMode': '旋律视奏',
             'app.jianpuMode': '简谱视奏',
@@ -161,6 +167,7 @@
             'controls.frequencyDesc': '调整各节奏单位在节奏中的出现频率',
             'controls.secondaryDensity': '第二声部密度',
             'controls.mode': '模式',
+            'controls.challengeMode': '挑战模式',
             'mode.free': '自由',
             'mode.challenge': '挑战',
             'controls.generate': '生成节奏',
@@ -169,6 +176,8 @@
             'controls.practiceCounter': '练习计数',
             'controls.practiceAdd': '+',
             'controls.practiceReset': '-',
+            'controls.hideRhythm': '隐藏节奏',
+            'controls.showRhythm': '显示节奏',
             'controls.play': '播放',
             'controls.pause': '暂停',
             'controls.stop': '停止',
@@ -271,7 +280,7 @@
         },
         'zh-TW': {
             'app.title': 'Cognote - 節奏視奏生成器',
-            'app.subtitle': '專業級節奏視奏與時間控制訓練工具',
+            'app.subtitle': '專業級視奏工具與樂譜渲染',
             'app.footer': ' - 專業級節奏視奏訓練模組',
             'app.melodyMode': '旋律視奏',
             'app.jianpuMode': '簡譜視奏',
@@ -337,6 +346,7 @@
             'controls.frequencyDesc': '調整各節奏單位在節奏中的出現頻率',
             'controls.secondaryDensity': '第二聲部密度',
             'controls.mode': '模式',
+            'controls.challengeMode': '挑戰模式',
             'mode.free': '自由',
             'mode.challenge': '挑戰',
             'controls.generate': '生成節奏',
@@ -345,6 +355,8 @@
             'controls.practiceCounter': '練習計數',
             'controls.practiceAdd': '+',
             'controls.practiceReset': '-',
+            'controls.hideRhythm': '隱藏節奏',
+            'controls.showRhythm': '顯示節奏',
             'controls.play': '播放',
             'controls.pause': '暫停',
             'controls.stop': '停止',
@@ -447,7 +459,7 @@
         },
         'en': {
             'app.title': 'Cognote - Rhythm Sight Reading Generator',
-            'app.subtitle': 'Professional rhythm sight-reading and timing control tool',
+            'app.subtitle': 'Professional Sight-Reading Tool & Score Rendering',
             'app.footer': ' - Professional rhythm sight-reading module',
             'app.melodyMode': 'Melody',
             'app.jianpuMode': 'Jianpu',
@@ -513,6 +525,7 @@
             'controls.frequencyDesc': 'Adjust how often each rhythm value appears',
             'controls.secondaryDensity': 'Secondary Density',
             'controls.mode': 'Mode',
+            'controls.challengeMode': 'Challenge Mode',
             'mode.free': 'Free',
             'mode.challenge': 'Challenge',
             'controls.generate': 'Generate Rhythm',
@@ -521,6 +534,8 @@
             'controls.practiceCounter': 'Practice Counter',
             'controls.practiceAdd': '+',
             'controls.practiceReset': '-',
+            'controls.hideRhythm': 'Hide Rhythm',
+            'controls.showRhythm': 'Show Rhythm',
             'controls.play': 'Play',
             'controls.pause': 'Pause',
             'controls.stop': 'Stop',
@@ -1278,6 +1293,46 @@
         btn.textContent = getTranslation(isPlaying ? 'controls.pause' : 'controls.play');
     }
 
+    function setRhythmUiIcon(element, name) {
+        if (!element) return;
+        element.innerHTML = rhythmUiIcons[name] || '';
+    }
+
+    function getRhythmVisibilityTitle() {
+        return getTranslation(state.isRhythmHidden ? 'controls.showRhythm' : 'controls.hideRhythm');
+    }
+
+    function applyRhythmVisibilityState() {
+        const visibilityBtn = document.getElementById('rhythmVisibilityBtn');
+        const scoreElement = document.getElementById('score');
+
+        if (visibilityBtn) {
+            setRhythmUiIcon(visibilityBtn, state.isRhythmHidden ? 'eyeOff' : 'eye');
+            visibilityBtn.title = getRhythmVisibilityTitle();
+            visibilityBtn.classList.toggle('hidden-state', state.isRhythmHidden);
+            visibilityBtn.style.background = state.isRhythmHidden ? 'var(--primary-blue)' : '#f2f2f7';
+            visibilityBtn.style.borderColor = state.isRhythmHidden ? 'var(--primary-blue)' : 'var(--border-color)';
+            visibilityBtn.style.color = state.isRhythmHidden ? '#ffffff' : '#1d1d1f';
+        }
+
+        if (!scoreElement) return;
+
+        scoreElement.style.opacity = state.isRhythmHidden ? '0' : '1';
+        scoreElement.style.filter = state.isRhythmHidden ? 'blur(10px)' : 'none';
+
+        const svgElements = scoreElement.querySelectorAll('svg');
+        svgElements.forEach(svg => {
+            svg.classList.toggle('melody-hidden', state.isRhythmHidden);
+            svg.style.opacity = state.isRhythmHidden ? '0' : '1';
+            svg.style.filter = state.isRhythmHidden ? 'blur(10px)' : 'none';
+        });
+    }
+
+    function toggleRhythmVisibility() {
+        state.isRhythmHidden = !state.isRhythmHidden;
+        applyRhythmVisibilityState();
+    }
+
     function applyTranslations() {
         const elements = document.querySelectorAll('[data-i18n]');
         const langPack = translations[currentLanguage] || translations['zh-CN'];
@@ -1290,6 +1345,7 @@
         updateMetronomePatternUI();
         updateOstinatoPatternUI();
         updatePlayButtonState(state.playback.isPlaying);
+        applyRhythmVisibilityState();
     }
 
     function switchLanguage(lang) {
@@ -1991,6 +2047,13 @@
         customRadio.value = String(clamped);
     }
 
+    function updateCustomMeasureVisibility() {
+        const panel = document.getElementById('measure-custom-panel');
+        const customRadio = document.getElementById('measure-custom');
+        if (!panel || !customRadio) return;
+        panel.style.display = customRadio.checked ? 'block' : 'none';
+    }
+
     function getSelectedMeasureCountInput() {
         return document.querySelector('input[name="measureCount"]:checked');
     }
@@ -2011,15 +2074,18 @@
         if (key === 'custom') {
             const custom = document.getElementById('measure-custom');
             if (custom) custom.checked = true;
+            updateCustomMeasureVisibility();
             return;
         }
         const target = document.querySelector(`input[name="measureCount"][value="${key}"]`);
         if (target) {
             target.checked = true;
+            updateCustomMeasureVisibility();
             return;
         }
         const fallback = document.getElementById('measure-4');
         if (fallback) fallback.checked = true;
+        updateCustomMeasureVisibility();
     }
 
     function getSelectedMeasureConfig() {
@@ -2045,6 +2111,7 @@
 
     function openMeasureSettings() {
         syncCustomMeasureValue();
+        updateCustomMeasureVisibility();
         previousMeasureCountSelection = getSelectedMeasureCountSelectionKey();
         const customInput = document.getElementById('measure-custom-value');
         previousCustomMeasureCount = customInput ? customInput.value : previousCustomMeasureCount;
@@ -2067,6 +2134,7 @@
 
     function saveMeasureSettings() {
         syncCustomMeasureValue();
+        updateCustomMeasureVisibility();
         previousMeasureCountSelection = getSelectedMeasureCountSelectionKey();
         const customInput = document.getElementById('measure-custom-value');
         previousCustomMeasureCount = customInput ? customInput.value : previousCustomMeasureCount;
@@ -2341,6 +2409,7 @@
         if (!container) return;
         container.innerHTML = '<div class="empty-score-message" data-i18n="score.empty">点击生成节奏开始练习</div>';
         applyTranslations();
+        applyRhythmVisibilityState();
     }
 
     function toggleSecondaryDensity(show) {
@@ -5166,10 +5235,12 @@
         await state.osmd.load(xml);
         applySystemLayout(state.osmd, xml);
         state.osmd.render();
+        applyRhythmVisibilityState();
         state.useFiveLineStaff = xml.includes('<staff-lines>5</staff-lines>');
         state.beatCenterAttempts = 0;
         state.restAlignAttempts = 0;
         requestAnimationFrame(() => requestAnimationFrame(() => {
+            applyRhythmVisibilityState();
             drawBeatCenterLines();
             scheduleRestAlignment();
         }));
@@ -6645,6 +6716,14 @@
         }
     }
 
+    function syncMetronomeButtonState() {
+        const button = document.getElementById('metronomeToggleBtn');
+        if (!button) return;
+        const active = !!state.metronome.isRunning;
+        button.classList.toggle('active', active);
+        button.title = active ? '停止节拍器' : '开始/停止节拍器';
+    }
+
     function startMetronome(startAtTime, startedByPlayback = false, beatOffset = 0) {
         const settings = getSettings();
         const beatsPerMeasure = settings.beats;
@@ -6666,6 +6745,7 @@
         state.metronome.stepIndex = 0;
         state.metronome.isRunning = true;
         state.metronome.startedByPlayback = !!startedByPlayback;
+        syncMetronomeButtonState();
         if (typeof startAtTime === 'number' && isFinite(startAtTime)) {
             const patternInfo = getMetronomePatternInfo(currentTempo, !!startedByPlayback);
             const stepDuration = patternInfo.stepDuration || secondsPerBeat;
@@ -6718,6 +6798,7 @@
         state.metronome.beatIndex = 0;
         state.metronome.nextTime = 0;
         state.metronome.startedByPlayback = false;
+        syncMetronomeButtonState();
         muteAudioGain(state.metronome.outputGain, state.metronome.audioCtx);
         const indicator = document.getElementById('metronomeBeatIndicator');
         if (indicator) {
@@ -6894,6 +6975,7 @@
         generateBtn.addEventListener('click', triggerGenerate);
         if (previousBtn) previousBtn.addEventListener('click', previousRhythm);
         if (nextBtn) nextBtn.addEventListener('click', nextRhythm);
+        syncMetronomeButtonState();
         metronomeBtn.addEventListener('click', toggleMetronome);
         if (metronomeBpmInput) bindBpmReactGrab(metronomeBpmInput);
         if (challengeBpmInput) bindBpmReactGrab(challengeBpmInput);
@@ -6920,11 +7002,13 @@
         initializePreferences();
         initializeCalibrationSettings();
         bindEvents();
+        window.toggleRhythmVisibility = toggleRhythmVisibility;
         initializeMetronomePatternUI();
         initializeRhythmMetronomeSettingsUi();
         initializeOstinatoPatternUI();
         updateDensityLabels();
         updateOstinatoUI();
+        applyRhythmVisibilityState();
         const voiceMode = document.getElementById('voiceMode');
         toggleOstinatoSection(voiceMode && voiceMode.value === '2');
         const timeSignatureSelect = document.getElementById('timeSignature');
@@ -7052,6 +7136,7 @@
     window.openMeasureSettings = openMeasureSettings;
     window.closeMeasureSettings = closeMeasureSettings;
     window.saveMeasureSettings = saveMeasureSettings;
+    window.updateCustomMeasureVisibility = updateCustomMeasureVisibility;
     window.openVoiceSettings = openVoiceSettings;
     window.closeVoiceSettings = closeVoiceSettings;
     window.saveVoiceSettings = saveVoiceSettings;

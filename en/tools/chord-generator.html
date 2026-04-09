@@ -6,13 +6,8 @@
       var isFile = location.protocol === 'file:' || location.origin === 'null';
       if (!isFile) return;
       try {
-        console.warn('🚫 检测到file://协议，已阻止');
+        console.info('开发模式：允许 file:// 打开和弦工具');
       } catch (e) {}
-</body></html>';
-      document.open();
-      document.write(html);
-      document.close();
-      throw new Error('file-protocol-blocked');
     })();
   </script>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -143,8 +138,7 @@
         width: 100%;
         text-align: center;
       }
-    </style>
-    <script src="assets/js/sample-player.js?v=7"></script>
+    </style>    <script src="assets/js/sample-player.js?v=7"></script>
     <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
       window.IC_FULL_PIANO_88_SAMPLE_ROOT = 'assets/samples/piano-ogg-full-boosted-88';
@@ -185,7 +179,7 @@
             <div class="header-content">
                 <div class="header-text">
                     <h1 data-i18n="app.title">Cognote - 和弦视奏生成器</h1>
-                    <p data-i18n="app.subtitle">专业级乐谱渲染与音乐理论工具</p>
+                    <p data-i18n="app.subtitle">专业级视奏工具与乐谱渲染</p>
                 </div>
                 <div class="header-controls">
                     <div class="function-selector">
@@ -220,14 +214,145 @@
         </div>
 
         <div class="controls">
-            <div class="control-row">
+            <div class="control-row chord-primary-row">
                 <div class="control-group">
-                    <label data-i18n="controls.chordType">和弦类型</label>
                     <button class="btn-secondary" onclick="openChordTypeSettings()" id="chordTypeSettingsBtn" data-i18n="controls.chordTypeSettings">和弦类型设置</button>
                 </div>
 
                 <div class="control-group">
-                    <label data-i18n="controls.harmonyMode">和声模式</label>
+                    <button class="btn-secondary" onclick="openMeasureSettings()" id="measureSettingsBtn" data-i18n="controls.measuresSettings">小节设置</button>
+                </div>
+
+                <div class="control-group">
+                    <button class="btn-secondary" onclick="openKeySignatureSettings()" id="keySettingsBtn" data-i18n="controls.KeySettings">调号设置</button>
+                </div>
+
+                <div class="control-group">
+                    <input type="checkbox" id="challengeModeToggle" class="control-toggle-input" hidden aria-hidden="true" tabindex="-1">
+                    <button type="button" class="melody-visibility-btn control-toggle-btn" id="challengeModeToggleBtn" onclick="toggleChordControlOption('challengeModeToggle')" title="挑战模式" aria-pressed="false">
+                        <span class="control-toggle-btn-text" data-i18n="controls.challengeMode">挑战模式</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="control-row melody-secondary-row chord-secondary-layout">
+                <div class="melody-secondary-cell chord-range-cell">
+                    <div id="guitarRangeMinSettings" class="chord-range-stack chord-range-stack-single" style="display: block;">
+                        <div class="chord-range-field chord-range-field-solo">
+                            <select id="rangeMin" aria-label="最低音">
+                                <option value="33">A1</option>
+                                <option value="35">B1</option>
+                                <option value="36">C2</option>
+                                <option value="38">D2</option>
+                                <option value="40">E2</option>
+                                <option value="41">F2</option>
+                                <option value="43">G2</option>
+                                <option value="45">A2</option>
+                                <option value="47">B2</option>
+                                <option value="48">C3</option>
+                                <option value="50">D3</option>
+                                <option value="52" selected="">E3</option>
+                                <option value="53">F3</option>
+                                <option value="55">G3</option>
+                                <option value="57">A3</option>
+                                <option value="59">B3</option>
+                                <option value="60">C4</option>
+                                <option value="62">D4</option>
+                                <option value="64">E4</option>
+                                <option value="65">F4</option>
+                                <option value="67">G4</option>
+                                <option value="69">A4</option>
+                                <option value="71">B4</option>
+                                <option value="72">C5</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="pianoRangeMinSettings" class="chord-range-stack chord-range-stack-single" style="display: none;">
+                        <div class="chord-range-field chord-range-field-solo">
+                            <button class="btn-secondary" onclick="openBassClefRangeModal()">
+                                <span id="bassClefRangeDisplay">(E2-E4)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="melody-secondary-cell chord-range-cell">
+                    <div id="guitarRangeMaxSettings" class="chord-range-stack chord-range-stack-single" style="display: block;">
+                        <div class="chord-range-field chord-range-field-solo">
+                            <select id="rangeMax" aria-label="最高音">
+                                <option value="48">C3</option>
+                                <option value="50">D3</option>
+                                <option value="52">E3</option>
+                                <option value="53">F3</option>
+                                <option value="55">G3</option>
+                                <option value="57">A3</option>
+                                <option value="59">B3</option>
+                                <option value="60">C4</option>
+                                <option value="62">D4</option>
+                                <option value="64">E4</option>
+                                <option value="65">F4</option>
+                                <option value="67">G4</option>
+                                <option value="69">A4</option>
+                                <option value="71">B4</option>
+                                <option value="72">C5</option>
+                                <option value="74">D5</option>
+                                <option value="76">E5</option>
+                                <option value="77">F5</option>
+                                <option value="79">G5</option>
+                                <option value="81">A5</option>
+                                <option value="82">B5</option>
+                                <option value="83">C6</option>
+                                <option value="84">D6</option>
+                                <option value="88" selected="">E6</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="pianoRangeMaxSettings" class="chord-range-stack chord-range-stack-single" style="display: none;">
+                        <div class="chord-range-field chord-range-field-solo">
+                            <button class="btn-secondary" onclick="openTrebleClefRangeModal()">
+                                <span id="trebleClefRangeDisplay">(C4-E6)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="melody-secondary-cell">
+                    <div class="melody-secondary-card melody-accidental-card">
+                        <span class="melody-secondary-label" data-i18n="controls.accidental">临时记号</span>
+                        <div class="melody-accidental-row">
+                            <input type="range" id="accidentalRate" min="0" max="100" value="0" step="10">
+                            <span id="accidentalRateValue">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="melody-secondary-cell">
+                    <div class="chord-display-stack">
+                        <input type="checkbox" id="staffDisplayToggle" checked class="control-toggle-input" hidden aria-hidden="true" tabindex="-1">
+                        <button type="button" class="melody-visibility-btn control-toggle-btn" data-toggle-target="staffDisplayToggle" onclick="toggleChordControlOption('staffDisplayToggle')" title="五线谱" aria-pressed="false">
+                            <span class="control-toggle-btn-text" data-i18n="controls.staff">五线谱</span>
+                        </button>
+
+                        <input type="checkbox" id="chordSymbolsToggle" checked class="control-toggle-input" hidden aria-hidden="true" tabindex="-1">
+                        <button type="button" class="melody-visibility-btn control-toggle-btn" data-toggle-target="chordSymbolsToggle" onclick="toggleChordControlOption('chordSymbolsToggle')" title="和弦代号" aria-pressed="false">
+                            <span class="control-toggle-btn-text" data-i18n="controls.chordSymbols">和弦代号</span>
+                        </button>
+
+                        <div class="chord-jianpu-group" style="display: none;">
+                            <input type="checkbox" id="chordJianpuToggle" class="control-toggle-input" hidden aria-hidden="true" tabindex="-1">
+                            <button type="button" class="melody-visibility-btn control-toggle-btn" data-toggle-target="chordJianpuToggle" onclick="toggleChordControlOption('chordJianpuToggle')" title="简谱代号" aria-pressed="false">
+                                <span class="control-toggle-btn-text" data-i18n="controls.jianpuChordSymbols">简谱代号</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-row chord-mode-row">
+                <div class="chord-toggle-card">
+                    <div class="chord-toggle-card-text">
+                        <span id="harmonyModeLabel" class="chord-toggle-card-value" data-i18n="controls.randomMode">功能和声</span>
+                    </div>
                     <div class="harmony-mode-toggle" style="display: flex; align-items: center; gap: 10px;">
                         <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
                             <input type="checkbox" id="functionalHarmonyToggle" onchange="toggleFunctionalHarmony()" style="opacity: 0; width: 0; height: 0;">
@@ -235,237 +360,20 @@
                                 <span class="slider-button" style="position: absolute; content: &quot;&quot;; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(26px);"></span>
                             </span>
                         </label>
-                        <span id="harmonyModeLabel" data-i18n="controls.randomMode" style="font-size: 14px; color: var(--text-color);">功能和声</span>
-                    </div>
-
-                    <div class="instrument-mode-section" style="margin-top: 12px;">
-                        <label data-i18n="controls.instrumentMode" style="display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500;">乐器模式</label>
-                        <div class="instrument-mode-toggle" style="display: flex; align-items: center; gap: 10px;">
-                            <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                                <input type="checkbox" id="instrumentModeToggle" onchange="toggleInstrumentMode()" style="opacity: 0; width: 0; height: 0;">
-                                <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
-                                    <span class="slider-button" style="position: absolute; content: '' ; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
-                                </span>
-                            </label>
-                            <span id="instrumentModeLabel" data-i18n="controls.guitarMode" style="font-size: 14px; color: var(--text-color);">吉他和声</span>
-                        </div>
                     </div>
                 </div>
 
-                <div class="control-group">
-                    <label data-i18n="controls.measures">小节数</label>
-                    <button class="btn-secondary" onclick="openMeasureSettings()" id="measureSettingsBtn" data-i18n="controls.measuresSettings">小节设置</button>
-                </div>
-
-                <div class="control-group">
-                    <label data-i18n="controls.key">调号</label>
-                    <button class="btn-secondary" onclick="openKeySignatureSettings()" id="keySettingsBtn" data-i18n="controls.KeySettings">调号设置</button>
-                </div>
-
-                <div class="control-group" style="display: none;">
-                    <label data-i18n="controls.time">拍号</label>
-                    <button class="btn-secondary" onclick="openTimeSignatureSettings()" id="timeSignatureSettingsBtn" data-i18n="controls.timeSettings">拍号设置</button>
-                </div>
-
-                <!-- 模式切换（自由/挑战） -->
-                <div class="control-group">
-                    <label data-i18n="controls.mode">模式</label>
-                    <div class="mode-toggle" style="display: flex; align-items: center; gap: 10px;">
-                        <span id="modeLabelFree" data-i18n="mode.free" style="font-size: 14px; opacity: 0.8;">自由</span>
+                <div class="chord-toggle-card">
+                    <div class="chord-toggle-card-text">
+                        <span id="instrumentModeLabel" class="chord-toggle-card-value" data-i18n="controls.guitarMode">吉他和声</span>
+                    </div>
+                    <div class="instrument-mode-toggle" style="display: flex; align-items: center; gap: 10px;">
                         <label class="switch" style="position: relative; display: inline-block; width: 60px; height: 34px;">
-                            <input type="checkbox" id="challengeModeToggle" style="opacity: 0; width: 0; height: 0;">
+                            <input type="checkbox" id="instrumentModeToggle" onchange="toggleInstrumentMode()" style="opacity: 0; width: 0; height: 0;">
                             <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 34px;">
-                                <span class="slider-button" style="position: absolute; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
+                                <span class="slider-button" style="position: absolute; content: '' ; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; transform: translateX(0px);"></span>
                             </span>
                         </label>
-                        <span id="modeLabelChallenge" data-i18n="mode.challenge" style="font-size: 14px; opacity: 0.8;">挑战</span>
-                    </div>
-                </div>
-
-                <!-- 🔧 移除 (2025-10-02): 钢琴模式不需要谱号设置按钮，固定使用大谱表 -->
-                <!-- <div class="control-group" id="clefControlGroup">
-                    <label data-i18n="controls.clef">谱号</label>
-                    <button class="btn-secondary" onclick="openClefSettings()" id="clefSettingsBtn" data-i18n="controls.clefSettings">
-                        谱号设置
-                    </button>
-                </div> -->
-            </div>
-
-            <!-- 新增：音域设置 -->
-            <!-- 🎸 吉他模式音域设置 -->
-            <div id="guitarRangeSettings" style="display: block;">
-            <div class="control-row">
-                <div class="control-group">
-                    <label for="rangeMin" data-i18n="controls.rangeMin">最低音</label>
-                    <select id="rangeMin">
-                        <option value="33">A1</option>
-                        <option value="35">B1</option>
-                        <option value="36">C2</option>
-                        <option value="38">D2</option>
-                        <option value="40">E2</option>
-                        <option value="41">F2</option>
-                        <option value="43">G2</option>
-                        <option value="45">A2</option>
-                        <option value="47">B2</option>
-                        <option value="48">C3</option>
-                        <option value="50">D3</option>
-                        <option value="52" selected="">E3</option>
-                        <option value="53">F3</option>
-                        <option value="55">G3</option>
-                        <option value="57">A3</option>
-                        <option value="59">B3</option>
-                        <option value="60">C4</option>
-                        <option value="62">D4</option>
-                        <option value="64">E4</option>
-                        <option value="65">F4</option>
-                        <option value="67">G4</option>
-                        <option value="69">A4</option>
-                        <option value="71">B4</option>
-                        <option value="72">C5</option>
-                    </select>
-                </div>
-
-                <div class="control-group">
-                    <label for="rangeMax" data-i18n="controls.rangeMax">最高音</label>
-                    <select id="rangeMax">
-                        <option value="48">C3</option>
-                        <option value="50">D3</option>
-                        <option value="52">E3</option>
-                        <option value="53">F3</option>
-                        <option value="55">G3</option>
-                        <option value="57">A3</option>
-                        <option value="59">B3</option>
-                        <option value="60">C4</option>
-                        <option value="62">D4</option>
-                        <option value="64">E4</option>
-                        <option value="65">F4</option>
-                        <option value="67">G4</option>
-                        <option value="69">A4</option>
-                        <option value="71">B4</option>
-                        <option value="72">C5</option>
-                        <option value="74">D5</option>
-                        <option value="76">E5</option>
-                        <option value="77">F5</option>
-                        <option value="79">G5</option>
-                        <option value="81">A5</option>
-                        <option value="82">B5</option>
-                        <option value="83">C6</option>
-                        <option value="84">D6</option>
-                        <option value="88" selected="">E6</option>
-                    </select>
-                </div>
-
-                <!-- 🎼 显示控制开关 - 紧凑布局 -->
-                <!-- 🎼 显示控制开关 - 紧凑布局，减少间距 -->
-                <div class="control-group" style="flex: none; width: 140px; margin-right: 4px;">
-                    <label data-i18n="controls.staff">五线谱</label>
-                    <div class="toggle-container">
-                        <input type="checkbox" id="staffDisplayToggle" checked="" class="toggle-input">
-                        <label for="staffDisplayToggle" class="toggle-slider">
-                            <span class="toggle-button"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="control-group" style="flex: none; width: 140px; margin-right: 0px;">
-                    <label data-i18n="controls.chordSymbols">和弦代号</label>
-                    <div class="toggle-container">
-                        <input type="checkbox" id="chordSymbolsToggle" checked="" class="toggle-input">
-                        <label for="chordSymbolsToggle" class="toggle-slider">
-                            <span class="toggle-button"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="control-group chord-jianpu-group" style="flex: none; width: 140px; margin-right: 0px; display: none;">
-                    <label data-i18n="controls.jianpuChordSymbols">简谱代号</label>
-                    <div class="toggle-container">
-                        <input type="checkbox" id="chordJianpuToggle" class="toggle-input">
-                        <label for="chordJianpuToggle" class="toggle-slider">
-                            <span class="toggle-button"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="control-group metronome-group" style="flex: none; width: 160px;">
-                    <div class="metronome-label-row">
-                        <button class="metronome-settings-btn" id="metronomePatternBtn" onclick="openMetronomePatternSettings()" title="节拍器节奏设置" aria-label="节拍器节奏设置">
-                            ⚙️
-                        </button>
-                        <label for="headerMetronomeBpm" data-i18n="controls.metronome">节拍器</label>
-                    </div>
-                    <div class="metronome-control">
-                        <input type="number" id="headerMetronomeBpm" min="1" max="999" value="60" class="bpm-input-control">
-                        <button class="metronome-play-btn" id="headerMetronomeBtn" onclick="toggleMetronome()" title="开始节拍器">
-                            🎵
-                        </button>
-                        <div class="metronome-beat-indicator" id="headerBeatIndicator"></div>
-                    </div>
-                </div>
-            </div>
-            </div>
-
-            <!-- 🎹 钢琴模式音域设置 -->
-            <div id="pianoRangeSettings" style="display: none;">
-                <div class="control-row">
-                    <div class="control-group">
-                        <label data-i18n="piano.bassClefRange">低音谱号音域设置</label>
-                        <button class="btn-secondary" onclick="openBassClefRangeModal()">
-                            <span id="bassClefRangeDisplay">(E2-E4)</span>
-                        </button>
-                    </div>
-                    <div class="control-group">
-                        <label data-i18n="piano.trebleClefRange">高音谱号音域设置</label>
-                        <button class="btn-secondary" onclick="openTrebleClefRangeModal()">
-                            <span id="trebleClefRangeDisplay">(C4-E6)</span>
-                        </button>
-                    </div>
-
-                    <!-- 🎼 显示控制开关 - 保持与吉他模式一致的布局 -->
-                    <div class="control-group" style="flex: none; width: 140px; margin-right: 4px;">
-                        <label data-i18n="controls.staff">五线谱</label>
-                        <div class="toggle-container">
-                            <input type="checkbox" id="staffDisplayToggle" checked="" class="toggle-input">
-                            <label for="staffDisplayToggle" class="toggle-slider">
-                                <span class="toggle-button"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="control-group" style="flex: none; width: 140px; margin-right: 0px;">
-                        <label data-i18n="controls.chordSymbols">和弦代号</label>
-                        <div class="toggle-container">
-                            <input type="checkbox" id="chordSymbolsToggle" checked="" class="toggle-input">
-                            <label for="chordSymbolsToggle" class="toggle-slider">
-                                <span class="toggle-button"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="control-group chord-jianpu-group" style="flex: none; width: 140px; margin-right: 0px; display: none;">
-                        <label data-i18n="controls.jianpuChordSymbols">简谱代号</label>
-                        <div class="toggle-container">
-                            <input type="checkbox" id="chordJianpuToggle" class="toggle-input">
-                            <label for="chordJianpuToggle" class="toggle-slider">
-                                <span class="toggle-button"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="control-group metronome-group" style="flex: none; width: 160px;">
-                        <div class="metronome-label-row">
-                            <button class="metronome-settings-btn" id="metronomePatternBtn" onclick="openMetronomePatternSettings()" title="节拍器节奏设置" aria-label="节拍器节奏设置">
-                                ⚙️
-                            </button>
-                            <label for="headerMetronomeBpm" data-i18n="controls.metronome">节拍器</label>
-                        </div>
-                        <div class="metronome-control">
-                            <input type="number" id="headerMetronomeBpm" min="1" max="999" value="60" class="bpm-input-control">
-                            <button class="metronome-play-btn" id="headerMetronomeBtn" onclick="toggleMetronome()" title="开始节拍器">
-                                🎵
-                            </button>
-                            <div class="metronome-beat-indicator" id="headerBeatIndicator"></div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -477,29 +385,62 @@
                         <strong id="challengeCountdownValue">10</strong>
                         <span data-i18n="challenge.seconds" style="opacity:0.7;">秒</span>
                     </div>
-                    <button id="generateChordsBtn" class="btn-primary" data-i18n="controls.generate">生成和弦</button>
-                    <div id="melody-counter-status"></div>
-                    <div class="button-group">
-                        <button class="btn-secondary" onclick="previousChords()" data-i18n="controls.previous">上一条</button>
-                        <button class="btn-secondary" onclick="nextChords()" data-i18n="controls.next">下一条</button>
+                    <div class="toolbar-main-actions">
+                        <button id="generateChordsBtn" class="btn-primary" data-i18n="controls.generate">生成和弦</button>
+                        <div id="melody-counter-status"></div>
+                        <div class="button-group toolbar-nav-group">
+                            <button class="btn-secondary" onclick="previousChords()" data-i18n="controls.previous">上一条</button>
+                            <button class="btn-secondary" onclick="nextChords()" data-i18n="controls.next">下一条</button>
+                            <button class="btn-secondary" id="playMelodyBtn" onclick="directPlayTest()" data-i18n="controls.play">播放</button>
+                        </div>
                     </div>
-                    <div class="button-group">
-                        <button class="btn-secondary" id="playMelodyBtn" onclick="directPlayTest()" data-i18n="controls.play">播放</button>
+                    <div class="toolbar-utility-group">
                         <button class="melody-visibility-btn" id="melodyVisibilityBtn" onclick="toggleMelodyVisibility()" title="隐藏/显示和弦">
-                            👀
+                            <span class="ui-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M2.75 12C4.78 8.24 8.08 6.25 12 6.25C15.92 6.25 19.22 8.24 21.25 12C19.22 15.76 15.92 17.75 12 17.75C8.08 17.75 4.78 15.76 2.75 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/>
+                                </svg>
+                            </span>
                         </button>
-                        
+                        <div class="toolbar-metronome-group">
+                            <button class="metronome-play-btn" id="headerMetronomeBtn" onclick="toggleMetronome()" title="开始/停止节拍器">
+                                <span class="ui-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M5.75 19.5L8.15 4.5H15.85L18.25 19.5H5.75Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                        <path d="M7.3 13.5H16.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <path d="M12 7V15.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <path d="M12.1 15.2L17.1 10.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <circle cx="18.35" cy="8.95" r="1.55" stroke="currentColor" stroke-width="1.8"/>
+                                        <path d="M7.9 19.8V21.3M16.1 19.8V21.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                            <div class="melody-secondary-card melody-metronome-card toolbar-metronome-card">
+                                <div class="metronome-control">
+                                    <input type="number" id="headerMetronomeBpm" min="1" max="999" value="60" class="bpm-input-control">
+                                    <button class="metronome-settings-btn" id="metronomePatternBtn" onclick="openMetronomePatternSettings()" title="节拍器节奏设置" aria-label="节拍器节奏设置">
+                                        <span class="ui-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="none">
+                                                <path d="M12 8.25A3.75 3.75 0 1 0 12 15.75A3.75 3.75 0 1 0 12 8.25Z" stroke="currentColor" stroke-width="1.8"/>
+                                                <path d="M19 12A7.03 7.03 0 0 0 18.92 10.94L21 9.45L19.55 6.92L17.09 7.78A7.4 7.4 0 0 0 15.28 6.72L14.9 4H9.1L8.72 6.72A7.4 7.4 0 0 0 6.91 7.78L4.45 6.92L3 9.45L5.08 10.94A7.03 7.03 0 0 0 5 12C5 12.36 5.03 12.71 5.08 13.06L3 14.55L4.45 17.08L6.91 16.22A7.4 7.4 0 0 0 8.72 17.28L9.1 20H14.9L15.28 17.28A7.4 7.4 0 0 0 17.09 16.22L19.55 17.08L21 14.55L18.92 13.06C18.97 12.71 19 12.36 19 12Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="practice-counter">
+                            <label for="practiceCountValue" data-i18n="controls.practiceCounter">练习计数</label>
+                            <div class="practice-counter-actions">
+                                <span id="practiceCountValue">0</span>
+                                <button class="btn-secondary" id="practiceCountBtn" onclick="incrementPracticeCount()" data-i18n="controls.practiceAdd">+</button>
+                                <button class="btn-secondary" id="practiceResetBtn" onclick="decrementPracticeCount()" data-i18n="controls.practiceReset">-</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="button-group" style="display: none;">
                         <button class="btn-secondary" onclick="openRhythmSettings()" data-i18n="controls.rhythm">节奏设置</button>
-                    </div>
-                    <div class="practice-counter">
-                        <label for="practiceCountValue" data-i18n="controls.practiceCounter">练习计数</label>
-                        <div class="practice-counter-actions">
-                            <span id="practiceCountValue">0</span>
-                            <button class="btn-secondary" id="practiceCountBtn" onclick="incrementPracticeCount()" data-i18n="controls.practiceAdd">+</button>
-                            <button class="btn-secondary" id="practiceResetBtn" onclick="decrementPracticeCount()" data-i18n="controls.practiceReset">-</button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -559,11 +500,20 @@
                         <div class="settings-section-title" data-i18n="settings.theme">主题</div>
                         <div class="theme-options">
                             <div class="theme-option" onclick="setTheme('light')">
-                                <span class="theme-icon">☀️</span>
+                                <span class="theme-icon ui-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/>
+                                        <path d="M12 2.75V5.25M12 18.75V21.25M21.25 12H18.75M5.25 12H2.75M18.54 5.46L16.77 7.23M7.23 16.77L5.46 18.54M18.54 18.54L16.77 16.77M7.23 7.23L5.46 5.46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    </svg>
+                                </span>
                                 <span data-i18n="settings.lightMode">浅色模式</span>
                             </div>
                             <div class="theme-option" onclick="setTheme('dark')">
-                                <span class="theme-icon">🌙</span>
+                                <span class="theme-icon ui-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M19.25 14.25A7.25 7.25 0 0 1 9.75 4.75A7.5 7.5 0 1 0 19.25 14.25Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
                                 <span data-i18n="settings.darkMode">深色模式</span>
                             </div>
                         </div>
@@ -588,7 +538,6 @@
                     <div class="settings-section">
                         <div class="settings-section-title" data-i18n="settings.metronome">节拍器</div>
                         <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
-                            <label for="metronomeSoundSelect" data-i18n="settings.metronomeSound">音色</label>
                             <select id="metronomeSoundSelect" class="midi-select">
                                 <option value="classic" data-i18n="settings.metronomeSound.classic">电子</option>
                                 <option value="woodblock" data-i18n="settings.metronomeSound.woodblock">木鱼</option>
@@ -614,12 +563,10 @@
                             </label>
                         </div>
                         <div class="midi-settings-row" style="flex-direction: column; align-items: stretch;">
-                            <label for="midiDeviceSelect" data-i18n="midi.device">设备</label>
                             <select id="midiDeviceSelect" class="midi-select" disabled>
                                 <option value="">-</option>
                             </select>
                         </div>
-                        <div class="midi-status" id="midiStatusText" data-i18n="midi.status.disabled">MIDI 已关闭</div>
                     </div>
                     <div class="settings-section" id="parameterExchangeSection">
                         <div style="display: flex; gap: 8px; width: 100%;">
@@ -714,7 +661,6 @@
                     <!-- 🎸 吉他模式高级设置 -->
                     <div id="guitarAdvancedSettings" style="display: block;">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                            <h5 style="margin: 0; font-size: 14px; color: #666;" data-i18n="modal.chordType.voicingTypes">Voicing 类型选择</h5>
                             <button class="btn-select-all" onclick="toggleSelectAllVoicings()" style="padding: 5px 10px; font-size: 12px; background: #FF9500; color: white; border: none; border-radius: 4px; cursor: pointer;">
                                 <span id="voicingSelectAllText" data-i18n="button.selectAll">全选</span>
                             </button>
@@ -1054,31 +1000,31 @@
                     <h4 style="margin-bottom: 15px;" data-i18n="modal.measure.selection">选择小节数</h4>
                     <div class="checkbox-grid">
                         <label class="checkbox-item">
-                            <input type="radio" id="measures-2" name="measures" value="2">
+                            <input type="checkbox" id="measures-2" name="measures" value="2" onchange="handleMeasureCheckboxChange(this)">
                             <span data-i18n="controls.measures2">2小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measures-4" name="measures" value="4" checked="">
+                            <input type="checkbox" id="measures-4" name="measures" value="4" checked="" onchange="handleMeasureCheckboxChange(this)">
                             <span data-i18n="controls.measures4">4小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measures-8" name="measures" value="8">
+                            <input type="checkbox" id="measures-8" name="measures" value="8" onchange="handleMeasureCheckboxChange(this)">
                             <span data-i18n="controls.measures8">8小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measures-12" name="measures" value="12">
+                            <input type="checkbox" id="measures-12" name="measures" value="12" onchange="handleMeasureCheckboxChange(this)">
                             <span data-i18n="controls.measures12">12小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measures-16" name="measures" value="16">
+                            <input type="checkbox" id="measures-16" name="measures" value="16" onchange="handleMeasureCheckboxChange(this)">
                             <span data-i18n="controls.measures16">16小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measures-custom" name="measures" value="10">
+                            <input type="checkbox" id="measures-custom" name="measures" value="10" onchange="handleMeasureCheckboxChange(this)">
                             <span data-i18n="controls.measuresCustom">自定义小节数</span>
                         </label>
                     </div>
-                    <div style="margin-top: 12px; padding: 12px; border: 1px dashed var(--border-color); border-radius: 10px; background: var(--neutral-white);">
+                    <div id="measure-custom-panel" style="display: none; margin-top: 12px; padding: 12px; border: 1px dashed var(--border-color); border-radius: 10px; background: var(--neutral-white);">
                         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                             <label for="measures-custom-value" style="min-width: 88px;" data-i18n="controls.measuresCustomInput">自定义</label>
                             <input type="number" id="measures-custom-value" min="1" max="32" step="1" value="10" style="width: 90px;" oninput="syncCustomMeasureValue()">
@@ -1780,6 +1726,27 @@
             customRadio.value = String(clamped);
         }
 
+        function updateCustomMeasureVisibility() {
+            const panel = document.getElementById('measure-custom-panel');
+            const customRadio = document.getElementById('measures-custom');
+            if (!panel || !customRadio) return;
+            panel.style.display = customRadio.checked ? 'block' : 'none';
+        }
+
+        function handleMeasureCheckboxChange(target) {
+            const measureInputs = Array.from(document.querySelectorAll('#measureModal input[name="measures"]'));
+            if (!target) return;
+            if (!target.checked) {
+                target.checked = true;
+                updateCustomMeasureVisibility();
+                return;
+            }
+            measureInputs.forEach((input) => {
+                input.checked = input === target;
+            });
+            updateCustomMeasureVisibility();
+        }
+
         function getSelectedMeasureInput() {
             return document.querySelector('input[name="measures"]:checked');
         }
@@ -1791,18 +1758,22 @@
         }
 
         function setSelectedMeasureSelectionKey(key) {
-            if (key === 'custom') {
-                const customRadio = document.getElementById('measures-custom');
-                if (customRadio) customRadio.checked = true;
-                return;
-            }
-            const target = document.querySelector(`input[name="measures"][value="${key}"]`);
+            const measureInputs = Array.from(document.querySelectorAll('#measureModal input[name="measures"]'));
+            if (!measureInputs.length) return;
+            const targetId = key === 'custom' ? 'measures-custom' : null;
+            const target = targetId
+                ? document.getElementById(targetId)
+                : document.querySelector(`#measureModal input[name="measures"][value="${key}"]`);
+            measureInputs.forEach((input) => {
+                input.checked = input === target;
+            });
             if (target) {
-                target.checked = true;
+                updateCustomMeasureVisibility();
                 return;
             }
             const fallback = document.getElementById('measures-4');
             if (fallback) fallback.checked = true;
+            updateCustomMeasureVisibility();
         }
 
         function getSelectedMeasureConfig() {
@@ -1828,6 +1799,7 @@
 
         function openMeasureSettings() {
             syncCustomMeasureValue();
+            updateCustomMeasureVisibility();
             previousMeasureSelection = getSelectedMeasureSelectionKey();
             const customInput = document.getElementById('measures-custom-value');
             previousCustomMeasureValue = customInput ? customInput.value : previousCustomMeasureValue;
@@ -1850,9 +1822,11 @@
 
         function saveMeasureSettings() {
             syncCustomMeasureValue();
+            updateCustomMeasureVisibility();
             previousMeasureSelection = getSelectedMeasureSelectionKey();
             const customInput = document.getElementById('measures-custom-value');
             previousCustomMeasureValue = customInput ? customInput.value : previousCustomMeasureValue;
+            enforceFixedSettingsButtonLabels();
             const modal = document.getElementById('measureModal');
             if (!modal) return;
             modal.style.display = 'none';
@@ -2107,13 +2081,31 @@
 
     <!-- 增强功能和声系统初始化 -->
     <script>
+        const chordUiIcons = Object.freeze({
+            note: '<span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M9 18.25A2.75 2.75 0 1 0 9 12.75A2.75 2.75 0 1 0 9 18.25Z" fill="currentColor"/><path d="M11.75 15.5V6.25L19 4V13.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.25 17.25A2.75 2.75 0 1 0 16.25 11.75A2.75 2.75 0 1 0 16.25 17.25Z" fill="currentColor"/></svg></span>',
+            metronome: '<span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5.75 19.5L8.15 4.5H15.85L18.25 19.5H5.75Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M7.3 13.5H16.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12 7V15.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12.1 15.2L17.1 10.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="18.35" cy="8.95" r="1.55" stroke="currentColor" stroke-width="1.8"/><path d="M7.9 19.8V21.3M16.1 19.8V21.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>',
+            eye: '<span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M2.75 12C4.78 8.24 8.08 6.25 12 6.25C15.92 6.25 19.22 8.24 21.25 12C19.22 15.76 15.92 17.75 12 17.75C8.08 17.75 4.78 15.76 2.75 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg></span>',
+            eyeOff: '<span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3.5 3.5L20.5 20.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10.58 6.38C11.04 6.3 11.51 6.25 12 6.25C15.92 6.25 19.22 8.24 21.25 12C20.54 13.31 19.67 14.41 18.65 15.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.12 14.12C13.58 14.66 12.82 15 12 15C10.34 15 9 13.66 9 12C9 11.18 9.34 10.42 9.88 9.88" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7.18 7.18C5.51 8.15 4.01 9.72 2.75 12C4.78 15.76 8.08 17.75 12 17.75C13.42 17.75 14.76 17.49 16 17.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>',
+            sun: '<span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.75V5.25M12 18.75V21.25M21.25 12H18.75M5.25 12H2.75M18.54 5.46L16.77 7.23M7.23 16.77L5.46 18.54M18.54 18.54L16.77 16.77M7.23 7.23L5.46 5.46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>',
+            moon: '<span class="ui-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M19.25 14.25A7.25 7.25 0 0 1 9.75 4.75A7.5 7.5 0 1 0 19.25 14.25Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>',
+        });
+
+        function getChordUiIcon(name) {
+            return chordUiIcons[name] || '';
+        }
+
+        function setChordUiIcon(element, name) {
+            if (!element) return;
+            element.innerHTML = getChordUiIcon(name);
+        }
+
         // ============ 主题切换功能 ============
         let currentTheme = localStorage.getItem('preferredTheme') || 'light';
 
         // 主题图标映射
         const themeIcons = {
-            'light': '🌙', // 在light模式显示月亮图标，点击切换到dark
-            'dark': '☀️'   // 在dark模式显示太阳图标，点击切换到light
+            'light': getChordUiIcon('moon'), // 在light模式显示月亮图标，点击切换到dark
+            'dark': getChordUiIcon('sun')   // 在dark模式显示太阳图标，点击切换到light
         };
 
         // 切换主题 (保留向后兼容性)
@@ -2172,6 +2164,7 @@
             if (typeof window.updateChordPlayButtonLabel === 'function') {
                 window.updateChordPlayButtonLabel();
             }
+            enforceFixedSettingsButtonLabels();
         }
 
         // 全局翻译函数（供弹窗调用）
@@ -2189,6 +2182,22 @@
             return key;
         }
 
+        function enforceFixedSettingsButtonLabels() {
+            const fixedButtonKeys = {
+                chordTypeSettingsBtn: 'controls.chordTypeSettings',
+                measureSettingsBtn: 'controls.measuresSettings',
+                keySettingsBtn: 'controls.KeySettings',
+                timeSignatureSettingsBtn: 'controls.timeSettings'
+            };
+
+            Object.entries(fixedButtonKeys).forEach(([buttonId, translationKey]) => {
+                const button = document.getElementById(buttonId);
+                if (!button) return;
+                const translatedLabel = translate(translationKey);
+                button.textContent = translatedLabel !== translationKey ? translatedLabel : button.textContent;
+            });
+        }
+
         // 更新动态控件文本翻译
         function updateDynamicControlsTranslation() {
             // 更新和声模式标签
@@ -2197,8 +2206,10 @@
                 const toggle = document.getElementById('functionalHarmonyToggle');
                 if (toggle && toggle.checked) {
                     harmonyModeLabel.textContent = translate('controls.functionalMode');
+                    harmonyModeLabel.title = translate('controls.functionalModeFull');
                 } else {
                     harmonyModeLabel.textContent = translate('controls.randomMode');
+                    harmonyModeLabel.title = translate('controls.pureRandomModeFull');
                 }
             }
 
@@ -2208,8 +2219,10 @@
                 const toggle = document.getElementById('instrumentModeToggle');
                 if (toggle && toggle.checked) {
                     instrumentModeLabel.textContent = translate('controls.pianoMode');
+                    instrumentModeLabel.title = translate('controls.pianoModeFull');
                 } else {
                     instrumentModeLabel.textContent = translate('controls.guitarMode');
+                    instrumentModeLabel.title = translate('controls.guitarModeFull');
                 }
             }
 
@@ -2850,7 +2863,12 @@
             const interval = (patternInfo.stepDuration || (60 / metronomeTempo)) * 1000; // 计算间隔时间（毫秒）
 
             isMetronomeRunning = true;
-            btn.textContent = '🎵';
+            if (btn) {
+                btn.classList.add('active');
+            }
+            if (typeof setChordUiIcon === 'function') {
+                setChordUiIcon(btn, 'metronome');
+            }
             btn.title = '停止节拍器';
             metronomeStepIndex = 0;
 
@@ -2884,7 +2902,12 @@
             const btn = document.getElementById('headerMetronomeBtn');
 
             isMetronomeRunning = false;
-            btn.textContent = '🎵';
+            if (btn) {
+                btn.classList.remove('active');
+            }
+            if (typeof setChordUiIcon === 'function') {
+                setChordUiIcon(btn, 'metronome');
+            }
             btn.title = '开始节拍器';
 
             if (metronomeInterval) {
@@ -2918,6 +2941,7 @@
                 // 启用功能和声模式
                 chordSettings.useFunctionalHarmony = true;
                 label.textContent = translate('controls.functionalMode');
+                label.title = translate('controls.functionalModeFull');
                 slider.style.backgroundColor = '#FF9500';
                 if (sliderButton) {
                     sliderButton.style.transform = 'translateX(26px)';
@@ -2935,6 +2959,7 @@
                 // 启用完全随机模式
                 chordSettings.useFunctionalHarmony = false;
                 label.textContent = translate('controls.pureRandomMode');
+                label.title = translate('controls.pureRandomModeFull');
                 slider.style.backgroundColor = '#ccc';
                 if (sliderButton) {
                     sliderButton.style.transform = 'translateX(0px)';
@@ -2967,10 +2992,19 @@
             const label = document.getElementById('instrumentModeLabel');
             const slider = toggle.nextElementSibling;
             const sliderButton = slider.querySelector('.slider-button');
+            const pianoRangeSettings = [
+                document.getElementById('pianoRangeMinSettings'),
+                document.getElementById('pianoRangeMaxSettings')
+            ];
+            const guitarRangeSettings = [
+                document.getElementById('guitarRangeMinSettings'),
+                document.getElementById('guitarRangeMaxSettings')
+            ];
 
             if (toggle.checked) {
                 // 启用钢琴模式
                 label.textContent = translate('controls.pianoMode');
+                label.title = translate('controls.pianoModeFull');
                 // 🔧 修复 (2025-10-01): 改为橙色 #FF9500，与页面整体风格一致
                 slider.style.backgroundColor = '#FF9500'; // 橙色表示钢琴
                 if (sliderButton) {
@@ -3010,11 +3044,13 @@
                 }
 
                 // 🎹 钢琴模式：切换音域设置UI（双谱号音域按钮）
-                const pianoRangeSettings = document.getElementById('pianoRangeSettings');
-                const guitarRangeSettings = document.getElementById('guitarRangeSettings');
-                if (pianoRangeSettings && guitarRangeSettings) {
-                    pianoRangeSettings.style.display = 'block';
-                    guitarRangeSettings.style.display = 'none';
+                if (pianoRangeSettings.every(Boolean) && guitarRangeSettings.every(Boolean)) {
+                    pianoRangeSettings.forEach((element) => {
+                        element.style.display = 'block';
+                    });
+                    guitarRangeSettings.forEach((element) => {
+                        element.style.display = 'none';
+                    });
                     console.log('🎹 钢琴模式：切换到双谱号音域设置UI');
                 }
 
@@ -3044,6 +3080,7 @@
             } else {
                 // 启用吉他模式（默认）
                 label.textContent = translate('controls.guitarMode');
+                label.title = translate('controls.guitarModeFull');
                 slider.style.backgroundColor = '#ccc'; // 灰色默认状态，与和声模式一致
                 if (sliderButton) {
                     sliderButton.style.transform = 'translateX(0px)';
@@ -3060,11 +3097,13 @@
                 }
 
                 // 🎸 吉他模式：切换音域设置UI（统一音域选择器）
-                const pianoRangeSettings = document.getElementById('pianoRangeSettings');
-                const guitarRangeSettings = document.getElementById('guitarRangeSettings');
-                if (pianoRangeSettings && guitarRangeSettings) {
-                    pianoRangeSettings.style.display = 'none';
-                    guitarRangeSettings.style.display = 'block';
+                if (pianoRangeSettings.every(Boolean) && guitarRangeSettings.every(Boolean)) {
+                    pianoRangeSettings.forEach((element) => {
+                        element.style.display = 'none';
+                    });
+                    guitarRangeSettings.forEach((element) => {
+                        element.style.display = 'block';
+                    });
                     console.log('🎸 吉他模式：切换到统一音域设置UI');
                 }
 
@@ -3648,10 +3687,12 @@
 
             if (chordSettings.useFunctionalHarmony) {
                 label.textContent = translate('controls.functionalMode');
+                label.title = translate('controls.functionalModeFull');
                 if (slider) slider.style.backgroundColor = '#FF9500';
                 if (sliderButton) sliderButton.style.transform = 'translateX(26px)';
             } else {
                 label.textContent = translate('controls.randomMode');
+                label.title = translate('controls.pureRandomModeFull');
                 if (slider) slider.style.backgroundColor = '#ccc';
                 if (sliderButton) sliderButton.style.transform = 'translateX(0px)';
             }
@@ -3690,7 +3731,8 @@
             if (forceReset || isFirstInit) {
                 // 首次初始化或强制重置：设置为默认状态（吉他模式）
                 toggle.checked = false;
-                label.textContent = '吉他和声';
+                label.textContent = translate('controls.guitarMode');
+                label.title = translate('controls.guitarModeFull');
                 slider.style.backgroundColor = '#ccc';
                 if (sliderButton) {
                     sliderButton.style.transform = 'translateX(0px)';
@@ -3701,14 +3743,16 @@
                 console.log(`🛡️ 乐器模式开关保持现有状态: ${toggle.checked ? '钢琴模式' : '吉他模式'}`);
                 // 确保UI与状态同步
                 if (toggle.checked) {
-                    label.textContent = '钢琴和声';
+                    label.textContent = translate('controls.pianoMode');
+                    label.title = translate('controls.pianoModeFull');
                     // 🔧 修复 (2025-10-01): 改为橙色 #FF9500
                     slider.style.backgroundColor = '#FF9500';
                     if (sliderButton) {
                         sliderButton.style.transform = 'translateX(26px)';
                     }
                 } else {
-                    label.textContent = '吉他和声';
+                    label.textContent = translate('controls.guitarMode');
+                    label.title = translate('controls.guitarModeFull');
                     slider.style.backgroundColor = '#ccc';
                     if (sliderButton) {
                         sliderButton.style.transform = 'translateX(0px)';
@@ -3864,13 +3908,26 @@
             initializeChordMetronomeSettingsUi();
 
             // 监听临时记号滑块变化
-            const accidentalSlider = document.getElementById('accidentalRate');
-            const accidentalValue = document.getElementById('accidentalRateValue');
+            const accidentalSliders = document.querySelectorAll('input[id="accidentalRate"]');
+            const accidentalValues = document.querySelectorAll('span[id="accidentalRateValue"]');
 
-            if (accidentalSlider && accidentalValue) {
-                accidentalSlider.addEventListener('input', function() {
-                    accidentalValue.textContent = this.value + '%';
+            if (accidentalSliders.length && accidentalValues.length) {
+                const syncAccidentalUi = function(value) {
+                    accidentalSliders.forEach((slider) => {
+                        if (slider.value !== value) slider.value = value;
+                    });
+                    accidentalValues.forEach((valueEl) => {
+                        valueEl.textContent = value + '%';
+                    });
+                };
+
+                accidentalSliders.forEach((slider) => {
+                    slider.addEventListener('input', function() {
+                        syncAccidentalUi(this.value);
+                    });
                 });
+
+                syncAccidentalUi(accidentalSliders[0].value);
             }
 
             // 🎼 初始化五线谱显示/隐藏开关 - 修复：支持多个toggle（吉他+钢琴模式）
@@ -5484,6 +5541,7 @@
 
             // 更新显示状态
             updateKeySettingsDisplay(selectedKeys);
+            enforceFixedSettingsButtonLabels();
 
             closeKeySignatureSettings();
 
@@ -5533,6 +5591,7 @@
 
             // 🔧 2025-10-01 修复：更新动态控件翻译
             updateDynamicControlsTranslation();
+            enforceFixedSettingsButtonLabels();
             console.log('🔄 已更新动态控件翻译');
 
             closeTimeSignatureSettings();
@@ -5649,18 +5708,18 @@
                     }
                     break;
 
-                case 'c':
+                case 'k':
                     // 节拍器开关
                     e.preventDefault();
                     if (typeof toggleMetronome === 'function') {
                         toggleMetronome();
-                        console.log('⌨️ 快捷键: C - 节拍器开关');
+                        console.log('⌨️ 快捷键: K - 节拍器开关');
                     }
                     break;
             }
         });
 
-        console.log('⌨️ 和弦视奏工具快捷键已启用: P=播放 ←→=导航 Space=生成 H=隐藏 C=节拍器');
+        console.log('⌨️ 和弦视奏工具快捷键已启用: P=播放 ←→=导航 Space=生成 H=隐藏 K=节拍器');
 
     </script>
 
@@ -5730,6 +5789,76 @@
 
     <!-- 挑战模式逻辑 -->
     <script src="./IC 和弦视奏工具_files/challenge-mode.js"></script>
+
+    <script>
+        function syncChordControlButtons(targetId) {
+            const inputs = document.querySelectorAll(`input[id="${targetId}"]`);
+            const buttons = document.querySelectorAll(`[data-toggle-target="${targetId}"]`);
+            if (!inputs.length || !buttons.length) return;
+            const isActive = !!inputs[0].checked;
+            buttons.forEach((button) => {
+                button.classList.toggle('is-active', isActive);
+                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+        }
+
+        function syncAllChordControlButtons() {
+            ['challengeModeToggle', 'staffDisplayToggle', 'chordSymbolsToggle', 'chordJianpuToggle'].forEach(syncChordControlButtons);
+        }
+
+        function toggleChordControlOption(inputId) {
+            const inputs = document.querySelectorAll(`input[id="${inputId}"]`);
+            if (!inputs.length) return;
+            const nextState = !inputs[0].checked;
+            inputs.forEach((input) => {
+                input.checked = nextState;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            syncChordControlButtons(inputId);
+        }
+
+        window.syncChordControlButtons = syncChordControlButtons;
+        window.syncAllChordControlButtons = syncAllChordControlButtons;
+        window.toggleChordControlOption = toggleChordControlOption;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input[id="challengeModeToggle"], input[id="staffDisplayToggle"], input[id="chordSymbolsToggle"], input[id="chordJianpuToggle"]').forEach((input) => {
+                input.addEventListener('change', function() {
+                    syncChordControlButtons(this.id);
+                });
+            });
+            syncAllChordControlButtons();
+
+            if (typeof window.closeChallengeModal === 'function') {
+                const originalCloseChallengeModal = window.closeChallengeModal;
+                window.closeChallengeModal = function(...args) {
+                    const result = originalCloseChallengeModal.apply(this, args);
+                    syncAllChordControlButtons();
+                    return result;
+                };
+            }
+
+            if (typeof window.cancelChallengeSetup === 'function') {
+                const originalCancelChallengeSetup = window.cancelChallengeSetup;
+                window.cancelChallengeSetup = function(...args) {
+                    const result = originalCancelChallengeSetup.apply(this, args);
+                    syncAllChordControlButtons();
+                    return result;
+                };
+            }
+
+            const challengeModal = document.getElementById('challengeModal');
+            if (challengeModal && challengeModal.dataset.dismissSyncBound !== 'true') {
+                challengeModal.dataset.dismissSyncBound = 'true';
+                challengeModal.addEventListener('click', function(event) {
+                    if (event.target !== challengeModal || typeof window.cancelChallengeSetup !== 'function') return;
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    window.cancelChallengeSetup();
+                }, true);
+            }
+        });
+    </script>
 
     <script>
         // 让试用系统复用 generateMelody 入口
