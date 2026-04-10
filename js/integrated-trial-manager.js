@@ -10,13 +10,17 @@ class IntegratedTrialManager {
     this.status = null;
   }
 
+  getCounterSystem() {
+    return window.melodyCounterSystem || window.melodyCounter || null;
+  }
+
   // 等待其他系统加载完成
   async waitForSystems() {
     let attempts = 0;
     const maxAttempts = 50; // 5秒
 
     while (attempts < maxAttempts) {
-      if (window.advancedTrialProtection && window.melodyCounter) {
+      if (window.advancedTrialProtection && this.getCounterSystem()) {
         console.log('✅ 所有试用管理系统已就绪');
         return true;
       }
@@ -43,8 +47,9 @@ class IntegratedTrialManager {
       }
 
       // 2. 旋律计数器检查（20条限制）
-      if (window.melodyCounter) {
-        const counterStatus = await window.melodyCounter.checkStatus();
+      const counterSystem = this.getCounterSystem();
+      if (counterSystem && typeof counterSystem.checkStatus === 'function') {
+        const counterStatus = await counterSystem.checkStatus();
         if (!counterStatus.allowed) {
           console.log('🚫 旋律计数器：20条免费旋律已用完');
           return {
@@ -79,7 +84,9 @@ class IntegratedTrialManager {
       }
 
       // 4. 综合状态
-      const melodyStatus = window.melodyCounter ? await window.melodyCounter.checkStatus() : { remaining: 20, total: 20 };
+      const melodyStatus = counterSystem && typeof counterSystem.checkStatus === 'function'
+        ? await counterSystem.checkStatus()
+        : { remaining: 20, total: 20 };
 
       return {
         allowed: true,
@@ -147,8 +154,9 @@ class IntegratedTrialManager {
 
     try {
       // 使用旋律计数器记录
-      if (window.melodyCounter && window.melodyCounter.recordGeneration) {
-        const result = await window.melodyCounter.recordGeneration();
+      const counterSystem = this.getCounterSystem();
+      if (counterSystem && typeof counterSystem.recordGeneration === 'function') {
+        const result = await counterSystem.recordGeneration();
 
         if (!result.success) {
           return {

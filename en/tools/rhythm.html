@@ -1,33 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="light">
 <head>
-<script>
-    (function() {
-      var isFile = location.protocol === 'file:' || location.origin === 'null';
-      if (!isFile) return;
-      // Internal testing default: allow file:// unless explicitly forced.
-      var forceOnline = false;
-      try {
-        var params = new URLSearchParams(location.search || '');
-        forceOnline = params.get('enforceOnline') === '1' || localStorage.getItem('ic_force_online') === '1';
-      } catch (e) {}
-      if (!forceOnline) {
-        try {
-          console.info('🧪 内部测试模式：已放行 file:// 协议');
-        } catch (e) {}
-        return;
-      }
-      try {
-        console.warn('🚫 检测到file://协议，已阻止');
-      } catch (e) {}
-      var html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>无法离线使用</title><style>body{margin:0;font-family:-apple-system,"Helvetica Neue","PingFang SC","Segoe UI",sans-serif;background:#f5f6f8;color:#111;} .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;} .card{max-width:560px;background:#fff;border:1px solid #e6e8ec;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.08);padding:28px;} h1{font-size:20px;margin:0 0 12px;} p{margin:0 0 16px;color:#444;line-height:1.6;} a{display:inline-block;background:#1a8cff;color:#fff;text-decoration:none;padding:10px 16px;border-radius:10px;font-weight:600;}</style></head><body><div class="wrap"><div class="card"><h1>⚠️ 无法离线使用</h1><p>IC视奏工具需要在线使用以验证授权。</p><p>请访问在线版本以获得完整体验。</p><a href="https://icstudio.club/tools/">访问在线版本 →</a></div></div></body></html>';
-      document.open();
-      document.write(html);
-      document.close();
-      throw new Error('file-protocol-blocked');
-    })();
-  </script>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rhythm Sight Reading Tool | Cognote</title>
     <meta name="description" content="Professional rhythm sight-reading tool for timing, syncopation, and rhythmic accuracy. Single-line percussion staff with customizable density, time signatures, and multi-voice practice.">
@@ -843,6 +817,35 @@
         });
       })();
     </script>
-<script defer src="/js/tool-access-loader.js?v=1.0.2"></script>
+<script>
+(function() {
+  window.__IC_WEB_TRIAL_REQUIRED__ = true;
+  window.__IC_WEB_FILE_GUARD__ = true;
+  if (window.location.protocol !== 'file:') return;
+
+  function renderBlockedState() {
+    document.body.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-align:center;">
+        <div style="max-width:520px;background:#fff;border-radius:24px;padding:40px 32px;box-shadow:0 20px 60px rgba(0,0,0,0.12);">
+          <div style="font-size:56px;line-height:1;margin-bottom:16px;">⚠️</div>
+          <h1 style="margin:0 0 12px;font-size:28px;color:#1d1d1f;">This tool must be used online</h1>
+          <p style="margin:0 0 12px;font-size:16px;line-height:1.6;color:#4a4a4f;">The official IC Web tool page cannot be opened via file://. Please use the hosted website so trial and access checks can run correctly.</p>
+          <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#6e6e73;">Local development copies can still run in your dev environment. This block only applies to website-shipped pages.</p>
+          <a href="https://icstudio.club/tools/" style="display:inline-block;background:#111;color:#fff;text-decoration:none;padding:14px 24px;border-radius:999px;font-weight:600;">Open IC Web</a>
+        </div>
+      </div>
+    `;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderBlockedState, { once: true });
+  } else {
+    renderBlockedState();
+  }
+
+  throw new Error('IC Web tool pages cannot be opened via file://');
+})();
+</script>
+<script defer src="/js/tool-access-loader.js?v=1.1.1"></script>
 </body>
 </html>

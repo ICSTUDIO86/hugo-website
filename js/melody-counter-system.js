@@ -3,7 +3,7 @@
 // ========================================
 // 必须在所有代码之前执行，防止用户下载后离线使用
 (function() {
-  if (window.location.protocol === 'file:') {
+  if (window.location.protocol === 'file:' && window.__IC_WEB_TRIAL_REQUIRED__ === true) {
     console.error('🚫 检测到file://协议，已阻止');
 
     // 立即阻止页面加载
@@ -96,6 +96,52 @@ class MelodyCounterSystem {
     this.cachedFingerprint = null; // 缓存设备指纹以提升性能
     this.lastOnlineTime = Date.now(); // 最后在线时间
     this.heartbeatInterval = null; // 心跳定时器
+    this.activeGenerationToken = null;
+    this.activeGenerationDepth = 0;
+  }
+
+  getLocalDevelopmentStatus() {
+    return {
+      success: true,
+      allowed: true,
+      hasFullAccess: true,
+      expired: false,
+      used: 0,
+      total: Infinity,
+      remaining: Infinity,
+      message: '',
+      isLocalMode: true,
+      source: 'local-development'
+    };
+  }
+
+  shouldBypassRestrictions() {
+    return this.hasValidLocalAccessCode() || this.isLocalDevelopment();
+  }
+
+  beginGenerationAttempt(kind) {
+    const isNested = this.activeGenerationDepth > 0;
+    const token = isNested
+      ? this.activeGenerationToken
+      : `${kind}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+    this.activeGenerationDepth += 1;
+
+    if (!isNested) {
+      this.activeGenerationToken = token;
+    }
+
+    return { token, isNested };
+  }
+
+  finishGenerationAttempt(token) {
+    if (this.activeGenerationDepth > 0) {
+      this.activeGenerationDepth -= 1;
+    }
+
+    if (this.activeGenerationDepth === 0 && this.activeGenerationToken === token) {
+      this.activeGenerationToken = null;
+    }
   }
 
   // 生成设备指纹（与服务端保持一致）
@@ -1024,7 +1070,7 @@ class MelodyCounterSystem {
       hostname.includes('.io');     // 任何.io域名
 
     // file://协议检测（本地文件）
-    const isFileProtocol = protocol === 'file:';
+    const isFileProtocol = protocol === 'file:' && window.__IC_WEB_TRIAL_REQUIRED__ !== true;
 
     console.log('  - isLocalhost:', isLocalhost);
     console.log('  - isPrivateIP:', isPrivateIP);
@@ -1049,8 +1095,8 @@ class MelodyCounterSystem {
     return useLocalMode;
   }
 
-  // 本地开发模式的模拟数据
-  getLocalMockData(action) {
+  // 服务端失败时的本地回退计数
+  getLocalFallbackData(action) {
     const localUsage = parseInt(localStorage.getItem('local-melody-count') || '0');
 
     if (action === 'increment') {
@@ -1066,7 +1112,7 @@ class MelodyCounterSystem {
         total: 20,
         remaining: Math.max(0, 20 - newCount),
         message: newCount > 20 ? '本地试用次数已用完' : `本地剩余 ${Math.max(0, 20 - newCount)} 条旋律`,
-        isLocalMode: true
+        isFallbackMode: true
       };
     }
 
@@ -1078,7 +1124,7 @@ class MelodyCounterSystem {
       total: 20,
       remaining: Math.max(0, 20 - localUsage),
       message: localUsage >= 20 ? '本地试用次数已用完' : `本地剩余 ${Math.max(0, 20 - localUsage)} 条旋律`,
-      isLocalMode: true
+      isFallbackMode: true
     };
   }
 
@@ -1150,7 +1196,10 @@ class MelodyCounterSystem {
     // 本地开发模式
     if (this.isLocalDevelopment()) {
       console.log(`🏠 本地开发模式: [${action}]`);
-      return this.getLocalMockData(action);
+      const localDevelopmentStatus = this.getLocalDevelopmentStatus();
+      this.currentStatus = localDevelopmentStatus;
+      this.hideAllTrialUI();
+      return localDevelopmentStatus;
     }
 
     try {
@@ -1232,14 +1281,16 @@ class MelodyCounterSystem {
 
       // 服务端错误时，降级到本地计数
       console.log('🔄 降级到本地计数模式...');
-      return this.getLocalMockData(action);
+      const fallbackStatus = this.getLocalFallbackData(action);
+      this.currentStatus = fallbackStatus;
+      return fallbackStatus;
     }
   }
 
   // 显示计数状态
   showCounterStatus(status) {
     // 🔥 优先检查：完整版用户权限（最高优先级）
-    if (this.hasValidLocalAccessCode()) {
+    if ((status && (status.hasFullAccess || status.isLocalMode)) || this.shouldBypassRestrictions()) {
       console.log('🎫 showCounterStatus: 检测到完整版用户，隐藏所有试用UI');
       this.hideAllTrialUI();
       return; // 完整版用户不显示任何试用状态
@@ -1403,13 +1454,27 @@ class MelodyCounterSystem {
     const self = this;
     window.generateMelody = function() {
       console.log('🎼 用户点击生成旋律按钮');
+      const generationAttempt = self.beginGenerationAttempt('melody');
+
+      if (generationAttempt.isNested) {
+        console.log('↪️ 检测到嵌套旋律生成调用，跳过重复计数');
+        try {
+          return self.originalGenerateMelody.apply(this, arguments);
+        } finally {
+          self.finishGenerationAttempt(generationAttempt.token);
+        }
+      }
 
       // 🔥 优先检查：完整版用户（最高优先级）
-      if (self.hasValidLocalAccessCode()) {
+      if (self.shouldBypassRestrictions()) {
         console.log('🎫 完整版用户，立即允许生成旋律');
         self.hideAllTrialUI();
-        self.showCounterStatus({ hasFullAccess: true, allowed: true, message: '' });
-        return self.originalGenerateMelody.call(this);
+        self.showCounterStatus(self.getLocalDevelopmentStatus());
+        try {
+          return self.originalGenerateMelody.apply(this, arguments);
+        } finally {
+          self.finishGenerationAttempt(generationAttempt.token);
+        }
       }
 
       // 🔒 强制状态预检查：如果已知过期且没有完整版权限，立即阻止
@@ -1417,6 +1482,7 @@ class MelodyCounterSystem {
         console.log('🚫 已知状态：试用已过期，阻止旋律生成');
         self.showPurchasePrompt();
         self.updateGenerateButton({ expired: true, hasFullAccess: false });
+        self.finishGenerationAttempt(generationAttempt.token);
         return; // 直接返回，不调用原始函数
       }
 
@@ -1432,6 +1498,7 @@ class MelodyCounterSystem {
         console.log('✅ 旋律生成函数调用成功');
       } catch (error) {
         console.error('❌ 旋律生成函数调用失败:', error);
+        self.finishGenerationAttempt(generationAttempt.token);
         throw error;
       }
 
@@ -1442,6 +1509,7 @@ class MelodyCounterSystem {
         self.handleBackgroundValidation(isPrivateBrowsing);
       }, 0);
 
+      self.finishGenerationAttempt(generationAttempt.token);
       return result;
     };
 
@@ -1487,13 +1555,27 @@ class MelodyCounterSystem {
     const self = this;
     window.generateIntervals = async function() {
       console.log('🎵 用户点击生成音程按钮');
+      const generationAttempt = self.beginGenerationAttempt('intervals');
+
+      if (generationAttempt.isNested) {
+        console.log('↪️ 检测到嵌套音程生成调用，跳过重复计数');
+        try {
+          return await originalGenerateIntervals.apply(this, arguments);
+        } finally {
+          self.finishGenerationAttempt(generationAttempt.token);
+        }
+      }
 
       // 🔥 优先检查：完整版用户（最高优先级）
-      if (self.hasValidLocalAccessCode()) {
+      if (self.shouldBypassRestrictions()) {
         console.log('🎫 完整版用户，立即允许生成音程');
         self.hideAllTrialUI();
-        self.showCounterStatus({ hasFullAccess: true, allowed: true, message: '' });
-        return originalGenerateIntervals.call(this);
+        self.showCounterStatus(self.getLocalDevelopmentStatus());
+        try {
+          return await originalGenerateIntervals.apply(this, arguments);
+        } finally {
+          self.finishGenerationAttempt(generationAttempt.token);
+        }
       }
 
       // 🔒 强制状态预检查：如果已知过期且没有完整版权限，立即阻止
@@ -1501,6 +1583,7 @@ class MelodyCounterSystem {
         console.log('🚫 已知状态：试用已过期，阻止音程生成');
         self.showPurchasePrompt();
         self.updateGenerateButton({ expired: true, hasFullAccess: false });
+        self.finishGenerationAttempt(generationAttempt.token);
         return; // 直接返回，不调用原始函数
       }
 
@@ -1516,6 +1599,7 @@ class MelodyCounterSystem {
         console.log('✅ 音程生成函数调用成功');
       } catch (error) {
         console.error('❌ 音程生成函数调用失败:', error);
+        self.finishGenerationAttempt(generationAttempt.token);
         throw error;
       }
 
@@ -1526,6 +1610,7 @@ class MelodyCounterSystem {
         self.handleBackgroundValidation(isPrivateBrowsing);
       }, 0);
 
+      self.finishGenerationAttempt(generationAttempt.token);
       return result;
     };
 
@@ -1571,13 +1656,27 @@ class MelodyCounterSystem {
     const self = this;
     window.generatePianoChords = function() {
       console.log('🎹 用户点击生成和弦按钮');
+      const generationAttempt = self.beginGenerationAttempt('piano-chords');
+
+      if (generationAttempt.isNested) {
+        console.log('↪️ 检测到嵌套和弦生成调用，跳过重复计数');
+        try {
+          return originalGeneratePianoChords.apply(this, arguments);
+        } finally {
+          self.finishGenerationAttempt(generationAttempt.token);
+        }
+      }
 
       // 🔥 优先检查：完整版用户（最高优先级）
-      if (self.hasValidLocalAccessCode()) {
+      if (self.shouldBypassRestrictions()) {
         console.log('🎫 完整版用户，立即允许生成和弦');
         self.hideAllTrialUI();
-        self.showCounterStatus({ hasFullAccess: true, allowed: true, message: '' });
-        return originalGeneratePianoChords.call(this);
+        self.showCounterStatus(self.getLocalDevelopmentStatus());
+        try {
+          return originalGeneratePianoChords.apply(this, arguments);
+        } finally {
+          self.finishGenerationAttempt(generationAttempt.token);
+        }
       }
 
       // 🔒 强制状态预检查：如果已知过期且没有完整版权限，立即阻止
@@ -1585,6 +1684,7 @@ class MelodyCounterSystem {
         console.log('🚫 已知状态：试用已过期，阻止和弦生成');
         self.showPurchasePrompt();
         self.updateGenerateButton({ expired: true, hasFullAccess: false });
+        self.finishGenerationAttempt(generationAttempt.token);
         return; // 直接返回，不调用原始函数
       }
 
@@ -1600,6 +1700,7 @@ class MelodyCounterSystem {
         console.log('✅ 和弦生成函数调用成功');
       } catch (error) {
         console.error('❌ 和弦生成函数调用失败:', error);
+        self.finishGenerationAttempt(generationAttempt.token);
         throw error;
       }
 
@@ -1610,6 +1711,7 @@ class MelodyCounterSystem {
         self.handleBackgroundValidation(isPrivateBrowsing);
       }, 0);
 
+      self.finishGenerationAttempt(generationAttempt.token);
       return result;
     };
 
@@ -1655,13 +1757,27 @@ class MelodyCounterSystem {
     const self = this;
     window.generateChords = function() {
       console.log('🎸 用户点击生成和弦按钮（吉他模式）');
+      const generationAttempt = self.beginGenerationAttempt('guitar-chords');
+
+      if (generationAttempt.isNested) {
+        console.log('↪️ 检测到嵌套吉他和弦生成调用，跳过重复计数');
+        try {
+          return originalGenerateChords.apply(this, arguments);
+        } finally {
+          self.finishGenerationAttempt(generationAttempt.token);
+        }
+      }
 
       // 🔥 优先检查：完整版用户（最高优先级）
-      if (self.hasValidLocalAccessCode()) {
+      if (self.shouldBypassRestrictions()) {
         console.log('🎫 完整版用户，立即允许生成吉他和弦');
         self.hideAllTrialUI();
-        self.showCounterStatus({ hasFullAccess: true, allowed: true, message: '' });
-        return originalGenerateChords.call(this);
+        self.showCounterStatus(self.getLocalDevelopmentStatus());
+        try {
+          return originalGenerateChords.apply(this, arguments);
+        } finally {
+          self.finishGenerationAttempt(generationAttempt.token);
+        }
       }
 
       // 🔒 强制状态预检查：如果已知过期且没有完整版权限，立即阻止
@@ -1669,6 +1785,7 @@ class MelodyCounterSystem {
         console.log('🚫 已知状态：试用已过期，阻止吉他和弦生成');
         self.showPurchasePrompt();
         self.updateGenerateButton({ expired: true, hasFullAccess: false });
+        self.finishGenerationAttempt(generationAttempt.token);
         return; // 直接返回，不调用原始函数
       }
 
@@ -1684,6 +1801,7 @@ class MelodyCounterSystem {
         console.log('✅ 吉他和弦生成函数调用成功');
       } catch (error) {
         console.error('❌ 吉他和弦生成函数调用失败:', error);
+        self.finishGenerationAttempt(generationAttempt.token);
         throw error;
       }
 
@@ -1694,6 +1812,7 @@ class MelodyCounterSystem {
         self.handleBackgroundValidation(isPrivateBrowsing);
       }, 0);
 
+      self.finishGenerationAttempt(generationAttempt.token);
       return result;
     };
 
@@ -1840,7 +1959,7 @@ class MelodyCounterSystem {
       console.log('🔄 后台初始化开始...');
 
       // 🔥 优先检查：如果用户已被识别为完整版（init()中已设置），直接返回
-      if (this.currentStatus && this.currentStatus.hasFullAccess) {
+      if (this.currentStatus && (this.currentStatus.hasFullAccess || this.currentStatus.isLocalMode)) {
         console.log('✅ 完整版用户，跳过后台初始化（已在init()中完成）');
         return;
       }
@@ -1853,7 +1972,9 @@ class MelodyCounterSystem {
       console.log('🕵️ 初始化无痕模式检测:', isPrivateBrowsing);
 
       let status;
-      if (isPrivateBrowsing) {
+      if (this.isLocalDevelopment()) {
+        status = this.getLocalDevelopmentStatus();
+      } else if (isPrivateBrowsing) {
         // 无痕模式：使用本地计数
         const privateUsage = this.getPrivateBrowsingUsage();
         status = {
@@ -1931,7 +2052,9 @@ class MelodyCounterSystem {
       const isPrivateBrowsing = await this.isLikelyPrivateBrowsing();
 
       let status;
-      if (isPrivateBrowsing) {
+      if (this.isLocalDevelopment()) {
+        status = this.getLocalDevelopmentStatus();
+      } else if (isPrivateBrowsing) {
         // 无痕模式：使用本地计数
         const privateUsage = this.getPrivateBrowsingUsage();
         status = {
@@ -2124,6 +2247,18 @@ class MelodyCounterSystem {
     console.log('✅ 计数器状态已刷新:', newStatus);
   }
 
+  async checkStatus() {
+    const status = await this.requestMelodyGeneration('check');
+    this.currentStatus = status;
+    return status;
+  }
+
+  async recordGeneration() {
+    const status = await this.requestMelodyGeneration('increment');
+    this.currentStatus = status;
+    return status;
+  }
+
   // 初始化系统
   async init() {
     // 防止重复初始化
@@ -2139,21 +2274,23 @@ class MelodyCounterSystem {
       console.log('⚡ 预加载设备指纹...');
       this.preloadDeviceFingerprint();
 
-      // 🔥 立即同步检查：完整版用户（最高优先级，必须立即执行）
-      if (this.hasValidLocalAccessCode()) {
-        console.log('🎫 init: 完整版用户，立即设置状态');
-        const fullAccessStatus = {
-          success: true,
-          allowed: true,
-          hasFullAccess: true,
-          expired: false,
-          used: 0,
-          total: Infinity,
-          remaining: Infinity,
-          message: '',
-          isFirstTime: false
-        };
+      // 🔥 立即同步检查：本地开发和完整版用户优先不受限制
+      if (this.isLocalDevelopment() || this.hasValidLocalAccessCode()) {
+        const fullAccessStatus = this.isLocalDevelopment()
+          ? this.getLocalDevelopmentStatus()
+          : {
+              success: true,
+              allowed: true,
+              hasFullAccess: true,
+              expired: false,
+              used: 0,
+              total: Infinity,
+              remaining: Infinity,
+              message: '',
+              isFirstTime: false
+            };
 
+        console.log(this.isLocalDevelopment() ? '🏠 init: 本地开发环境，禁用试用限制' : '🎫 init: 完整版用户，立即设置状态');
         this.currentStatus = fullAccessStatus;
 
         // 立即更新UI（同步执行，防止延迟）
@@ -2236,6 +2373,7 @@ class MelodyCounterSystem {
 
 // 全局实例
 window.melodyCounterSystem = new MelodyCounterSystem();
+window.melodyCounter = window.melodyCounterSystem;
 
 // 立即初始化，不等待DOMContentLoaded
 (function() {

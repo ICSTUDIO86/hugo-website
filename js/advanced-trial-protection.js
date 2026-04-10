@@ -10,6 +10,11 @@ class AdvancedTrialProtection {
     this.deviceFingerprint = null;
     this.sessionId = this.generateSessionId();
     this.protectionLevel = 'high'; // high, medium, low
+    this.serverVerificationDisabled = false;
+  }
+
+  getCounterSystem() {
+    return window.melodyCounterSystem || window.melodyCounter || null;
   }
 
   // 生成高强度设备指纹
@@ -162,6 +167,11 @@ class AdvancedTrialProtection {
         return this.fallbackLocalVerification(fingerprint, action);
       }
 
+      if (this.serverVerificationDisabled) {
+        console.warn('⚠️ 服务器验证已在当前会话中禁用，直接使用本地回退验证');
+        return this.fallbackLocalVerification(fingerprint, action);
+      }
+
       // 检测无痕模式
       const isIncognito = await this.detectIncognitoMode();
 
@@ -191,12 +201,14 @@ class AdvancedTrialProtection {
         throw new Error(`服务器错误: ${response.status}`);
       }
 
-      const result = await response.json();
+      const rawResult = await response.json();
+      const result = typeof rawResult.body === 'string' ? JSON.parse(rawResult.body) : rawResult;
       console.log('📊 服务器验证结果:', result);
 
       return result;
     } catch (error) {
       console.error('❌ 服务器验证失败:', error);
+      this.serverVerificationDisabled = true;
 
       // 回退到本地验证（降级处理）
       return this.fallbackLocalVerification(fingerprint, action);
@@ -270,6 +282,14 @@ class AdvancedTrialProtection {
   // 主要的试用检查方法
   async checkTrialAccess() {
     try {
+      if (this.isLocalDevelopment()) {
+        return {
+          allowed: true,
+          hasFullAccess: true,
+          reason: 'local-development'
+        };
+      }
+
       // 1. 首先检查是否有完整版权限
       if (this.hasFullAccess()) {
         console.log('✅ 用户拥有完整版权限');
@@ -281,8 +301,9 @@ class AdvancedTrialProtection {
       }
 
       // 2. 检查现有的计数器系统状态
-      if (window.melodyCounter) {
-        const counterStatus = await window.melodyCounter.checkStatus();
+      const counterSystem = this.getCounterSystem();
+      if (counterSystem && typeof counterSystem.checkStatus === 'function') {
+        const counterStatus = await counterSystem.checkStatus();
         if (!counterStatus.allowed) {
           console.log('🚫 计数器系统限制：20条旋律已用完');
           return {
@@ -345,7 +366,7 @@ class AdvancedTrialProtection {
 
   // 记录试用使用
   async recordTrialUsage() {
-    if (this.hasFullAccess()) {
+    if (this.isLocalDevelopment() || this.hasFullAccess()) {
       return { success: true, reason: 'premium-user' };
     }
 
@@ -412,6 +433,30 @@ class AdvancedTrialProtection {
     }
   }
 
+  displayTrialStatus(status) {
+    const statusElement = document.getElementById('trial-status');
+    if (!statusElement) return;
+
+    if (!status || status.hasFullAccess) {
+      statusElement.style.display = 'none';
+      this.hidePurchaseInterface();
+      return;
+    }
+
+    if (status.allowed) {
+      statusElement.style.display = 'none';
+      return;
+    }
+
+    statusElement.innerHTML = `
+      <div class="trial-expired">
+        <h3 style="color:#e74c3c;margin:0 0 8px;">⏰ 试用已结束</h3>
+        <p style="color:#e74c3c;margin:0;">${status.message || '您的试用次数已用完，请购买完整版继续使用。'}</p>
+      </div>
+    `;
+    statusElement.style.display = 'block';
+  }
+
 
   // 隐藏购买界面（完整版用户）
   hidePurchaseInterface() {
@@ -452,7 +497,7 @@ class AdvancedTrialProtection {
     console.log('🔒 禁用试用工具');
 
     // 禁用生成按钮
-    const generateBtn = document.querySelector('#generateBtn, button[onclick*="generateMelody"]');
+    const generateBtn = document.querySelector('#generateBtn, button[onclick*="generateMelody"], button[onclick*="generateIntervals"], button[onclick*="generatePianoChords"], button[onclick*="generateChords"]');
     if (generateBtn) {
       generateBtn.disabled = true;
       generateBtn.style.opacity = '0.5';

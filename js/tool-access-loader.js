@@ -12,6 +12,8 @@
 
   if (window.__IC_TOOL_ACCESS_LOADER__) return;
   window.__IC_TOOL_ACCESS_LOADER__ = true;
+  window.__IC_TOOL_ACCESS_LOADER_VERSION__ = '1.1.1';
+  window.__toolAccessLoaderReady = false;
 
   const STORAGE_KEY = 'ic-single-product-access';
   const REFUND_RESET_KEY = 'ic-refund-reset';
@@ -43,7 +45,7 @@
     },
     {
       id: 'ic-advanced-trial-protection-script',
-      src: '/js/advanced-trial-protection.js?v=20250920',
+      src: '/js/advanced-trial-protection.js?v=20260410',
       check: () => !!window.advancedTrialProtection
     },
     {
@@ -57,6 +59,31 @@
       check: () => !!window.integratedTrialManager
     }
   ];
+
+  function blockWebsiteFileAccess() {
+    if (window.__IC_WEB_TRIAL_REQUIRED__ !== true || window.location.protocol !== 'file:') return false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;text-align:center;">
+          <div style="max-width:520px;background:#fff;border-radius:24px;padding:40px 32px;box-shadow:0 20px 60px rgba(0,0,0,0.12);">
+            <div style="font-size:56px;line-height:1;margin-bottom:16px;">⚠️</div>
+            <h1 style="margin:0 0 12px;font-size:28px;color:#1d1d1f;">This tool must be used online</h1>
+            <p style="margin:0 0 12px;font-size:16px;line-height:1.6;color:#4a4a4f;">The official IC Web tool page cannot be opened via file://. Please use the hosted website so trial and access checks can run correctly.</p>
+            <a href="https://icstudio.club/tools/" style="display:inline-block;background:#111;color:#fff;text-decoration:none;padding:14px 24px;border-radius:999px;font-weight:600;">Open IC Web</a>
+          </div>
+        </div>
+      `;
+    }, { once: true });
+
+    throw new Error('IC Web tool pages cannot be opened via file://');
+  }
+
+  function ensureCounterAlias() {
+    if (window.melodyCounterSystem && !window.melodyCounter) {
+      window.melodyCounter = window.melodyCounterSystem;
+    }
+  }
 
   function loadScriptIfNeeded(item) {
     try {
@@ -103,10 +130,14 @@
   }
 
   async function ensureTrialScripts() {
+    ensureCounterAlias();
     for (const item of SCRIPT_LIST) {
       await loadScriptIfNeeded(item);
+      ensureCounterAlias();
     }
+    ensureCounterAlias();
     patchSafeHideAllTrialUI();
+    window.__toolAccessLoaderReady = true;
   }
 
   function getToolId() {
@@ -255,6 +286,7 @@
   }
 
   function init() {
+    if (blockWebsiteFileAccess()) return;
     handleRefundReset();
     window.addEventListener('storage', (event) => {
       if (!event || event.key !== REFUND_RESET_KEY) return;
