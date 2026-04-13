@@ -651,7 +651,16 @@
       }
 
       .fretlab-bundle-offer-gumroad {
-        margin-top: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin-top: 10px;
+        text-decoration: none;
+      }
+
+      .fretlab-pricing-actions .fretlab-bundle-offer-gumroad {
+        margin-top: 0;
       }
 
       .fretlab-bundle-offer-note {
@@ -1924,7 +1933,7 @@
         }
 
         function getBundleGumroadUrl() {
-          return 'https://icstudio3.gumroad.com/';
+          return 'https://icstudio3.gumroad.com/l/bphthh';
         }
 
         var BUNDLE_OFFER_CONTENT = {
@@ -2507,6 +2516,12 @@
           payRow.appendChild(wechat);
 
           actions.appendChild(payRow);
+          var gumroad = createStandalonePricingPayButton(copy.gumroadLabel, {
+            href: getBundleGumroadUrl(),
+            rel: 'noopener noreferrer'
+          });
+          gumroad.classList.add('fretlab-bundle-offer-gumroad');
+          actions.appendChild(gumroad);
 
           card.appendChild(head);
           card.appendChild(divider);
@@ -2791,6 +2806,7 @@
               + '    <button type="button" class="fretlab-bundle-offer-pay font-hand rounded-xl border border-border bg-card px-4 py-3 text-lg hover:bg-zinc-100" data-bundle-pay-trigger="alipay" id="fretlab-bundle-offer-alipay"></button>'
               + '    <button type="button" class="fretlab-bundle-offer-pay font-hand rounded-xl border border-border bg-card px-4 py-3 text-lg hover:bg-zinc-100" data-bundle-pay-trigger="wechat" id="fretlab-bundle-offer-wechat"></button>'
               + '  </div>'
+              + '  <a href="' + getBundleGumroadUrl() + '" target="_blank" rel="noopener noreferrer" class="fretlab-bundle-offer-pay fretlab-bundle-offer-gumroad font-hand rounded-xl border border-border bg-card px-4 py-3 text-lg hover:bg-zinc-100" id="fretlab-bundle-offer-gumroad"></a>'
               + '</div>';
           }
 
@@ -2812,12 +2828,17 @@
           var titleNode = document.getElementById('fretlab-bundle-offer-title');
           var alipayNode = document.getElementById('fretlab-bundle-offer-alipay');
           var wechatNode = document.getElementById('fretlab-bundle-offer-wechat');
+          var gumroadNode = document.getElementById('fretlab-bundle-offer-gumroad');
 
           if (badgeNode) badgeNode.textContent = text.badge;
           if (discountNode) discountNode.textContent = text.discountTag;
           if (titleNode) titleNode.innerHTML = text.title;
           if (alipayNode) alipayNode.textContent = text.alipay;
           if (wechatNode) wechatNode.textContent = text.wechat;
+          if (gumroadNode) {
+            gumroadNode.textContent = getGumroadButtonText(lang);
+            gumroadNode.href = getBundleGumroadUrl();
+          }
         }
 
         function ensureBuyModeToggle() {
