@@ -88,7 +88,7 @@
       },
       "ati9700m20": {
         "author": "ati9700m20",
-        "quote": "For staff reading, my note recognition is much faster than before. I have improved on complex rhythms, but I still can't get through them perfectly in one pass every time. On the fretboard side, I have also made clear progress, and with simple rhythms at slow tempos I can basically control the full fretboard."
+        "quote": "My note recognition is much faster than before. Complex rhythms are improving too, even if I still miss some one-pass attempts. On the fretboard side, I also feel clear progress, and with simple rhythms at slow tempos I can mostly control the full fretboard."
       }
     }
   },
@@ -106,7 +106,7 @@
 
     "guitarVoicing": {
       "icon": "🎸",
-      "title": "Guitar Exclusive Features",
+      "title": "Guitar Features",
       "description": "Provides guitar-specific <strong>voicings</strong> (Drop2, Drop3, Shell Voicing, Close Voicing)<br>Provides guitar-specific <strong>articulations</strong> (staccato, legato, accents, etc.)"
     },
 
@@ -136,7 +136,7 @@
 
     "affordable": {
       "icon": "🎹",
-      "title": "MIDI Input",
+      "title": "MIDI Support",
       "description": "Connect a MIDI keyboard for input, with latency and velocity calibration to improve accuracy and feel."
     }
   },

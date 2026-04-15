@@ -343,11 +343,12 @@
     .feedback-loop-group {
       display: flex;
       gap: 1.25rem;
+      align-items: flex-start;
     }
 
     .feedback-loop-card {
       flex: 0 0 clamp(260px, 30vw, 370px);
-      min-height: 214px;
+      min-height: 198px;
       padding: 1.5rem;
     }
 
@@ -2561,6 +2562,33 @@
       color: #475569;
       font-size: 0.92rem;
       font-weight: 600;
+    }
+
+    .bundle-offer-badge.bundle-offer-badge--limited {
+      min-height: auto !important;
+      padding: 0 !important;
+      background: transparent !important;
+      border: none !important;
+      color: #c2410c !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+    }
+
+    .bundle-offer-card .payment-card-head {
+      position: relative;
+    }
+
+    .bundle-offer-limited-row {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      display: flex;
+      justify-content: center;
+      width: max-content;
+      margin: 0;
+      transform: translate(-50%, 50%);
+      z-index: 1;
+      pointer-events: none;
     }
 
     .bundle-offer-info {
@@ -4971,7 +4999,7 @@
                   <circle cx="112" cy="144" r="24" />
                   <line x1="112" y1="120" x2="212" y2="20" />
                   <line x1="136" y1="144" x2="236" y2="44" />
-                </svg></span><span data-i18n="features.guitarVoicing.title">Guitar Exclusive Features</span></h3>
+                </svg></span><span data-i18n="features.guitarVoicing.title">Guitar Features</span></h3>
             <p class="feature-description" data-i18n="features.guitarVoicing.description" data-i18n-html>
               提供吉他专属<strong>和声配置</strong>（Drop2、Drop3、Shell Voicing、Close Voicing）
               <br>
@@ -5032,7 +5060,7 @@
                   <path d="M14 18V13"></path>
                   <path d="M17 18V9"></path>
                   <path d="M20 18V13"></path>
-                </svg></span><span data-i18n="features.affordable.title">MIDI Input</span></h3>
+                </svg></span><span data-i18n="features.affordable.title">MIDI Support</span></h3>
             <p class="feature-description" data-i18n="features.affordable.description">
               连接 MIDI 键盘即可输入练习；支持延迟与力度校准，提升识别准确度与跟手感。
             </p>
@@ -5188,6 +5216,9 @@
               <h3>Bundle</h3>
               <div class="payment-plan-price">
                 ¥148 <span class="bundle-offer-price-old">Original price ¥168</span>
+              </div>
+              <div class="bundle-offer-limited-row">
+                <span class="bundle-offer-badge bundle-offer-badge--limited">Limited Edition</span>
               </div>
             </div>
 

@@ -114,6 +114,50 @@ const UI_LANGUAGES = new Set(["zh", "zh-hant", "en"]);
 const GUITAR_TONES = new Set(["classical", "folk"]);
 const LABEL_MODES = new Set(["fixed", "movable-do"]);
 const CUSTOM_INSTRUMENT_ID = "custom";
+let nativeBackExitArmedUntil = 0;
+
+function getNativeBridge() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  return window.FretLabNativeBridge || null;
+}
+
+function isNativeAndroidRuntime() {
+  const bridge = getNativeBridge();
+  return Boolean(bridge?.isNativeApp) && `${bridge?.platform || ""}`.toLowerCase() === "android";
+}
+
+function isVideoRenderingAvailableInCurrentRuntime() {
+  return !isNativeAndroidRuntime();
+}
+
+function getNativeRuntimeText(key) {
+  const messages = {
+    nativeFileReady: {
+      zh: "文件已准备好，已交给安卓分享面板。",
+      "zh-hant": "文件已準備好，已交給 Android 分享面板。",
+      en: "The file is ready and has been handed off to Android's share sheet.",
+    },
+    nativePdfUnsupported: {
+      zh: "当前安卓封装版暂不支持直接导出 PDF。请先导出 PNG 或 SVG。",
+      "zh-hant": "目前 Android 封裝版暫不支援直接匯出 PDF。請先匯出 PNG 或 SVG。",
+      en: "Direct PDF export is not supported in the current Android wrapper yet. Please export PNG or SVG instead.",
+    },
+    nativeVideoUnsupported: {
+      zh: "当前安卓封装版未包含本地 MuseScore 渲染桥服务，视频导出暂不可用。",
+      "zh-hant": "目前 Android 封裝版未包含本地 MuseScore 渲染橋服務，影片匯出暫不可用。",
+      en: "The current Android wrapper does not include the local MuseScore render bridge yet, so video export is unavailable.",
+    },
+    backExitHint: {
+      zh: "再次按返回键将退出 FretLab。",
+      "zh-hant": "再次按返回鍵將退出 FretLab。",
+      en: "Press back again to exit FretLab.",
+    },
+  };
+  const lang = UI_LANGUAGES.has(state.language) ? state.language : "zh";
+  return messages[key]?.[lang] || messages[key]?.zh || "";
+}
 const INSTRUMENTS = {
   guitar: {
     id: "guitar",
@@ -2181,7 +2225,7 @@ function showUiToast(message, tone = "default") {
   toast.style.cssText = [
     "position:fixed",
     "right:20px",
-    "bottom:20px",
+    "bottom:calc(20px + env(safe-area-inset-bottom, 0px))",
     "z-index:12000",
     "max-width:360px",
     `background:${background}`,
@@ -2480,8 +2524,10 @@ function finishVideoProgress(success) {
 }
 
 function syncVideoRendererUi() {
+  const videoSupported = isVideoRenderingAvailableInCurrentRuntime();
   if (dom.videoGenerateBtn) {
-    dom.videoGenerateBtn.disabled = !videoRenderer.file || Boolean(videoRenderer.fileValidationErrorKey) || videoRenderer.busy;
+    dom.videoGenerateBtn.disabled =
+      !videoSupported || !videoRenderer.file || Boolean(videoRenderer.fileValidationErrorKey) || videoRenderer.busy;
   }
   if (dom.videoModalCloseBtn) {
     dom.videoModalCloseBtn.disabled = videoRenderer.busy;
@@ -2490,10 +2536,14 @@ function syncVideoRendererUi() {
     dom.videoCancelBtn.disabled = videoRenderer.busy;
   }
   if (dom.videoDropZone) {
-    dom.videoDropZone.setAttribute("aria-disabled", videoRenderer.busy ? "true" : "false");
+    dom.videoDropZone.classList.toggle("is-disabled", !videoSupported);
+    dom.videoDropZone.setAttribute("aria-disabled", videoRenderer.busy || !videoSupported ? "true" : "false");
   }
   if (dom.videoRenderBtn) {
     dom.videoRenderBtn.classList.toggle("is-active", state.videoModalOpen);
+    dom.videoRenderBtn.classList.toggle("is-disabled", !videoSupported);
+    dom.videoRenderBtn.classList.toggle("is-locked", !state.isFullAccess || !videoSupported);
+    dom.videoRenderBtn.disabled = !videoSupported;
     dom.videoRenderBtn.setAttribute("aria-expanded", state.videoModalOpen ? "true" : "false");
   }
   if (dom.videoRenderStatus) {
@@ -2539,6 +2589,10 @@ function setVideoModalOpen(nextOpen) {
 }
 
 function toggleVideoModal() {
+  if (!isVideoRenderingAvailableInCurrentRuntime()) {
+    showUiToast(getNativeRuntimeText("nativeVideoUnsupported"), "error");
+    return;
+  }
   if (!ensureFullAccess("video")) {
     return;
   }
@@ -2833,7 +2887,7 @@ async function handleVideoGenerate() {
     const blob = await response.blob();
     setVideoProgress(Math.max(videoRenderer.progressValue, 98), { active: true, sync: false });
     const fileName = getFilenameFromDisposition(response.headers.get("content-disposition"), "fretlab-animation.mp4");
-    downloadBlob(blob, fileName);
+    await downloadBlob(blob, fileName, { mimeType: "video/mp4" });
     setVideoStatus("video.status.success", {}, "success");
     renderSucceeded = true;
   } catch (error) {
@@ -4418,12 +4472,14 @@ function getBoardCellFromSvgPoint(x, y) {
     return null;
   }
   const stringIndex = stringCount - 1 - visualIndex;
-  if (isOpenFretVisible() && x >= getOpenAreaX() && x <= getLeadingAreaWidth()) {
-    return { stringIndex, fret: 0 };
+  const stringY = getStringY(stringIndex);
+  const maxStringDistance = Math.min(18, spacing * 0.34);
+  if (Math.abs(y - stringY) > maxStringDistance) {
+    return null;
   }
   const fretboardStartX = getFretboardAreaX();
   const fretboardEndX = fretboardStartX + DIMENSIONS.fretSpacing * getVisibleFretCount();
-  if (x < fretboardStartX || x > fretboardEndX) {
+  if (x < fretboardStartX || x >= fretboardEndX) {
     return null;
   }
   const fretOffset = Math.floor((x - fretboardStartX) / DIMENSIONS.fretSpacing);
@@ -4995,7 +5051,7 @@ function cancelLongPress() {
 function createOpenCell(stringIndex) {
   const x = getOpenAreaX();
   const y = getCellY(stringIndex);
-  return `<rect class="cell open-cell" data-string="${stringIndex}" data-fret="0" x="${x}" y="${y}" width="${DIMENSIONS.openWidth}" height="${getStringSpacing()}"></rect>`;
+  return `<rect class="open-cell" x="${x}" y="${y}" width="${DIMENSIONS.openWidth}" height="${getStringSpacing()}"></rect>`;
 }
 
 function createFretCell(stringIndex, fret) {
@@ -5794,7 +5850,18 @@ function buildExportSvgMarkup() {
   return { markup, width, height };
 }
 
-function downloadBlob(blob, filename) {
+async function downloadBlob(blob, filename, options = {}) {
+  const nativeBridge = getNativeBridge();
+  if (nativeBridge?.saveBlob) {
+    const nativeResult = await nativeBridge.saveBlob(blob, filename, {
+      mimeType: options.mimeType || blob?.type || "application/octet-stream",
+      preferShare: options.preferShare !== false,
+    });
+    if (nativeResult) {
+      showUiToast(getNativeRuntimeText("nativeFileReady"), "success");
+      return;
+    }
+  }
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -5839,12 +5906,14 @@ async function renderExportCanvas(scale = 2) {
   }
 }
 
-function exportFretboardAsSvg() {
+async function exportFretboardAsSvg() {
   const exported = buildExportSvgMarkup();
   if (!exported) {
     throw new Error("unavailable");
   }
-  downloadBlob(new Blob([exported.markup], { type: "image/svg+xml;charset=utf-8" }), getExportFilename("svg"));
+  await downloadBlob(new Blob([exported.markup], { type: "image/svg+xml;charset=utf-8" }), getExportFilename("svg"), {
+    mimeType: "image/svg+xml",
+  });
 }
 
 async function exportFretboardAsPng() {
@@ -5853,10 +5922,13 @@ async function exportFretboardAsPng() {
   if (!blob) {
     throw new Error("render");
   }
-  downloadBlob(blob, getExportFilename("png"));
+  await downloadBlob(blob, getExportFilename("png"), { mimeType: "image/png" });
 }
 
 async function exportFretboardAsPdf() {
+  if (isNativeAndroidRuntime()) {
+    throw new Error("nativePdfUnsupported");
+  }
   const popup = window.open("", "_blank");
   if (!popup) {
     throw new Error("popup");
@@ -5899,7 +5971,7 @@ async function handleBoardExport(format = "png") {
   }
   try {
     if (format === "svg") {
-      exportFretboardAsSvg();
+      await exportFretboardAsSvg();
       return;
     }
     if (format === "pdf") {
@@ -5908,9 +5980,60 @@ async function handleBoardExport(format = "png") {
     }
     await exportFretboardAsPng();
   } catch (error) {
+    if (error?.message === "nativePdfUnsupported") {
+      window.alert(getNativeRuntimeText("nativePdfUnsupported"));
+      return;
+    }
     const key = `export.error.${error?.message}` in (UI_TEXT[state.language] ?? {}) ? `export.error.${error.message}` : "export.error.render";
     window.alert(t(key));
   }
+}
+
+function dismissTransientUi() {
+  if (state.exportMenuOpen) {
+    setExportMenuOpen(false);
+    return true;
+  }
+  if (state.helpModalOpen) {
+    setHelpModalOpen(false);
+    return true;
+  }
+  if (state.videoModalOpen) {
+    setVideoModalOpen(false);
+    return true;
+  }
+  if (state.paletteOpen) {
+    setPaletteOpen(false);
+    return true;
+  }
+  if (state.customInstrumentModalOpen) {
+    closeCustomInstrumentModal();
+    return true;
+  }
+  if (getBoardState(state.activeBoardIndex).selectedIds?.length) {
+    clearBoardSelection(state.activeBoardIndex);
+    return true;
+  }
+  return false;
+}
+
+function handleNativeBackButton(event) {
+  if (!isNativeAndroidRuntime()) {
+    return;
+  }
+  if (dismissTransientUi()) {
+    event.preventDefault();
+    return;
+  }
+  const now = Date.now();
+  if (now < nativeBackExitArmedUntil) {
+    event.preventDefault();
+    void getNativeBridge()?.exitApp?.();
+    return;
+  }
+  nativeBackExitArmedUntil = now + 1800;
+  showUiToast(getNativeRuntimeText("backExitHint"));
+  event.preventDefault();
 }
 
 function getCellFromPointerEvent(event) {
@@ -8330,22 +8453,9 @@ function bindControls() {
     if (event.key !== "Escape") {
       return;
     }
-    if (state.exportMenuOpen) {
-      setExportMenuOpen(false);
-    }
-    if (state.helpModalOpen) {
-      setHelpModalOpen(false);
-    }
-    if (state.videoModalOpen) {
-      setVideoModalOpen(false);
-    }
-    if (state.paletteOpen) {
-      setPaletteOpen(false);
-    }
-    if (state.customInstrumentModalOpen) {
-      closeCustomInstrumentModal();
-    }
+    dismissTransientUi();
   });
+  window.addEventListener("fretlab:backbutton", handleNativeBackButton);
 
   dom.shapeLibrary?.addEventListener("dragstart", handleShapeDragStart);
   dom.shapeLibrary?.addEventListener("dragend", () => {

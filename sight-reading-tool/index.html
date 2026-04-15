@@ -2558,6 +2558,33 @@
       font-weight: 600;
     }
 
+    .bundle-offer-badge.bundle-offer-badge--limited {
+      min-height: auto !important;
+      padding: 0 !important;
+      background: transparent !important;
+      border: none !important;
+      color: #c2410c !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+    }
+
+    .bundle-offer-card .payment-card-head {
+      position: relative;
+    }
+
+    .bundle-offer-limited-row {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      display: flex;
+      justify-content: center;
+      width: max-content;
+      margin: 0;
+      transform: translate(-50%, 50%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
     .bundle-offer-info {
       display: grid;
       gap: 0.55rem;
@@ -5181,7 +5208,7 @@
             data-bundle-theme="cognote" data-bundle-lang="zh" data-bundle-name-zh="IC Studio 套装（Cognote + FretLab）"
             data-bundle-name-en="IC Studio Bundle (Cognote + FretLab)">
             <div class="payment-card-head">
-              <h3>套装方案</h3>
+              <h3>限定套装</h3>
               <div class="payment-plan-price">
                 ¥148 <span class="bundle-offer-price-old">原价 ¥168</span>
               </div>

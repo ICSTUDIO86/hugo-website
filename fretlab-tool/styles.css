@@ -38,13 +38,19 @@
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   background-color: #fcfcfa;
   background-image: radial-gradient(circle at 1px 1px, rgba(17, 17, 17, 0.05) 1px, transparent 0);
   background-size: 18px 18px;
   display: flex;
   justify-content: center;
   align-items: stretch;
-  padding: 1.25rem 1rem 1rem;
+  padding:
+    calc(1.25rem + env(safe-area-inset-top, 0px))
+    calc(1rem + env(safe-area-inset-right, 0px))
+    calc(1rem + env(safe-area-inset-bottom, 0px))
+    calc(1rem + env(safe-area-inset-left, 0px));
+  overscroll-behavior: none;
 }
 
 button,
@@ -54,9 +60,17 @@ textarea {
   font-family: inherit;
 }
 
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+}
+
 .app {
   width: min(1500px, 100%);
   min-height: calc(100vh - 2.5rem);
+  min-height: calc(100dvh - 2.5rem);
   background: transparent;
   border-radius: 0;
   padding: 0.9rem;
@@ -275,6 +289,12 @@ textarea {
 
 .header-tool-btn.is-locked {
   opacity: 0.58;
+}
+
+.header-tool-btn.is-disabled,
+.header-tool-btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
 }
 
 .header-tool-btn::after {
@@ -625,6 +645,11 @@ textarea {
   border-color: #1a73e8;
   background: #f3f7ff;
   outline: none;
+}
+
+.video-modal__dropzone.is-disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
 }
 
 .video-modal__drop-icon {
@@ -2010,6 +2035,7 @@ svg {
   text-anchor: middle;
   font-family: "Patrick Hand", "Xiaolai SC", "Xiaolai", "HanziPen SC", "PingFang SC", "Hiragino Sans GB",
     "Microsoft YaHei", cursive, sans-serif;
+  pointer-events: none;
 }
 
 .cell {
@@ -2017,8 +2043,14 @@ svg {
   cursor: pointer;
 }
 
+.open-cell {
+  fill: transparent;
+  pointer-events: none;
+}
+
 .open-area {
   fill: #ffffff;
+  pointer-events: none;
 }
 
 .fretboard-area {
@@ -2058,6 +2090,13 @@ svg {
   text-anchor: middle;
   font-family: "Patrick Hand", "Xiaolai SC", "Xiaolai", "HanziPen SC", "PingFang SC", "Hiragino Sans GB",
     "Microsoft YaHei", cursive, sans-serif;
+  pointer-events: none;
+}
+
+.board-panel__fretboard svg text {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .marker-dot.marker-open {
@@ -2370,11 +2409,16 @@ svg {
 
 @media (max-width: 1024px) {
   body {
-    padding: 0.82rem 0.7rem 0.5rem;
+    padding:
+      calc(0.82rem + env(safe-area-inset-top, 0px))
+      calc(0.7rem + env(safe-area-inset-right, 0px))
+      calc(0.5rem + env(safe-area-inset-bottom, 0px))
+      calc(0.7rem + env(safe-area-inset-left, 0px));
   }
 
   .app {
     min-height: calc(100vh - 1.32rem);
+    min-height: calc(100dvh - 1.32rem);
     padding: 0.88rem;
     gap: 0.75rem;
   }
@@ -2494,11 +2538,16 @@ svg {
 
 @media (max-width: 640px) {
   body {
-    padding: 0.56rem 0.46rem 0.42rem;
+    padding:
+      calc(0.56rem + env(safe-area-inset-top, 0px))
+      calc(0.46rem + env(safe-area-inset-right, 0px))
+      calc(0.42rem + env(safe-area-inset-bottom, 0px))
+      calc(0.46rem + env(safe-area-inset-left, 0px));
   }
 
   .app {
     min-height: calc(100vh - 0.98rem);
+    min-height: calc(100dvh - 0.98rem);
     padding: 0.58rem;
     gap: 0.62rem;
   }

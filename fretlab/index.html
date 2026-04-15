@@ -781,17 +781,25 @@
         transform: rotate(4deg);
       }
 
-      .fretlab-pricing-card--bundle .fretlab-pricing-badge-row {
-        position: absolute;
-        top: -2px;
-        right: 0;
-        width: auto;
-        justify-content: flex-end;
-        pointer-events: none;
+      .fretlab-pricing-tag.fretlab-pricing-tag--limited {
+        min-height: auto;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: #9a3412;
+        box-shadow: none;
+        border-radius: 0;
+        transform: none;
       }
 
-      .fretlab-pricing-card--bundle .fretlab-pricing-tag {
-        margin-left: auto;
+      .fretlab-pricing-card--bundle .fretlab-pricing-badge-row {
+        width: 100%;
+        justify-content: center;
+        margin: -2px 0 -8px;
+      }
+
+      .fretlab-pricing-card--bundle .fretlab-pricing-head {
+        gap: 6px;
       }
 
       .fretlab-pricing-title {
@@ -1335,7 +1343,7 @@
       });
     </script>
     <script defer src="/js/react-grab-loader.js"></script>
-    <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.7"></script>
+    <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.8"></script>
     <script defer src="/fretlab/js/fretlab-payment.js?v=1.1.15"></script>
     <script defer src="/js/bundle-payment.js?v=1.0.0"></script>
     <script>
@@ -1392,7 +1400,7 @@
         var SITE_FOOTER_RENDER_KEY = 'site-footer-v3';
         var UPDATE_LOG_CONTENT = {
           zh: {
-            banner: '最后一次版本更新时间：2026年04月08日',
+            banner: '最后一次版本更新时间：2026年04月15日',
             button: '了解详情',
             modalTitle: '更新日志',
             close: '关闭',
@@ -1400,11 +1408,19 @@
             sectionHistory: '历史更新记录',
             historyButton: '了解详情',
             historyNote: '暂无更早历史记录。',
-            currentVersion: 'v1.0.7（2026年04月08日）',
+            currentVersion: 'v1.0.8（2026年04月15日）',
             currentItems: [
-              '进行了一次 UI 优化。'
+              '开放弦字母与品格数字改为不可选中，避免误触。',
+              '修正手机、iPad 与桌面端长按拖动已选指型时误吸到空弦区域的问题。'
             ],
             historyItems: [
+              {
+                version: 'v1.0.7',
+                detailTitle: 'v1.0.7（2026年04月08日）',
+                detailItems: [
+                  '进行了一次 UI 优化。'
+                ]
+              },
               {
                 version: 'v1.0.6',
                 detailTitle: 'v1.0.6（2026年03月31日）',
@@ -1474,7 +1490,7 @@
             ],
           },
           en: {
-            banner: 'Last version update: April 8, 2026',
+            banner: 'Last version update: April 15, 2026',
             button: 'View details',
             modalTitle: 'Update Log',
             close: 'Close',
@@ -1482,11 +1498,19 @@
             sectionHistory: 'History',
             historyButton: 'View details',
             historyNote: 'No earlier history is available.',
-            currentVersion: 'v1.0.7 (April 8, 2026)',
+            currentVersion: 'v1.0.8 (April 15, 2026)',
             currentItems: [
-              'UI optimization.'
+              'Open-string labels and fret numbers are no longer selectable.',
+              'Fixed long-press dragging so selected shapes no longer snap into the open-string area on phone, iPad, and desktop.'
             ],
             historyItems: [
+              {
+                version: 'v1.0.7',
+                detailTitle: 'v1.0.7 (April 8, 2026)',
+                detailItems: [
+                  'UI optimization.'
+                ]
+              },
               {
                 version: 'v1.0.6',
                 detailTitle: 'v1.0.6 (March 31, 2026)',
@@ -2017,14 +2041,16 @@
               '解锁自定义指板',
               '支持导出图片',
               '支持导出动画',
-              '支持桌面端与网页版'
+              '支持桌面端与网页版',
+              '支持 7 天无理由退款'
             ],
             fullAlipay: '支付宝支付',
             fullWechat: '微信支付',
             gumroadLabel: 'Gumroad 支付',
             bundleBadge: '套装版',
+            bundleLimitedTag: '',
             discountTag: '减15%',
-            bundleTitle: 'Cognote + FretLab 套装',
+            bundleTitle: '限定套装',
             bundlePrice: '¥148',
             bundleOldPrice: '原价 ¥168',
             bundleDescription: '一个访问码同时解锁 Cognote 与 FretLab，更适合把读谱训练和指板训练一起安排。',
@@ -2062,12 +2088,14 @@
               'Unlock Custom Fretboard',
               'Support image export',
               'Support animation export',
-              'Support desktop and web versions'
+              'Support desktop and web versions',
+              '7-day refund support'
             ],
             fullAlipay: 'Alipay',
             fullWechat: 'WeChat Pay',
             gumroadLabel: 'Pay with Gumroad',
             bundleBadge: 'Bundle',
+            bundleLimitedTag: 'Limited Edition',
             discountTag: '15% off',
             bundleTitle: 'Cognote + FretLab Bundle',
             bundlePrice: '¥148',
@@ -2484,6 +2512,13 @@
           var badgeRow = document.createElement('div');
           badgeRow.className = 'fretlab-pricing-badge-row';
 
+          if (copy.bundleLimitedTag) {
+            var limitedTag = document.createElement('span');
+            limitedTag.className = 'fretlab-pricing-tag fretlab-pricing-tag--limited font-hand';
+            limitedTag.textContent = copy.bundleLimitedTag;
+            badgeRow.appendChild(limitedTag);
+          }
+
           var title = document.createElement('h3');
           title.className = 'fretlab-pricing-title font-sketch text-3xl';
           title.textContent = copy.bundleTitle;
@@ -2527,6 +2562,9 @@
           gumroad.classList.add('fretlab-bundle-offer-gumroad');
           actions.appendChild(gumroad);
 
+          if (badgeRow.childNodes.length) {
+            head.appendChild(badgeRow);
+          }
           card.appendChild(head);
           card.appendChild(divider);
           card.appendChild(createFretlabPricingList(copy.bundleFeatures));
