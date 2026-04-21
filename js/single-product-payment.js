@@ -81,6 +81,11 @@
     const dropdown = option.closest('.single-tool-dropdown');
     if (dropdown) {
       dropdown.open = false;
+      dropdown.removeAttribute('open');
+      const summary = dropdown.querySelector('summary');
+      if (summary && typeof summary.blur === 'function') {
+        summary.blur();
+      }
     }
   }
 
