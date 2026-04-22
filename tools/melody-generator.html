@@ -3,6 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <!-- Primary SEO Meta Tags -->
     <title>Melody Sight Reading Generator | Cognote - Professional Music Practice Tool</title>
     <meta name="description" content="Professional online sight reading tool for melody practice. Generate random melodies with customizable range, time signatures, rhythms, and keys. Features real-time piano audio playback, standard music notation. Free 20 trials. Perfect for piano, guitar, violin students improving sight reading skills. | 专业在线视奏训练工具，随机生成旋律练习，支持自定义音域、拍号、节奏、调号，实时钢琴音频播放。">
@@ -122,7 +123,9 @@
         width: 100%;
         text-align: center;
       }
-    </style>    <script src="assets/js/sample-player.js?v=7"></script>
+    </style>
+
+    <script src="assets/js/sample-player.js?v=7"></script>
     <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
       window.MELODY_BOOSTED_FULL_SAMPLE_ROOT = 'assets/samples/piano-ogg-full-boosted-88';
@@ -855,7 +858,6 @@
                         </label>
                     </div>
                 </div>
-
 
                 <!-- 吉他特有技巧 -->
                 <div class="rhythm-section">
@@ -1769,8 +1771,10 @@
         window.addEventListener('load', initializeToolParameterExchange);
 
         const measurePresetValues = [2, 4, 8, 12, 16];
-        let previousMeasureSelection = '4';
+        const measurePresetKeys = measurePresetValues.map(String);
+        let previousMeasureSelections = ['4'];
         let previousCustomMeasureValue = '10';
+        let activeMeasureConfig = null;
 
         function clampCustomMeasureValue(rawValue) {
             const parsed = parseInt(rawValue, 10);
@@ -1795,6 +1799,7 @@
             const clamped = clampCustomMeasureValue(input.value);
             input.value = String(clamped);
             customRadio.value = String(clamped);
+            activeMeasureConfig = null;
         }
 
         function updateCustomMeasureVisibility() {
@@ -1804,63 +1809,97 @@
             panel.style.display = customRadio.checked ? 'block' : 'none';
         }
 
+        function getMeasureInputs() {
+            return Array.from(document.querySelectorAll('#measureModal input[name="measures"]'));
+        }
+
+        function normalizeMeasureSelectionKeys(keys) {
+            const normalized = [];
+            const nextKeys = Array.isArray(keys) ? keys : [keys];
+            nextKeys.forEach((key) => {
+                const value = String(key);
+                if (value !== 'custom' && !measurePresetKeys.includes(value)) return;
+                if (!normalized.includes(value)) {
+                    normalized.push(value);
+                }
+            });
+            return normalized.length ? normalized : ['4'];
+        }
+
         function handleMeasureCheckboxChange(target) {
-            const measureInputs = Array.from(document.querySelectorAll('#measureModal input[name="measures"]'));
-            if (!target) return;
-            if (!target.checked) {
+            const measureInputs = getMeasureInputs();
+            if (!target || !measureInputs.length) return;
+            if (!measureInputs.some((input) => input.checked)) {
                 target.checked = true;
-                updateCustomMeasureVisibility();
-                return;
             }
-            measureInputs.forEach((input) => {
-                input.checked = input === target;
-            });
             updateCustomMeasureVisibility();
+            activeMeasureConfig = null;
         }
 
-        function getSelectedMeasureInput() {
-            return document.querySelector('input[name="measures"]:checked');
+        function getSelectedMeasureInputs() {
+            return getMeasureInputs().filter((input) => input.checked);
         }
 
-        function getSelectedMeasureSelectionKey() {
-            const selected = getSelectedMeasureInput();
-            if (!selected) return '4';
-            return selected.id === 'measures-custom' ? 'custom' : selected.value;
+        function getSelectedMeasureSelectionKeys() {
+            const keys = getSelectedMeasureInputs().map((input) => (
+                input.id === 'measures-custom' ? 'custom' : input.value
+            ));
+            return normalizeMeasureSelectionKeys(keys);
         }
 
-        function setSelectedMeasureSelectionKey(key) {
-            const measureInputs = Array.from(document.querySelectorAll('#measureModal input[name="measures"]'));
+        function setSelectedMeasureSelectionKeys(keys) {
+            const measureInputs = getMeasureInputs();
             if (!measureInputs.length) return;
-            const targetId = key === 'custom' ? 'measures-custom' : null;
-            const target = targetId
-                ? document.getElementById(targetId)
-                : document.querySelector(`#measureModal input[name="measures"][value="${key}"]`);
+            const normalized = new Set(normalizeMeasureSelectionKeys(keys));
             measureInputs.forEach((input) => {
-                input.checked = input === target;
+                const key = input.id === 'measures-custom' ? 'custom' : input.value;
+                input.checked = normalized.has(key);
             });
-            if (target) {
-                updateCustomMeasureVisibility();
-                return;
-            }
-            const fallback = document.getElementById('measures-4');
-            if (fallback) fallback.checked = true;
             updateCustomMeasureVisibility();
+            activeMeasureConfig = null;
         }
 
-        function getSelectedMeasureConfig() {
+        function getSelectedMeasureValues() {
             syncCustomMeasureValue();
-            const selected = getSelectedMeasureInput();
-            let actual = selected ? parseInt(selected.value, 10) : 4;
-            if (!Number.isFinite(actual)) actual = 4;
-            actual = Math.max(1, Math.min(32, actual));
+            const values = getSelectedMeasureInputs().map((input) => clampCustomMeasureValue(input.value));
+            const uniqueValues = values.filter((value, index) => values.indexOf(value) === index);
+            return uniqueValues.length ? uniqueValues : [4];
+        }
+
+        function resolveActiveMeasureConfig(forceRefresh = false) {
+            const selectedValues = getSelectedMeasureValues();
+            const selectionSignature = selectedValues.join(',');
+            if (
+                forceRefresh ||
+                !activeMeasureConfig ||
+                activeMeasureConfig.selectionSignature !== selectionSignature
+            ) {
+                const actual = selectedValues[Math.floor(Math.random() * selectedValues.length)] || 4;
+                activeMeasureConfig = {
+                    actual,
+                    logic: getMeasureLogicCount(actual),
+                    isPreset: measurePresetValues.includes(actual),
+                    selectedValues: [...selectedValues],
+                    selectionSignature
+                };
+            }
+            return activeMeasureConfig;
+        }
+
+        function getSelectedMeasureConfig(forceRefresh = false) {
+            const config = resolveActiveMeasureConfig(forceRefresh);
             return {
-                actual,
-                logic: getMeasureLogicCount(actual),
-                isPreset: measurePresetValues.includes(actual)
+                actual: config.actual,
+                logic: config.logic,
+                isPreset: config.isPreset,
+                selectedValues: [...config.selectedValues]
             };
         }
 
         window.getSelectedMeasureConfig = getSelectedMeasureConfig;
+        window.prepareMeasureConfigForGeneration = function() {
+            return getSelectedMeasureConfig(true);
+        };
         window.getCurrentMeasureCount = function() {
             return getSelectedMeasureConfig().actual;
         };
@@ -1871,7 +1910,7 @@
         function openMeasureSettings() {
             syncCustomMeasureValue();
             updateCustomMeasureVisibility();
-            previousMeasureSelection = getSelectedMeasureSelectionKey();
+            previousMeasureSelections = [...getSelectedMeasureSelectionKeys()];
             const customInput = document.getElementById('measures-custom-value');
             previousCustomMeasureValue = customInput ? customInput.value : previousCustomMeasureValue;
             const modal = document.getElementById('measureModal');
@@ -1885,7 +1924,7 @@
                 customInput.value = previousCustomMeasureValue;
             }
             syncCustomMeasureValue();
-            setSelectedMeasureSelectionKey(previousMeasureSelection);
+            setSelectedMeasureSelectionKeys(previousMeasureSelections);
             const modal = document.getElementById('measureModal');
             if (!modal) return;
             modal.style.display = 'none';
@@ -1894,9 +1933,10 @@
         function saveMeasureSettings() {
             syncCustomMeasureValue();
             updateCustomMeasureVisibility();
-            previousMeasureSelection = getSelectedMeasureSelectionKey();
+            previousMeasureSelections = [...getSelectedMeasureSelectionKeys()];
             const customInput = document.getElementById('measures-custom-value');
             previousCustomMeasureValue = customInput ? customInput.value : previousCustomMeasureValue;
+            activeMeasureConfig = null;
             const modal = document.getElementById('measureModal');
             if (!modal) return;
             modal.style.display = 'none';
@@ -3454,7 +3494,6 @@
             'zh-TW': getMelodyUiIconLabel('globe', '繁體中文'),
             'en': getMelodyUiIconLabel('globe', 'English')
         };
-
 
         // 切换语言
         function switchLanguage(lang) {
@@ -5204,7 +5243,6 @@
             return beats / beatsPerSecond;
         }
 
-
         // 安排单个音符播放：优先使用采样器，失败回退到合成器
         function scheduleNotePlay(frequency, startTime, duration) {
             try {
@@ -5614,8 +5652,6 @@
 
             return (octave + 1) * 12 + baseMidi + alter;
         }
-
-
 
         // 获取拍号信息
         function getTimeSignature(melodyData) {
@@ -10311,6 +10347,20 @@ function parseMeasureDurationSec(bpm){
         document.addEventListener('DOMContentLoaded', function(){
             updatePracticeCountDisplay(0);
         });
+    </script>
+
+    <script>
+        if (typeof window.generateMelody === 'function' && !window.generateMelody.__measureSelectionWrapped) {
+            const originalGenerateMelody = window.generateMelody;
+            const wrappedGenerateMelody = function(...args) {
+                if (typeof window.prepareMeasureConfigForGeneration === 'function') {
+                    window.prepareMeasureConfigForGeneration();
+                }
+                return originalGenerateMelody.apply(this, args);
+            };
+            wrappedGenerateMelody.__measureSelectionWrapped = true;
+            window.generateMelody = wrappedGenerateMelody;
+        }
     </script>
 
     <script>

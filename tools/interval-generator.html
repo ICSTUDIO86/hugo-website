@@ -3,6 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <!-- Primary SEO Meta Tags -->
     <title>Interval Training Tool | Cognote - Ear Training & Pitch Recognition</title>
     <meta name="description" content="Professional interval training and ear training tool online. Practice interval recognition with customizable range, harmonic/melodic intervals, all interval types (m2-M13). Features real-time piano audio playback, standard music notation. Free 20 trials. Perfect for musicians developing relative pitch, ear training, and sight reading intervals. | 专业音程训练与听力训练工具，支持自定义音域、和声/旋律音程、所有音程类型（小二度-大十三度），实时钢琴音频。">
@@ -131,7 +132,9 @@
         width: 100%;
         text-align: center;
       }
-    </style>    <script src="assets/js/sample-player.js?v=7"></script>
+    </style>
+
+    <script src="assets/js/sample-player.js?v=7"></script>
     <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
       window.IC_FULL_PIANO_88_SAMPLE_ROOT = 'assets/samples/piano-ogg-full-boosted-88';
@@ -1760,8 +1763,10 @@
         window.addEventListener('load', initializeToolParameterExchange);
 
         const measurePresetValues = [2, 4, 8, 12, 16];
-        let previousMeasureSelection = '4';
+        const measurePresetKeys = measurePresetValues.map(String);
+        let previousMeasureSelections = ['4'];
         let previousCustomMeasureValue = '10';
+        let activeMeasureConfig = null;
 
         function clampCustomMeasureValue(rawValue) {
             const parsed = parseInt(rawValue, 10);
@@ -1786,6 +1791,7 @@
             const clamped = clampCustomMeasureValue(input.value);
             input.value = String(clamped);
             customRadio.value = String(clamped);
+            activeMeasureConfig = null;
         }
 
         function updateCustomMeasureVisibility() {
@@ -1795,63 +1801,97 @@
             panel.style.display = customRadio.checked ? 'block' : 'none';
         }
 
+        function getMeasureInputs() {
+            return Array.from(document.querySelectorAll('#measureModal input[name="measures"]'));
+        }
+
+        function normalizeMeasureSelectionKeys(keys) {
+            const normalized = [];
+            const nextKeys = Array.isArray(keys) ? keys : [keys];
+            nextKeys.forEach((key) => {
+                const value = String(key);
+                if (value !== 'custom' && !measurePresetKeys.includes(value)) return;
+                if (!normalized.includes(value)) {
+                    normalized.push(value);
+                }
+            });
+            return normalized.length ? normalized : ['4'];
+        }
+
         function handleMeasureCheckboxChange(target) {
-            const measureInputs = Array.from(document.querySelectorAll('#measureModal input[name="measures"]'));
-            if (!target) return;
-            if (!target.checked) {
+            const measureInputs = getMeasureInputs();
+            if (!target || !measureInputs.length) return;
+            if (!measureInputs.some((input) => input.checked)) {
                 target.checked = true;
-                updateCustomMeasureVisibility();
-                return;
             }
-            measureInputs.forEach((input) => {
-                input.checked = input === target;
-            });
             updateCustomMeasureVisibility();
+            activeMeasureConfig = null;
         }
 
-        function getSelectedMeasureInput() {
-            return document.querySelector('input[name="measures"]:checked');
+        function getSelectedMeasureInputs() {
+            return getMeasureInputs().filter((input) => input.checked);
         }
 
-        function getSelectedMeasureSelectionKey() {
-            const selected = getSelectedMeasureInput();
-            if (!selected) return '4';
-            return selected.id === 'measures-custom' ? 'custom' : selected.value;
+        function getSelectedMeasureSelectionKeys() {
+            const keys = getSelectedMeasureInputs().map((input) => (
+                input.id === 'measures-custom' ? 'custom' : input.value
+            ));
+            return normalizeMeasureSelectionKeys(keys);
         }
 
-        function setSelectedMeasureSelectionKey(key) {
-            const measureInputs = Array.from(document.querySelectorAll('#measureModal input[name="measures"]'));
+        function setSelectedMeasureSelectionKeys(keys) {
+            const measureInputs = getMeasureInputs();
             if (!measureInputs.length) return;
-            const targetId = key === 'custom' ? 'measures-custom' : null;
-            const target = targetId
-                ? document.getElementById(targetId)
-                : document.querySelector(`#measureModal input[name="measures"][value="${key}"]`);
+            const normalized = new Set(normalizeMeasureSelectionKeys(keys));
             measureInputs.forEach((input) => {
-                input.checked = input === target;
+                const key = input.id === 'measures-custom' ? 'custom' : input.value;
+                input.checked = normalized.has(key);
             });
-            if (target) {
-                updateCustomMeasureVisibility();
-                return;
-            }
-            const fallback = document.getElementById('measures-4');
-            if (fallback) fallback.checked = true;
             updateCustomMeasureVisibility();
+            activeMeasureConfig = null;
         }
 
-        function getSelectedMeasureConfig() {
+        function getSelectedMeasureValues() {
             syncCustomMeasureValue();
-            const selected = getSelectedMeasureInput();
-            let actual = selected ? parseInt(selected.value, 10) : 4;
-            if (!Number.isFinite(actual)) actual = 4;
-            actual = Math.max(1, Math.min(32, actual));
+            const values = getSelectedMeasureInputs().map((input) => clampCustomMeasureValue(input.value));
+            const uniqueValues = values.filter((value, index) => values.indexOf(value) === index);
+            return uniqueValues.length ? uniqueValues : [4];
+        }
+
+        function resolveActiveMeasureConfig(forceRefresh = false) {
+            const selectedValues = getSelectedMeasureValues();
+            const selectionSignature = selectedValues.join(',');
+            if (
+                forceRefresh ||
+                !activeMeasureConfig ||
+                activeMeasureConfig.selectionSignature !== selectionSignature
+            ) {
+                const actual = selectedValues[Math.floor(Math.random() * selectedValues.length)] || 4;
+                activeMeasureConfig = {
+                    actual,
+                    logic: getMeasureLogicCount(actual),
+                    isPreset: measurePresetValues.includes(actual),
+                    selectedValues: [...selectedValues],
+                    selectionSignature
+                };
+            }
+            return activeMeasureConfig;
+        }
+
+        function getSelectedMeasureConfig(forceRefresh = false) {
+            const config = resolveActiveMeasureConfig(forceRefresh);
             return {
-                actual,
-                logic: getMeasureLogicCount(actual),
-                isPreset: measurePresetValues.includes(actual)
+                actual: config.actual,
+                logic: config.logic,
+                isPreset: config.isPreset,
+                selectedValues: [...config.selectedValues]
             };
         }
 
         window.getSelectedMeasureConfig = getSelectedMeasureConfig;
+        window.prepareMeasureConfigForGeneration = function() {
+            return getSelectedMeasureConfig(true);
+        };
         window.getCurrentMeasureCount = function() {
             return getSelectedMeasureConfig().actual;
         };
@@ -1862,7 +1902,7 @@
         function openMeasureSettings() {
             syncCustomMeasureValue();
             updateCustomMeasureVisibility();
-            previousMeasureSelection = getSelectedMeasureSelectionKey();
+            previousMeasureSelections = [...getSelectedMeasureSelectionKeys()];
             const customInput = document.getElementById('measures-custom-value');
             previousCustomMeasureValue = customInput ? customInput.value : previousCustomMeasureValue;
             const modal = document.getElementById('measureModal');
@@ -1876,7 +1916,7 @@
                 customInput.value = previousCustomMeasureValue;
             }
             syncCustomMeasureValue();
-            setSelectedMeasureSelectionKey(previousMeasureSelection);
+            setSelectedMeasureSelectionKeys(previousMeasureSelections);
             const modal = document.getElementById('measureModal');
             if (!modal) return;
             modal.style.display = 'none';
@@ -1885,9 +1925,10 @@
         function saveMeasureSettings() {
             syncCustomMeasureValue();
             updateCustomMeasureVisibility();
-            previousMeasureSelection = getSelectedMeasureSelectionKey();
+            previousMeasureSelections = [...getSelectedMeasureSelectionKeys()];
             const customInput = document.getElementById('measures-custom-value');
             previousCustomMeasureValue = customInput ? customInput.value : previousCustomMeasureValue;
+            activeMeasureConfig = null;
             enforceFixedSettingsButtonLabels();
             const modal = document.getElementById('measureModal');
             if (!modal) return;
@@ -2909,7 +2950,6 @@
                         console.error('❌ 初始化时无法找到音域选择器');
                     }
                 }, 100); // 给DOM一点时间完全初始化
-
 
                 // 添加测试函数到全局作用域（调试用）
                 window.testClefRangeBinding = function() {
@@ -4046,7 +4086,6 @@
             const timeSignatureCheckboxes = document.querySelectorAll('#timeSignatureModal input[type="checkbox"]:checked');
             const selectedTimeSignatures = Array.from(timeSignatureCheckboxes).map(cb => cb.value);
 
-
             // 检查选择的拍号集合
             const has68TimeSignature = selectedTimeSignatures.includes('6/8');
             const hasSimpleTimeSignature = selectedTimeSignatures.some(v => ['2/4','3/4','4/4'].includes(v));
@@ -4806,7 +4845,6 @@
                 const minValue = parseInt(rangeMinSelect.value);
                 const maxValue = parseInt(rangeMaxSelect.value);
 
-
                 // 使用用户提供的函数保存音域
                 saveRangeForCurrentClef();
             }
@@ -4861,7 +4899,6 @@
 
             // 🚀 初始化：设置为高音谱号的默认音域
             window.setRangeForClef('treble');
-
 
             // 🧪 添加测试功能（开发调试用）
             window.testClefRangeSwitching = function() {
@@ -4934,7 +4971,6 @@
                 statusMessage += `\n当前生成谱号: ${window.currentGeneratedClef || 'treble'}`;
                 alert(statusMessage);
             };
-
 
             // 🧪 添加完整工作流程测试
             window.testCompleteWorkflow = function() {
@@ -5244,7 +5280,6 @@
                 if (bassCheckbox) bassCheckbox.checked = true;
                 if (altoCheckbox) altoCheckbox.checked = true;
 
-
                 // 生成音程
 
                 if (typeof window.generateIntervals === 'function') {
@@ -5255,7 +5290,6 @@
                             const finalMax = document.getElementById('rangeMax').value;
                             const finalMinNote = window.intervalSettings.midiToNote(parseInt(finalMin));
                             const finalMaxNote = window.intervalSettings.midiToNote(parseInt(finalMax));
-
 
                             // 检查音域是否匹配谱号
                             const expectedRanges = {
@@ -5449,7 +5483,6 @@
                                 const finalMax = document.getElementById('rangeMax').value;
                                 const minNote = window.intervalSettings.midiToNote(parseInt(finalMin));
                                 const maxNote = window.intervalSettings.midiToNote(parseInt(finalMax));
-
 
                                 // 判断是否切换到了正确的默认音域
                                 const expectedRanges = {
@@ -6534,7 +6567,6 @@
                 return;
             }
 
-
             if (!window.currentIntervalProgression.measures || window.currentIntervalProgression.measures.length === 0) {
                 console.warn('⚠️ 音程进行数据中没有小节');
                 window.isPlayingInterval = false;
@@ -6568,7 +6600,6 @@
                     validNoteCount++;
                 }
             });
-
 
             if (validNoteCount === 0) {
                 console.warn('⚠️ 没有找到有效的音符数据');
@@ -6966,7 +6997,6 @@
                 totalPlaybackDuration += noteDuration;
             });
 
-
             // 🎯 改进播放结束回调，添加清理逻辑
             const playbackEndTime = (totalPlaybackDuration + 0.5) * 1000; // 增加0.5秒缓冲时间
             const currentRunId = window.intervalPlaybackRunId;
@@ -6998,7 +7028,6 @@
                 console.error('❌ AudioContext不可用');
                 return;
             }
-
 
             pitches.forEach((pitch, index) => {
                 const frequency = pitchToFrequency(pitch);
@@ -7173,7 +7202,6 @@
                 }
             }
         });
-
 
         // 🎯 通用弹窗外部点击关闭功能
         function initializeModalClickOutsideToClose() {
@@ -7522,12 +7550,18 @@
             const originalGenerateIntervals = window.generateIntervals;
             if (typeof window.generateMelody !== 'function') {
                 window.generateMelody = function(...args) {
+                    if (typeof window.prepareMeasureConfigForGeneration === 'function') {
+                        window.prepareMeasureConfigForGeneration();
+                    }
                     return originalGenerateIntervals.apply(this, args);
                 };
             }
             window.generateIntervals = function(...args) {
                 if (typeof window.generateMelody === 'function' && window.generateMelody !== window.generateIntervals) {
                     return window.generateMelody(...args);
+                }
+                if (typeof window.prepareMeasureConfigForGeneration === 'function') {
+                    window.prepareMeasureConfigForGeneration();
                 }
                 return originalGenerateIntervals.apply(this, args);
             };

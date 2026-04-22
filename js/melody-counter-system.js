@@ -1045,6 +1045,7 @@ class MelodyCounterSystem {
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
     const fullURL = window.location.href;
+    const isWebsiteProtectedPage = window.__IC_WEB_TRIAL_REQUIRED__ === true;
 
     // 详细的调试信息
     console.log('🔍 Hostname检测调试信息:');
@@ -1076,10 +1077,16 @@ class MelodyCounterSystem {
     console.log('  - isPrivateIP:', isPrivateIP);
     console.log('  - isProduction:', isProduction);
     console.log('  - isFileProtocol:', isFileProtocol);
+    console.log('  - isWebsiteProtectedPage:', isWebsiteProtectedPage);
 
     // 如果是生产环境，强制使用服务端模式
     if (isProduction) {
       console.log('🌐 检测到生产环境，强制使用服务端模式');
+      return false;
+    }
+
+    if (isWebsiteProtectedPage) {
+      console.log('🛡️ 检测到 IC Web 受保护页面，localhost/private IP 也必须启用试用限制');
       return false;
     }
 

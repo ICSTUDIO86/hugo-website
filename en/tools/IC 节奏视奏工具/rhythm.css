@@ -314,6 +314,7 @@ input[type="radio"] {
     accent-color: var(--primary-blue);
 }
 
+#measureSettingsModal .checkbox-item input[type="checkbox"],
 #measureSettingsModal .checkbox-item input[type="radio"] {
     -webkit-appearance: none;
     appearance: none;
@@ -336,6 +337,7 @@ input[type="radio"] {
     transform: none !important;
 }
 
+#measureSettingsModal .checkbox-item input[type="checkbox"]:hover,
 #measureSettingsModal .checkbox-item input[type="radio"]:hover {
     border-color: var(--primary-blue);
     background: #ffffff !important;
@@ -343,6 +345,7 @@ input[type="radio"] {
     transform: none !important;
 }
 
+#measureSettingsModal .checkbox-item input[type="checkbox"]::before,
 #measureSettingsModal .checkbox-item input[type="radio"]::before {
     content: "";
     width: 10px;
@@ -353,15 +356,19 @@ input[type="radio"] {
     transition: transform 0.18s ease;
 }
 
+#measureSettingsModal .checkbox-item input[type="checkbox"]:checked,
 #measureSettingsModal .checkbox-item input[type="radio"]:checked {
     border-color: var(--primary-blue);
     background: #ffffff !important;
 }
 
+#measureSettingsModal .checkbox-item input[type="checkbox"]:checked::before,
 #measureSettingsModal .checkbox-item input[type="radio"]:checked::before {
     transform: scale(1);
 }
 
+#measureSettingsModal .checkbox-item input[type="checkbox"]:focus,
+#measureSettingsModal .checkbox-item input[type="checkbox"]:focus-visible,
 #measureSettingsModal .checkbox-item input[type="radio"]:focus,
 #measureSettingsModal .checkbox-item input[type="radio"]:focus-visible {
     border-color: var(--primary-blue);
@@ -369,16 +376,21 @@ input[type="radio"] {
     transform: none !important;
 }
 
+[data-theme="dark"] #measureSettingsModal .checkbox-item input[type="checkbox"],
 [data-theme="dark"] #measureSettingsModal .checkbox-item input[type="radio"] {
     background: var(--neutral-white) !important;
     border-color: rgba(255, 255, 255, 0.18);
 }
 
+[data-theme="dark"] #measureSettingsModal .checkbox-item input[type="checkbox"]:checked,
 [data-theme="dark"] #measureSettingsModal .checkbox-item input[type="radio"]:checked {
     border-color: var(--primary-blue);
     background: var(--neutral-white) !important;
 }
 
+[data-theme="dark"] #measureSettingsModal .checkbox-item input[type="checkbox"]:hover,
+[data-theme="dark"] #measureSettingsModal .checkbox-item input[type="checkbox"]:focus,
+[data-theme="dark"] #measureSettingsModal .checkbox-item input[type="checkbox"]:focus-visible,
 [data-theme="dark"] #measureSettingsModal .checkbox-item input[type="radio"]:hover,
 [data-theme="dark"] #measureSettingsModal .checkbox-item input[type="radio"]:focus,
 [data-theme="dark"] #measureSettingsModal .checkbox-item input[type="radio"]:focus-visible {

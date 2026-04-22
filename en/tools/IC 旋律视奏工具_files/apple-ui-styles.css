@@ -1896,6 +1896,28 @@ text[class*="PartName"] {
         padding: 16px 32px;
         font-size: 1.1rem;
     }
+
+    #challengeModal .modal-content {
+        display: flex !important;
+        flex-direction: column !important;
+        max-height: calc(100vh - 32px) !important;
+    }
+
+    #challengeModal .modal-body {
+        flex: 1 1 auto !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 16px !important;
+    }
+
+    #challengeModal .modal-buttons {
+        position: sticky !important;
+        bottom: 0 !important;
+        margin-top: 20px !important;
+        padding-top: 16px !important;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+        background: #ffffff !important;
+    }
 }
 
 @media (min-width: 600px) and (max-width: 899px) {
@@ -1949,6 +1971,10 @@ text[class*="PartName"] {
 
 [data-theme="dark"] #challengeModeToggleBtn.melody-visibility-btn.control-toggle-btn:not(.is-active) {
     color: var(--primary-blue) !important;
+}
+
+[data-theme="dark"] #challengeModal .modal-buttons {
+    background: #1c1c1e !important;
 }
 
 @media (max-width: 599px) and (orientation: portrait) {

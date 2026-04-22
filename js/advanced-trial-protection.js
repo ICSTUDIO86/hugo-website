@@ -150,8 +150,13 @@ class AdvancedTrialProtection {
     const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
     const isPrivateIP = hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.');
     const isProduction = hostname.includes('icstudio.club') || hostname.includes('github.io');
+    const isWebsiteProtectedPage = window.__IC_WEB_TRIAL_REQUIRED__ === true;
 
     if (isProduction) {
+      return false;
+    }
+
+    if (isWebsiteProtectedPage) {
       return false;
     }
 

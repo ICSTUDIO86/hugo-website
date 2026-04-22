@@ -4367,12 +4367,36 @@ svg.melody-hidden {
     color: #1d1d1f !important;
 }
 
+#challengeModeToggleBtn.melody-visibility-btn.control-toggle-btn {
+    background: #f2f2f7 !important;
+    color: var(--primary-orange) !important;
+    border-color: var(--border-color) !important;
+}
+
+#challengeModeToggleBtn.melody-visibility-btn.control-toggle-btn.is-active {
+    background: var(--primary-orange) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-orange) !important;
+}
+
 #challengeModeToggleBtn.melody-visibility-btn.control-toggle-btn:not(.is-active) {
     color: var(--primary-orange) !important;
 }
 
 [data-theme="dark"] .melody-visibility-btn:not(.hidden-state):not(.is-active) {
     color: var(--neutral-black) !important;
+}
+
+[data-theme="dark"] #challengeModeToggleBtn.melody-visibility-btn.control-toggle-btn {
+    background: var(--neutral-light) !important;
+    color: var(--primary-orange) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] #challengeModeToggleBtn.melody-visibility-btn.control-toggle-btn.is-active {
+    background: var(--primary-orange) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-orange) !important;
 }
 
 [data-theme="dark"] #challengeModeToggleBtn.melody-visibility-btn.control-toggle-btn:not(.is-active) {

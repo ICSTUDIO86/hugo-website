@@ -1,0 +1,48 @@
+:root {
+  --app-vh: 1vh;
+}
+
+html.native-shell,
+html.native-shell body {
+  min-height: 100%;
+}
+
+html.native-shell {
+  background: #f5f5f7;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.native-shell {
+  min-height: calc(var(--app-vh) * 100);
+  padding-top: max(env(safe-area-inset-top), 0px);
+  padding-right: max(env(safe-area-inset-right), 0px);
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  padding-left: max(env(safe-area-inset-left), 0px);
+  overscroll-behavior-y: none;
+}
+
+html.native-shell body.page-home,
+html.native-shell body.page-index {
+  min-height: calc(var(--app-vh) * 100);
+}
+
+html.native-shell .shell {
+  max-width: 100%;
+}
+
+html.native-shell .container {
+  min-height: calc(var(--app-vh) * 100 - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}
+
+@media (max-width: 820px) {
+  html.native-shell body.page-home {
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  html.native-shell body.page-home .shell {
+    border-radius: 16px;
+  }
+}

@@ -724,7 +724,6 @@
         dark: '☀️'
     };
     let openModalCount = 0;
-    let previousMeasureCountSelection = '4';
 
     function clampNumber(value, min, max, fallback) {
         const num = parseInt(value, 10);
@@ -2020,7 +2019,10 @@
     }
 
     const measurePresetValues = [2, 4, 8, 12, 16];
+    const measurePresetKeys = measurePresetValues.map(String);
+    let previousMeasureCountSelections = ['4'];
     let previousCustomMeasureCount = '10';
+    let activeMeasureCountConfig = null;
 
     function clampCustomMeasureValue(rawValue) {
         const parsed = parseInt(rawValue, 10);
@@ -2045,6 +2047,7 @@
         const clamped = clampCustomMeasureValue(input.value);
         input.value = String(clamped);
         customRadio.value = String(clamped);
+        activeMeasureCountConfig = null;
     }
 
     function updateCustomMeasureVisibility() {
@@ -2054,54 +2057,97 @@
         panel.style.display = customRadio.checked ? 'block' : 'none';
     }
 
-    function getSelectedMeasureCountInput() {
-        return document.querySelector('input[name="measureCount"]:checked');
+    function getMeasureCountInputs() {
+        return Array.from(document.querySelectorAll('#measureSettingsModal input[name="measureCount"]'));
     }
 
-    function getSelectedMeasureCountSelectionKey() {
-        const checked = getSelectedMeasureCountInput();
-        if (!checked) return '4';
-        return checked.id === 'measure-custom' ? 'custom' : checked.value;
+    function normalizeMeasureCountSelectionKeys(keys) {
+        const normalized = [];
+        const nextKeys = Array.isArray(keys) ? keys : [keys];
+        nextKeys.forEach((key) => {
+            const value = String(key);
+            if (value !== 'custom' && !measurePresetKeys.includes(value)) return;
+            if (!normalized.includes(value)) {
+                normalized.push(value);
+            }
+        });
+        return normalized.length ? normalized : ['4'];
     }
 
-    function getSelectedMeasureCountValue() {
-        syncCustomMeasureValue();
-        const checked = getSelectedMeasureCountInput();
-        return checked ? checked.value : '4';
-    }
-
-    function setSelectedMeasureCountSelectionKey(key) {
-        if (key === 'custom') {
-            const custom = document.getElementById('measure-custom');
-            if (custom) custom.checked = true;
-            updateCustomMeasureVisibility();
-            return;
-        }
-        const target = document.querySelector(`input[name="measureCount"][value="${key}"]`);
-        if (target) {
+    function handleMeasureCheckboxChange(target) {
+        const inputs = getMeasureCountInputs();
+        if (!target || !inputs.length) return;
+        if (!inputs.some((input) => input.checked)) {
             target.checked = true;
-            updateCustomMeasureVisibility();
-            return;
         }
-        const fallback = document.getElementById('measure-4');
-        if (fallback) fallback.checked = true;
         updateCustomMeasureVisibility();
+        activeMeasureCountConfig = null;
     }
 
-    function getSelectedMeasureConfig() {
+    function getSelectedMeasureCountInputs() {
+        return getMeasureCountInputs().filter((input) => input.checked);
+    }
+
+    function getSelectedMeasureCountSelectionKeys() {
+        const keys = getSelectedMeasureCountInputs().map((input) => (
+            input.id === 'measure-custom' ? 'custom' : input.value
+        ));
+        return normalizeMeasureCountSelectionKeys(keys);
+    }
+
+    function setSelectedMeasureCountSelectionKeys(keys) {
+        const inputs = getMeasureCountInputs();
+        if (!inputs.length) return;
+        const normalized = new Set(normalizeMeasureCountSelectionKeys(keys));
+        inputs.forEach((input) => {
+            const key = input.id === 'measure-custom' ? 'custom' : input.value;
+            input.checked = normalized.has(key);
+        });
+        updateCustomMeasureVisibility();
+        activeMeasureCountConfig = null;
+    }
+
+    function getSelectedMeasureCountValues() {
         syncCustomMeasureValue();
-        const checked = getSelectedMeasureCountInput();
-        let actual = checked ? parseInt(checked.value, 10) : 4;
-        if (!Number.isFinite(actual)) actual = 4;
-        actual = Math.max(1, Math.min(32, actual));
+        const values = getSelectedMeasureCountInputs().map((input) => clampCustomMeasureValue(input.value));
+        const uniqueValues = values.filter((value, index) => values.indexOf(value) === index);
+        return uniqueValues.length ? uniqueValues : [4];
+    }
+
+    function resolveActiveMeasureConfig(forceRefresh = false) {
+        const selectedValues = getSelectedMeasureCountValues();
+        const selectionSignature = selectedValues.join(',');
+        if (
+            forceRefresh ||
+            !activeMeasureCountConfig ||
+            activeMeasureCountConfig.selectionSignature !== selectionSignature
+        ) {
+            const actual = selectedValues[Math.floor(Math.random() * selectedValues.length)] || 4;
+            activeMeasureCountConfig = {
+                actual,
+                logic: getMeasureLogicCount(actual),
+                isPreset: measurePresetValues.includes(actual),
+                selectedValues: [...selectedValues],
+                selectionSignature
+            };
+        }
+        return activeMeasureCountConfig;
+    }
+
+    function getSelectedMeasureConfig(forceRefresh = false) {
+        const config = resolveActiveMeasureConfig(forceRefresh);
         return {
-            actual,
-            logic: getMeasureLogicCount(actual),
-            isPreset: measurePresetValues.includes(actual)
+            actual: config.actual,
+            logic: config.logic,
+            isPreset: config.isPreset,
+            selectedValues: [...config.selectedValues]
         };
     }
 
     window.getSelectedMeasureConfig = getSelectedMeasureConfig;
+    window.prepareMeasureConfigForGeneration = function() {
+        return getSelectedMeasureConfig(true);
+    };
     window.getCurrentMeasureCount = function() {
         return getSelectedMeasureConfig().actual;
     };
@@ -2112,7 +2158,7 @@
     function openMeasureSettings() {
         syncCustomMeasureValue();
         updateCustomMeasureVisibility();
-        previousMeasureCountSelection = getSelectedMeasureCountSelectionKey();
+        previousMeasureCountSelections = [...getSelectedMeasureCountSelectionKeys()];
         const customInput = document.getElementById('measure-custom-value');
         previousCustomMeasureCount = customInput ? customInput.value : previousCustomMeasureCount;
         const modal = document.getElementById('measureSettingsModal');
@@ -2125,7 +2171,7 @@
         const customInput = document.getElementById('measure-custom-value');
         if (customInput) customInput.value = previousCustomMeasureCount;
         syncCustomMeasureValue();
-        setSelectedMeasureCountSelectionKey(previousMeasureCountSelection);
+        setSelectedMeasureCountSelectionKeys(previousMeasureCountSelections);
         const modal = document.getElementById('measureSettingsModal');
         if (modal) {
             hideModal(modal);
@@ -2135,9 +2181,10 @@
     function saveMeasureSettings() {
         syncCustomMeasureValue();
         updateCustomMeasureVisibility();
-        previousMeasureCountSelection = getSelectedMeasureCountSelectionKey();
+        previousMeasureCountSelections = [...getSelectedMeasureCountSelectionKeys()];
         const customInput = document.getElementById('measure-custom-value');
         previousCustomMeasureCount = customInput ? customInput.value : previousCustomMeasureCount;
+        activeMeasureCountConfig = null;
         const modal = document.getElementById('measureSettingsModal');
         if (modal) {
             hideModal(modal);
@@ -7136,6 +7183,7 @@
     window.openMeasureSettings = openMeasureSettings;
     window.closeMeasureSettings = closeMeasureSettings;
     window.saveMeasureSettings = saveMeasureSettings;
+    window.handleMeasureCheckboxChange = handleMeasureCheckboxChange;
     window.updateCustomMeasureVisibility = updateCustomMeasureVisibility;
     window.openVoiceSettings = openVoiceSettings;
     window.closeVoiceSettings = closeVoiceSettings;
@@ -7155,4 +7203,16 @@
     window.resetOstinatoPattern = resetOstinatoPattern;
     window.clearOstinatoPattern = clearOstinatoPattern;
     window.directPlayTest = directPlayTest;
+
+    if (typeof window.generateMelody === 'function' && !window.generateMelody.__measureSelectionWrapped) {
+        const originalGenerateMelody = window.generateMelody;
+        const wrappedGenerateMelody = function(...args) {
+            if (typeof window.prepareMeasureConfigForGeneration === 'function') {
+                window.prepareMeasureConfigForGeneration();
+            }
+            return originalGenerateMelody.apply(this, args);
+        };
+        wrappedGenerateMelody.__measureSelectionWrapped = true;
+        window.generateMelody = wrappedGenerateMelody;
+    }
 })();

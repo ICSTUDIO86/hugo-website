@@ -3,6 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <!-- Primary SEO Meta Tags -->
     <title>Chord Sight Reading Tool | Cognote - Harmony Training & Chord Recognition</title>
     <meta name="description" content="Professional chord sight reading and harmony training tool online. Practice chord recognition with triads, seventh chords, extended chords, and inversions. Features customizable range, multiple voicings, real-time piano audio playback, standard music notation. Free 20 trials. Perfect for pianists, guitarists, jazz musicians developing chord reading and harmony skills. | 专业和弦视奏与和声训练工具，支持三和弦、七和弦、延伸和弦、转位，自定义音域、多种和弦配置，实时钢琴音频。">
@@ -128,7 +129,9 @@
         width: 100%;
         text-align: center;
       }
-    </style>    <script src="assets/js/sample-player.js?v=7"></script>
+    </style>
+
+    <script src="assets/js/sample-player.js?v=7"></script>
     <script src="assets/js/metronome-audio.js?v=1"></script>
     <script>
       window.IC_FULL_PIANO_88_SAMPLE_ROOT = 'assets/samples/piano-ogg-full-boosted-88';
@@ -220,7 +223,7 @@
 
                 <div class="control-group">
                     <input type="checkbox" id="challengeModeToggle" class="control-toggle-input" hidden aria-hidden="true" tabindex="-1">
-                    <button type="button" class="melody-visibility-btn control-toggle-btn" id="challengeModeToggleBtn" onclick="toggleChordControlOption('challengeModeToggle')" title="挑战模式" aria-pressed="false">
+                    <button type="button" class="melody-visibility-btn control-toggle-btn" id="challengeModeToggleBtn" data-toggle-target="challengeModeToggle" onclick="toggleChordControlOption('challengeModeToggle')" title="挑战模式" aria-pressed="false">
                         <span class="control-toggle-btn-text" data-i18n="controls.challengeMode">挑战模式</span>
                     </button>
                 </div>
@@ -651,7 +654,7 @@
 
                     <!-- 🎸 吉他模式高级设置 -->
                     <div id="guitarAdvancedSettings" style="display: block;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; justify-content: flex-end; margin-bottom: 15px;">
                             <button class="btn-select-all" onclick="toggleSelectAllVoicings()" style="padding: 5px 10px; font-size: 12px; background: #FF9500; color: white; border: none; border-radius: 4px; cursor: pointer;">
                                 <span id="voicingSelectAllText" data-i18n="button.selectAll">全选</span>
                             </button>
@@ -798,7 +801,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- 调号设置弹窗 -->
     <div id="keySignatureModal" class="modal" style="display: none;" onclick="if(event.target===this) saveKeySettings()">
@@ -1520,6 +1522,7 @@
 
         function finalizeToolParameterApply() {
             const syncFnNames = [
+                'saveChordTypeSettings',
                 'saveMeasureSettings',
                 'saveRhythmSettings',
                 'saveKeySettings',
@@ -1529,7 +1532,9 @@
                 'updateMetronomePatternTimeSig',
                 'updateMetronomePatternUI',
                 'updatePianoSettingsFromUI',
-                'applyTranslations'
+                'syncAllChordControlButtons',
+                'applyTranslations',
+                'applyTranslationsToModals'
             ];
             syncFnNames.forEach((name) => {
                 const fn = window[name];
@@ -1689,8 +1694,10 @@
         window.addEventListener('load', initializeToolParameterExchange);
 
         const measurePresetValues = [2, 4, 8, 12, 16];
-        let previousMeasureSelection = '4';
+        const measurePresetKeys = measurePresetValues.map(String);
+        let previousMeasureSelections = ['4'];
         let previousCustomMeasureValue = '10';
+        let activeMeasureConfig = null;
 
         function clampCustomMeasureValue(rawValue) {
             const parsed = parseInt(rawValue, 10);
@@ -1715,6 +1722,7 @@
             const clamped = clampCustomMeasureValue(input.value);
             input.value = String(clamped);
             customRadio.value = String(clamped);
+            activeMeasureConfig = null;
         }
 
         function updateCustomMeasureVisibility() {
@@ -1724,63 +1732,97 @@
             panel.style.display = customRadio.checked ? 'block' : 'none';
         }
 
+        function getMeasureInputs() {
+            return Array.from(document.querySelectorAll('#measureModal input[name="measures"]'));
+        }
+
+        function normalizeMeasureSelectionKeys(keys) {
+            const normalized = [];
+            const nextKeys = Array.isArray(keys) ? keys : [keys];
+            nextKeys.forEach((key) => {
+                const value = String(key);
+                if (value !== 'custom' && !measurePresetKeys.includes(value)) return;
+                if (!normalized.includes(value)) {
+                    normalized.push(value);
+                }
+            });
+            return normalized.length ? normalized : ['4'];
+        }
+
         function handleMeasureCheckboxChange(target) {
-            const measureInputs = Array.from(document.querySelectorAll('#measureModal input[name="measures"]'));
-            if (!target) return;
-            if (!target.checked) {
+            const measureInputs = getMeasureInputs();
+            if (!target || !measureInputs.length) return;
+            if (!measureInputs.some((input) => input.checked)) {
                 target.checked = true;
-                updateCustomMeasureVisibility();
-                return;
             }
-            measureInputs.forEach((input) => {
-                input.checked = input === target;
-            });
             updateCustomMeasureVisibility();
+            activeMeasureConfig = null;
         }
 
-        function getSelectedMeasureInput() {
-            return document.querySelector('input[name="measures"]:checked');
+        function getSelectedMeasureInputs() {
+            return getMeasureInputs().filter((input) => input.checked);
         }
 
-        function getSelectedMeasureSelectionKey() {
-            const selected = getSelectedMeasureInput();
-            if (!selected) return '4';
-            return selected.id === 'measures-custom' ? 'custom' : selected.value;
+        function getSelectedMeasureSelectionKeys() {
+            const keys = getSelectedMeasureInputs().map((input) => (
+                input.id === 'measures-custom' ? 'custom' : input.value
+            ));
+            return normalizeMeasureSelectionKeys(keys);
         }
 
-        function setSelectedMeasureSelectionKey(key) {
-            const measureInputs = Array.from(document.querySelectorAll('#measureModal input[name="measures"]'));
+        function setSelectedMeasureSelectionKeys(keys) {
+            const measureInputs = getMeasureInputs();
             if (!measureInputs.length) return;
-            const targetId = key === 'custom' ? 'measures-custom' : null;
-            const target = targetId
-                ? document.getElementById(targetId)
-                : document.querySelector(`#measureModal input[name="measures"][value="${key}"]`);
+            const normalized = new Set(normalizeMeasureSelectionKeys(keys));
             measureInputs.forEach((input) => {
-                input.checked = input === target;
+                const key = input.id === 'measures-custom' ? 'custom' : input.value;
+                input.checked = normalized.has(key);
             });
-            if (target) {
-                updateCustomMeasureVisibility();
-                return;
-            }
-            const fallback = document.getElementById('measures-4');
-            if (fallback) fallback.checked = true;
             updateCustomMeasureVisibility();
+            activeMeasureConfig = null;
         }
 
-        function getSelectedMeasureConfig() {
+        function getSelectedMeasureValues() {
             syncCustomMeasureValue();
-            const selected = getSelectedMeasureInput();
-            let actual = selected ? parseInt(selected.value, 10) : 4;
-            if (!Number.isFinite(actual)) actual = 4;
-            actual = Math.max(1, Math.min(32, actual));
+            const values = getSelectedMeasureInputs().map((input) => clampCustomMeasureValue(input.value));
+            const uniqueValues = values.filter((value, index) => values.indexOf(value) === index);
+            return uniqueValues.length ? uniqueValues : [4];
+        }
+
+        function resolveActiveMeasureConfig(forceRefresh = false) {
+            const selectedValues = getSelectedMeasureValues();
+            const selectionSignature = selectedValues.join(',');
+            if (
+                forceRefresh ||
+                !activeMeasureConfig ||
+                activeMeasureConfig.selectionSignature !== selectionSignature
+            ) {
+                const actual = selectedValues[Math.floor(Math.random() * selectedValues.length)] || 4;
+                activeMeasureConfig = {
+                    actual,
+                    logic: getMeasureLogicCount(actual),
+                    isPreset: measurePresetValues.includes(actual),
+                    selectedValues: [...selectedValues],
+                    selectionSignature
+                };
+            }
+            return activeMeasureConfig;
+        }
+
+        function getSelectedMeasureConfig(forceRefresh = false) {
+            const config = resolveActiveMeasureConfig(forceRefresh);
             return {
-                actual,
-                logic: getMeasureLogicCount(actual),
-                isPreset: measurePresetValues.includes(actual)
+                actual: config.actual,
+                logic: config.logic,
+                isPreset: config.isPreset,
+                selectedValues: [...config.selectedValues]
             };
         }
 
         window.getSelectedMeasureConfig = getSelectedMeasureConfig;
+        window.prepareMeasureConfigForGeneration = function() {
+            return getSelectedMeasureConfig(true);
+        };
         window.getCurrentMeasureCount = function() {
             return getSelectedMeasureConfig().actual;
         };
@@ -1791,7 +1833,7 @@
         function openMeasureSettings() {
             syncCustomMeasureValue();
             updateCustomMeasureVisibility();
-            previousMeasureSelection = getSelectedMeasureSelectionKey();
+            previousMeasureSelections = [...getSelectedMeasureSelectionKeys()];
             const customInput = document.getElementById('measures-custom-value');
             previousCustomMeasureValue = customInput ? customInput.value : previousCustomMeasureValue;
             const modal = document.getElementById('measureModal');
@@ -1805,7 +1847,7 @@
                 customInput.value = previousCustomMeasureValue;
             }
             syncCustomMeasureValue();
-            setSelectedMeasureSelectionKey(previousMeasureSelection);
+            setSelectedMeasureSelectionKeys(previousMeasureSelections);
             const modal = document.getElementById('measureModal');
             if (!modal) return;
             modal.style.display = 'none';
@@ -1814,9 +1856,10 @@
         function saveMeasureSettings() {
             syncCustomMeasureValue();
             updateCustomMeasureVisibility();
-            previousMeasureSelection = getSelectedMeasureSelectionKey();
+            previousMeasureSelections = [...getSelectedMeasureSelectionKeys()];
             const customInput = document.getElementById('measures-custom-value');
             previousCustomMeasureValue = customInput ? customInput.value : previousCustomMeasureValue;
+            activeMeasureConfig = null;
             enforceFixedSettingsButtonLabels();
             const modal = document.getElementById('measureModal');
             if (!modal) return;
@@ -3650,6 +3693,14 @@
             });
         }
 
+        function refreshCurrentChordDisplay() {
+            if (window.currentChords && window.currentChords.progression && typeof displayChords === 'function') {
+                displayChords(window.currentChords);
+                return true;
+            }
+            return false;
+        }
+
         // 初始化功能和声开关
         function initializeFunctionalHarmonyToggle(retryCount = 0) {
             const maxRetries = 50; // 最多重试50次（5秒）
@@ -3960,7 +4011,7 @@
                 chordSymbolsToggles.forEach((toggle, index) => {
                     toggle.addEventListener('change', function() {
                         console.log(`🎵 和弦代号开关${index + 1}变化: ${this.checked ? '显示' : '隐藏'}`);
-                        console.log('🔍 立即调用 applyChordSymbolsState()');
+                        console.log('🔍 立即同步当前和弦代号显示状态');
 
                         // 更新全局状态
                         window.displaySettings.updateChordState(this.checked);
@@ -3969,6 +4020,10 @@
                         chordSymbolsToggles.forEach(t => {
                             if (t !== this) t.checked = this.checked;
                         });
+
+                        if (this.checked && refreshCurrentChordDisplay()) {
+                            return;
+                        }
 
                         applyChordSymbolsState();
                     });
@@ -4334,7 +4389,6 @@
         // ============ 弹窗管理函数 ============
 
         // 打开和弦类型设置弹窗
-
 
         // 打开节奏设置弹窗
         function openRhythmSettings() {
@@ -5787,9 +5841,22 @@
             const buttons = document.querySelectorAll(`[data-toggle-target="${targetId}"]`);
             if (!inputs.length || !buttons.length) return;
             const isActive = !!inputs[0].checked;
+            const isChallengeToggle = targetId === 'challengeModeToggle';
             buttons.forEach((button) => {
                 button.classList.toggle('is-active', isActive);
                 button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                if (isChallengeToggle) {
+                    const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+                    if (isActive) {
+                        button.style.background = isDarkMode ? '#FF9F0A' : '#FF9500';
+                        button.style.color = '#ffffff';
+                        button.style.borderColor = isDarkMode ? '#FF9F0A' : '#FF9500';
+                    } else {
+                        button.style.background = isDarkMode ? '#3A3A3C' : '#F2F2F7';
+                        button.style.color = isDarkMode ? '#FF9F0A' : '#FF9500';
+                        button.style.borderColor = isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.06)';
+                    }
+                }
             });
         }
 
@@ -5857,12 +5924,18 @@
             const originalGenerateChords = window.generateChords;
             if (typeof window.generateMelody !== 'function') {
                 window.generateMelody = function(...args) {
+                    if (typeof window.prepareMeasureConfigForGeneration === 'function') {
+                        window.prepareMeasureConfigForGeneration();
+                    }
                     return originalGenerateChords.apply(this, args);
                 };
             }
             window.generateChords = function(...args) {
                 if (typeof window.generateMelody === 'function' && window.generateMelody !== window.generateChords) {
                     return window.generateMelody(...args);
+                }
+                if (typeof window.prepareMeasureConfigForGeneration === 'function') {
+                    window.prepareMeasureConfigForGeneration();
                 }
                 return originalGenerateChords.apply(this, args);
             };

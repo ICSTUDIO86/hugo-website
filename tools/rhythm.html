@@ -39,7 +39,9 @@
         border-radius: 0;
         box-shadow: none;
       }
-    </style>    <script src="assets/js/metronome-audio.js?v=1" defer></script>
+    </style>
+
+    <script src="assets/js/metronome-audio.js?v=1" defer></script>
     <script src="IC 节奏视奏工具/rhythm.js?v=20260203" defer></script>
     <script src="assets/js/midi-input.js?v=1" defer></script>
     <script src="assets/js/rhythm-challenge-mode.js" defer></script>
@@ -506,27 +508,27 @@
                     <h4 data-i18n="modal.measure.selection">选择小节数</h4>
                     <div class="checkbox-grid">
                         <label class="checkbox-item">
-                            <input type="radio" id="measure-2" name="measureCount" value="2" onchange="updateCustomMeasureVisibility()">
+                            <input type="checkbox" id="measure-2" name="measureCount" value="2" onchange="handleMeasureCheckboxChange(this)">
                             <span data-i18n="controls.measures2">2小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measure-4" name="measureCount" value="4" checked onchange="updateCustomMeasureVisibility()">
+                            <input type="checkbox" id="measure-4" name="measureCount" value="4" checked onchange="handleMeasureCheckboxChange(this)">
                             <span data-i18n="controls.measures4">4小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measure-8" name="measureCount" value="8" onchange="updateCustomMeasureVisibility()">
+                            <input type="checkbox" id="measure-8" name="measureCount" value="8" onchange="handleMeasureCheckboxChange(this)">
                             <span data-i18n="controls.measures8">8小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measure-12" name="measureCount" value="12" onchange="updateCustomMeasureVisibility()">
+                            <input type="checkbox" id="measure-12" name="measureCount" value="12" onchange="handleMeasureCheckboxChange(this)">
                             <span data-i18n="controls.measures12">12小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measure-16" name="measureCount" value="16" onchange="updateCustomMeasureVisibility()">
+                            <input type="checkbox" id="measure-16" name="measureCount" value="16" onchange="handleMeasureCheckboxChange(this)">
                             <span data-i18n="controls.measures16">16小节</span>
                         </label>
                         <label class="checkbox-item">
-                            <input type="radio" id="measure-custom" name="measureCount" value="10" onchange="updateCustomMeasureVisibility()">
+                            <input type="checkbox" id="measure-custom" name="measureCount" value="10" onchange="handleMeasureCheckboxChange(this)">
                             <span data-i18n="controls.measuresCustom">自定义小节数</span>
                         </label>
                     </div>

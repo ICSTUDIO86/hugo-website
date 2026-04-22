@@ -19702,7 +19702,7 @@ function adjustRangeForClef(clef) {
 function updateMaxJump() {
     const maxIntervalElement = document.getElementById('maxInterval');
     if (!maxIntervalElement) {
-        console.error('❌ maxInterval元素未找到');
+        console.warn('⚠️ maxInterval元素未找到，跳过最大音程更新');
         return;
     }
     
@@ -20212,11 +20212,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // 谱号切换监听器
-    document.getElementById('clef').addEventListener('change', function() {
-        const selectedClef = this.value;
-        adjustRangeForClef(selectedClef);
-        console.log(`🔄 谱号已切换到: ${selectedClef === 'treble' ? '高音谱号' : selectedClef === 'alto' ? '中音谱号' : '低音谱号'}`);
-    });
+    const clefElement = document.getElementById('clef');
+    if (clefElement) {
+        clefElement.addEventListener('change', function() {
+            const selectedClef = this.value;
+            adjustRangeForClef(selectedClef);
+            console.log(`🔄 谱号已切换到: ${selectedClef === 'treble' ? '高音谱号' : selectedClef === 'alto' ? '中音谱号' : '低音谱号'}`);
+        });
+    }
     const maxIntervalElement = document.getElementById('maxInterval');
     if (maxIntervalElement) {
         console.log('✅ 找到maxInterval元素:', maxIntervalElement.tagName, maxIntervalElement.type);
@@ -20239,8 +20242,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('⏰ 5秒后检查maxInterval状态 - 值:', maxIntervalElement.value, '禁用:', maxIntervalElement.disabled);
         }, 5000);
         
-    } else {
-        console.error('❌ 未找到maxInterval元素');
     }
     
     // 添加节奏设置实时更新监听器
@@ -21448,9 +21449,12 @@ window.generateMelody = generateMelody;
 window.previousMelody = previousMelody;
 window.nextMelody = nextMelody;
 window.regenerateSameSeed = regenerateSameSeed;
-window.updateMinNote = updateMinNote;
-window.updateMaxNote = updateMaxNote;
-window.updateMaxInterval = updateMaxInterval;
+if (typeof SeededRandom === 'function') {
+    window.SeededRandom = SeededRandom;
+}
+window.updateMinNote = typeof updateMinNote === 'function' ? updateMinNote : updateCustomRange;
+window.updateMaxNote = typeof updateMaxNote === 'function' ? updateMaxNote : updateCustomRange;
+window.updateMaxInterval = typeof updateMaxInterval === 'function' ? updateMaxInterval : updateMaxJump;
 window.updateAccidentalRate = updateAccidentalRate;
 
 // 导出弹窗相关函数
@@ -27247,15 +27251,8 @@ function initializeButtonDisplays() {
     // 拍号按钮
     updateButtonDisplay('timeSignatureSettingsBtn', userSettings.allowedTimeSignatures, '拍号');
     
-    // 音程跨度按钮（单选模式）
-    const intervalMap = {
-        1: '小二度', 2: '大二度', 3: '小三度', 4: '大三度',
-        5: '完全四度', 6: '增四度/减五度', 7: '完全五度', 8: '小六度',
-        9: '大六度', 10: '小七度', 11: '大七度', 12: '完全八度'
-    };
-    const selectedInterval = userSettings.allowedIntervals[0] || 12; // 取第一个（也是唯一的）值
-    const intervalName = intervalMap[selectedInterval] || `${selectedInterval}度`;
-    document.getElementById('intervalSettingsBtn').textContent = intervalName;
+    // 音程设置按钮始终保持固定标签，由弹窗内容展示具体音程名称
+    updateButtonDisplay('intervalSettingsBtn', [], '音程');
     
     // 谱号按钮
     const clefNames = userSettings.allowedClefs.map(clef => {
@@ -27656,14 +27653,7 @@ function closeIntervalSettingsWithSave() {
         userSettings.allowedIntervals = [selectedInterval];
         console.log(`✅ 音程跨度设置已静默保存: ${selectedInterval}半音`);
         
-        // 更新按钮显示
-        const intervalMap = {
-            1: '小二度', 2: '大二度', 3: '小三度', 4: '大三度',
-            5: '完全四度', 6: '增四度/减五度', 7: '完全五度', 8: '小六度',
-            9: '大六度', 10: '小七度', 11: '大七度', 12: '完全八度'
-        };
-        const intervalName = intervalMap[selectedInterval] || `${selectedInterval}度`;
-        document.getElementById('intervalSettingsBtn').textContent = intervalName;
+        updateButtonDisplay('intervalSettingsBtn', [], '音程');
     }
     
     document.getElementById('intervalModal').style.display = 'none';
@@ -27697,14 +27687,7 @@ function saveIntervalSettings() {
     userSettings.allowedIntervals = [selectedInterval];
     console.log(`✅ 音程跨度设置已保存: ${selectedInterval}半音`);
     
-    // 更新按钮显示
-    const intervalMap = {
-        1: '小二度', 2: '大二度', 3: '小三度', 4: '大三度',
-        5: '完全四度', 6: '增四度/减五度', 7: '完全五度', 8: '小六度',
-        9: '大六度', 10: '小七度', 11: '大七度', 12: '完全八度'
-    };
-    const intervalName = intervalMap[selectedInterval] || `${selectedInterval}度`;
-    document.getElementById('intervalSettingsBtn').textContent = intervalName;
+    updateButtonDisplay('intervalSettingsBtn', [], '音程');
     
     closeIntervalSettings();
 }
@@ -27865,6 +27848,7 @@ function updateButtonDisplay(buttonId, selectedItems, category) {
     const fixedLabelKeyMap = {
         'keySettingsBtn': 'controls.keySettings',
         'timeSignatureSettingsBtn': 'controls.timeSettings',
+        'intervalSettingsBtn': 'controls.intervalSettings',
         'clefSettingsBtn': 'controls.clefSettings'
     };
     const fixedLabelKey = fixedLabelKeyMap[buttonId];
