@@ -1220,10 +1220,11 @@
 
       if (response.ok && result && result.success && result.result && result.result.access_code) {
         const accessCode = String(result.result.access_code).toUpperCase();
+        const safeAccessCode = escapeHtml(accessCode);
         resultDiv.innerHTML = ''
           + '<div style="background:#f0fdf4;border:1px dashed #86efac;border-radius:12px;padding:12px;">'
           + '  <div style="color:#166534;font-weight:700;margin-bottom:8px;">' + i18n('lookupSuccessTitle') + '</div>'
-          + '  <div style="margin-bottom:8px;">' + i18n('accessCodeLabel') + '：<code style="padding:2px 6px;background:#fff;border:1px dashed #9ca3af;border-radius:6px;">' + accessCode + '</code></div>'
+          + '  <div style="margin-bottom:8px;">' + i18n('accessCodeLabel') + '：<code style="padding:2px 6px;background:#fff;border:1px dashed #9ca3af;border-radius:6px;">' + safeAccessCode + '</code></div>'
           + '  <button id="fretlab-lookup-copy-btn" type="button" style="border:1px solid #166534;background:#22c55e;color:#052e16;padding:6px 10px;border-radius:8px;cursor:pointer;font-family:' + HAND_FONT + ';">' + i18n('copyAccessCode') + '</button>'
           + '</div>';
 
@@ -1238,10 +1239,10 @@
           });
         }
       } else {
-        resultDiv.innerHTML = '<div style="padding:8px 10px;border-radius:10px;background:#fffbeb;border:1px dashed #fcd34d;color:#b45309;">⚠️ ' + (result.error || result.message || i18n('lookupNotFound')) + '</div>';
+        resultDiv.innerHTML = '<div style="padding:8px 10px;border-radius:10px;background:#fffbeb;border:1px dashed #fcd34d;color:#b45309;">⚠️ ' + escapeHtml(result.error || result.message || i18n('lookupNotFound')) + '</div>';
       }
     } catch (error) {
-      resultDiv.innerHTML = '<div style="padding:8px 10px;border-radius:10px;background:#fef2f2;border:1px dashed #fca5a5;color:#b91c1c;">' + i18n('lookupFailedPrefix') + (error.message || i18n('networkError')) + '</div>';
+      resultDiv.innerHTML = '<div style="padding:8px 10px;border-radius:10px;background:#fef2f2;border:1px dashed #fca5a5;color:#b91c1c;">' + i18n('lookupFailedPrefix') + escapeHtml(error.message || i18n('networkError')) + '</div>';
     }
   }
 

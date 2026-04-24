@@ -318,6 +318,27 @@ function isLookupNotFound(result) {
 }
 
 // 执行订单号查找
+function escapeLookupHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function formatLookupDate(value) {
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString();
+}
+
+function formatLookupDateTime(value) {
+    if (!value) return '—';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '—' : date.toLocaleString();
+}
+
 async function performAlipayLookup() {
     const input = document.getElementById('alipay-account-input');
     const resultDiv = document.getElementById('alipay-lookup-result');
@@ -393,33 +414,42 @@ async function performAlipayLookup() {
         if (actualResult && actualResult.success && actualResult.result) {
             // 显示找到的访问码
             const orderInfo = actualResult.result.order_info;
-            const accessCode = actualResult.result.access_code;
+            const accessCode = String(actualResult.result.access_code || '');
             const tradeNo = getLookupTradeNo(orderInfo);
+            const createdDate = formatLookupDate(orderInfo.created_time);
+            const paymentTime = formatLookupDateTime(orderInfo.payment_time);
+            const safeProductName = escapeLookupHtml(orderInfo.product_name);
+            const safeAmount = escapeLookupHtml(orderInfo.amount);
+            const safeAccessCode = escapeLookupHtml(accessCode);
+            const safeMerchantOrderNo = escapeLookupHtml(orderInfo.merchant_order_no);
+            const safeTradeNo = escapeLookupHtml(tradeNo);
+            const safeUsageTip = escapeLookupHtml(actualResult.result.usage_tip);
+            const copyPayload = JSON.stringify(accessCode);
             
             const resultHtml = `
                 <div style="background: #f8fbff; border: 1px solid rgba(64, 137, 227, 0.16); padding: 18px; border-radius: 18px; margin-bottom: 10px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <span style="font-weight: 700; color: #1457a5;">访问码信息</span>
-                        <span style="font-size: 12px; color: #6b7a90;">${new Date(orderInfo.created_time).toLocaleDateString()}</span>
+                        <span style="font-size: 12px; color: #6b7a90;">${createdDate}</span>
                     </div>
                     <div style="margin-bottom: 8px;">
                         <strong style="color: #0f172a;">访问码：</strong>
-                        <span style="font-family: monospace; background: #ffffff; padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(64, 137, 227, 0.16); color: #1457a5;">${accessCode}</span>
-                        <button onclick="copyToClipboard('${accessCode}')" style="margin-left: 8px; background: #1a7be8; color: white; border: none; padding: 7px 10px; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 700; box-shadow: 0 10px 22px rgba(26, 123, 232, 0.2);">复制</button>
+                        <span style="font-family: monospace; background: #ffffff; padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(64, 137, 227, 0.16); color: #1457a5;">${safeAccessCode}</span>
+                        <button onclick='copyToClipboard(${copyPayload})' style="margin-left: 8px; background: #1a7be8; color: white; border: none; padding: 7px 10px; border-radius: 999px; cursor: pointer; font-size: 12px; font-weight: 700; box-shadow: 0 10px 22px rgba(26, 123, 232, 0.2);">复制</button>
                     </div>
                     <div style="margin-bottom: 5px; color: #334155;">
-                        <strong>产品：</strong>${orderInfo.product_name}
+                        <strong>产品：</strong>${safeProductName}
                     </div>
                     <div style="margin-bottom: 5px; color: #334155;">
-                        <strong>金额：</strong>¥${orderInfo.amount}
+                        <strong>金额：</strong>¥${safeAmount}
                     </div>
                     <div style="margin-bottom: 5px; color: #334155;">
-                        <strong>支付时间：</strong>${new Date(orderInfo.payment_time).toLocaleString()}
+                        <strong>支付时间：</strong>${paymentTime}
                     </div>
                     <div style="margin-bottom: 5px; color: #334155;">
-                        <strong>商家订单号：</strong><span style="font-family: monospace; font-size: 12px;">${orderInfo.merchant_order_no}</span>
+                        <strong>商家订单号：</strong><span style="font-family: monospace; font-size: 12px;">${safeMerchantOrderNo}</span>
                     </div>
-                    ${tradeNo ? `<div style="margin-bottom: 5px; color: #334155;"><strong>订单号：</strong><span style="font-family: monospace; font-size: 12px;">${tradeNo}</span></div>` : ''}
+                    ${tradeNo ? `<div style="margin-bottom: 5px; color: #334155;"><strong>订单号：</strong><span style="font-family: monospace; font-size: 12px;">${safeTradeNo}</span></div>` : ''}
                 </div>
             `;
             
@@ -429,13 +459,13 @@ async function performAlipayLookup() {
                 </div>
                 ${resultHtml}
                 <div style="margin-top: 15px; padding: 15px; background: #eef5fc; border-radius: 16px; border: 1px solid rgba(64, 137, 227, 0.14); text-align: center;">
-                    <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6;">${actualResult.result.usage_tip}</p>
+                    <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6;">${safeUsageTip}</p>
                 </div>
             `;
             
         } else {
             // 未找到记录
-            const errorMessage = actualResult.error || '未找到相关记录';
+            const errorMessage = escapeLookupHtml(actualResult?.error || '未找到相关记录');
             resultDiv.innerHTML = `
                 <div style="color: #9a3412; padding: 18px; background: #fff7ed; border: 1px solid rgba(249, 115, 22, 0.24); border-radius: 18px; text-align: center;">
                     <div style="font-weight: 700; margin-bottom: 10px;">${errorMessage}</div>
@@ -455,10 +485,11 @@ async function performAlipayLookup() {
         
     } catch (error) {
         console.error('查找失败:', error);
+        const safeErrorMessage = escapeLookupHtml(error?.message || '未知错误');
         resultDiv.innerHTML = `
             <div style="color: #9a3412; padding: 15px; background: #fff7ed; border: 1px solid rgba(249, 115, 22, 0.24); border-radius: 16px; text-align: center; line-height: 1.6;">
                 查找失败，请稍后重试<br/>
-                <small style="color: #7c2d12;">错误信息：${error.message}</small>
+                <small style="color: #7c2d12;">错误信息：${safeErrorMessage}</small>
             </div>
         `;
     }

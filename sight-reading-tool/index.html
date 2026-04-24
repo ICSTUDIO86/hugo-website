@@ -4881,7 +4881,7 @@
 
             <div class="hero-buttons">
               <a href="#payment-section" class="btn btn-primary" data-i18n="hero.btnPurchase">立即购买</a>
-              <a href="/tools/melody-generator.html" target="_blank" class="btn btn-outline"
+              <a href="/tools/melody-generator.html" target="_blank" rel="noopener noreferrer" class="btn btn-outline"
                 data-i18n="hero.btnTry">免费试用</a>
             </div>
 
@@ -5814,6 +5814,25 @@
 
       const originalPerform = window.performAlipayLookup;
 
+      const escapeLookupHtml = (value) => String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+      const formatLookupDate = (value) => {
+        if (!value) return '—';
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString();
+      };
+
+      const formatLookupDateTime = (value) => {
+        if (!value) return '—';
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? '—' : date.toLocaleString();
+      };
+
       window.performAlipayLookup = async function () {
         const input = document.getElementById('alipay-account-input');
         const resultDiv = document.getElementById('alipay-lookup-result');
@@ -5888,33 +5907,42 @@
 
           if (actualResult && actualResult.success && actualResult.result) {
             const orderInfo = actualResult.result.order_info;
-            const accessCode = actualResult.result.access_code;
+            const accessCode = String(actualResult.result.access_code || '');
             const tradeNo = orderInfo.alipay_trade_no || orderInfo.payment_trade_no || orderInfo.trade_no || '';
+            const createdDate = formatLookupDate(orderInfo.created_time);
+            const paymentTime = formatLookupDateTime(orderInfo.payment_time);
+            const safeProductName = escapeLookupHtml(orderInfo.product_name);
+            const safeAmount = escapeLookupHtml(orderInfo.amount);
+            const safeAccessCode = escapeLookupHtml(accessCode);
+            const safeMerchantOrderNo = escapeLookupHtml(orderInfo.merchant_order_no);
+            const safeTradeNo = escapeLookupHtml(tradeNo);
+            const safeUsageTip = escapeLookupHtml(actualResult.result.usage_tip);
+            const copyPayload = JSON.stringify(accessCode);
 
             const resultHtml = `
                 <div style="background: #f0fff4; border: 1px solid #9ae6b4; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <span style="font-weight: 600; color: #2f855a;">访问码信息</span>
-                        <span style="font-size: 12px; color: #666;">${new Date(orderInfo.created_time).toLocaleDateString()}</span>
+                        <span style="font-size: 12px; color: #666;">${createdDate}</span>
                     </div>
                     <div style="margin-bottom: 8px;">
                         <strong style="color: #333;">访问码：</strong>
-                        <span style="font-family: monospace; background: #e6fffa; padding: 4px 8px; border-radius: 4px; border: 1px solid #81e6d9;">${accessCode}</span>
-                        <button onclick="copyToClipboard('${accessCode}')" style="margin-left: 8px; background: #1a7be8; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">复制</button>
+                        <span style="font-family: monospace; background: #e6fffa; padding: 4px 8px; border-radius: 4px; border: 1px solid #81e6d9;">${safeAccessCode}</span>
+                        <button onclick='copyToClipboard(${copyPayload})' style="margin-left: 8px; background: #1a7be8; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">复制</button>
                     </div>
                     <div style="margin-bottom: 5px;">
-                        <strong>产品：</strong>${orderInfo.product_name}
+                        <strong>产品：</strong>${safeProductName}
                     </div>
                     <div style="margin-bottom: 5px;">
-                        <strong>金额：</strong>¥${orderInfo.amount}
+                        <strong>金额：</strong>¥${safeAmount}
                     </div>
                     <div style="margin-bottom: 5px;">
-                        <strong>支付时间：</strong>${new Date(orderInfo.payment_time).toLocaleString()}
+                        <strong>支付时间：</strong>${paymentTime}
                     </div>
                     <div style="margin-bottom: 5px;">
-                        <strong>商家订单号：</strong><span style="font-family: monospace; font-size: 12px;">${orderInfo.merchant_order_no}</span>
+                        <strong>商家订单号：</strong><span style="font-family: monospace; font-size: 12px;">${safeMerchantOrderNo}</span>
                     </div>
-                    ${tradeNo ? `<div style="margin-bottom: 5px;"><strong>订单号：</strong><span style="font-family: monospace; font-size: 12px;">${tradeNo}</span></div>` : ''}
+                    ${tradeNo ? `<div style="margin-bottom: 5px;"><strong>订单号：</strong><span style="font-family: monospace; font-size: 12px;">${safeTradeNo}</span></div>` : ''}
                 </div>
             `;
 
@@ -5924,11 +5952,11 @@
                 </div>
                 ${resultHtml}
                 <div style="margin-top: 15px; padding: 15px; background: #e6fffa; border-radius: 8px; border: 1px solid #81e6d9; text-align: center;">
-                    <p style="margin: 0; color: #2d3748; font-size: 14px;">${actualResult.result.usage_tip}</p>
+                    <p style="margin: 0; color: #2d3748; font-size: 14px;">${safeUsageTip}</p>
                 </div>
             `;
           } else {
-            const errorMessage = actualResult.error || '未找到相关记录';
+            const errorMessage = escapeLookupHtml(actualResult?.error || '未找到相关记录');
             resultDiv.innerHTML = `
                 <div style="color: #f59e0b; padding: 20px; background: #fffbeb; border: 1px solid #fbbf24; border-radius: 8px; text-align: center;">
                     <div style="margin-bottom: 15px; font-size: 48px;">😔</div>
@@ -5948,10 +5976,11 @@
           }
         } catch (error) {
           console.error('查找失败:', error);
+          const safeErrorMessage = escapeLookupHtml(error?.message || '未知错误');
           resultDiv.innerHTML = `
               <div style="color: #e74c3c; padding: 15px; background: #fee; border: 1px solid #fecaca; border-radius: 8px; text-align: center;">
                   ❌ 查找失败，请稍后重试<br/>
-                  <small style="color: #666;">错误信息：${error.message}</small>
+                  <small style="color: #666;">错误信息：${safeErrorMessage}</small>
               </div>
           `;
         }
