@@ -1,4 +1,28 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>IC Blog on IC Studio</title><link>https://icstudio.club/blog/</link><description>Recent content in IC Blog on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Fri, 24 Apr 2026 23:23:24 +0200</lastBuildDate><atom:link href="https://icstudio.club/blog/index.xml" rel="self" type="application/rss+xml"/><item><title>第一次把电吉他的五弦弹断</title><link>https://icstudio.club/blog/%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%8A%8A%E7%94%B5%E5%90%89%E4%BB%96%E7%9A%84%E4%BA%94%E5%BC%A6%E5%BC%B9%E6%96%AD/</link><pubDate>Thu, 16 Apr 2026 00:00:00 +0000</pubDate><guid>https://icstudio.club/blog/%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%8A%8A%E7%94%B5%E5%90%89%E4%BB%96%E7%9A%84%E4%BA%94%E5%BC%A6%E5%BC%B9%E6%96%AD/</guid><description>&lt;p>今天练布鲁斯伴奏的时候，我第一次把电吉他的五弦给弹断了。&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>IC Blog on IC Studio</title><link>https://icstudio.club/blog/</link><description>Recent content in IC Blog on IC Studio</description><generator>Hugo</generator><language>zh-cn</language><lastBuildDate>Sat, 25 Apr 2026 13:31:46 +0200</lastBuildDate><atom:link href="https://icstudio.club/blog/index.xml" rel="self" type="application/rss+xml"/><item><title>Logic File 太重怎么办？</title><link>https://icstudio.club/blog/logic-file-cleanup/</link><pubDate>Sat, 25 Apr 2026 00:00:00 +0000</pubDate><guid>https://icstudio.club/blog/logic-file-cleanup/</guid><description>&lt;p>你是不是也经常遇到这种情况：电脑空间突然就被 Logic Pro 的工程文件占满了。&lt;/p>
+&lt;p>经常用 Logic 做音乐的朋友应该都知道，一个 Logic Pro 项目的体积动不动就是七八个 GB，甚至十几个 GB。录音、剪辑、反复试不同版本之后，工程里会慢慢留下很多已经没有用到的音频文件。&lt;/p>
+&lt;p>其实有一个很简单的方法，可以让 Logic 工程变轻很多。&lt;/p>
+&lt;p>在动手之前，建议先复制一份工程备份。尤其是还没完全整理完的项目，先备份会更稳妥。&lt;/p>
+&lt;h2 id="第一步打开项目音频文件列表">第一步：打开项目音频文件列表&lt;/h2>
+&lt;p>首先你可以按键盘上的 &lt;code>D&lt;/code>，或者点击右上角的图标，打开项目里的音频文件列表。&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/logic-file-cleanup-photo-1.png"
+alt="打开 Logic Pro 项目音频文件列表">
+&lt;/p>
+&lt;h2 id="第二步选中没有用到的文件">第二步：选中没有用到的文件&lt;/h2>
+&lt;p>之后选择 &lt;code>Unused File&lt;/code>，也可以直接按快捷键 &lt;code>Shift + U&lt;/code>。&lt;/p>
+&lt;p>选中这些没有被工程使用的文件之后，用 &lt;code>Cmd + Delete&lt;/code> 把它们删掉。&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/logic-file-cleanup-photo-2.png"
+alt="选择 Logic Pro 里没有用到的音频文件">
+&lt;/p>
+&lt;h2 id="第三步清理工程">第三步：清理工程&lt;/h2>
+&lt;p>最后去 &lt;code>File Management&lt;/code> 里面找到 &lt;code>Cleanup&lt;/code>。&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/logic-file-cleanup-photo-3.png"
+alt="打开 Logic Pro 的 File Management">
+&lt;/p>
+&lt;p>点击之后，Logic 就会帮你清理掉工程里没有用到的音频文件。&lt;/p>
+&lt;p>&lt;img src="https://icstudio.club/images/blog/logic-file-cleanup-photo-4.png"
+alt="使用 Logic Pro Cleanup 清理工程文件">
+&lt;/p>
+&lt;p>这样处理完之后，你的 Logic 工程通常就会变轻很多。&lt;/p></description></item><item><title>第一次把电吉他的五弦弹断</title><link>https://icstudio.club/blog/%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%8A%8A%E7%94%B5%E5%90%89%E4%BB%96%E7%9A%84%E4%BA%94%E5%BC%A6%E5%BC%B9%E6%96%AD/</link><pubDate>Thu, 16 Apr 2026 00:00:00 +0000</pubDate><guid>https://icstudio.club/blog/%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%8A%8A%E7%94%B5%E5%90%89%E4%BB%96%E7%9A%84%E4%BA%94%E5%BC%A6%E5%BC%B9%E6%96%AD/</guid><description>&lt;p>今天练布鲁斯伴奏的时候，我第一次把电吉他的五弦给弹断了。&lt;/p>
 &lt;p>本来我以为如果要断，应该会是一弦先断，没想到这次居然是五弦比一弦先断。&lt;/p>
 &lt;p>&lt;img src="https://icstudio.club/images/blog/broken-5th-string-photo-1.jpg"
 alt="练布鲁斯伴奏时弹断的五弦">
