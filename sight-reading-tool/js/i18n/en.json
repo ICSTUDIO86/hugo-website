@@ -214,8 +214,8 @@
       "btnRecover": "Retrieve Access Code with Order Number",
       "noteTitle": "Note:",
       "note1": "Order number or merchant order number can be found in your Alipay or WeChat <strong>payment history</strong>.",
-      "note2": "<strong>Merchant order number</strong> format: <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IC17575395673154298</code>",
-      "note3": "<strong>Order number</strong> format: <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">2025097832001480241441480505</code>"
+      "note2": "<strong>Merchant order number</strong> format: <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IC17xxxxxxxxxxxxxxx</code> or <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IBD17xxxxxxxxxxxxxxx</code>",
+      "note3": "<strong>Order number</strong> format: <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">2025xxxxxxxxxxxxxxxxxxxxxxxx</code>"
     },
 
     "codeNotWorking": {

@@ -207,8 +207,8 @@
       "btnRecover": "通过订单号找回访问码",
       "noteTitle": "说明：",
       "note1": "订单号或者商家订单号可在支付宝或者微信的<strong>账单记录</strong>里找到。",
-      "note2": "<strong>商家订单号</strong>格式如 <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IC17575395673154298</code>",
-      "note3": "<strong>订单号</strong>格式如 <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">2025097832001480241441480505</code>"
+      "note2": "<strong>商家订单号</strong>格式如 <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IC17xxxxxxxxxxxxxxx</code> 或 <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IBD17xxxxxxxxxxxxxxx</code>",
+      "note3": "<strong>订单号</strong>格式如 <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">2025xxxxxxxxxxxxxxxxxxxxxxxx</code>"
     },
 
     "codeNotWorking": {
