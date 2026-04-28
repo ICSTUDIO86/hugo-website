@@ -1332,7 +1332,7 @@
       });
     </script>
     <script defer src="/js/react-grab-loader.js"></script>
-    <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.8"></script>
+    <script defer src="/fretlab/js/fretlab-download-config.js?v=1.0.9"></script>
     <script defer src="/fretlab/js/fretlab-payment.js?v=1.1.15"></script>
     <script defer src="/js/bundle-payment.js?v=1.0.0"></script>
     <script>
@@ -1389,7 +1389,7 @@
         var SITE_FOOTER_RENDER_KEY = 'site-footer-v3';
         var UPDATE_LOG_CONTENT = {
           zh: {
-            banner: '最后一次版本更新时间：2026年04月15日',
+            banner: '最后一次版本更新时间：2026年04月28日',
             button: '了解详情',
             modalTitle: '更新日志',
             close: '关闭',
@@ -1397,12 +1397,20 @@
             sectionHistory: '历史更新记录',
             historyButton: '了解详情',
             historyNote: '暂无更早历史记录。',
-            currentVersion: 'v1.0.8（2026年04月15日）',
+            currentVersion: 'v1.0.9（2026年04月28日）',
             currentItems: [
-              '开放弦字母与品格数字改为不可选中，避免误触。',
-              '修正手机、iPad 与桌面端长按拖动已选指型时误吸到空弦区域的问题。'
+              '修正从指型库拖入指板后的音阶与和弦指型无法被框选的问题。',
+              '框选拖入指型后会自动转为可移动、可复制、可删除的普通指板标记。'
             ],
             historyItems: [
+              {
+                version: 'v1.0.8',
+                detailTitle: 'v1.0.8（2026年04月15日）',
+                detailItems: [
+                  '开放弦字母与品格数字改为不可选中，避免误触。',
+                  '修正手机、iPad 与桌面端长按拖动已选指型时误吸到空弦区域的问题。'
+                ]
+              },
               {
                 version: 'v1.0.7',
                 detailTitle: 'v1.0.7（2026年04月08日）',
@@ -1479,7 +1487,7 @@
             ],
           },
           en: {
-            banner: 'Last version update: April 15, 2026',
+            banner: 'Last version update: April 28, 2026',
             button: 'View details',
             modalTitle: 'Update Log',
             close: 'Close',
@@ -1487,12 +1495,20 @@
             sectionHistory: 'History',
             historyButton: 'View details',
             historyNote: 'No earlier history is available.',
-            currentVersion: 'v1.0.8 (April 15, 2026)',
+            currentVersion: 'v1.0.9 (April 28, 2026)',
             currentItems: [
-              'Open-string labels and fret numbers are no longer selectable.',
-              'Fixed long-press dragging so selected shapes no longer snap into the open-string area on phone, iPad, and desktop.'
+              'Fixed marquee selection for scales and chord shapes dragged from the library onto the fretboard.',
+              'Selected library shapes now become normal markers that can be moved, copied, and deleted.'
             ],
             historyItems: [
+              {
+                version: 'v1.0.8',
+                detailTitle: 'v1.0.8 (April 15, 2026)',
+                detailItems: [
+                  'Open-string labels and fret numbers are no longer selectable.',
+                  'Fixed long-press dragging so selected shapes no longer snap into the open-string area on phone, iPad, and desktop.'
+                ]
+              },
               {
                 version: 'v1.0.7',
                 detailTitle: 'v1.0.7 (April 8, 2026)',

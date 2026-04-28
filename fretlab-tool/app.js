@@ -4144,6 +4144,22 @@ function getBoardIndexFromEvent(event) {
   return getBoardIndexFromSvg(targetSvg);
 }
 
+function safelySetPointerCapture(element, pointerId) {
+  try {
+    element?.setPointerCapture?.(pointerId);
+  } catch {
+    // Synthetic pointer events used in automated validation may not have an active pointer.
+  }
+}
+
+function safelyReleasePointerCapture(element, pointerId) {
+  try {
+    element?.releasePointerCapture?.(pointerId);
+  } catch {
+    // Ignore missing pointer capture; the interaction state has already been cleared.
+  }
+}
+
 function syncActiveBoardUi() {
   const svgs = getFretboardSvgs();
   svgs.forEach((svg, index) => {
@@ -4383,6 +4399,93 @@ function getMarkerIdFromClientPoint(svg, clientX, clientY, markerIds = null) {
   return null;
 }
 
+function getOverlayPositionsFromClientRect(svg, clientRect) {
+  if (!(svg instanceof SVGSVGElement)) {
+    return [];
+  }
+  const seen = new Set();
+  return Array.from(svg.querySelectorAll(".overlay-dot[data-overlay-id]"))
+    .filter((dot) => {
+      const rect = dot.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      return (
+        centerX >= clientRect.left &&
+        centerX <= clientRect.right &&
+        centerY >= clientRect.top &&
+        centerY <= clientRect.bottom
+      );
+    })
+    .map((dot) => {
+      const overlayId = `${dot.dataset.overlayId ?? ""}`;
+      const stringIndex = Number(dot.dataset.string);
+      const fret = Number(dot.dataset.fret);
+      if (!overlayId || !Number.isInteger(stringIndex) || !Number.isInteger(fret)) {
+        return null;
+      }
+      const key = `${overlayId}:${stringIndex}:${fret}`;
+      if (seen.has(key)) {
+        return null;
+      }
+      seen.add(key);
+      return { overlayId, stringIndex, fret };
+    })
+    .filter(Boolean);
+}
+
+function materializeOverlayPositionsAsMarkers(boardIndex, positions) {
+  if (!positions.length) {
+    return [];
+  }
+  const board = getBoardState(boardIndex);
+  const selectedIds = [];
+  let createdMarker = false;
+
+  positions.forEach(({ stringIndex, fret }) => {
+    const id = `${stringIndex}-${fret}`;
+    if (!board.markers[id]) {
+      if (!createdMarker) {
+        rememberBoardHistory(boardIndex);
+        createdMarker = true;
+      }
+      board.markers[id] = {
+        id,
+        stringIndex,
+        fret,
+        noteIndex: getPositionNoteIndex(stringIndex, fret, getActiveTuning()),
+        interval: "",
+        customLabel: null,
+        isRecorderRoot: false,
+      };
+    }
+    selectedIds.push(id);
+  });
+
+  const byOverlay = new Map();
+  positions.forEach(({ overlayId, stringIndex, fret }) => {
+    if (!byOverlay.has(overlayId)) {
+      byOverlay.set(overlayId, new Set());
+    }
+    byOverlay.get(overlayId).add(`${stringIndex}-${fret}`);
+  });
+
+  byOverlay.forEach((positionIds, overlayId) => {
+    const overlay = overlays.find((entry) => entry.id === overlayId);
+    if (!overlay) {
+      return;
+    }
+    overlay.positions = overlay.positions.filter((pos) => !positionIds.has(`${pos.stringIndex}-${pos.fret}`));
+  });
+  for (let index = overlays.length - 1; index >= 0; index -= 1) {
+    if (!overlays[index].positions.length) {
+      overlays.splice(index, 1);
+    }
+  }
+  renderOverlayList();
+
+  return Array.from(new Set(selectedIds));
+}
+
 function renderSelectionMarquee() {
   const svgs = getFretboardSvgs();
   svgs.forEach((svg) => svg.querySelectorAll(".selection-marquee").forEach((node) => node.remove()));
@@ -4405,7 +4508,7 @@ function updateSelectedMarkersFromMarquee(boardIndex) {
     return;
   }
   const clientRect = getClientSelectionRect();
-  const selectedIds = Array.from(svg.querySelectorAll(".marker-group"))
+  const markerIds = Array.from(svg.querySelectorAll(".marker-group"))
     .filter((group) => {
       const rect = group.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
@@ -4419,6 +4522,11 @@ function updateSelectedMarkersFromMarquee(boardIndex) {
     })
     .map((group) => group.dataset.id)
     .filter(Boolean);
+  const overlayIds = materializeOverlayPositionsAsMarkers(
+    boardIndex,
+    getOverlayPositionsFromClientRect(svg, clientRect)
+  );
+  const selectedIds = Array.from(new Set([...markerIds, ...overlayIds]));
   const preferredId = selectedIds[selectedIds.length - 1] ?? null;
   setSelectedMarkerIds(boardIndex, selectedIds, { preferredId });
   renderMarkers();
@@ -4616,7 +4724,7 @@ function startSelectedMarkerDrag(event, boardIndex, markerId) {
     historyRecorded: false,
     rootMarkerId: recorder.rootMarkerId,
   };
-  svg.setPointerCapture?.(event.pointerId);
+  safelySetPointerCapture(svg, event.pointerId);
   return true;
 }
 
@@ -4765,7 +4873,7 @@ function finishSelectedMarkerDrag(event) {
     rootMarkerId: null,
   };
   clearPendingSelectedMarkerDrag();
-  svg?.releasePointerCapture?.(event.pointerId);
+  safelyReleasePointerCapture(svg, event.pointerId);
   return true;
 }
 
@@ -4806,7 +4914,7 @@ function startMarqueeSelection(event, boardIndex, svgOverride = null) {
     marqueeSelection.ready = true;
     marqueeSelection.activationTimer = null;
   }, MARQUEE_SELECTION_LONG_PRESS_MS);
-  svg.setPointerCapture?.(event.pointerId);
+  safelySetPointerCapture(svg, event.pointerId);
 }
 
 function handleMarqueePointerMove(event) {
@@ -4848,7 +4956,7 @@ function finishMarqueeSelection(event) {
   const svg = marqueeSelection.svg;
   cancelMarqueeSelection({ clearVisual: true });
   clearPendingSelectedMarkerDrag();
-  svg?.releasePointerCapture?.(event.pointerId);
+  safelyReleasePointerCapture(svg, event.pointerId);
   return wasActive;
 }
 
@@ -7877,12 +7985,18 @@ function handleMarkerPointerDown(event) {
     return;
   }
   const cell = event.target.closest(".cell");
-  if (!cell) {
+  const selectionCell = cell
+    ? {
+        stringIndex: Number(cell.dataset.string),
+        fret: Number(cell.dataset.fret),
+      }
+    : pointerCell;
+  if (!selectionCell) {
     cancelLongPress();
     return;
   }
-  const stringIndex = Number(cell.dataset.string);
-  const fret = Number(cell.dataset.fret);
+  const stringIndex = selectionCell.stringIndex;
+  const fret = selectionCell.fret;
   const markerId = `${stringIndex}-${fret}`;
   if (!board.markers[markerId]) {
     startMarqueeSelection(event, boardIndex);

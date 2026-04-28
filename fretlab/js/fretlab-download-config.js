@@ -10,10 +10,10 @@
     mockPaymentSuccess: false,
     downloads: {
       ...(existing.downloads || {}),
-      windows_x64: `${STORAGE_BASE}/FretLab-1.0.8-win-x64-setup.exe`,
-      mac_arm64: `${STORAGE_BASE}/FretLab-1.0.8-mac-arm64.dmg`,
-      mac_x64: `${STORAGE_BASE}/FretLab-1.0.8-mac-x64.dmg`,
-      linux_amd64: `${STORAGE_BASE}/FretLab-1.0.8-linux-amd64.deb`
+      windows_x64: `${STORAGE_BASE}/FretLab-1.0.9-win-x64-setup.exe`,
+      mac_arm64: `${STORAGE_BASE}/FretLab-1.0.9-mac-arm64.dmg`,
+      mac_x64: `${STORAGE_BASE}/FretLab-1.0.9-mac-x64.dmg`,
+      linux_amd64: `${STORAGE_BASE}/FretLab-1.0.9-linux-amd64.deb`
     },
     downloadSizes: {
       ...(existing.downloadSizes || {}),
