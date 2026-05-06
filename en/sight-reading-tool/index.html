@@ -4347,6 +4347,14 @@
         text-shadow: 0 6px 14px rgba(20, 87, 165, 0.06);
       }
 
+      .hero-title-line-2 {
+        width: auto;
+        max-width: min(100%, 13.5ch);
+        white-space: normal;
+        overflow-wrap: anywhere;
+        hyphens: auto;
+      }
+
       .hero-subtitle {
         max-width: 23rem;
         font-size: 0.98rem;
@@ -4570,7 +4578,7 @@
 
     @media (max-width: 480px) {
       .hero-title {
-        font-size: 3rem;
+        font-size: clamp(2.35rem, 11.2vw, 3rem);
       }
     }
   </style>
