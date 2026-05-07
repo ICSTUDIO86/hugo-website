@@ -20,7 +20,6 @@
     "btnTry": "免费试用",
     "pill": "Cognote"
   },
-
   "header": {
     "nav": {
       "features": "功能",
@@ -29,37 +28,30 @@
       "faq": "FAQ"
     }
   },
-
   "products": {
     "title": "五大核心工具",
     "subtitle": "针对不同训练需求，提供专业的视奏练习方案",
-
     "melody": {
       "title": "旋律视奏生成器",
       "description": "自由选择音符时值，精确控制 articulations（断奏、连音、重音等），甚至可以设定它们出现的频率。完全按你的需求打造练习内容。"
     },
-
     "interval": {
       "title": "音程视奏生成器",
       "description": "针对性训练特定音程，自由选择想要练习的音程类型。从大二度到完全八度，每个音程都能精准掌握。"
     },
-
     "chord": {
       "title": "和弦视奏生成器",
       "description": "支持多种和弦类型：大三和弦、小三和弦、减三和弦、sus 等。提供吉他专属和声配置：Drop2、Drop3、Shell Voicing、Close Voicing。"
     },
-
     "jianpu": {
       "title": "简谱视奏生成器",
       "description": "使用简谱（数字记谱法）显示旋律，保留节奏与调号控制，适合更习惯简谱的学习者。"
     },
-
     "rhythm": {
       "title": "节奏视奏生成器",
       "description": "专注节奏与时值训练，支持单线打击谱、节奏密度与切分控制，适合提升稳定性与律动感。"
     }
   },
-
   "feedback": {
     "title": "用户反馈",
     "subtitle": "真实练习体验，来自正在使用 Cognote 的音乐学习者",
@@ -68,6 +60,10 @@
       "yuxian": {
         "author": "雨の弦",
         "quote": "每天练半小时，把位音的印象明显加深。随机节奏有点挑战性，但练下来很有帮助。"
+      },
+      "yinlizi": {
+        "author": "音粒子现代音乐馆",
+        "quote": "旋律视奏这个东西，我已经获益了，我的 4 名学生已经通过你这个工具，获得了很好的旋律视奏训练，已经通过了音乐学院附中的各项选拔。"
       },
       "imagonx": {
         "author": "iMaGonX",
@@ -91,56 +87,47 @@
       }
     }
   },
-
   "features": {
     "title": "强大的",
     "titleHighlight": "功能特性",
     "subtitle": "专业级功能，助你达到新的音乐高度",
-
     "customize": {
       "icon": "⚙️",
       "title": "完全自定义",
       "description": "自由选择调号、拍号、音符时值、自定义频率，打造完全符合你需求的练习内容。"
     },
-
     "guitarVoicing": {
       "icon": "🎸",
       "title": "吉他专属功能",
       "description": "提供吉他专属<strong>和声配置</strong>（Drop2、Drop3、Shell Voicing、Close Voicing）<br>提供吉他专属<strong>演奏技巧</strong>（断奏、连音、重音等）"
     },
-
     "articulations": {
       "icon": "💻",
       "title": "多设备适配",
       "description": "为电脑、iPad 与手机专门设计界面。软件版目前支持 macOS、Windows 和 Linux 电脑端系统，移动端可通过 PWA 安装使用。"
     },
-
     "multiInstrument": {
       "icon": "🎵",
       "title": "适用多个乐器",
       "description": "适用于吉他、钢琴、小提琴、贝斯等各种乐器，满足不同演奏者的需求。"
     },
-
     "randomOrTonal": {
       "icon": "🎲",
       "title": "遵循音乐性",
       "description": "音符虽为随机生成，却遵循音乐逻辑，确保练习既具挑战又贴近真实演奏场景。"
     },
-
     "affordable": {
       "icon": "🎹",
       "title": "支持 MIDI 输入",
       "description": "连接 MIDI 键盘即可输入练习；支持延迟与力度校准，提升识别准确度与跟手感。"
     }
   },
-
   "payment": {
     "title": "开始你的",
     "titleHighlight": "视奏提升",
     "titleSuffix": "之旅",
     "price": "128.00¥",
     "priceText": "一次购买，终身受用",
-
     "cardTitle": "解锁你的音乐潜能",
     "singleProducts": {
       "melody": "Cognote 旋律视奏",
@@ -157,16 +144,13 @@
     "btnFreeTrial": "免费试用",
     "btnAlipay": "支付宝支付",
     "btnWechat": "微信支付",
-
     "accessCodeTitle": "🔑 已有访问码？立即使用",
     "accessCodePlaceholder": "输入访问码",
     "btnVerify": "验证"
   },
-
   "faq": {
     "title": "常见问题",
     "titleHighlight": "FAQ",
-
     "prePurchase": {
       "label": "购买前常见问题",
       "suitable": {
@@ -200,7 +184,6 @@
         "point2": "还可以按你的训练目标调整内容，更适合长期、针对性的视奏训练。"
       }
     },
-
     "forgotCode": {
       "title": "忘记访问码了怎么办？",
       "description": "如果您忘记了访问码，可以通过您的订单号找回：",
@@ -210,17 +193,14 @@
       "note2": "<strong>商家订单号</strong>格式如 <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IC17xxxxxxxxxxxxxxx</code> 或 <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IBD17xxxxxxxxxxxxxxx</code>",
       "note3": "<strong>订单号</strong>格式如 <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">2025xxxxxxxxxxxxxxxxxxxxxxxx</code>"
     },
-
     "codeNotWorking": {
       "title": "访问码不能正常工作？",
       "description": "如果在输入验证码之后工具还是处于试用版本的话，只要多刷新一下页面就好了。如果问题依然存在，请联系我们的客服支持。"
     },
-
     "macDamaged": {
       "title": "M 芯片 Mac 提示“软件以损坏，无法打开”？",
       "description": "M 芯片的 Mac 下载软件时会出现“软件以损坏，无法打开”的弹窗，这时候只需要在终端机（Terminal）里输入下面命令即可："
     },
-
     "refund": {
       "title": "如何退款？",
       "description": "我们理解您可能会遇到各种情况，因此提供 7天无理由退款政策：",
@@ -230,7 +210,6 @@
       "onlineRefund": "在线退款：",
       "btnRefund": "申请在线退款"
     },
-
     "contact": {
       "title": "有其他问题？欢迎联系我！",
       "description": "如果您在使用过程中遇到以下任何问题，欢迎通过下面的联系方式联系我，我会尽快为您解决：",
@@ -245,7 +224,6 @@
       "responseTime": "所有信息尽量在最多 48 小时内回复"
     }
   },
-
   "footer": {
     "tagline": "一起在音乐的道路上前进吧！",
     "copyright": "Copyright © 2026. All rights reserved. Igor Chen - icstudio.club"

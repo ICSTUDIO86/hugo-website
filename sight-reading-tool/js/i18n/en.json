@@ -21,7 +21,6 @@
     "btnTry": "Free Trial",
     "pill": "Cognote"
   },
-
   "header": {
     "nav": {
       "features": "Features",
@@ -30,37 +29,30 @@
       "faq": "FAQ"
     }
   },
-
   "products": {
     "title": "Five Core Tools",
     "subtitle": "Professional sight reading practice solutions for different training needs",
-
     "melody": {
       "title": "Melody Sight Reading Generator",
       "description": "Freely choose note values, precisely control articulations (staccato, legato, accents, etc.), and even set their frequency. Completely tailor practice content to your needs."
     },
-
     "interval": {
       "title": "Interval Sight Reading Generator",
       "description": "Targeted training for specific intervals, freely choose which interval types to practice. From major seconds to perfect octaves, master every interval precisely."
     },
-
     "chord": {
       "title": "Chord Sight Reading Generator",
       "description": "Supports various chord types: major triads, minor triads, diminished triads, sus, etc. Provides guitar-specific voicings: Drop2, Drop3, Shell Voicing, Close Voicing."
     },
-
     "jianpu": {
       "title": "Jianpu Sight Reading Generator",
       "description": "Render melodies as numbered notation (jianpu) while keeping full rhythm and key control—ideal for learners who prefer numbered notation."
     },
-
     "rhythm": {
       "title": "Rhythm Sight Reading Generator",
       "description": "Focused rhythm training with single-line percussion staff, density controls, and syncopation settings to build timing and groove."
     }
   },
-
   "feedback": {
     "title": "User Feedback",
     "subtitle": "Real practice experiences from musicians currently using Cognote",
@@ -69,6 +61,10 @@
       "yuxian": {
         "author": "雨の弦",
         "quote": "Practicing just 30 minutes a day clearly deepened my fretboard position awareness. The random rhythms are challenging, but very helpful."
+      },
+      "yinlizi": {
+        "author": "Yinlizi Modern Music Studio",
+        "quote": "Four of my students trained melody sight-reading with Cognote and passed the entrance selections for a conservatory-affiliated school."
       },
       "imagonx": {
         "author": "iMaGonX",
@@ -92,62 +88,52 @@
       }
     }
   },
-
   "features": {
     "title": "Powerful",
     "titleHighlight": "Features",
     "subtitle": "Professional-grade features to help you reach new musical heights",
-
     "customize": {
       "icon": "⚙️",
       "title": "Fully Customizable",
       "description": "Freely choose key signatures, time signatures, note values, and note-frequency."
     },
-
     "guitarVoicing": {
       "icon": "🎸",
       "title": "Guitar Features",
       "description": "Provides guitar-specific <strong>voicings</strong> (Drop2, Drop3, Shell Voicing, Close Voicing)<br>Provides guitar-specific <strong>articulations</strong> (staccato, legato, accents, etc.)"
     },
-
     "challengeMode": {
       "icon": "⏱️",
       "title": "Challenge Mode",
       "description": "Closer to real performance pressure. Adjust prep time, BPM, cursor behavior, and hidden pickup bars to move from understanding to reacting in time."
     },
-
     "articulations": {
-    "icon": "💻",
-    "title": "Multi-Device Support",
-    "description": "Optimized interfaces for desktop, iPad, and mobile. The desktop software currently supports macOS, Windows, and Linux, while mobile users can install it as a PWA."
+      "icon": "💻",
+      "title": "Multi-Device Support",
+      "description": "Optimized interfaces for desktop, iPad, and mobile. The desktop software currently supports macOS, Windows, and Linux, while mobile users can install it as a PWA."
     },
-
     "multiInstrument": {
       "icon": "🎸",
       "title": "Multi-Instrument Support",
       "description": "Suitable for guitar, piano, violin, bass, and various other instruments, meeting the needs of different performers."
     },
-
     "randomOrTonal": {
       "icon": "🎲",
       "title": "Musical",
       "description": "Notes are randomly generated yet musically coherent, making every exercise both challenging and realistic."
     },
-
     "affordable": {
       "icon": "🎹",
       "title": "MIDI Support",
       "description": "Connect a MIDI keyboard for input, with latency and velocity calibration to improve accuracy and feel."
     }
   },
-
   "payment": {
     "title": "Begin Your",
     "titleHighlight": "Sight Reading Improvement",
     "titleSuffix": "Journey",
     "price": "¥128.00",
     "priceText": "One purchase, lifetime use",
-
     "cardTitle": "Unlock Your Music Potential",
     "singleProducts": {
       "melody": "Cognote Melody Sight-Reading",
@@ -164,16 +150,13 @@
     "btnFreeTrial": "Free Trial",
     "btnAlipay": "Alipay Payment",
     "btnWechat": "WeChat Payment",
-
     "accessCodeTitle": "🔑 Already Have an Access Code? Use It Now",
     "accessCodePlaceholder": "Enter Access Code",
     "btnVerify": "Verify"
   },
-
   "faq": {
     "title": "Frequently Asked",
     "titleHighlight": "Questions",
-
     "prePurchase": {
       "label": "Before You Buy",
       "suitable": {
@@ -207,7 +190,6 @@
         "point2": "It can also adapt to your training goal, which makes it much better for long-term, targeted sight-reading practice."
       }
     },
-
     "forgotCode": {
       "title": "Forgot Your Access Code?",
       "description": "If you forgot your access code, you can retrieve it using your order number:",
@@ -217,17 +199,14 @@
       "note2": "<strong>Merchant order number</strong> format: <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IC17xxxxxxxxxxxxxxx</code> or <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">IBD17xxxxxxxxxxxxxxx</code>",
       "note3": "<strong>Order number</strong> format: <code style=\"background: #f5f5f5; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: monospace;\">2025xxxxxxxxxxxxxxxxxxxxxxxx</code>"
     },
-
     "codeNotWorking": {
       "title": "Access Code Not Working?",
       "description": "If the tool is still in trial mode after entering the verification code, just refresh the page a few times. If the problem persists, please contact our customer support."
     },
-
     "macDamaged": {
       "title": "M-chip Mac Says \"App Is Damaged and Can't Be Opened\"?",
       "description": "On Apple silicon Macs, you may see the \"App is damaged and can't be opened\" alert. Just run the following command in Terminal:"
     },
-
     "refund": {
       "title": "How to Get a Refund?",
       "description": "We understand various situations may arise, so we offer a 7-day no-questions-asked refund policy:",
@@ -237,7 +216,6 @@
       "onlineRefund": "Online Refund:",
       "btnRefund": "Request Online Refund"
     },
-
     "contact": {
       "title": "Have Other Questions? Feel Free to Contact Me!",
       "description": "If you encounter any of the following issues while using the tool, feel free to contact me through the methods below, and I'll help resolve them as soon as possible:",
@@ -252,7 +230,6 @@
       "responseTime": "All messages will be replied within 48 hours"
     }
   },
-
   "footer": {
     "tagline": "Let's progress together on the musical journey!",
     "copyright": "Copyright © 2026. All rights reserved. Igor Chen - icstudio.club"
