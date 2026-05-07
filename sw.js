@@ -3,7 +3,7 @@
  * 缓存策略和离线支持
  */
 
-const CACHE_NAME = 'ic-studio-v1.3.1';
+const CACHE_NAME = 'ic-studio-v1.3.2';
 const STATIC_CACHE = 'ic-studio-static-v1.3.1';
 const DYNAMIC_CACHE = 'ic-studio-dynamic-v1.3.1';
 
@@ -156,7 +156,7 @@ self.addEventListener('activate', event => {
           cacheNames
             .filter(cacheName => {
               return cacheName.startsWith('ic-studio-') && 
-                     !cacheName.includes('v1.3.1');
+                     !cacheName.includes('v1.3.2');
             })
             .map(cacheName => {
               console.log('Deleting old cache:', cacheName);

@@ -488,7 +488,7 @@
         version: 'bundle-1',
         serverVerified: true,
         productName: (payload && payload.product_name) || 'IC Studio Bundle',
-        amount: (payload && payload.amount) || '168.00',
+        amount: (payload && payload.amount) || '268.00',
         orderInfo: payload && payload.order ? payload.order : null
       }));
     } catch (_) {
