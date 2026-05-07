@@ -198,7 +198,7 @@
                 '暂无'
             );
             const productName = orderData?.product_name || 'Cognote';
-            const paymentAmount = orderData?.amount || orderData?.money || '128.00';
+            const paymentAmount = orderData?.amount || orderData?.money || '248.00';
 
             console.log('📋 提取到的订单信息:', {
                 orderNumber,

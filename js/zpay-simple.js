@@ -840,7 +840,7 @@
         },
         body: JSON.stringify({
           name: 'IC Studio 视奏工具授权',
-          money: '128.00',
+          money: '248.00',
           type: 'alipay'
         })
       });
@@ -882,7 +882,7 @@
         },
         body: JSON.stringify({
           name: 'IC Studio 视奏工具授权',
-          money: '128.00',
+          money: '248.00',
           type: 'wxpay'
         })
       });

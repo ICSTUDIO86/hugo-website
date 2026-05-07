@@ -185,7 +185,7 @@ class PaymentStateManager {
                 success: true,
                 data: {
                     product_name: result.product_name || 'IC Studio 套装（Cognote + FretLab）',
-                    amount: result.amount || '168.00',
+                    amount: result.amount || '268.00',
                     order_info: result.order_info || null,
                     tool_id: result.tool_id || 'bundle',
                     unlock_tools: result.unlock_tools || ['cognote', 'fretlab'],
